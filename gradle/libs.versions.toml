@@ -1,0 +1,378 @@
+[versions]
+
+# Kotlin
+kover = "0.9.9"
+kotlin = "2.4.10"
+kotlinx-coroutines = "1.11.0"
+kotlinx-serialization = "1.11.0"
+kotlinx-datetime = "0.8.0"
+kotlinx-collections = "0.5.1"
+
+# Ktor
+ktor = "3.5.2"
+
+# SQLDelight
+sqldelight = "2.3.2"
+sqldelight-jdbc = "3.53.2.1"
+
+# UI & Lifecycle
+compose-multiplatform = "1.11.1"
+compose-hotreload = "1.2.0"
+compose-material3 = "1.9.0"
+compose-icons = "1.7.3"
+lifecycle = "2.11.0"
+navigation3-ui = "1.1.1"
+coil = "3.5.0"
+
+# Android
+android-plugin = "9.3.1"
+android-startup = "1.2.0"
+androidx-activity = "1.13.0"
+androidx-exoplayer = "1.11.0"
+androidx-camera = "1.6.1"
+play-services-location = "21.3.0"
+android-test-core = "1.7.0"
+android-test-manifest = "1.12.0"
+roboelectric = "4.16.1"
+google-services-plugin = "4.5.0"
+firebase-bom = "34.18.0"
+
+# Desktop
+logging = "2.0.18"
+javafx = "21.0.9"
+
+# Web
+sql-js = "1.6.2"
+webpack = "9.1.0"
+firebase-web = "11.6.1"
+
+# Server
+logback = "1.6.3"
+exposed = "1.4.0"
+h2 = "1.0.0.RELEASE"
+postgresql = "1.1.1.RELEASE"
+firebase-admin = "9.10.0"
+
+# Crashlytics
+sentry = "0.25.0"
+sentry-server = "8.47.0"
+
+[plugins]
+kover = { id = "org.jetbrains.kotlinx.kover", version.ref = "kover" }
+kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+cocoapods = { id = "org.jetbrains.kotlin.native.cocoapods", version.ref = "kotlin" }
+compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+compose-multiplatform = { id = "org.jetbrains.compose", version.ref = "compose-multiplatform" }
+compose-hotreload = { id = "org.jetbrains.compose.hot-reload", version.ref = "compose-hotreload" }
+sqldelight = { id = "app.cash.sqldelight", version.ref = "sqldelight" }
+ktor = { id = "io.ktor.plugin", version.ref = "ktor" }
+android-application = { id = "com.android.application", version.ref = "android-plugin" }
+android-library = { id = "com.android.library", version.ref = "android-plugin" }
+sentry = { id = "io.sentry.kotlin.multiplatform.gradle", version.ref = "sentry" }
+google-services = { id = "com.google.gms.google-services", version.ref = "google-services-plugin" }
+
+[libraries]
+# Kotlin
+kotlin-gradle-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
+kotlin-stdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib", version.ref = "kotlin" }
+kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
+kotlin-test-junit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin" }
+kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinx-coroutines" }
+kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
+kotlinx-coroutines-swing = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-swing", version.ref = "kotlinx-coroutines" }
+kotlinx-serialization = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
+kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinx-datetime" }
+kotlinx-collections-immutable = { module = "org.jetbrains.kotlinx:kotlinx-collections-immutable", version.ref = "kotlinx-collections" }
+
+# Ktor
+ktor = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
+ktor-mock = { module = "io.ktor:ktor-client-mock", version.ref = "ktor" }
+ktor-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktor" }
+ktor-darwin = { module = "io.ktor:ktor-client-darwin", version.ref = "ktor" }
+ktor-cio = { module = "io.ktor:ktor-client-cio", version.ref = "ktor" }
+ktor-wasm = { module = "io.ktor:ktor-client-js-wasm-js", version.ref = "ktor" }
+ktor-logging = { module = "io.ktor:ktor-client-logging", version.ref = "ktor" }
+ktor-content = { module = "io.ktor:ktor-client-content-negotiation", version.ref = "ktor" }
+ktor-encoding = { module = "io.ktor:ktor-client-encoding", version.ref = "ktor" }
+ktor-auth = { module = "io.ktor:ktor-client-auth", version.ref = "ktor" }
+ktor-serialization = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor" }
+ktor-server-core = { module = "io.ktor:ktor-server-core", version.ref = "ktor" }
+ktor-server-test = { module = "io.ktor:ktor-server-test-host", version.ref = "ktor" }
+ktor-server-netty = { module = "io.ktor:ktor-server-netty", version.ref = "ktor" }
+ktor-server-callLogging = { module = "io.ktor:ktor-server-call-logging", version.ref = "ktor" }
+ktor-server-auth = { module = "io.ktor:ktor-server-auth", version.ref = "ktor" }
+ktor-server-auth-jwt = { module = "io.ktor:ktor-server-auth-jwt", version.ref = "ktor" }
+ktor-server-compression = { module = "io.ktor:ktor-server-compression", version.ref = "ktor" }
+ktor-server-content = { module = "io.ktor:ktor-server-content-negotiation", version.ref = "ktor" }
+ktor-server-cors = { module = "io.ktor:ktor-server-cors", version.ref = "ktor" }
+ktor-server-sse = { module = "io.ktor:ktor-server-sse", version.ref = "ktor" }
+ktor-server-rate-limit = { module = "io.ktor:ktor-server-rate-limit", version.ref = "ktor" }
+ktor-server-websockets = { module = "io.ktor:ktor-server-websockets", version.ref = "ktor" }
+
+# SQLDelight
+sqldelight-runtime = { module = "app.cash.sqldelight:runtime", version.ref = "sqldelight" }
+sqldelight-async = { module = "app.cash.sqldelight:async-extensions", version.ref = "sqldelight" }
+sqldelight-dialect = { module = "app.cash.sqldelight:sqlite-3-38-dialect", version.ref = "sqldelight" }
+sqldelight-primitives = { module = "app.cash.sqldelight:primitive-adapters", version.ref = "sqldelight" }
+sqldelight-coroutines = { module = "app.cash.sqldelight:coroutines-extensions", version.ref = "sqldelight" }
+sqldelight-android = { module = "app.cash.sqldelight:android-driver", version.ref = "sqldelight" }
+sqldelight-native = { module = "app.cash.sqldelight:native-driver", version.ref = "sqldelight" }
+sqldelight-jvm = { module = "app.cash.sqldelight:sqlite-driver", version.ref = "sqldelight" }
+sqldelight-worker = { module = "app.cash.sqldelight:web-worker-driver-wasm-js", version.ref = "sqldelight" }
+sqldelight-jdbc = { module = "org.xerial:sqlite-jdbc", version.ref = "sqldelight-jdbc" }
+
+# UI
+compose-test = { module = "org.jetbrains.compose.ui:ui-test", version.ref = "compose-multiplatform" }
+compose-test-junit = { module = "org.jetbrains.compose.ui:ui-test-junit4", version.ref = "compose-multiplatform" }
+compose-runtime = { module = "org.jetbrains.compose.runtime:runtime", version.ref = "compose-multiplatform" }
+compose-ui = { module = "org.jetbrains.compose.ui:ui", version.ref = "compose-multiplatform" }
+compose-foundation = { module = "org.jetbrains.compose.foundation:foundation", version.ref = "compose-multiplatform" }
+compose-resources = { module = "org.jetbrains.compose.components:components-resources", version.ref = "compose-multiplatform" }
+compose-material3 = { module = "org.jetbrains.compose.material3:material3", version.ref = "compose-material3" }
+compose-icons = { module = "org.jetbrains.compose.material:material-icons-extended", version.ref = "compose-icons" }
+compose-preview = { module = "org.jetbrains.compose.ui:ui-tooling-preview", version.ref = "compose-multiplatform" }
+compose-tooling = { module = "org.jetbrains.compose.ui:ui-tooling", version.ref = "compose-multiplatform" }
+lifecycle = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "lifecycle" }
+lifecycle-runtime = { module = "org.jetbrains.androidx.lifecycle:lifecycle-runtime-compose", version.ref = "lifecycle" }
+navigation3-lifecycle = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-navigation3", version.ref = "lifecycle" }
+navigation3-ui = { module = "org.jetbrains.androidx.navigation3:navigation3-ui", version.ref = "navigation3-ui" }
+coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil" }
+coil-network = { module = "io.coil-kt.coil3:coil-network-ktor3", version.ref = "coil" }
+coil-svg = { module = "io.coil-kt.coil3:coil-svg", version.ref = "coil" }
+
+
+# Android
+androidx-startup = { module = "androidx.startup:startup-runtime", version.ref = "android-startup" }
+androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activity" }
+androidx-exoplayer = { module = "androidx.media3:media3-exoplayer", version.ref = "androidx-exoplayer" }
+androidx-camera-core = { module = "androidx.camera:camera-core", version.ref = "androidx-camera" }
+androidx-camera-camera2 = { module = "androidx.camera:camera-camera2", version.ref = "androidx-camera" }
+androidx-camera-lifecycle = { module = "androidx.camera:camera-lifecycle", version.ref = "androidx-camera" }
+androidx-camera-view = { module = "androidx.camera:camera-view", version.ref = "androidx-camera" }
+androidx-camera-video = { module = "androidx.camera:camera-video", version.ref = "androidx-camera" }
+play-services-location = { module = "com.google.android.gms:play-services-location", version.ref = "play-services-location" }
+androidx-test-core = { module = "androidx.test:core-ktx", version.ref = "android-test-core" }
+androidx-test-manifest = { module = "androidx.compose.ui:ui-test-manifest", version.ref = "android-test-manifest" }
+roboelectric = { module = "org.robolectric:robolectric", version.ref = "roboelectric" }
+firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebase-bom" }
+firebase-messaging = { module = "com.google.firebase:firebase-messaging" }
+
+# Desktop
+logging = { module = "org.slf4j:slf4j-simple", version.ref = "logging" }
+javafx-base = { module = "org.openjfx:javafx-base", version.ref = "javafx" }
+javafx-graphics = { module = "org.openjfx:javafx-graphics", version.ref = "javafx" }
+javafx-media = { module = "org.openjfx:javafx-media", version.ref = "javafx" }
+javafx-swing = { module = "org.openjfx:javafx-swing", version.ref = "javafx" }
+
+# Web
+sql-worker = { module = "npm:@cashapp/sqldelight-sqljs-worker", version.ref = "sqldelight" }
+sql-js = { module = "npm:sql.js", version.ref = "sql-js" }
+webpack = { module = "npm:copy-webpack-plugin", version.ref = "webpack" }
+firebase-web = { module = "npm:firebase", version.ref = "firebase-web" }
+
+# Server
+logback = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
+sentry-jvm = { module = "io.sentry:sentry", version.ref = "sentry-server" }
+exposed-core = { module = "org.jetbrains.exposed:exposed-core", version.ref = "exposed" }
+exposed-r2dbc = { module = "org.jetbrains.exposed:exposed-r2dbc", version.ref = "exposed" }
+exposed-crypt = { module = "org.jetbrains.exposed:exposed-crypt", version.ref = "exposed" }
+exposed-migration-core = { module = "org.jetbrains.exposed:exposed-migration-core", version.ref = "exposed" }
+exposed-migration-r2dbc = { module = "org.jetbrains.exposed:exposed-migration-r2dbc", version.ref = "exposed" }
+exposed-kotlin-datetime = { module = "org.jetbrains.exposed:exposed-kotlin-datetime", version.ref = "exposed" }
+exposed-h2 = { module = "io.r2dbc:r2dbc-h2", version.ref = "h2" }
+exposed-postgresql = { module = "org.postgresql:r2dbc-postgresql", version.ref = "postgresql" }
+firebase-admin = { module = "com.google.firebase:firebase-admin", version.ref = "firebase-admin" }
+
+[bundles]
+shared-common = [
+    "kotlin-stdlib",
+    "kotlinx-serialization",
+    "kotlinx-coroutines-core",
+]
+shared-common-test = [
+    "kotlin-test",
+    "kotlinx-coroutines-test",
+]
+sharedtest-common = [
+    "kotlinx-coroutines-core",
+    "kotlinx-coroutines-test",
+    "compose-test",
+    "ktor-mock",
+    "ktor-server-test",
+]
+sharedtest-android = [
+    "kotlin-test-junit",
+    "androidx-test-core",
+    "roboelectric"
+]
+design-common = [
+    "kotlinx-collections-immutable",
+    "compose-runtime",
+    "compose-ui",
+    "compose-foundation",
+    "compose-resources",
+    "compose-material3",
+    "compose-icons",
+    "compose-preview",
+    "coil-compose",
+    "coil-network",
+    "coil-svg",
+    "ktor"
+]
+design-android = [
+    "androidx-activity-compose",
+    "ktor-okhttp",
+]
+design-ios = [
+    "ktor-darwin",
+]
+design-desktop = [
+    "kotlinx-coroutines-swing",
+    "ktor-cio",
+]
+design-web = [
+    "ktor-wasm",
+]
+appcore-common = [
+    "kotlinx-coroutines-core",
+    "kotlinx-datetime",
+    "ktor",
+    "ktor-logging",
+    "ktor-content",
+    "ktor-encoding",
+    "ktor-auth",
+    "ktor-serialization",
+    "sqldelight-runtime",
+    "sqldelight-async",
+    "sqldelight-coroutines",
+    "compose-runtime",
+    "compose-ui",
+    "compose-foundation",
+    "compose-preview",
+    "lifecycle",
+    "lifecycle-runtime",
+    "navigation3-lifecycle",
+    "navigation3-ui",
+]
+appcore-common-test = [
+    "kotlin-test",
+    "kotlinx-coroutines-test",
+    "ktor-mock",
+    "compose-test",
+]
+appcore-android = [
+    "ktor-okhttp",
+    "androidx-startup",
+    "androidx-exoplayer",
+    "androidx-camera-core",
+    "androidx-camera-camera2",
+    "androidx-camera-lifecycle",
+    "androidx-camera-view",
+    "androidx-camera-video",
+    "sqldelight-android",
+    "play-services-location",
+]
+appcore-android-test = [
+    "androidx-test-core",
+    "roboelectric",
+]
+appcore-ios = [
+    "ktor-darwin",
+    "sqldelight-native",
+]
+appcore-desktop = [
+    "ktor-cio",
+    "sqldelight-jvm",
+    "sqldelight-jdbc",
+]
+appcore-web = [
+    "ktor-wasm",
+    "sqldelight-worker",
+]
+clientApp-common = [
+    "kotlinx-coroutines-core",
+    "kotlinx-collections-immutable",
+    "ktor",
+    "ktor-logging",
+    "ktor-content",
+    "ktor-encoding",
+    "ktor-auth",
+    "ktor-serialization",
+    "sqldelight-runtime",
+    "sqldelight-primitives",
+    "sqldelight-coroutines",
+    "compose-runtime",
+    "compose-ui",
+    "compose-foundation",
+    "compose-resources",
+    "compose-icons",
+    "compose-material3",
+    "compose-preview",
+    "lifecycle",
+    "lifecycle-runtime",
+    "navigation3-lifecycle",
+    "navigation3-ui",
+]
+clientApp-common-test = [
+    "kotlin-test",
+    "kotlinx-coroutines-test",
+    "ktor-mock",
+    "compose-test",
+]
+clientApp-android = [
+    "sqldelight-android",
+    "androidx-startup",
+]
+clientApp-android-test = [
+    "androidx-test-core",
+    "roboelectric",
+    "sqldelight-jvm",
+    "sqldelight-jdbc",
+]
+clientApp-ios = [
+    "sqldelight-native",
+]
+clientApp-desktop = [
+    "kotlinx-coroutines-swing",
+    "sqldelight-jvm",
+    "sqldelight-jdbc",
+    "logging",
+]
+clientApp-web = [
+    "sqldelight-worker"
+]
+server = [
+    "logback",
+    "sentry-jvm",
+    "ktor-serialization",
+    "ktor-server-core",
+    "ktor-server-test",
+    "ktor-server-netty",
+    "ktor-server-callLogging",
+    "ktor-server-auth",
+    "ktor-server-auth-jwt",
+    "ktor-server-compression",
+    "ktor-server-content",
+    "ktor-server-cors",
+    "ktor-server-sse",
+    "ktor-server-rate-limit",
+    "ktor-server-websockets",
+    "exposed-core",
+    "exposed-r2dbc",
+    "exposed-crypt",
+    "exposed-migration-core",
+    "exposed-migration-r2dbc",
+    "exposed-kotlin-datetime",
+    "exposed-postgresql",
+    "firebase-admin",
+]
+server-debug = [
+    "exposed-h2"
+]
+server-test = [
+    "kotlin-test-junit",
+    "ktor-content",
+    "ktor-auth"
+]

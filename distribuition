@@ -1,0 +1,29 @@
+# Pod Install
+    cd iosApp
+    rm -rf Pods
+    pod install
+# Run Tests
+    ./gradlew clean testSharedAndReport testServerAndReport testAppCoreAndReport testClientAndReport
+# Run Server
+    ./gradlew :server:run
+# Git
+    create and push tag
+# Compile
+    Ios:     xcode archive
+    Android: ./gradlew clean :clientApp:bundleRelease
+    Mac:     ./gradlew clean :clientApp:notarizeDmg --no-configuration-cache
+    Windows: ./gradlew clean :clientApp:packageMsi
+    Linux:   ./gradlew clean :clientApp:packageDeb
+    Web:     ./gradlew clean :clientApp:wasmJsBrowserDistribution
+    Server:  ../gradlew :server:buildFatJar
+# Publish
+    Server:
+            cd server
+            gcloud run deploy server \
+                --source . \
+                --region=europe-west1 \
+                --allow-unauthenticated \
+                --set-env-vars="^@^DEVELOPMENT=false@SENTRY_DSN=dsn@PORT=port@ADMIN_UUID=uuid@ADMIN_USERNAME=username@DB_HOST=dhost@DB_PORT=port@DB_NAME=name@DB_USER=user@JWT_ISSUER=issuer@JWT_AUDIENCE=audience@GCP_PROJECT_ID=id" \
+                --set-secrets="ADMIN_PASSWORD=password:latest,DB_PASSWORD=password:latest,JWT_SECRET=jwt:latest"
+    Web:    ./gradlew wasmJsBrowserDistribution
+            firebase deploy --only hosting

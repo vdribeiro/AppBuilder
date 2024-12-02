@@ -1,0 +1,22 @@
+import kotlin.time.Instant;
+import kotlin.uuid.Uuid;
+
+CREATE TABLE IF NOT EXISTS DeviceLocation (
+    uuid TEXT AS Uuid NOT NULL PRIMARY KEY,
+    userUuid TEXT AS Uuid NOT NULL,
+    provider TEXT NOT NULL,
+    fixTime TEXT AS Instant NOT NULL,
+    deviceTime TEXT AS Instant NOT NULL,
+    latitude REAL NOT NULL,
+    longitude REAL NOT NULL,
+    altitude REAL,
+    accuracy REAL NOT NULL,
+    bearing REAL,
+    speed REAL
+);
+
+truncateDeviceLocation:
+DELETE FROM DeviceLocation;
+
+upsertDeviceLocation:
+INSERT OR REPLACE INTO DeviceLocation VALUES ?;

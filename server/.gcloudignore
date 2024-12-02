@@ -1,0 +1,10 @@
+# Ignore everything by default to keep the upload tiny
+*
+
+# Allow the Dockerfile
+!Dockerfile
+
+# Allow the compiled Fat JAR
+!build/
+!build/libs/
+!build/libs/*-all.jar

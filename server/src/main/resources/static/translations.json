@@ -1,0 +1,272 @@
+[
+  {
+    "languageIso": "en",
+    "key": "app_name",
+    "value": "App Builder"
+  },
+  {
+    "languageIso": "en",
+    "key": "yes",
+    "value": "Yes"
+  },
+  {
+    "languageIso": "en",
+    "key": "no",
+    "value": "No"
+  },
+  {
+    "languageIso": "en",
+    "key": "client_flag",
+    "value": "Client Flag"
+  },
+  {
+    "languageIso": "en",
+    "key": "client_config",
+    "value": "Client Config"
+  },
+  {
+    "languageIso": "en",
+    "key": "server_flag",
+    "value": "Server Flag"
+  },
+  {
+    "languageIso": "en",
+    "key": "server_config",
+    "value": "Server Config"
+  },
+  {
+    "languageIso": "en",
+    "key": "notification",
+    "value": "Notification"
+  },
+  {
+    "languageIso": "en",
+    "key": "translation",
+    "value": "Translation"
+  },
+  {
+    "languageIso": "en",
+    "key": "session",
+    "value": "Session"
+  },
+  {
+    "languageIso": "en",
+    "key": "user",
+    "value": "User"
+  },
+  {
+    "languageIso": "en",
+    "key": "task",
+    "value": "Task"
+  },
+  {
+    "languageIso": "en",
+    "key": "title",
+    "value": "Title"
+  },
+  {
+    "languageIso": "en",
+    "key": "description",
+    "value": "Description"
+  },
+  {
+    "languageIso": "en",
+    "key": "more",
+    "value": "More"
+  },
+  {
+    "languageIso": "en",
+    "key": "name",
+    "value": "Name"
+  },
+  {
+    "languageIso": "en",
+    "key": "username",
+    "value": "Username"
+  },
+  {
+    "languageIso": "en",
+    "key": "password",
+    "value": "Password"
+  },
+  {
+    "languageIso": "en",
+    "key": "register",
+    "value": "Register"
+  },
+  {
+    "languageIso": "en",
+    "key": "login",
+    "value": "Login"
+  },
+  {
+    "languageIso": "en",
+    "key": "permissions",
+    "value": "Permissions"
+  },
+  {
+    "languageIso": "en",
+    "key": "read",
+    "value": "Read"
+  },
+  {
+    "languageIso": "en",
+    "key": "write",
+    "value": "Write"
+  },
+  {
+    "languageIso": "en",
+    "key": "push",
+    "value": "Push"
+  },
+  {
+    "languageIso": "en",
+    "key": "push_field_type",
+    "value": "Type"
+  },
+  {
+    "languageIso": "en",
+    "key": "push_field_broadcast",
+    "value": "Broadcast"
+  },
+  {
+    "languageIso": "en",
+    "key": "push_field_title",
+    "value": "Title"
+  },
+  {
+    "languageIso": "en",
+    "key": "push_field_description",
+    "value": "Description"
+  },
+  {
+    "languageIso": "en",
+    "key": "push_send",
+    "value": "Send"
+  },
+  {
+    "languageIso": "en",
+    "key": "push_sent",
+    "value": "Sent %1$s"
+  },
+  {
+    "languageIso": "en",
+    "key": "task_list",
+    "value": "Task List"
+  },
+  {
+    "languageIso": "en",
+    "key": "task_detail",
+    "value": "Task Detail"
+  },
+  {
+    "languageIso": "en",
+    "key": "stacktrace",
+    "value": "Stacktrace"
+  },
+  {
+    "languageIso": "en",
+    "key": "users",
+    "value": "%1$s Users"
+  },
+  {
+    "languageIso": "en",
+    "key": "system_failure",
+    "value": "An unexpected error occurred.\nPlease contact your system administrator."
+  },
+  {
+    "languageIso": "en",
+    "key": "thanks",
+    "value": "Thank you for your feedback"
+  },
+  {
+    "languageIso": "en",
+    "key": "send",
+    "value": "Send"
+  },
+  {
+    "languageIso": "en",
+    "key": "account",
+    "value": "Account"
+  },
+  {
+    "languageIso": "en",
+    "key": "edit_profile",
+    "value": "Edit Profile"
+  },
+  {
+    "languageIso": "en",
+    "key": "change_password",
+    "value": "Change Password"
+  },
+  {
+    "languageIso": "en",
+    "key": "notifications",
+    "value": "Notifications"
+  },
+  {
+    "languageIso": "en",
+    "key": "logout",
+    "value": "Logout"
+  },
+  {
+    "languageIso": "en",
+    "key": "device",
+    "value": "Device"
+  },
+  {
+    "languageIso": "en",
+    "key": "language",
+    "value": "Language"
+  },
+  {
+    "languageIso": "en",
+    "key": "reset",
+    "value": "Reset"
+  },
+  {
+    "languageIso": "en",
+    "key": "about",
+    "value": "About"
+  },
+  {
+    "languageIso": "en",
+    "key": "send_feedback",
+    "value": "Send Feedback"
+  },
+  {
+    "languageIso": "en",
+    "key": "copyright",
+    "value": "Copyright"
+  },
+  {
+    "languageIso": "en",
+    "key": "privacy_policy",
+    "value": "Privacy Policy"
+  },
+  {
+    "languageIso": "en",
+    "key": "app_version",
+    "value": "App Version"
+  },
+  {
+    "languageIso": "en",
+    "key": "tasks",
+    "value": "Tasks"
+  },
+  {
+    "languageIso": "en",
+    "key": "scan_nfc_tag",
+    "value": "Hold your device near an NFC tag."
+  },
+  {
+    "languageIso": "en",
+    "key": "tag_read",
+    "value": "Tag read."
+  },
+  {
+    "languageIso": "en",
+    "key": "tag_read",
+    "value": "Tag written."
+  }
+]

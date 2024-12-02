@@ -1,0 +1,13 @@
+import kotlin.uuid.Uuid;
+
+CREATE TABLE IF NOT EXISTS TaskUserJoin (
+    taskUuid TEXT AS Uuid NOT NULL,
+    userUuid TEXT AS Uuid NOT NULL,
+    PRIMARY KEY (taskUuid, userUuid)
+);
+
+truncateTaskUserJoin:
+DELETE FROM TaskUserJoin;
+
+upsertTaskUserJoin:
+INSERT OR REPLACE INTO TaskUserJoin VALUES ?;

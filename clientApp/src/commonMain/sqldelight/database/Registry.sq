@@ -1,0 +1,46 @@
+import com.app.builder.domain.EntityType;
+import kotlin.time.Instant;
+import kotlin.uuid.Uuid;
+
+CREATE TABLE IF NOT EXISTS Registry (
+    requestUuid TEXT AS Uuid NOT NULL PRIMARY KEY,
+    requestType TEXT NOT NULL,
+    requestUtc TEXT AS Instant NOT NULL,
+    requestSentUtc TEXT AS Instant NOT NULL,
+    deletedAt TEXT AS Instant,
+    userUuid TEXT AS Uuid NOT NULL,
+    appVersion TEXT NOT NULL,
+    os TEXT NOT NULL,
+    osVersion TEXT NOT NULL,
+    brand TEXT NOT NULL,
+    model TEXT NOT NULL,
+    deviceUuid TEXT AS Uuid NOT NULL,
+    entityUuid TEXT AS Uuid,
+    entityType TEXT AS EntityType,
+    payload TEXT
+);
+
+truncateRegistry:
+DELETE FROM Registry;
+
+deleteRegistry:
+UPDATE Registry
+SET deletedAt = :utc
+WHERE requestUuid = :requestUuid;
+
+upsertRegistry:
+INSERT OR REPLACE INTO Registry VALUES ?;
+
+getRegistries:
+SELECT Registry.*
+FROM Registry;
+
+getRegistriesByUuids:
+SELECT Registry.*
+FROM Registry
+WHERE Registry.requestUuid IN :requestUuids;
+
+getRegistry:
+SELECT Registry.*
+FROM Registry
+WHERE requestUuid = :requestUuid;

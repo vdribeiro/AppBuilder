@@ -1,0 +1,61 @@
+import com.app.builder.domain.EntityType;
+import com.app.builder.domain.scheduler.Job.ConflictPolicy;
+import com.app.builder.domain.scheduler.Job.State;
+import com.app.builder.domain.scheduler.Job.Type;
+import kotlin.Int;
+import kotlin.time.Instant;
+import kotlin.uuid.Uuid;
+
+CREATE TABLE IF NOT EXISTS Job (
+    uuid TEXT AS Uuid NOT NULL PRIMARY KEY,
+    userUuid TEXT AS Uuid NOT NULL,
+    utc TEXT AS Instant NOT NULL,
+    entityUuid TEXT AS Uuid,
+    entityType TEXT AS EntityType NOT NULL,
+    type TEXT AS Type NOT NULL,
+    conflictPolicy TEXT AS ConflictPolicy NOT NULL,
+    payload TEXT,
+    state TEXT AS State NOT NULL,
+    attempt INTEGER AS Int NOT NULL
+);
+
+truncateJob:
+DELETE FROM Job;
+
+upsertJob:
+INSERT OR REPLACE INTO Job VALUES ?;
+
+updateJobs:
+UPDATE Job
+SET state = :newState
+WHERE userUuid = :userUuid
+    AND entityUuid = :entityUuid
+    AND entityType = :entityType
+    AND type = :type
+    AND state = :oldState;
+
+updateJobStateAndAttempt:
+UPDATE Job
+SET state = :state,
+    attempt = :attempt
+WHERE uuid = :uuid;
+
+resetJobsState:
+UPDATE Job
+SET state = :newState
+WHERE state = :oldState;
+
+getJobsByState:
+SELECT Job.*
+FROM Job
+WHERE state IN :states
+ORDER BY utc ASC;
+
+getDuplicateJobsCount:
+SELECT count(uuid)
+FROM Job
+WHERE userUuid = :userUuid
+    AND entityUuid = :entityUuid
+    AND entityType = :entityType
+    AND type = :type
+    AND state = :state;

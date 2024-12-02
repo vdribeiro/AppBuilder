@@ -1,0 +1,33 @@
+<svg height="1024"
+    viewBox="0 0 1024 1024"
+    width="1024"
+    xmlns="http://www.w3.org/2000/svg">
+    <!-- Background: Slate -->
+    <rect
+        fill="#1E293B"
+        height="1024"
+        rx="225"
+        width="1024" />
+
+    <!-- Structural Block: Light Slate -->
+    <rect
+        fill="none"
+        height="400"
+        rx="100"
+        stroke="#64748B"
+        stroke-width="120"
+        width="400"
+        x="256"
+        y="256" />
+
+    <!-- Intertwined Loop/Block: Electric Blue -->
+    <rect
+        fill="none"
+        height="400"
+        rx="100"
+        stroke="#00E5FF"
+        stroke-width="120"
+        width="400"
+        x="368"
+        y="368" />
+</svg>

@@ -1,0 +1,23 @@
+importScripts('https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js');
+importScripts('https://www.gstatic.com/firebasejs/10.14.1/firebase-messaging-compat.js');
+
+firebase.initializeApp(__FIREBASE_CONFIG__);
+
+firebase.messaging().onBackgroundMessage((remoteMessage) => {
+    const raw = remoteMessage.data && remoteMessage.data.payload;
+    if (!raw) return;
+
+    let payload;
+    try {
+        payload = JSON.parse(raw);
+    } catch (e) {
+        return;
+    }
+
+    if (!payload.title) return;
+
+    self.registration.showNotification(payload.title, {
+        body: payload.description || '',
+        icon: '/icon-192.png'
+    });
+});

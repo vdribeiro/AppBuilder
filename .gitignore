@@ -1,0 +1,54 @@
+# Build artifacts & outputs
+**/build/
+.gradle/
+captures/
+*.class
+*.log
+*.jar
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
+# Allow the Gradle wrapper jar
+!gradle/wrapper/gradle-wrapper.jar
+# Android native build folders
+.externalNativeBuild/
+.cxx/
+# Generated database files
+/clientApp/*.db
+# Unpackaged release artifacts
+/clientApp/release/
+# IDE & Local configuration
+.idea/
+*.iml
+local.properties
+.DS_Store
+# Xcode
+*.xcodeproj/project.xcworkspace/
+*.xcodeproj/xcuserdata/
+*.xcworkspace/xcshareddata/
+**/xcshareddata/WorkspaceSettings.xcsettings
+xcuserdata/
+# Signing Keys
+*.jks
+# iOS
+/iosApp/Pods/
+/iosApp/iosApp.xcodeproj/project.xcworkspace/xcshareddata/
+# Kotlin
+.kotlin/
+.mtj.tmp/
+# JVM logs
+hs_err_pid*
+replay_pid*
+# Local scripts
+/gists
+# Firebase files
+**/google-services.json
+**/GoogleService-Info.plist
+.firebase/
+.firebaserc
+hosting.*.cache
+# Gradle
+/gradle/gradle-daemon-jvm.properties

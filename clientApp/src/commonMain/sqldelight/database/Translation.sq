@@ -1,0 +1,23 @@
+CREATE TABLE IF NOT EXISTS Translation (
+    languageIso TEXT NOT NULL,
+    key TEXT NOT NULL,
+    value TEXT NOT NULL,
+    PRIMARY KEY(languageIso, key)
+);
+
+isTranslationEmpty:
+SELECT Translation.key FROM Translation LIMIT 1;
+
+truncateTranslation:
+DELETE FROM Translation;
+
+upsertTranslation:
+INSERT OR REPLACE INTO Translation VALUES ?;
+
+getTranslations:
+SELECT
+    Translation.languageIso,
+    Translation.key,
+    Translation.value
+FROM Translation
+WHERE Translation.languageIso = :languageIso;

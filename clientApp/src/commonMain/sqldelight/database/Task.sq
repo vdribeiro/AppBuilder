@@ -1,0 +1,49 @@
+import com.app.builder.domain.Task;
+import kotlin.time.Instant;
+import kotlin.uuid.Uuid;
+
+CREATE TABLE IF NOT EXISTS Task (
+    uuid TEXT AS Uuid NOT NULL PRIMARY KEY,
+    modifiedAt TEXT AS Instant NOT NULL,
+    deletedAt TEXT AS Instant,
+    title TEXT NOT NULL,
+    description TEXT NOT NULL,
+    state TEXT AS Task.State NOT NULL
+);
+
+truncateTask:
+DELETE FROM Task;
+
+deleteTask:
+UPDATE Task
+SET modifiedAt = :utc,
+    deletedAt = :utc
+WHERE uuid = :taskUuid
+    AND uuid IN (
+        SELECT taskUuid
+        FROM TaskUserJoin
+        WHERE userUuid = :userUuid
+    );
+
+upsertTask:
+INSERT OR REPLACE INTO Task VALUES ?;
+
+getTasks:
+SELECT Task.*
+FROM Task
+INNER JOIN TaskUserJoin ON Task.uuid = TaskUserJoin.taskUuid
+WHERE TaskUserJoin.userUuid = :userUuid;
+
+getTasksByUuids:
+SELECT Task.*
+FROM Task
+INNER JOIN TaskUserJoin ON Task.uuid = TaskUserJoin.taskUuid
+WHERE TaskUserJoin.userUuid = :userUuid
+AND Task.uuid IN :taskUuids;
+
+getTask:
+SELECT Task.*
+FROM Task
+INNER JOIN TaskUserJoin ON Task.uuid = TaskUserJoin.taskUuid
+WHERE TaskUserJoin.userUuid = :userUuid
+AND Task.uuid = :taskUuid;

@@ -1,0 +1,96 @@
+PODS:
+  - clientApp (1.0.0):
+    - FirebaseCore
+    - FirebaseMessaging
+    - Sentry (~> 8.57.3)
+  - FirebaseCore (12.16.0):
+    - FirebaseCoreInternal (~> 12.16.0)
+    - GoogleUtilities/Environment (~> 8.1)
+    - GoogleUtilities/Logger (~> 8.1)
+  - FirebaseCoreInternal (12.16.0):
+    - "GoogleUtilities/NSData+zlib (~> 8.1)"
+  - FirebaseInstallations (12.16.0):
+    - FirebaseCore (~> 12.16.0)
+    - GoogleUtilities/Environment (~> 8.1)
+    - GoogleUtilities/UserDefaults (~> 8.1)
+    - PromisesObjC (~> 2.4)
+  - FirebaseMessaging (12.16.0):
+    - FirebaseCore (~> 12.16.0)
+    - FirebaseInstallations (~> 12.16.0)
+    - GoogleDataTransport (~> 10.1)
+    - GoogleUtilities/AppDelegateSwizzler (~> 8.1)
+    - GoogleUtilities/Environment (~> 8.1)
+    - GoogleUtilities/Reachability (~> 8.1)
+    - GoogleUtilities/UserDefaults (~> 8.1)
+    - nanopb (~> 3.30910.0)
+  - GoogleDataTransport (10.1.0):
+    - nanopb (~> 3.30910.0)
+    - PromisesObjC (~> 2.4)
+  - GoogleUtilities/AppDelegateSwizzler (8.1.2):
+    - GoogleUtilities/Environment
+    - GoogleUtilities/Logger
+    - GoogleUtilities/Network
+    - GoogleUtilities/Privacy
+  - GoogleUtilities/Environment (8.1.2):
+    - GoogleUtilities/Privacy
+  - GoogleUtilities/Logger (8.1.2):
+    - GoogleUtilities/Environment
+    - GoogleUtilities/Privacy
+  - GoogleUtilities/Network (8.1.2):
+    - GoogleUtilities/Logger
+    - "GoogleUtilities/NSData+zlib"
+    - GoogleUtilities/Privacy
+    - GoogleUtilities/Reachability
+  - "GoogleUtilities/NSData+zlib (8.1.2)":
+    - GoogleUtilities/Privacy
+  - GoogleUtilities/Privacy (8.1.2)
+  - GoogleUtilities/Reachability (8.1.2):
+    - GoogleUtilities/Logger
+    - GoogleUtilities/Privacy
+  - GoogleUtilities/UserDefaults (8.1.2):
+    - GoogleUtilities/Logger
+    - GoogleUtilities/Privacy
+  - nanopb (3.30910.0):
+    - nanopb/decode (= 3.30910.0)
+    - nanopb/encode (= 3.30910.0)
+  - nanopb/decode (3.30910.0)
+  - nanopb/encode (3.30910.0)
+  - PromisesObjC (2.4.1)
+  - Sentry (8.57.3):
+    - Sentry/Core (= 8.57.3)
+  - Sentry/Core (8.57.3)
+
+DEPENDENCIES:
+  - clientApp (from `../clientApp`)
+
+SPEC REPOS:
+  trunk:
+    - FirebaseCore
+    - FirebaseCoreInternal
+    - FirebaseInstallations
+    - FirebaseMessaging
+    - GoogleDataTransport
+    - GoogleUtilities
+    - nanopb
+    - PromisesObjC
+    - Sentry
+
+EXTERNAL SOURCES:
+  clientApp:
+    :path: "../clientApp"
+
+SPEC CHECKSUMS:
+  clientApp: 5d69dac206f9b21f3c021ff5eb91930093d049cb
+  FirebaseCore: 551d22e19313c75007905c2b03d122a9b3fa7ddc
+  FirebaseCoreInternal: 289ac2e89edd981ee41b9da43d3dee590c0c5bfe
+  FirebaseInstallations: 86ea57d5b481b936392cd2d5bbd59fca116a5c71
+  FirebaseMessaging: 1dc072d46263cba717df2ca88063bef84011cf84
+  GoogleDataTransport: aae35b7ea0c09004c3797d53c8c41f66f219d6a7
+  GoogleUtilities: 766ace00c6b10d8148408f329d10c4f051931850
+  nanopb: fad817b59e0457d11a5dfbde799381cd727c1275
+  PromisesObjC: 752c3227f599e3467650e47ea36f433eeb10c273
+  Sentry: c643eb180df401dd8c734c5036ddd9dd9218daa6
+
+PODFILE CHECKSUM: c48b1f1bb7f1d48def5ba943e88c7a23ab4b4807
+
+COCOAPODS: 1.17.0

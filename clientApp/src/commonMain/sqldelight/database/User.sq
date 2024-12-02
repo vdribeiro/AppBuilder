@@ -1,0 +1,43 @@
+import kotlin.time.Instant;
+import kotlin.uuid.Uuid;
+
+CREATE TABLE IF NOT EXISTS User (
+    uuid TEXT AS Uuid NOT NULL PRIMARY KEY,
+    modifiedAt TEXT AS Instant NOT NULL,
+    deletedAt TEXT AS Instant,
+    permissions TEXT NOT NULL,
+    name TEXT NOT NULL,
+    avatar TEXT
+);
+
+truncateUser:
+DELETE FROM User;
+
+deleteUser:
+UPDATE User
+SET modifiedAt = :utc,
+    deletedAt = :utc
+WHERE uuid = :userUuid;
+
+upsertUser:
+INSERT OR REPLACE INTO User VALUES ?;
+
+getUsers:
+SELECT User.*
+FROM User;
+
+getUsersByUuids:
+SELECT User.*
+FROM User
+WHERE User.uuid IN :userUuids;
+
+getUser:
+SELECT User.*
+FROM User
+WHERE User.uuid = :userUuid;
+
+getUserBySessionHash:
+SELECT User.*
+FROM User
+INNER JOIN Session ON uuid = userUuid
+WHERE hash = :hash;

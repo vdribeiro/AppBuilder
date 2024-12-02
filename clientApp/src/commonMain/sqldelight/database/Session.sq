@@ -1,0 +1,29 @@
+import kotlin.uuid.Uuid;
+
+CREATE TABLE IF NOT EXISTS Session (
+    userUuid TEXT AS Uuid NOT NULL PRIMARY KEY,
+    hash TEXT NOT NULL,
+    accessToken TEXT NOT NULL,
+    refreshToken TEXT NOT NULL
+);
+
+truncateSession:
+DELETE FROM Session;
+
+deleteSession:
+DELETE FROM Session
+WHERE userUuid = :userUuid;
+
+upsertSession:
+INSERT OR REPLACE INTO Session VALUES ?;
+
+updateSessionTokens:
+UPDATE Session
+SET accessToken = :accessToken,
+    refreshToken = :refreshToken
+WHERE userUuid = :userUuid;
+
+getSession:
+SELECT Session.*
+FROM Session
+WHERE userUuid = :userUuid;
