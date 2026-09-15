@@ -3,25 +3,17 @@ package com.app.builder.core.devicelocation
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
-import kotlin.test.assertTrue
 import kotlin.uuid.Uuid
-import kotlinx.coroutines.test.advanceTimeBy
-import com.app.builder.core.config.ClientConfigs
 import com.app.builder.core.config.ClientFlags
-import com.app.builder.core.locale.now
 import com.app.builder.test.TestCase
 
 class DeviceLocationProviderTest: TestCase() {
 
-    /**
-     * A fixture [DeviceLocation] used to exercise capture updates.
-     *
-     * @param fixTime The Unix epoch time the fix was acquired at.
-     */
-    private fun fixtureLocation(fixTime: Long = 0L): DeviceLocation = DeviceLocation(
+    /** A fixture [DeviceLocation] used to exercise capture updates. */
+    private fun fixtureLocation(): DeviceLocation = DeviceLocation(
         uuid = Uuid.random(),
         provider = "fused",
-        fixTime = fixTime,
+        fixTime = 0L,
         deviceTime = 0L,
         latitude = 0.0,
         longitude = 0.0,
@@ -35,25 +27,6 @@ class DeviceLocationProviderTest: TestCase() {
     private fun testProvider(): DeviceLocationProvider = object: DeviceLocationProvider() {
         override val available: Boolean = true
         override fun hasPermission(): Boolean = true
-    }
-
-    /** A [DeviceLocationProvider] that records the cadence of every platform start, so the burst-to-steady transition can be observed. */
-    private class RecordingProvider: DeviceLocationProvider() {
-        /** Every [Mode] the platform loop has been started at, in order. */
-        val modes: MutableList<Mode> = mutableListOf()
-
-        override val available: Boolean = true
-        override fun hasPermission(): Boolean = true
-        override fun platformStartUpdate(mode: Mode) {
-            modes.add(element = mode)
-        }
-
-        /**
-         * Delivers a fix as if the platform loop had captured it.
-         *
-         * @param deviceLocation The fix to deliver.
-         */
-        fun capture(deviceLocation: DeviceLocation) = setLastKnownLocation(deviceLocation = deviceLocation)
     }
 
     /** Verifies that a new [DeviceLocationProvider] starts in the idle state. */
@@ -128,97 +101,6 @@ class DeviceLocationProviderTest: TestCase() {
 
         platformResult = null
         assertEquals(expected = fixture, actual = provider.getLastKnownLocation())
-    }
-
-    /** Verifies that a start opens the platform loop with a burst, so a stale platform cache is re-warmed before the steady cadence takes over. */
-    @Test
-    fun startUpdateOpensWithABurst() = runUnitTest {
-        ClientFlags.set { it.copy(locationCapture = true) }
-        val provider = RecordingProvider()
-
-        provider.startUpdate()
-
-        assertEquals(expected = listOf(DeviceLocationProvider.Mode.Burst), actual = provider.modes)
-    }
-
-    /** Verifies that the burst settles to the steady cadence once a fix acquired after the start lands. */
-    @Test
-    fun burstSettlesToSteadyOnAFreshFix() = runUnitTest {
-        ClientFlags.set { it.copy(locationCapture = true) }
-        val provider = RecordingProvider()
-        provider.startUpdate()
-
-        provider.capture(deviceLocation = fixtureLocation(fixTime = now().toEpochMilliseconds()))
-
-        assertEquals(expected = listOf(DeviceLocationProvider.Mode.Burst, DeviceLocationProvider.Mode.Steady), actual = provider.modes)
-        assertEquals(expected = DeviceLocationProvider.State.Active, actual = provider.state.value)
-    }
-
-    /** Verifies that a fix acquired before the start, as one replayed out of the platform's stale cache would be, does not end the burst early. */
-    @Test
-    fun burstIgnoresAStaleFix() = runUnitTest {
-        ClientFlags.set { it.copy(locationCapture = true) }
-        val provider = RecordingProvider()
-        provider.startUpdate()
-
-        provider.capture(deviceLocation = fixtureLocation(fixTime = now().toEpochMilliseconds() - 1))
-
-        assertEquals(expected = listOf(DeviceLocationProvider.Mode.Burst), actual = provider.modes)
-    }
-
-    /** Verifies that the burst settles to the steady cadence once it times out, so a device that never gets a fix is not left burning power at the burst cadence. */
-    @Test
-    fun burstSettlesToSteadyOnTimeout() = runUnitTest {
-        ClientFlags.set { it.copy(locationCapture = true) }
-        val provider = RecordingProvider()
-        provider.startUpdate()
-
-        advanceTimeBy(delayTimeMillis = ClientConfigs.configs.locationBurstTimeoutMillis + 1)
-
-        assertEquals(expected = listOf(DeviceLocationProvider.Mode.Burst, DeviceLocationProvider.Mode.Steady), actual = provider.modes)
-    }
-
-    /** Verifies that a paused provider resumes with a fresh burst, since the platform cache goes stale while the app is backgrounded. */
-    @Test
-    fun resumeUpdateRestartsAPausedProviderWithABurst() = runUnitTest {
-        ClientFlags.set { it.copy(locationCapture = true) }
-        val provider = RecordingProvider()
-        provider.startUpdate()
-        provider.capture(deviceLocation = fixtureLocation(fixTime = now().toEpochMilliseconds()))
-
-        provider.pauseUpdate()
-        assertEquals(expected = DeviceLocationProvider.State.Idle, actual = provider.state.value)
-
-        provider.resumeUpdate()
-
-        assertEquals(expected = DeviceLocationProvider.State.Active, actual = provider.state.value)
-        assertEquals(expected = DeviceLocationProvider.Mode.Burst, actual = provider.modes.last())
-    }
-
-    /** Verifies that a resume does not restart a provider that was already idle when it was paused. */
-    @Test
-    fun resumeUpdateIgnoresAProviderThatWasNotCapturing() = runUnitTest {
-        ClientFlags.set { it.copy(locationCapture = true) }
-        val provider = RecordingProvider()
-
-        provider.pauseUpdate()
-        provider.resumeUpdate()
-
-        assertEquals(expected = DeviceLocationProvider.State.Idle, actual = provider.state.value)
-        assertTrue(actual = provider.modes.isEmpty())
-    }
-
-    /** Verifies that an explicit stop is not undone by a later resume, so capture stays off until something asks for it again. */
-    @Test
-    fun resumeUpdateIgnoresAnExplicitStop() = runUnitTest {
-        ClientFlags.set { it.copy(locationCapture = true) }
-        val provider = RecordingProvider()
-        provider.startUpdate()
-
-        provider.stopUpdate()
-        provider.resumeUpdate()
-
-        assertEquals(expected = DeviceLocationProvider.State.Idle, actual = provider.state.value)
     }
 
     /** Verifies that the shared [DeviceLocationProvider.instance] is a valid, non-crashing default. */

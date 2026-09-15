@@ -69,11 +69,11 @@ internal class AndroidDeviceLocationProvider: DeviceLocationProvider() {
     }
 
     @RequiresPermission(anyOf = [Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION])
-    override fun platformStartUpdate(mode: Mode) {
-        super.platformStartUpdate(mode = mode)
+    override fun platformStartUpdate() {
+        super.platformStartUpdate()
         when {
-            fusedClient != null -> startFusedUpdates(fusedClient = fusedClient, mode = mode)
-            locationManager != null -> startPlatformUpdates(locationManager = locationManager, mode = mode)
+            fusedClient != null -> startFusedUpdates(fusedClient = fusedClient)
+            locationManager != null -> startPlatformUpdates(locationManager = locationManager)
         }
     }
 
@@ -104,34 +104,18 @@ internal class AndroidDeviceLocationProvider: DeviceLocationProvider() {
      * Starts continuous updates through the Fused Location Provider.
      *
      * @param fusedClient The Fused Location Provider client.
-     * @param mode The cadence to request updates at.
      */
     @RequiresPermission(anyOf = [Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION])
-    private fun startFusedUpdates(fusedClient: FusedLocationProviderClient, mode: Mode) {
-        val request = when (mode) {
-            // Nothing is batched, filtered by displacement or held back waiting for an accurate fix, so the first fix lands as soon as the hardware can produce one instead of waiting out a batching window.
-            Mode.Burst -> {
-                val interval = ClientConfigs.configs.locationBurstIntervalMillis
-                LocationRequest.Builder(interval)
-                    .setMinUpdateIntervalMillis(interval)
-                    .setMaxUpdateDelayMillis(0L)
-                    .setMinUpdateDistanceMeters(0f)
-                    .setPriority(Priority.PRIORITY_HIGH_ACCURACY)
-                    .setWaitForAccurateLocation(false)
-                    .build()
-            }
-            // locationIntervalMillis is the fastest tier; the desired and max-wait (batching) tiers are derived from it as fixed multiples
-            // rather than exposed as separate remote configs, since only Android's request model distinguishes between the three.
-            Mode.Steady -> {
-                val interval = ClientConfigs.configs.locationIntervalMillis
-                LocationRequest.Builder(interval * 2)
-                    .setMinUpdateIntervalMillis(interval)
-                    .setMaxUpdateDelayMillis(interval * 4)
-                    .setMinUpdateDistanceMeters(ClientConfigs.configs.locationDisplacementMeters)
-                    .setPriority(Priority.PRIORITY_BALANCED_POWER_ACCURACY)
-                    .build()
-            }
-        }
+    private fun startFusedUpdates(fusedClient: FusedLocationProviderClient) {
+        // locationIntervalMillis is the fastest tier; the desired and max-wait (batching) tiers are derived from it as fixed multiples
+        // rather than exposed as separate remote configs, since only Android's request model distinguishes between the three.
+        val interval = ClientConfigs.configs.locationIntervalMillis
+        val request = LocationRequest.Builder(interval * 2)
+            .setMinUpdateIntervalMillis(interval)
+            .setMaxUpdateDelayMillis(interval * 4)
+            .setMinUpdateDistanceMeters(ClientConfigs.configs.locationDisplacementMeters)
+            .setPriority(Priority.PRIORITY_BALANCED_POWER_ACCURACY)
+            .build()
         val callback = object: LocationCallback() {
             override fun onLocationResult(result: LocationResult) {
                 if (!ClientFlags.flags.locationCapture || !available || !hasPermission()) return platformStopUpdate()
@@ -150,10 +134,9 @@ internal class AndroidDeviceLocationProvider: DeviceLocationProvider() {
      * Starts continuous updates through the platform [LocationManager].
      *
      * @param locationManager The platform location manager.
-     * @param mode The cadence to request updates at.
      */
     @RequiresPermission(anyOf = [Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION])
-    private fun startPlatformUpdates(locationManager: LocationManager, mode: Mode) {
+    private fun startPlatformUpdates(locationManager: LocationManager) {
         val provider = when {
             locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) -> LocationManager.GPS_PROVIDER
             locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER) -> LocationManager.NETWORK_PROVIDER
@@ -166,15 +149,8 @@ internal class AndroidDeviceLocationProvider: DeviceLocationProvider() {
         platformListener = listener
         locationManager.requestLocationUpdates(
             provider,
-            // A burst drops the displacement filter too, so a fix is delivered even when the device hasn't moved since the app was backgrounded.
-            when (mode) {
-                Mode.Burst -> ClientConfigs.configs.locationBurstIntervalMillis
-                Mode.Steady -> ClientConfigs.configs.locationIntervalMillis
-            },
-            when (mode) {
-                Mode.Burst -> 0f
-                Mode.Steady -> ClientConfigs.configs.locationDisplacementMeters
-            },
+            ClientConfigs.configs.locationIntervalMillis,
+            ClientConfigs.configs.locationDisplacementMeters,
             listener,
             Looper.getMainLooper()
         )

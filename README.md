@@ -452,7 +452,7 @@ Neither holds a state or talks to a gateway. A component takes its data and its 
 * **component**: UI composite components.
     * `Store`: `ViewModel` with a `StateFlow<State>` as the single source of truth for the UI and reducer override to process actions from the UI.
 * **devicelocation**: Device location composables.
-    * `DeviceLocationProvider`: Provides `LocalDeviceLocationProvider` and a lifecycle register which pauses/resumes capture as the app backgrounds/foregrounds.
+    * `DeviceLocationProvider`: Provides `LocalDeviceLocationProvider` and a lifecycle register which starts/stops capture as the app foregrounds/backgrounds.
 * **lifecycle**: Platform-aware lifecycle observers.
     * `Lifecycle`: Composable that registers foreground/background callbacks, with an optional recomposition key.
 * **media**: Media composables.
@@ -1254,13 +1254,7 @@ Both entry points check the `locationCapture` feature flag, an `available` hardw
 
 The design decision worth noting is that the update loop exists only to keep the platform's own location cache warm. `getLastKnownLocation()` prefers a fresh platform query and falls back to the last fix the loop captured, so a caller gets an answer immediately instead of waiting on a cold GPS fix, and the running loop is a passive warm-up rather than the delivery mechanism.
 
-Capture is foreground-only, which is what the second state machine is for. Neither platform lets a backgrounded app keep the cache warm for free. 
-Android throttles background location to a handful of updates an hour without a foreground service and `ACCESS_BACKGROUND_LOCATION`, and iOS suspends the process outright without the `location` background mode, so the loop is torn down on background rather than left to be throttled into uselessness.
-That leaves the cache coldest exactly when the user comes back to it, so every start runs a two-tier cadence: a `Mode.Burst` that raises accuracy and drops batching and displacement filtering to land a fix as fast as the hardware allows, then a `Mode.Steady` low-power cadence once the cache is warm again. 
-The burst ends on the first fix whose `fixTime` is later than the start, or after `locationBurstTimeoutMillis`, whichever comes first.
-Matching on `fixTime` rather than on a new emission is what makes it correct: `getLastKnownLocation()` also feeds the flow, and a stale fix replayed out of the platform's own cache would otherwise end the burst without anything having been re-acquired.
-`ProvideDeviceLocationProvider()` is the single composable entry point: it provides the instance through `LocalDeviceLocationProvider` and registers a lifecycle that calls `pauseUpdate()` on background and `resumeUpdate()` on foreground. 
-The "was it running?" latch lives on the provider rather than in the composable, so a composition disposed while the app is backgrounded can't strand the loop `Idle`, and an explicit `stopUpdate()` is never undone by a later resume.
+`ProvideDeviceLocationProvider()` is the single composable entry point: it provides the instance through `LocalDeviceLocationProvider` and registers a lifecycle that stops capture on background and restarts it on foreground only if it was `Active` before, so backgrounding never silently promotes an idle provider into a running one.
 
 ## Cryptography
 
