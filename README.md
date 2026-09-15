@@ -10,7 +10,8 @@ Everything is pre-wired so you can skip the boilerplate and go straight to shipp
 * A [push suite](#push-notifications) over FCM, WebSocket and SSE presented as one stream, with a server that [scales to multiple instances](#multi-instance-scaling) without sticky sessions.
 * Accounts, sessions and per-entity permissions, a configurable [design system](#design), [translations](#translations), [feature flags and remote configs](#feature-flags--remote-configs), and a [test harness](#multiplatform-test-harness) that runs Compose UI and a full Ktor server from common code.
 
-It is licensed **GPL-3.0**, which is worth knowing before you build on it: derivative works have to be distributed under the same license with source available. If that doesn't suit you, the project still works as a reference architecture. See [License](#license).
+It is licensed **AGPL-3.0**, which is worth knowing before you build on it: derivative works have to be distributed under the same license with source available, and that applies to network services too, not just distributed binaries. 
+If that doesn't suit you, the project still works as a reference architecture. See [License](#license).
 
 # Shameless Plug
 
@@ -1628,5 +1629,10 @@ Moreover, the design module is a great candidate for AI-assisted development as 
 
 # License
 
-This project is licensed under the **GNU General Public License v3.0** (see the [LICENSE](LICENSE) file for the full text).
-In short: you are free to use, modify, and distribute this project, but derivative works must be distributed under the same license with source available. If that copyleft requirement doesn't fit your use case, treat the project as a reference architecture instead.
+Copyright (C) 2024-2026 Vitor Ribeiro.
+
+This project is licensed under the **GNU Affero General Public License v3.0** (see the [LICENSE](LICENSE) file for the full text).
+
+In short: you are free to use, modify, and distribute this project, but derivative works must be distributed under the same license with source available, and you must keep the copyright notice and credit the original author. The Affero clause extends that to network use: if you run a modified version as a hosted or networked service, you must offer its source to the users of that service. If that copyleft requirement doesn't fit your use case, treat the project as a reference architecture instead, or [get in touch](#shameless-plug) about a commercial license.
+
+As the sole copyright holder, I retain the right to license this code under other terms.
