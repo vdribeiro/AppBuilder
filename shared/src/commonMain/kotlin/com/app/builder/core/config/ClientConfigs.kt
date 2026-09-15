@@ -44,13 +44,6 @@ data class ClientConfigs(
     val locationDisplacementMeters: Float,
     /** Fastest rate in milliseconds at which location fixes may be delivered by the steady cadence. Updates are never more frequent than this value. */
     val locationIntervalMillis: Long,
-    /**
-     * Fastest rate in milliseconds at which location fixes may be delivered during the burst that opens every capture start.
-     * It raises accuracy and drops batching and displacement filtering, so it costs far more power than [locationIntervalMillis] and is only meant to run until the first fresh fix lands or [locationBurstTimeoutMillis] elapses.
-     */
-    val locationBurstIntervalMillis: Long,
-    /** Maximum time in milliseconds the burst described in [locationBurstIntervalMillis] may run before the loop settles back to [locationIntervalMillis], even when no fresh fix landed. */
-    val locationBurstTimeoutMillis: Long,
 ) {
     companion object {
 
@@ -73,8 +66,6 @@ data class ClientConfigs(
             batchSize = 900,
             locationDisplacementMeters = 10f,
             locationIntervalMillis = 1_800_000L,
-            locationBurstIntervalMillis = 5_000L,
-            locationBurstTimeoutMillis = 60_000L,
         )
 
         /** Backing state flow tracking config changes. */

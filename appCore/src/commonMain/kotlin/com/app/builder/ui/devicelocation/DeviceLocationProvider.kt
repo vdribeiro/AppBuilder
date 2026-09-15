@@ -3,7 +3,10 @@ package com.app.builder.ui.devicelocation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.ProvidableCompositionLocal
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
 import com.app.builder.core.devicelocation.DeviceLocationProvider
 import com.app.builder.ui.lifecycle.Register
@@ -30,13 +33,21 @@ fun ProvideDeviceLocationProvider(content: @Composable () -> Unit) {
 @Composable
 private fun rememberDeviceLocationProvider(): DeviceLocationProvider = remember { DeviceLocationProvider.instance }.also { RegisterDeviceLocationLifecycle(deviceLocationProvider = it) }
 
-/** Registers a lifecycle callback for the location provider to pause when the app is in the background and resume when the app is in the foreground. */
+/** Registers a lifecycle callback for the location provider to stop when the app is in the background and start when the app is in the foreground. */
 @Composable
 private fun RegisterDeviceLocationLifecycle(deviceLocationProvider: DeviceLocationProvider) {
+    var state by remember { mutableStateOf(value = deviceLocationProvider.state.value) }
     Register(
         deviceLocationProvider,
-        onBackground = { deviceLocationProvider.pauseUpdate() },
-        onForeground = { deviceLocationProvider.resumeUpdate() },
-        onDispose = { deviceLocationProvider.stopUpdate() }
+        onBackground = {
+            state = deviceLocationProvider.state.value
+            deviceLocationProvider.stopUpdate()
+        },
+        onForeground = {
+            if (state == DeviceLocationProvider.State.Active) deviceLocationProvider.startUpdate()
+        },
+        onDispose = {
+            deviceLocationProvider.stopUpdate()
+        }
     )
 }

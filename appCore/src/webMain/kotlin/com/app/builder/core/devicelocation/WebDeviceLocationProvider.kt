@@ -5,7 +5,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
-import com.app.builder.core.config.ClientConfigs
 import com.app.builder.core.locale.now
 import com.app.builder.core.platform.loop
 import com.app.builder.core.security.uuid
@@ -31,23 +30,13 @@ internal class WebDeviceLocationProvider: DeviceLocationProvider() {
         return true
     }
 
-    /**
-     * Starts `navigator.geolocation.watchPosition` and polls the resulting queue for new fixes.
-     * A burst asks the browser for a high-accuracy fix and drains the queue on the burst cadence, so a fix surfaces in the same order of time it takes the browser to produce one.
-     *
-     * @param mode The cadence to run the platform loop at.
-     */
-    override fun platformStartUpdate(mode: Mode) {
-        super.platformStartUpdate(mode = mode)
+    /** Starts `navigator.geolocation.watchPosition` and polls the resulting queue for new fixes. No permission checks, as the browser prompts for access at the point of use. */
+    override fun platformStartUpdate() {
+        super.platformStartUpdate()
         platformStopUpdate()
-        startWatchingPosition(highAccuracy = mode == Mode.Burst)
-        // The steady cadence drains on [DRAIN_INTERVAL_MILLIS] rather than on locationIntervalMillis, since `watchPosition` alone decides how often the browser pushes a fix and the queue has to be drained faster than it fills.
-        val interval = when (mode) {
-            Mode.Burst -> ClientConfigs.configs.locationBurstIntervalMillis
-            Mode.Steady -> DRAIN_INTERVAL_MILLIS
-        }
+        startWatchingPosition()
         pollJob = scope.launch {
-            loop(timeMillis = interval) {
+            loop {
                 if (pollWatchError()) return@loop platformStopUpdate()
                 val raw = pollNextPosition()
                 if (raw.isEmpty()) return@loop
@@ -96,9 +85,6 @@ internal class WebDeviceLocationProvider: DeviceLocationProvider() {
 
     companion object {
         private const val TAG = "WebDeviceLocationProvider"
-
-        /** Interval in milliseconds at which the `watchPosition` queue is drained outside of a burst. */
-        private const val DRAIN_INTERVAL_MILLIS = 3_000L
     }
 }
 
@@ -109,11 +95,9 @@ private external fun isGeolocationSupported(): Boolean
 /**
  * Starts `navigator.geolocation.watchPosition`, clearing any previous watch first, and pushes each successful fix as a JSON string onto `window.__deviceLocationQueue` for [pollNextPosition] to drain.
  * A failed fix (e.g. denied/revoked permission) sets `window.__deviceLocationError` for [pollWatchError] to observe instead of being silently dropped.
- *
- * @param highAccuracy Whether to ask the browser for its most accurate fix, at the cost of power and latency to first fix.
  */
 @JsFun(
-    code = """(highAccuracy) => {
+    code = """() => {
         window.__deviceLocationQueue = [];
         window.__deviceLocationError = false;
         if (window.__deviceLocationWatchId !== undefined && window.__deviceLocationWatchId !== null) {
@@ -132,11 +116,11 @@ private external fun isGeolocationSupported(): Boolean
                 }));
             },
             function() { window.__deviceLocationError = true; },
-            { enableHighAccuracy: highAccuracy, maximumAge: 0 }
+            { enableHighAccuracy: false, maximumAge: 0 }
         );
     }"""
 )
-private external fun startWatchingPosition(highAccuracy: Boolean)
+private external fun startWatchingPosition()
 
 /** Clears the active `watchPosition` subscription and drops any pending fixes. */
 @JsFun(

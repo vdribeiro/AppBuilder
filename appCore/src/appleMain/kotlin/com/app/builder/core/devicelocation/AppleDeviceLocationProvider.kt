@@ -6,7 +6,6 @@ import platform.CoreLocation.CLLocationManager
 import platform.CoreLocation.CLLocationManagerDelegateProtocol
 import platform.CoreLocation.kCLAuthorizationStatusAuthorizedAlways
 import platform.CoreLocation.kCLAuthorizationStatusAuthorizedWhenInUse
-import platform.CoreLocation.kCLLocationAccuracyBest
 import platform.CoreLocation.kCLLocationAccuracyHundredMeters
 import platform.Foundation.NSError
 import platform.Foundation.NSTimer
@@ -48,8 +47,8 @@ internal class AppleDeviceLocationProvider: DeviceLocationProvider() {
         }.getOrDefault(defaultValue = false)
     }
 
-    override fun platformStartUpdate(mode: Mode) {
-        super.platformStartUpdate(mode = mode)
+    override fun platformStartUpdate() {
+        super.platformStartUpdate()
         val newDelegate = LocationDelegate(
             onLocations = ::handleLocations,
             onError = {
@@ -65,21 +64,14 @@ internal class AppleDeviceLocationProvider: DeviceLocationProvider() {
         )
         val newManager = CLLocationManager().apply {
             delegate = newDelegate
-            desiredAccuracy = when (mode) {
-                Mode.Burst -> kCLLocationAccuracyBest
-                Mode.Steady -> kCLLocationAccuracyHundredMeters
-            }
+            desiredAccuracy = kCLLocationAccuracyHundredMeters
         }
         manager = newManager
         delegate = newDelegate
 
-        // requestLocation fires immediately, so the first poll of a burst is already in flight before the timer schedules the next one.
         newManager.requestLocation()
         timer = NSTimer.scheduledTimerWithTimeInterval(
-            interval = when (mode) {
-                Mode.Burst -> ClientConfigs.configs.locationBurstIntervalMillis
-                Mode.Steady -> ClientConfigs.configs.locationIntervalMillis
-            } / 1000.0,
+            interval = ClientConfigs.configs.locationIntervalMillis / 1000.0,
             repeats = true
         ) { manager?.requestLocation() }
     }
