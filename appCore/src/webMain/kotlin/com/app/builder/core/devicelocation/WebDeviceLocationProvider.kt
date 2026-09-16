@@ -3,8 +3,10 @@ package com.app.builder.core.devicelocation
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
+import com.app.builder.core.config.ClientConfigs
 import com.app.builder.core.locale.now
 import com.app.builder.core.platform.loop
 import com.app.builder.core.security.uuid
@@ -14,7 +16,7 @@ import com.app.builder.data.serializer.decode
 /** Web [DeviceLocationProvider] implementation backed by the browser `navigator.geolocation` API. */
 internal class WebDeviceLocationProvider: DeviceLocationProvider() {
 
-    /** Scope used to poll for fixes delivered asynchronously by `watchPosition`. */
+    /** Scope used to poll the browser for fixes. */
     private val scope = CoroutineScope(context = SupervisorJob())
     /** The active polling job, while capture is in progress. */
     private var pollJob: Job? = null
@@ -27,20 +29,22 @@ internal class WebDeviceLocationProvider: DeviceLocationProvider() {
 
     override fun hasPermission(): Boolean {
         super.hasPermission()
+        // The browser prompts for access at the point of use
         return true
     }
 
-    /** Starts `navigator.geolocation.watchPosition` and polls the resulting queue for new fixes. No permission checks, as the browser prompts for access at the point of use. */
+    /** Polls `navigator.geolocation.getCurrentPosition` on [ClientConfigs.locationIntervalMillis]. */
     override fun platformStartUpdate() {
         super.platformStartUpdate()
         platformStopUpdate()
-        startWatchingPosition()
         pollJob = scope.launch {
-            loop {
-                if (pollWatchError()) return@loop platformStopUpdate()
-                val raw = pollNextPosition()
-                if (raw.isEmpty()) return@loop
-                decode<WebPosition>(value = raw)?.let { setLastKnownLocation(deviceLocation = it.toDeviceLocation()) }
+            loop(timeMillis = ClientConfigs.configs.locationIntervalMillis) {
+                requestPosition(
+                    highAccuracy = false,
+                    timeoutMillis = ClientConfigs.configs.locationQueryTimeoutMillis.toInt(),
+                    maximumAgeMillis = ClientConfigs.configs.locationIntervalMillis.toInt(),
+                )
+                awaitPosition()
             }
         }
     }
@@ -49,7 +53,23 @@ internal class WebDeviceLocationProvider: DeviceLocationProvider() {
         super.platformStopUpdate()
         pollJob?.cancel()
         pollJob = null
-        stopWatchingPosition()
+        clearPosition()
+    }
+
+    /** Waits for the in-flight [requestPosition] to settle and captures the fix if one arrives. */
+    private suspend fun awaitPosition() {
+        var waited = 0L
+        val timeout = ClientConfigs.configs.locationQueryTimeoutMillis
+        while (waited <= timeout) {
+            if (pollPositionError()) return
+            val raw = pollPosition()
+            if (raw.isNotEmpty()) {
+                decode<WebPosition>(value = raw)?.let { setLastKnownLocation(deviceLocation = it.toDeviceLocation()) }
+                return
+            }
+            delay(timeMillis = SETTLE_POLL_MILLIS)
+            waited += SETTLE_POLL_MILLIS
+        }
     }
 
     /**
@@ -71,7 +91,7 @@ internal class WebDeviceLocationProvider: DeviceLocationProvider() {
         speed = speed,
     )
 
-    /** JSON payload pushed by [startWatchingPosition]'s success callback for one `GeolocationPosition`. */
+    /** JSON payload stored by [requestPosition]'s success callback for one `GeolocationPosition`. */
     @Serializable
     private data class WebPosition(
         val latitude: Double,
@@ -85,6 +105,9 @@ internal class WebDeviceLocationProvider: DeviceLocationProvider() {
 
     companion object {
         private const val TAG = "WebDeviceLocationProvider"
+
+        /** Interval in milliseconds at which the browser's callback slot is checked while a request is in flight. */
+        private const val SETTLE_POLL_MILLIS = 100L
     }
 }
 
@@ -93,19 +116,20 @@ internal class WebDeviceLocationProvider: DeviceLocationProvider() {
 private external fun isGeolocationSupported(): Boolean
 
 /**
- * Starts `navigator.geolocation.watchPosition`, clearing any previous watch first, and pushes each successful fix as a JSON string onto `window.__deviceLocationQueue` for [pollNextPosition] to drain.
- * A failed fix (e.g. denied/revoked permission) sets `window.__deviceLocationError` for [pollWatchError] to observe instead of being silently dropped.
+ * Clears any previous outcome and issues one `navigator.geolocation.getCurrentPosition`, storing the fix as a JSON string on `window.__deviceLocationResult` for [pollPosition] to collect.
+ * A failed fix sets `window.__deviceLocationError` for [pollPositionError] to observe.
+ *
+ * @param highAccuracy Whether to ask the browser for its most accurate fix, at the cost of power and latency to first fix.
+ * @param timeoutMillis How long the browser may spend acquiring before reporting failure.
+ * @param maximumAgeMillis How old a position already cached by the browser may be for it to answer with that instead of acquiring a new one.
  */
 @JsFun(
-    code = """() => {
-        window.__deviceLocationQueue = [];
+    code = """(highAccuracy, timeoutMillis, maximumAgeMillis) => {
+        window.__deviceLocationResult = '';
         window.__deviceLocationError = false;
-        if (window.__deviceLocationWatchId !== undefined && window.__deviceLocationWatchId !== null) {
-            navigator.geolocation.clearWatch(window.__deviceLocationWatchId);
-        }
-        window.__deviceLocationWatchId = navigator.geolocation.watchPosition(
+        navigator.geolocation.getCurrentPosition(
             function(position) {
-                window.__deviceLocationQueue.push(JSON.stringify({
+                window.__deviceLocationResult = JSON.stringify({
                     latitude: position.coords.latitude,
                     longitude: position.coords.longitude,
                     accuracy: position.coords.accuracy,
@@ -113,34 +137,25 @@ private external fun isGeolocationSupported(): Boolean
                     heading: position.coords.heading,
                     speed: position.coords.speed,
                     timestamp: position.timestamp
-                }));
+                });
             },
             function() { window.__deviceLocationError = true; },
-            { enableHighAccuracy: false, maximumAge: 0 }
+            { enableHighAccuracy: highAccuracy, timeout: timeoutMillis, maximumAge: maximumAgeMillis }
         );
     }"""
 )
-private external fun startWatchingPosition()
+private external fun requestPosition(highAccuracy: Boolean, timeoutMillis: Int, maximumAgeMillis: Int)
 
-/** Clears the active `watchPosition` subscription and drops any pending fixes. */
-@JsFun(
-    code = """() => {
-        if (window.__deviceLocationWatchId !== undefined && window.__deviceLocationWatchId !== null) {
-            navigator.geolocation.clearWatch(window.__deviceLocationWatchId);
-        }
-        window.__deviceLocationWatchId = null;
-        window.__deviceLocationQueue = [];
-        window.__deviceLocationError = false;
-    }"""
-)
-private external fun stopWatchingPosition()
+/** Returns and clears the fix stored by [requestPosition], or an empty string if none has arrived yet. */
+@JsFun(code = "() => { var r = window.__deviceLocationResult || ''; window.__deviceLocationResult = ''; return r; }")
+private external fun pollPosition(): String
 
-/** Dequeues and returns the oldest pending fix pushed by [startWatchingPosition], or an empty string if none is available. */
-@JsFun(code = "() => (window.__deviceLocationQueue && window.__deviceLocationQueue.length > 0) ? window.__deviceLocationQueue.shift() : ''")
-private external fun pollNextPosition(): String
-
-/** Returns and clears whether `watchPosition`'s error callback (e.g. permission denied/revoked) has fired since the last poll. */
+/** Returns and clears whether [requestPosition]'s error callback has fired since the last poll. */
 @JsFun(code = "() => { var e = !!window.__deviceLocationError; window.__deviceLocationError = false; return e; }")
-private external fun pollWatchError(): Boolean
+private external fun pollPositionError(): Boolean
+
+/** Discards any fix or error left behind by a request that is no longer wanted. */
+@JsFun(code = "() => { window.__deviceLocationResult = ''; window.__deviceLocationError = false; }")
+private external fun clearPosition()
 
 internal actual fun createDeviceLocationProvider(): DeviceLocationProvider = WebDeviceLocationProvider()

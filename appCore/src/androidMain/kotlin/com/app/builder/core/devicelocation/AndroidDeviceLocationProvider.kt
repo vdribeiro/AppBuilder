@@ -107,12 +107,10 @@ internal class AndroidDeviceLocationProvider: DeviceLocationProvider() {
      */
     @RequiresPermission(anyOf = [Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION])
     private fun startFusedUpdates(fusedClient: FusedLocationProviderClient) {
-        // locationIntervalMillis is the fastest tier; the desired and max-wait (batching) tiers are derived from it as fixed multiples
-        // rather than exposed as separate remote configs, since only Android's request model distinguishes between the three.
         val interval = ClientConfigs.configs.locationIntervalMillis
-        val request = LocationRequest.Builder(interval * 2)
+        val request = LocationRequest.Builder(interval)
             .setMinUpdateIntervalMillis(interval)
-            .setMaxUpdateDelayMillis(interval * 4)
+            .setMaxUpdateDelayMillis(interval)
             .setMinUpdateDistanceMeters(ClientConfigs.configs.locationDisplacementMeters)
             .setPriority(Priority.PRIORITY_BALANCED_POWER_ACCURACY)
             .build()
