@@ -5,12 +5,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.app.builder.ui.InjectTranslations
 import com.app.builder.ui.Preview
 import com.app.builder.ui.component.Store
 import com.app.builder.ui.component.container.Login
+import com.app.builder.ui.modifier.onKeyPress
 import com.app.builder.ui.screen.Screen
 
 /**
@@ -27,6 +29,10 @@ fun LoginScreen(store: Store<LoginScreenState, LoginScreenAction>) {
         contentAlignment = Alignment.Center
     ) {
         Login(
+            modifier = Modifier.onKeyPress(
+                keys = listOf(Key.Enter, Key.NumPadEnter),
+                onKey = { store.send(action = LoginScreenAction.Submit) }
+            ),
             loading = state.loading,
             username = state.username,
             onUsernameValueChange = { store.send(action = LoginScreenAction.UpdateUsername(username = it)) },

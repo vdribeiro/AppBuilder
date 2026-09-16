@@ -8,11 +8,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.key.Key
-import androidx.compose.ui.input.key.KeyEventType
-import androidx.compose.ui.input.key.key
-import androidx.compose.ui.input.key.onPreviewKeyEvent
-import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -45,13 +40,9 @@ fun Login(
     onSubmit: () -> Unit = {},
 ) {
     val typography = LocalTypography.current
-    val submitEnabled = !loading && username.isNotBlank() && password.isNotBlank()
 
     Column(
-        modifier = modifier.onKeyPress(
-            keys = listOf(Key.Enter, Key.NumPadEnter),
-            onKey = { if (submitEnabled) onSubmit() }
-        ),
+        modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(space = 16.dp)
     ) {
@@ -99,7 +90,7 @@ fun Login(
                 .fillMaxWidth(),
             text = "login",
             loading = loading,
-            enabled = submitEnabled,
+            enabled = !loading && username.isNotBlank() && password.isNotBlank(),
             onClick = { onSubmit() }
         )
     }
