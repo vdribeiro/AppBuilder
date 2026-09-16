@@ -149,6 +149,7 @@ actual suspend fun decrypt(content: String): String? = withContext(context = Dis
 
 /**
  * Get the Secret Key or generate one if it does not exist.
+ * A freshly generated key that the keychain refuses to store is rejected rather than returned, so callers never encrypt with a key that cannot be recovered to decrypt again.
  *
  * @return the secret key or throw on error.
  */
@@ -183,7 +184,8 @@ private suspend fun getSecretKey(): ByteArray = withContext(context = Dispatcher
                 CFDictionaryAddValue(theDict = addQuery, key = kSecClass, value = kSecClassGenericPassword)
                 CFDictionaryAddValue(theDict = addQuery, key = kSecAttrAccount, value = cfAccount)
                 CFDictionaryAddValue(theDict = addQuery, key = kSecValueData, value = cfData)
-                SecItemAdd(attributes = addQuery, result = null)
+                val addStatus = SecItemAdd(attributes = addQuery, result = null)
+                if (addStatus != errSecSuccess) error(message = "Unable to persist secret key: $addStatus")
                 key
             }
         }
