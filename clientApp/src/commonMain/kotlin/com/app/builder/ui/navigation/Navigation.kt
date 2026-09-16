@@ -146,13 +146,13 @@ private fun setBackStack(
         EntityType.CLIENT_CONFIG -> listOf(Screen.ClientConfigs)
         EntityType.SERVER_FLAG -> listOf(Screen.ServerFlags)
         EntityType.SERVER_CONFIG -> listOf(Screen.ServerConfigs)
-        EntityType.REGISTRY -> buildList { add(Screen.RegistryList); entityUuid?.let { add(Screen.RegistryDetail(uuid = it.toString())) } }
+        EntityType.REGISTRY -> buildList<Screen> { add(Screen.RegistryList); entityUuid?.let { add(Screen.RegistryDetail(uuid = it.toString())) } }
         EntityType.NOTIFICATION -> listOf(Screen.Push)
         EntityType.TRANSLATION -> listOf(Screen.Translations)
         EntityType.SESSION -> listOf(Screen.Login)
-        EntityType.USER -> buildList { add(Screen.UserList); entityUuid?.let { add(Screen.UserDetail(uuid = it.toString())) } }
+        EntityType.USER -> buildList<Screen> { add(Screen.UserList); entityUuid?.let { add(Screen.UserDetail(uuid = it.toString())) } }
         EntityType.DEVICE_LOCATION -> listOf(Screen.DeviceLocation)
-        EntityType.TASK -> buildList { add(Screen.TaskList); entityUuid?.let { add(Screen.TaskDetail(uuid = it.toString())) } }
+        EntityType.TASK -> buildList<Screen> { add(Screen.TaskList); entityUuid?.let { add(Screen.TaskDetail(uuid = it.toString())) } }
         EntityType.FILE -> TODO()
     }
     if (backStack.isNotEmpty()) router.backStack.apply {
