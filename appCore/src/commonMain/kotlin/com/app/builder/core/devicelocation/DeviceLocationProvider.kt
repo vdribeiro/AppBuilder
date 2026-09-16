@@ -4,6 +4,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.withTimeoutOrNull
+import com.app.builder.core.config.ClientConfigs
 import com.app.builder.core.config.ClientFlags
 import com.app.builder.core.telemetry.Telemetry
 
@@ -71,7 +73,9 @@ open class DeviceLocationProvider {
             stopUpdate()
             return null
         }
-        platformGetLastKnownLocation()
+        withTimeoutOrNull(timeMillis = ClientConfigs.configs.locationQueryTimeoutMillis) {
+            platformGetLastKnownLocation()
+        }
     }.onFailure {
         Telemetry.error(tag = TAG, message = "Error getting last known location", throwable = it)
     }.getOrNull()?.also { setLastKnownLocation(deviceLocation = it) } ?: _deviceLocation.value

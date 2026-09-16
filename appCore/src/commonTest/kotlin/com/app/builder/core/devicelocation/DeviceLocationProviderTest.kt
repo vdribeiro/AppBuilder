@@ -4,6 +4,9 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 import kotlin.uuid.Uuid
+import kotlinx.coroutines.awaitCancellation
+import kotlinx.coroutines.delay
+import com.app.builder.core.config.ClientConfigs
 import com.app.builder.core.config.ClientFlags
 import com.app.builder.test.TestCase
 
@@ -100,6 +103,57 @@ class DeviceLocationProviderTest: TestCase() {
         assertEquals(expected = fixture, actual = provider.getLastKnownLocation())
 
         platformResult = null
+        assertEquals(expected = fixture, actual = provider.getLastKnownLocation())
+    }
+
+    /** Verifies that a platform query which never returns is abandoned at the timeout and answered from the last captured fix instead of suspending the caller indefinitely. */
+    @Test
+    fun getLastKnownLocationTimesOutAndFallsBackToTheLastCapturedFix() = runUnitTest {
+        ClientFlags.set { it.copy(locationCapture = true) }
+        val fixture = fixtureLocation()
+        var returnedFixture = true
+        val provider = object: DeviceLocationProvider() {
+            override val available: Boolean = true
+            override fun hasPermission(): Boolean = true
+            override suspend fun platformGetLastKnownLocation(): DeviceLocation? {
+                if (returnedFixture) return fixture
+                awaitCancellation()
+            }
+        }
+        assertEquals(expected = fixture, actual = provider.getLastKnownLocation())
+
+        returnedFixture = false
+
+        assertEquals(expected = fixture, actual = provider.getLastKnownLocation())
+    }
+
+    /** Verifies that a platform query which never returns yields null when no fix was ever captured, rather than hanging. */
+    @Test
+    fun getLastKnownLocationTimesOutToNullWithoutACapturedFix() = runUnitTest {
+        ClientFlags.set { it.copy(locationCapture = true) }
+        val provider = object: DeviceLocationProvider() {
+            override val available: Boolean = true
+            override fun hasPermission(): Boolean = true
+            override suspend fun platformGetLastKnownLocation(): DeviceLocation? = awaitCancellation()
+        }
+
+        assertNull(actual = provider.getLastKnownLocation())
+    }
+
+    /** Verifies that a platform query which returns within the timeout is used as-is. */
+    @Test
+    fun getLastKnownLocationUsesASlowButTimelyPlatformAnswer() = runUnitTest {
+        ClientFlags.set { it.copy(locationCapture = true) }
+        val fixture = fixtureLocation()
+        val provider = object: DeviceLocationProvider() {
+            override val available: Boolean = true
+            override fun hasPermission(): Boolean = true
+            override suspend fun platformGetLastKnownLocation(): DeviceLocation? {
+                delay(timeMillis = ClientConfigs.configs.locationQueryTimeoutMillis - 1)
+                return fixture
+            }
+        }
+
         assertEquals(expected = fixture, actual = provider.getLastKnownLocation())
     }
 

@@ -44,6 +44,8 @@ data class ClientConfigs(
     val locationDisplacementMeters: Float,
     /** Fastest rate in milliseconds at which location fixes may be delivered. Updates are never more frequent than this value. */
     val locationIntervalMillis: Long,
+    /** Maximum time in milliseconds to wait for the cached last known location before giving up and answering from the last fix the update loop captured. */
+    val locationQueryTimeoutMillis: Long,
 ) {
     companion object {
 
@@ -66,6 +68,7 @@ data class ClientConfigs(
             batchSize = 900,
             locationDisplacementMeters = 10f,
             locationIntervalMillis = 1_800_000L,
+            locationQueryTimeoutMillis = 2_000L,
         )
 
         /** Backing state flow tracking config changes. */
