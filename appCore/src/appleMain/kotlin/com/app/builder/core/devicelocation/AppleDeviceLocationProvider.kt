@@ -50,7 +50,10 @@ internal class AppleDeviceLocationProvider: DeviceLocationProvider() {
     override fun platformStartUpdate() {
         super.platformStartUpdate()
         val newDelegate = LocationDelegate(
-            onLocations = ::handleLocations,
+            onLocations = {
+                val location = it.lastOrNull() ?: return@LocationDelegate
+                setLastKnownLocation(deviceLocation = location.toDeviceLocation())
+            },
             onError = {
                 Telemetry.error(tag = TAG, message = "Location capture failed", throwable = Throwable(message = it.localizedDescription))
                 platformStopUpdate()
@@ -88,16 +91,6 @@ internal class AppleDeviceLocationProvider: DeviceLocationProvider() {
     override suspend fun platformGetLastKnownLocation(): DeviceLocation? {
         super.platformGetLastKnownLocation()
         return CLLocationManager().location?.toDeviceLocation()
-    }
-
-    /**
-     * Emits the most recent of [locations] via [setLastKnownLocation].
-     *
-     * @param locations The locations delivered by Core Location, oldest first.
-     */
-    private fun handleLocations(locations: List<CLLocation>) {
-        val location = locations.lastOrNull() ?: return
-        setLastKnownLocation(deviceLocation = location.toDeviceLocation())
     }
 
     /**
