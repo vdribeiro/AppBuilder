@@ -22,10 +22,9 @@ sealed interface TaskListScreenAction {
     /**
      * Notifies that the mode has changed.
      *
-     * @param old The mode before the change.
      * @param new The new mode it has changed to.
      */
-    data class ModeChange(val old: ActionBarMode, val new: ActionBarMode): TaskListScreenAction
+    data class ModeChange(val new: ActionBarMode): TaskListScreenAction
     /**
      * Updates the current search query.
      *
@@ -77,12 +76,14 @@ val defaultFilterCriteria = AppFile.FilterCriteria(
     sortAscending = false,
     visibleProperties = Task.Property.entries.map { it.name }.toPersistentList(),
     searchableProperties = Task.Property.entries.map { it.name }.toPersistentList(),
+    selectedUuids = persistentListOf()
 )
 
 /**
  * State of the task list, holding the tasks to display and whether batch delete selection is active.
  *
  * @property tasks Tasks currently displayed.
+ * @property selectedUuids UUIDs of the tasks the user has picked.
  * @property mode The current display mode.
  * @property layout Which actions to show.
  * @property write Whether buttons that allow "write" operations should be shown.
@@ -99,6 +100,7 @@ val defaultFilterCriteria = AppFile.FilterCriteria(
  */
 data class TaskListScreenState(
     val tasks: ImmutableList<TaskItem> = persistentListOf(),
+    val selectedUuids: ImmutableList<String> = persistentListOf(),
     val mode: ActionBarMode = ActionBarMode.DEFAULT,
     val layout: ActionBarLayout = ActionBarLayout.ALL,
     val write: Boolean = false,

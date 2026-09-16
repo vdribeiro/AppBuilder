@@ -1,6 +1,7 @@
 package com.app.builder.ui.screen.tasklist
 
 import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.combine
@@ -16,6 +17,7 @@ import com.app.builder.domain.Task
 import com.app.builder.domain.Task.Property
 import com.app.builder.domain.gateway.authentication.AuthenticationUseCases
 import com.app.builder.domain.gateway.task.TaskUseCases
+import com.app.builder.plusOrMinus
 import com.app.builder.ui.component.Store
 import com.app.builder.ui.component.bar.ActionBarMode
 import com.app.builder.ui.component.list.TaskItem
@@ -44,7 +46,7 @@ class TaskListScreenStore(
         super.reducer(state = state, action = action)
         when (action) {
             is TaskListScreenAction.SelectTask -> selectTask(state = state, action = action)
-            is TaskListScreenAction.ModeChange -> changeMode(state = state, action = action)
+            is TaskListScreenAction.ModeChange -> changeMode(action = action)
             is TaskListScreenAction.Search -> search(action = action)
             is TaskListScreenAction.Ok -> {}
             is TaskListScreenAction.Cancel -> {}
@@ -79,7 +81,7 @@ class TaskListScreenStore(
             tasks
                 .filter { it.matchesSearch(search = criteria.search, searchableProperties = criteria.searchableProperties) }
                 .let { if (comparator == null) it else it.sortedWith(comparator = comparator) }
-                .map { it.toTaskItem(visibilityProperties = criteria.visibleProperties) }
+                .map { it.toTaskItem(visibilityProperties = criteria.visibleProperties, selectedUuids = criteria.selectedUuids) }
                 .toPersistentList()
         }
             .flowOn(context = Dispatcher.Default)
@@ -102,19 +104,11 @@ class TaskListScreenStore(
             ActionBarMode.SEARCH,
             ActionBarMode.ADD,
             ActionBarMode.EDIT,
-            ActionBarMode.DELETE -> {
-                val tasks = state.tasks.map {
-                    if (it.uuid == action.taskUuid) it.copy(selected = true) else it.copy(selected = false)
-                }.toPersistentList()
-                updateState { it.copy(tasks = tasks) }
-                router.navigate(screen = Screen.TaskDetail(uuid = action.taskUuid), option = Router.NavOption.REPLACE_LAST)
-            }
+            ActionBarMode.DELETE -> router.navigate(screen = Screen.TaskDetail(uuid = action.taskUuid), option = Router.NavOption.REPLACE_LAST)
 
             ActionBarMode.BATCH_DELETE -> {
-                val tasks = state.tasks.map {
-                    if (it.uuid == action.taskUuid) it.copy(selected = !it.selected) else it
-                }.toPersistentList()
-                updateState { it.copy(tasks = tasks) }
+                val selectedUuids = state.selectedUuids.plusOrMinus(element = action.taskUuid).toPersistentList()
+                updateState { it.copy(selectedUuids = selectedUuids) }
             }
         }
     }
@@ -122,11 +116,10 @@ class TaskListScreenStore(
     /**
      * Switches the action bar to [action]'s new mode.
      *
-     * @param state Current task list state.
      * @param action Action carrying the new [ActionBarMode].
      */
-    private fun changeMode(state: TaskListScreenState, action: TaskListScreenAction.ModeChange): Job = launch(id = "changeMode") {
-        updateState { it.copy(mode = action.new) }
+    private fun changeMode(action: TaskListScreenAction.ModeChange): Job = launch(id = "changeMode") {
+        updateState { it.copy(mode = action.new, selectedUuids = persistentListOf()) }
     }
 
     /**
@@ -230,11 +223,12 @@ class TaskListScreenStore(
      * Converts this task into a [TaskItem], including only the properties named in [visibilityProperties].
      *
      * @param visibilityProperties Names of the [Property] values that should be visible on the item.
+     * @param selectedUuids UUIDs of the tasks the user has picked.
      * @return Task item with hidden properties set to `null`.
      */
-    private fun Task.toTaskItem(visibilityProperties: ImmutableList<String>): TaskItem = TaskItem(
+    private fun Task.toTaskItem(visibilityProperties: ImmutableList<String>, selectedUuids: ImmutableList<String>): TaskItem = TaskItem(
         uuid = uuid.toString(),
-        selected = false,
+        selected = uuid.toString() in selectedUuids,
         modifiedAt = modifiedAt.takeIf { Property.MODIFIED_AT.name in visibilityProperties }?.toString(),
         deletedAt = deletedAt.takeIf { Property.DELETED_AT.name in visibilityProperties }?.toString(),
         title = title.takeIf { Property.TITLE.name in visibilityProperties },
