@@ -4,8 +4,10 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.firstOrNull
 import com.app.builder.Application
 import com.app.builder.core.telemetry.Telemetry
+import com.app.builder.data.resource.ImageResource
 import com.app.builder.domain.gateway.authentication.AuthenticationUseCases
 import com.app.builder.ui.component.Store
+import com.app.builder.ui.component.image.toImage
 import com.app.builder.ui.core.image.Image
 
 /**
@@ -38,11 +40,15 @@ class UserProfileScreenStore(
         Telemetry.info(tag = TAG, message = "Setup")
 
         authenticationUseCases.observeCurrentUser().observe(id = "current_user") { user ->
+            val userImage = when (user) {
+                null -> ImageResource.Kotlin.toImage()
+                else -> user.avatar?.let { avatar -> Image(url = avatar) }
+            }
             updateState {
                 it.copy(
                     guest = user == null,
                     name = user?.name,
-                    image = user?.avatar?.let { avatar -> Image(url = avatar) }
+                    image = userImage
                 )
             }
         }

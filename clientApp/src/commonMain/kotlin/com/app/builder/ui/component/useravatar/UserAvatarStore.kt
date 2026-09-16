@@ -28,7 +28,10 @@ class UserAvatarStore(
         Telemetry.info(tag = TAG, message = "Setup")
 
         authenticationUseCases.observeCurrentUser().observe(id = "current_user") { user ->
-            val userImage = user?.avatar?.let { avatar -> Image(url = avatar) } ?: ImageResource.Kotlin.toImage()
+            val userImage = when (user) {
+                null -> ImageResource.Kotlin.toImage()
+                else -> user.avatar?.let { avatar -> Image(url = avatar) }
+            }
             updateState {
                 it.copy(
                     userName = user?.name,

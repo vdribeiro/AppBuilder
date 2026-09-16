@@ -72,6 +72,7 @@ object AppFile {
      * @property sortAscending Whether the list is sorted in ascending order.
      * @property visibleProperties Names of the property values shown as visible columns.
      * @property searchableProperties Names of the property values included when searching.
+     * @property selectedUuids UUIDs the user has selected.
      */
     @Serializable
     data class FilterCriteria(
@@ -79,7 +80,8 @@ object AppFile {
         val sortProperty: String,
         val sortAscending: Boolean,
         val visibleProperties: ImmutableList<String>,
-        val searchableProperties: ImmutableList<String>
+        val searchableProperties: ImmutableList<String>,
+        val selectedUuids: ImmutableList<String>,
     )
 
     /** Task preferences. */
