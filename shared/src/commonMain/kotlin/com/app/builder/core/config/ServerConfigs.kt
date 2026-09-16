@@ -29,10 +29,7 @@ data class ServerConfigs(
     val broadcastPingInterval: Long,
     /** Maximum number of concurrent SSE broadcast connections accepted by this server instance. Enforced per-instance in memory, not cluster-wide. */
     val broadcastMaxConnections: Int,
-    /**
-     * Maximum number of attempts to deliver a broadcast payload to a session before giving up and dropping the connection.
-     * The retry delay [broadcastRetryDelay] doubles after every failed attempt with no ceiling, so a high value combined with a non-trivial delay can make one delivery take a long time.
-     */
+    /** Maximum number of attempts to deliver a broadcast payload to a session before giving up and dropping the connection. */
     val broadcastMaxAttempts: Int,
     /** Initial delay in milliseconds before retrying a failed broadcast payload delivery. Doubles on each subsequent attempt up to [broadcastMaxAttempts], with no maximum-delay cap. */
     val broadcastRetryDelay: Long,
@@ -44,19 +41,13 @@ data class ServerConfigs(
     val pushMaxConnections: Int,
     /** Maximum number of concurrent push WebSocket connections allowed for a single user, enforced within the global [pushMaxConnections] cap. It is effectively the binding limit for a single user's multi-device fan-out. */
     val pushMaxUserConnections: Int,
-    /**
-     * Maximum number of attempts to deliver a push payload to a device before giving up and dropping the connection. The retry delay [pushRetryDelay] doubles after every failed attempt with no ceiling,
-     * so a high value combined with a non-trivial delay can make one delivery take a long time.
-     */
+    /** Maximum number of attempts to deliver a push payload to a device before giving up and dropping the connection. */
     val pushMaxAttempts: Int,
     /** Initial delay in milliseconds before retrying a failed push payload delivery. It doubles on each subsequent attempt up to [pushMaxAttempts], with no maximum-delay cap. */
     val pushRetryDelay: Long,
     /** Time in milliseconds a one-time connection ticket remains valid after issuance. An expired ticket is deleted and rejected on use, so the client must request a fresh one before opening the push WebSocket. */
     val ticketTtl: Long,
-    /**
-     * Interval in milliseconds at which this server instance refreshes the heartbeat of its live connection presence rows. Must stay comfortably below [presenceTtl],
-     * or a delayed heartbeat can cause a still-connected device to be wrongly pruned as dead.
-     */
+    /** Interval in milliseconds at which this server instance refreshes the heartbeat of its live connection presence rows. Must stay below [presenceTtl], or a delayed heartbeat can cause a still-connected device to be wrongly pruned as dead. */
     val presenceHeartbeatInterval: Long,
     /** Age in milliseconds beyond which a connection presence row without a heartbeat is considered dead and eligible for pruning. Should be meaningfully larger than [presenceHeartbeatInterval] (see there). */
     val presenceTtl: Long,

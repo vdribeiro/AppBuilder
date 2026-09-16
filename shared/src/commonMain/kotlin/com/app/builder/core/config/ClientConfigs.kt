@@ -17,10 +17,7 @@ data class ClientConfigs(
     val httpSocketTimeoutMillis: Long,
     /** Maximum total time in milliseconds allowed to process an HTTP call from request to response. */
     val httpRequestTimeoutMillis: Long,
-    /**
-     * Maximum milliseconds the device clock may drift from the server clock before it is flagged as untrustworthy.
-     * Keep in a sane range relative to the server's [ServerConfigs.timestampFutureTolerance]. If the client trusts a drift the server won't tolerate, its requests start failing timestamp validation.
-     */
+    /** Maximum milliseconds the device clock may drift from the server clock before it is flagged as untrustworthy. Keep in range of the server's [ServerConfigs.timestampFutureTolerance]. If the client trusts a drift the server won't tolerate, its requests start failing timestamp validation. */
     val clockDriftTolerance: Long,
     /** Delay in milliseconds between clock recalibration probes while the client's clock is untrusted. The first probe fires immediately on distrust. The loop stops once trust is regained. */
     val clockProbeInterval: Long,
@@ -67,7 +64,7 @@ data class ClientConfigs(
             pushMaxRetryDelay = 30_000L,
             batchSize = 900,
             locationDisplacementMeters = 10f,
-            locationIntervalMillis = 1_800_000L,
+            locationIntervalMillis = 60_000L,
             locationQueryTimeoutMillis = 2_000L,
         )
 
