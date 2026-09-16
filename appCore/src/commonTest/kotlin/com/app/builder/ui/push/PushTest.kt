@@ -1,7 +1,9 @@
 package com.app.builder.ui.push
 
 import kotlin.test.Test
-import kotlin.test.assertTrue
+import kotlin.test.assertEquals
+import com.app.builder.core.platform.OS
+import com.app.builder.core.platform.platform
 import com.app.builder.domain.push.BroadcastService
 import com.app.builder.domain.push.PushService
 import com.app.builder.test.TestCase
@@ -24,15 +26,15 @@ class PushTest: TestCase() {
         override fun start() { events.add(element = "start") }
     }
 
-    /** Verifies that [RegisterBroadcastLifecycle] does not drive the service lifecycle on this desktop platform, which is excluded from the guarded platform set. */
+    /** Verifies that [RegisterBroadcastLifecycle] drives the service lifecycle only on the guarded platforms, leaving it untouched everywhere else. */
     @Test
-    fun registerBroadcastLifecycleIsANoOpOnDesktop() = runUITest {
+    fun registerBroadcastLifecycleFollowsTheGuardedPlatformSet() = runUITest {
         val service = RecordingBroadcastService()
 
         setUI { RegisterBroadcastLifecycle(broadcastService = service) }
         waitForIdle()
 
-        assertTrue(actual = service.events.isEmpty())
+        assertEquals(expected = expectedEvents(), actual = service.events)
     }
 
     /** Verifies that [RegisterBroadcastLifecycle] tolerates a null service without throwing. */
@@ -42,15 +44,15 @@ class PushTest: TestCase() {
         waitForIdle()
     }
 
-    /** Verifies that [RegisterPushLifecycle] does not drive the service lifecycle on this desktop platform, which is excluded from the guarded platform set. */
+    /** Verifies that [RegisterPushLifecycle] drives the service lifecycle only on the guarded platforms, leaving it untouched everywhere else. */
     @Test
-    fun registerPushLifecycleIsANoOpOnDesktop() = runUITest {
+    fun registerPushLifecycleFollowsTheGuardedPlatformSet() = runUITest {
         val service = RecordingPushService()
 
         setUI { RegisterPushLifecycle(pushService = service) }
         waitForIdle()
 
-        assertTrue(actual = service.events.isEmpty())
+        assertEquals(expected = expectedEvents(), actual = service.events)
     }
 
     /** Verifies that [RegisterPushLifecycle] tolerates a null service without throwing. */
@@ -58,5 +60,11 @@ class PushTest: TestCase() {
     fun registerPushLifecycleToleratesNullService() = runUITest {
         setUI { RegisterPushLifecycle(pushService = null) }
         waitForIdle()
+    }
+
+    /** The lifecycle actions expected once the composable enters composition: the guarded platforms bring the service to the foreground, the rest never touch it. */
+    private fun expectedEvents(): List<String> = when (platform.os) {
+        OS.Android, OS.Ios -> listOf(element = "start")
+        OS.Windows, OS.Mac, OS.Linux, OS.Web, OS.Unknown -> emptyList()
     }
 }

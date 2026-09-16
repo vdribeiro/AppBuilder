@@ -10,6 +10,8 @@ import androidx.compose.foundation.text.BasicText
 import androidx.compose.ui.test.onNodeWithText
 import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
+import com.app.builder.core.platform.OS
+import com.app.builder.core.platform.platform
 import com.app.builder.test.TestCase
 
 class RoutingTest: TestCase() {
@@ -71,14 +73,24 @@ class RoutingTest: TestCase() {
         assertEquals(expected = listOf(FakeScreen.Second), actual = router.backStack.toList())
     }
 
-    /** Throws when the requested screen is unregistered and no fallback screen was provided. */
+    /**
+     * Throws when the requested screen is unregistered and no fallback screen was provided.
+     * The assertion wraps the whole UI test because the throw happens inside composition, which leaves the Compose test harness unable to reach idle again once the exception is caught within it.
+     * Web is skipped because its UI test harness completes asynchronously, so the throw only surfaces after the assertion has already returned.
+     */
     @Test
-    fun unknownScreenWithoutFallbackThrows() = runUITest {
-        router.navigate(screen = FakeScreen.Unregistered)
-        waitForIdle()
-
+    fun unknownScreenWithoutFallbackThrows() {
+        when (platform.os) {
+            OS.Web -> return
+            OS.Android, OS.Ios, OS.Windows, OS.Mac, OS.Linux, OS.Unknown -> Unit
+        }
         assertFailsWith<IllegalStateException> {
-            setUI { Navigation(entryProviderScope = { registerFakeScreens() }) }
+            runUITest {
+                router.navigate(screen = FakeScreen.Unregistered)
+                waitForIdle()
+
+                setUI { Navigation(entryProviderScope = { registerFakeScreens() }) }
+            }
         }
     }
 
