@@ -160,11 +160,12 @@ internal class AndroidDeviceLocationProvider: DeviceLocationProvider() {
      * Awaits this Play Services [Task], resolving to null instead of throwing on failure.
      *
      * @receiver The task to await.
-     * @return The task's result, or null if it failed or produced none.
+     * @return The task's result, or null if it failed, was canceled or produced none.
      */
     private suspend fun Task<Location>.await(): Location? = suspendCancellableCoroutine { continuation ->
         addOnSuccessListener { continuation.resumeWith(result = Result.success(value = it)) }
         addOnFailureListener { continuation.resumeWith(result = Result.success(value = null)) }
+        addOnCanceledListener { continuation.resumeWith(result = Result.success(value = null)) }
     }
 
     /**
