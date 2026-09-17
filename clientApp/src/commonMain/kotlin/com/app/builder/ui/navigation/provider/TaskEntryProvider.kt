@@ -53,6 +53,7 @@ fun EntryProviderScope<NavKey>.taskProvider(useCases: UseCases) {
 //        layout = if (splitScreen) ActionBarLayout.ALL else ActionBarLayout.DETAIL,
         TaskDetailScreen(
             navigationStore = viewModel { NavigationStore(state = NavigationState(selected = NavigationRoute.TASK), router = router, authenticationUseCases = useCases.authenticationUseCases) },
+            userAvatarStore = viewModel { UserAvatarStore(state = UserAvatarState(), authenticationUseCases = useCases.authenticationUseCases) },
             store = viewModel { TaskDetailScreenStore(state = TaskDetailScreenState(), taskUseCases = useCases.taskUseCases, taskUuid = it.uuid) }
         )
     }
