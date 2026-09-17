@@ -1,4 +1,4 @@
-package com.app.builder.ui.component
+package com.app.builder.ui.store
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
