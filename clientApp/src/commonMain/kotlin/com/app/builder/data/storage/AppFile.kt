@@ -1,6 +1,7 @@
 package com.app.builder.data.storage
 
 import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.MapSerializer
@@ -46,23 +47,23 @@ object AppFile {
     }
 
     /** Client feature flags. */
-    data object ClientFeatureFlags: StorageFile<ClientFlags?>(path = "client_flags", cache = false) {
-        override val serializer: KSerializer<ClientFlags?> = ClientFlags.serializer().nullable
+    data object ClientFeatureFlags: StorageFile<ClientFlags>(path = "client_flags", cache = false) {
+        override val serializer: KSerializer<ClientFlags> = ClientFlags.serializer()
     }
 
     /** Client configs. */
-    data object ClientRemoteConfigs: StorageFile<ClientConfigs?>(path = "client_configs", cache = false) {
-        override val serializer: KSerializer<ClientConfigs?> = ClientConfigs.serializer().nullable
+    data object ClientRemoteConfigs: StorageFile<ClientConfigs>(path = "client_configs", cache = false) {
+        override val serializer: KSerializer<ClientConfigs> = ClientConfigs.serializer()
     }
 
     /** Server feature flags. */
-    data object ServerFeatureFlags: StorageFile<ServerFlags?>(path = "server_flags", cache = false) {
-        override val serializer: KSerializer<ServerFlags?> = ServerFlags.serializer().nullable
+    data object ServerFeatureFlags: StorageFile<ServerFlags>(path = "server_flags", cache = false) {
+        override val serializer: KSerializer<ServerFlags> = ServerFlags.serializer()
     }
 
     /** Server configs. */
-    data object ServerRemoteConfigs: StorageFile<ServerConfigs?>(path = "server_configs", cache = false) {
-        override val serializer: KSerializer<ServerConfigs?> = ServerConfigs.serializer().nullable
+    data object ServerRemoteConfigs: StorageFile<ServerConfigs>(path = "server_configs", cache = false) {
+        override val serializer: KSerializer<ServerConfigs> = ServerConfigs.serializer()
     }
 
     /**
@@ -78,19 +79,19 @@ object AppFile {
      */
     @Serializable
     data class FilterCriteria(
-        val mode: ActionBarMode,
-        val search: String,
-        val sortProperty: String,
-        val sortAscending: Boolean,
-        val visibleProperties: ImmutableList<String>,
-        val searchableProperties: ImmutableList<String>,
-        val selectedUuids: ImmutableList<String>,
+        val mode: ActionBarMode = ActionBarMode.DEFAULT,
+        val search: String = "",
+        val sortProperty: String = "",
+        val sortAscending: Boolean = false,
+        val visibleProperties: ImmutableList<String> = persistentListOf(),
+        val searchableProperties: ImmutableList<String> = persistentListOf(),
+        val selectedUuids: ImmutableList<String> = persistentListOf(),
     )
 
     /** Task preferences. */
-    data object TaskPreferences: StorageFile<FilterCriteria?>(path = "task_preferences", encrypted = false) {
+    data object TaskPreferences: StorageFile<FilterCriteria>(path = "task_preferences", encrypted = false) {
 
-        override val serializer: KSerializer<FilterCriteria?> = FilterCriteria.serializer().nullable
+        override val serializer: KSerializer<FilterCriteria> = FilterCriteria.serializer()
     }
 
     /** Every file in this module. */
