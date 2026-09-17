@@ -6,7 +6,7 @@ import com.app.builder.core.security.toUuid
 import com.app.builder.core.telemetry.Telemetry
 import com.app.builder.domain.Task
 import com.app.builder.domain.gateway.task.TaskUseCases
-import com.app.builder.ui.component.Store
+import com.app.builder.ui.store.Store
 
 /**
  * Store backing the Task Detail Screen, observing the task and the action bar's edit mode, and applying title/description edits.

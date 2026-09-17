@@ -6,7 +6,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.app.builder.ui.InjectTranslations
 import com.app.builder.ui.Preview
-import com.app.builder.ui.component.Store
 import com.app.builder.ui.component.bar.ActionBar
 import com.app.builder.ui.component.list.TaskList
 import com.app.builder.ui.component.navigation.Navigation
@@ -14,6 +13,7 @@ import com.app.builder.ui.component.navigation.NavigationState
 import com.app.builder.ui.component.useravatar.UserAvatar
 import com.app.builder.ui.component.useravatar.UserAvatarState
 import com.app.builder.ui.screen.Screen
+import com.app.builder.ui.store.Store
 
 /**
  * The user-facing Task List Screen, showing the list of tasks.

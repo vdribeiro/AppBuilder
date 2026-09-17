@@ -5,7 +5,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.tooling.preview.Preview
 import com.app.builder.data.resource.ImageResource
 import com.app.builder.ui.Preview
-import com.app.builder.ui.component.Store
 import com.app.builder.ui.component.bar.ActionBar
 import com.app.builder.ui.component.image.toImage
 import com.app.builder.ui.component.useravatar.UserAvatar
@@ -15,6 +14,7 @@ import com.app.builder.ui.core.text.Text
 import com.app.builder.ui.navigation.LocalRouter
 import com.app.builder.ui.navigation.Screen
 import com.app.builder.ui.screen.Screen
+import com.app.builder.ui.store.Store
 
 /**
  * The Home Screen.

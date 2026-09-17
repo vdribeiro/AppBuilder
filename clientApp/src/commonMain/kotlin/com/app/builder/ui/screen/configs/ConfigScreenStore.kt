@@ -18,9 +18,9 @@ import com.app.builder.core.telemetry.Telemetry
 import com.app.builder.data.serializer.decodeFromJson
 import com.app.builder.data.serializer.encodeToJson
 import com.app.builder.domain.gateway.config.ConfigUseCases
-import com.app.builder.ui.component.Store
 import com.app.builder.ui.component.list.ConfigItem
 import com.app.builder.ui.component.list.ConfigValue
+import com.app.builder.ui.store.Store
 
 /**
  * Store backing a config list screen for a given config yype, loading the relevant flags/configs and persisting changes made through [ConfigScreenAction.UpdateValue].

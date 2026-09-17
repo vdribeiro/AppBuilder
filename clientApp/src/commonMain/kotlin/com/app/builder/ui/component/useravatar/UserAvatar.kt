@@ -9,10 +9,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.app.builder.ui.Preview
-import com.app.builder.ui.component.Store
 import com.app.builder.ui.component.image.Avatar
 import com.app.builder.ui.navigation.LocalRouter
 import com.app.builder.ui.navigation.Screen
+import com.app.builder.ui.store.Store
 
 /**
  * Renders the user avatar.

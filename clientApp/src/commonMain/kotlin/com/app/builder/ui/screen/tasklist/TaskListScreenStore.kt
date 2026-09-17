@@ -9,6 +9,8 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import com.app.builder.core.flow.Dispatcher
+import com.app.builder.core.locale.now
+import com.app.builder.core.security.uuid
 import com.app.builder.core.telemetry.Telemetry
 import com.app.builder.data.storage.AppFile
 import com.app.builder.domain.EntityType
@@ -18,11 +20,11 @@ import com.app.builder.domain.Task.Property
 import com.app.builder.domain.gateway.authentication.AuthenticationUseCases
 import com.app.builder.domain.gateway.task.TaskUseCases
 import com.app.builder.plusOrMinus
-import com.app.builder.ui.component.Store
 import com.app.builder.ui.component.bar.ActionBarMode
 import com.app.builder.ui.component.list.TaskItem
 import com.app.builder.ui.navigation.Router
 import com.app.builder.ui.navigation.Screen
+import com.app.builder.ui.store.Store
 
 /**
  * Store backing the task list, combining tasks with the shared action bar state to filter, sort, and select them.
@@ -88,6 +90,17 @@ class TaskListScreenStore(
             .observe(id = "filterTasks") { tasks ->
                 updateState { it.copy(tasks = tasks) }
             }
+
+        taskUseCases.upsertTask(
+            task = Task(
+                uuid = uuid(),
+                modifiedAt = now(),
+                deletedAt = null,
+                title = "Task Title",
+                description = "Task Description",
+                state = Task.State.TODO
+            )
+        )
 
         Telemetry.info(tag = TAG, message = "Setup complete")
     }

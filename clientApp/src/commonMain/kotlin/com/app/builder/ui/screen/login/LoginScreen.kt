@@ -10,10 +10,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.app.builder.ui.InjectTranslations
 import com.app.builder.ui.Preview
-import com.app.builder.ui.component.Store
 import com.app.builder.ui.component.container.Login
 import com.app.builder.ui.modifier.onKeyPress
 import com.app.builder.ui.screen.Screen
+import com.app.builder.ui.store.Store
 
 /**
  * The user-facing Login Screen.

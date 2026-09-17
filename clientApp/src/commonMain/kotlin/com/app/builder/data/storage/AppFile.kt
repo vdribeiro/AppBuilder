@@ -10,6 +10,7 @@ import com.app.builder.core.config.ClientConfigs
 import com.app.builder.core.config.ClientFlags
 import com.app.builder.core.config.ServerConfigs
 import com.app.builder.core.config.ServerFlags
+import com.app.builder.ui.component.bar.ActionBarMode
 
 /** The index of every file in this module. */
 object AppFile {
@@ -65,8 +66,9 @@ object AppFile {
     }
 
     /**
-     * Criteria used to filter, sort, and shape a list.
+     * Criteria used to filter, sort, and shape a list-detail view.
      *
+     * @property mode Current display mode, controlling which actions/inputs are shown.
      * @property search Search query text.
      * @property sortProperty Name of the property used to sort the list.
      * @property sortAscending Whether the list is sorted in ascending order.
@@ -76,6 +78,7 @@ object AppFile {
      */
     @Serializable
     data class FilterCriteria(
+        val mode: ActionBarMode,
         val search: String,
         val sortProperty: String,
         val sortAscending: Boolean,

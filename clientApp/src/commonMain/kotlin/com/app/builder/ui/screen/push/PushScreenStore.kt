@@ -9,9 +9,9 @@ import com.app.builder.domain.PushPayload
 import com.app.builder.domain.User
 import com.app.builder.domain.gateway.push.PushUseCases
 import com.app.builder.domain.gateway.user.UserUseCases
-import com.app.builder.ui.component.Store
 import com.app.builder.ui.component.button.PushPayloadType
 import com.app.builder.ui.component.button.UserItem
+import com.app.builder.ui.store.Store
 
 /**
  * Store backing the push notification screen, loading the available users to target and sending the composed Push Payloads.

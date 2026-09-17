@@ -4,9 +4,9 @@ import kotlinx.coroutines.Job
 import com.app.builder.core.telemetry.Telemetry
 import com.app.builder.data.resource.ImageResource
 import com.app.builder.domain.gateway.authentication.AuthenticationUseCases
-import com.app.builder.ui.component.Store
 import com.app.builder.ui.component.image.toImage
 import com.app.builder.ui.core.image.Image
+import com.app.builder.ui.store.Store
 
 /**
  * Store backing the [UserAvatar] component.

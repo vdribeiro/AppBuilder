@@ -35,7 +35,6 @@ import com.app.builder.domain.EntityType
 import com.app.builder.ui.LocalColorScheme
 import com.app.builder.ui.LocalNfcController
 import com.app.builder.ui.Preview
-import com.app.builder.ui.component.Store
 import com.app.builder.ui.component.bar.ActionBar
 import com.app.builder.ui.component.navigation.Navigation
 import com.app.builder.ui.component.navigation.NavigationState
@@ -56,6 +55,7 @@ import com.app.builder.ui.core.progress.ProgressIndicator
 import com.app.builder.ui.core.text.Input
 import com.app.builder.ui.core.text.Text
 import com.app.builder.ui.screen.Screen
+import com.app.builder.ui.store.Store
 import com.app.builder.ui.core.list.LazyColumn as ListLazyColumn
 
 /**

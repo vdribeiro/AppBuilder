@@ -6,9 +6,9 @@ import com.app.builder.Application
 import com.app.builder.core.telemetry.Telemetry
 import com.app.builder.data.resource.ImageResource
 import com.app.builder.domain.gateway.authentication.AuthenticationUseCases
-import com.app.builder.ui.component.Store
 import com.app.builder.ui.component.image.toImage
 import com.app.builder.ui.core.image.Image
+import com.app.builder.ui.store.Store
 
 /**
  * Store backing the user profile screen, observing the current user and handling logout and local data reset.

@@ -5,7 +5,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.app.builder.ui.Preview
-import com.app.builder.ui.component.Store
 import com.app.builder.ui.component.bar.ActionBar
 import com.app.builder.ui.component.button.PushPayloadType
 import com.app.builder.ui.component.container.PushForm
@@ -14,6 +13,7 @@ import com.app.builder.ui.component.navigation.NavigationState
 import com.app.builder.ui.component.useravatar.UserAvatar
 import com.app.builder.ui.component.useravatar.UserAvatarState
 import com.app.builder.ui.screen.Screen
+import com.app.builder.ui.store.Store
 
 /**
  * Renders a form for composing and sending a push payload:

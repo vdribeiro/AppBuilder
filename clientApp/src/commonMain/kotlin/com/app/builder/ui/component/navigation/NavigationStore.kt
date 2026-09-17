@@ -19,10 +19,10 @@ import androidx.compose.material.icons.outlined.Translate
 import com.app.builder.core.telemetry.Telemetry
 import com.app.builder.domain.EntityType
 import com.app.builder.domain.gateway.authentication.AuthenticationUseCases
-import com.app.builder.ui.component.Store
 import com.app.builder.ui.core.navigation.NavigationItem
 import com.app.builder.ui.navigation.Router
 import com.app.builder.ui.navigation.Screen
+import com.app.builder.ui.store.Store
 
 /**
  * Store backing the app's navigation bar, building the visible [NavigationItem]s from the current user's permissions.

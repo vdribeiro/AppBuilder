@@ -12,8 +12,8 @@ import com.app.builder.domain.User
 import com.app.builder.domain.UserCredentials
 import com.app.builder.domain.gateway.authentication.AuthenticationUseCases
 import com.app.builder.toEnumOrNull
-import com.app.builder.ui.component.Store
 import com.app.builder.ui.component.button.PermissionItem
+import com.app.builder.ui.store.Store
 
 /**
  * Store backing the registration screen, handling field updates, permission toggling, and account registration.

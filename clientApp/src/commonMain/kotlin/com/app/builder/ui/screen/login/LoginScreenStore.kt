@@ -4,7 +4,7 @@ import kotlinx.coroutines.Job
 import com.app.builder.core.telemetry.Telemetry
 import com.app.builder.domain.UserCredentials
 import com.app.builder.domain.gateway.authentication.AuthenticationUseCases
-import com.app.builder.ui.component.Store
+import com.app.builder.ui.store.Store
 
 /**
  * Store backing the Login Screen, handling credential updates and login submission.

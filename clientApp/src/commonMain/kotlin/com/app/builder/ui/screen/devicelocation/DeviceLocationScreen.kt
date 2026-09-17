@@ -31,7 +31,6 @@ import com.app.builder.core.devicelocation.DeviceLocationProvider
 import com.app.builder.core.locale.getLocalDateTime
 import com.app.builder.ui.LocalColorScheme
 import com.app.builder.ui.Preview
-import com.app.builder.ui.component.Store
 import com.app.builder.ui.component.bar.ActionBar
 import com.app.builder.ui.component.navigation.Navigation
 import com.app.builder.ui.component.navigation.NavigationState
@@ -51,6 +50,7 @@ import com.app.builder.ui.devicelocation.LocalDeviceLocationProvider
 import com.app.builder.ui.permission.LocalPermissionManager
 import com.app.builder.ui.permission.Permission
 import com.app.builder.ui.screen.Screen
+import com.app.builder.ui.store.Store
 
 /**
  * The Device Location Screen.

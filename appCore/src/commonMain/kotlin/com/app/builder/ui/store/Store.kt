@@ -1,4 +1,4 @@
-package com.app.builder.ui.component
+package com.app.builder.ui.store
 
 import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.CoroutineScope
@@ -42,12 +42,12 @@ open class Store<State, Action>(initialState: State): ViewModel() {
 
     /** Backing property for the reactive UI state. */
     private val _stateFlow: MutableStateFlow<State> = MutableStateFlow(value = initialState)
-    /** A read-only [StateFlow] that the UI observes to render its elements. */
+    /** A read-only [kotlinx.coroutines.flow.StateFlow] that the UI observes to render its elements. */
     val stateFlow: StateFlow<State> = _stateFlow.asStateFlow()
     /** Provides the current, non-reactive snapshot of the [State]. */
     val state: State get() = stateFlow.value
 
-    /** Registry of active background [Job]s, keyed by a unique identifier to prevent leaks or redundant executions. */
+    /** Registry of active background [kotlinx.coroutines.Job]s, keyed by a unique identifier to prevent leaks or redundant executions. */
     private val activeJobs = mutableMapOf<String, Job>()
 
     /**
@@ -74,7 +74,7 @@ open class Store<State, Action>(initialState: State): ViewModel() {
     protected fun updateState(body: (State) -> State): State = _stateFlow.updateAndGet(function = body)
 
     /**
-     * Converts a cold [Flow] into a hot [StateFlow] scoped to the [viewModelScope].
+     * Converts a cold [kotlinx.coroutines.flow.Flow] into a hot [StateFlow] scoped to the [viewModelScope].
      *
      * @param <T> The type of data emitted by the flow.
      * @param started Strategy that controls when sharing starts and stops.
@@ -122,7 +122,7 @@ open class Store<State, Action>(initialState: State): ViewModel() {
      *
      * @param id Job identifier.
      * @param replace If `true`, cancels the previous execution of this ID before starting. Defaults to `true`.
-     * @param context The [CoroutineContext] for execution. Defaults to [Dispatcher.Default].
+     * @param context The [kotlin.coroutines.CoroutineContext] for execution. Defaults to [com.app.builder.core.flow.Dispatcher.Default].
      * @param block The suspending code to execute.
      * @return The [Job] representing this execution.
      */

@@ -1,6 +1,7 @@
 package com.app.builder.ui.screen.taskdetail
 
 import com.app.builder.domain.Task
+import com.app.builder.ui.component.bar.ActionBarMode
 
 /** Actions supported by the Task Detail Screen. */
 sealed interface TaskDetailScreenAction {
@@ -16,6 +17,30 @@ sealed interface TaskDetailScreenAction {
      * @param description The new description value.
      */
     data class ChangeDescription(val description: String): TaskDetailScreenAction
+    /**
+     * Notifies that the mode has changed.
+     *
+     * @param new The new mode it has changed to.
+     */
+    data class ModeChange(val new: ActionBarMode): TaskDetailScreenAction
+    /**
+     * Updates the current search query.
+     *
+     * @param search New search query text.
+     */
+    data class Search(val search: String): TaskDetailScreenAction
+    /**
+     * Confirms and commits the current pending mode.
+     *
+     * @param mode The pending mode.
+     */
+    data class Ok(val mode: ActionBarMode): TaskDetailScreenAction
+    /**
+     * Cancels the current pending mode and returns to the default layout.
+     *
+     * @param mode The pending mode.
+     */
+    data class Cancel(val mode: ActionBarMode): TaskDetailScreenAction
 }
 
 /**

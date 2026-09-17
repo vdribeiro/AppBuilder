@@ -8,8 +8,8 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.app.builder.ui.Preview
-import com.app.builder.ui.component.Store
 import com.app.builder.ui.core.navigation.NavigationBar
+import com.app.builder.ui.store.Store
 
 /**
  * Renders the app's navigation bar from the given [store]'s [NavigationState].

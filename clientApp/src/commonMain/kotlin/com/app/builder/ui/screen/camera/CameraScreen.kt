@@ -22,7 +22,6 @@ import com.app.builder.core.platform.OS
 import com.app.builder.core.platform.platform
 import com.app.builder.ui.LocalCamera
 import com.app.builder.ui.Preview
-import com.app.builder.ui.component.Store
 import com.app.builder.ui.component.bar.ActionBar
 import com.app.builder.ui.component.navigation.Navigation
 import com.app.builder.ui.component.navigation.NavigationState
@@ -36,6 +35,7 @@ import com.app.builder.ui.media.CameraPreview
 import com.app.builder.ui.permission.LocalPermissionManager
 import com.app.builder.ui.permission.Permission
 import com.app.builder.ui.screen.Screen
+import com.app.builder.ui.store.Store
 
 /**
  * The Camera Screen.

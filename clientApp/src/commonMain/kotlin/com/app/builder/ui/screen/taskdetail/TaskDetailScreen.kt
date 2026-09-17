@@ -9,28 +9,55 @@ import com.app.builder.core.security.uuid
 import com.app.builder.domain.Task
 import com.app.builder.ui.InjectTranslations
 import com.app.builder.ui.Preview
-import com.app.builder.ui.component.Store
+import com.app.builder.ui.component.bar.ActionBar
 import com.app.builder.ui.component.card.TaskCard
 import com.app.builder.ui.component.navigation.Navigation
 import com.app.builder.ui.component.navigation.NavigationState
+import com.app.builder.ui.component.useravatar.UserAvatar
+import com.app.builder.ui.component.useravatar.UserAvatarState
 import com.app.builder.ui.screen.Screen
+import com.app.builder.ui.store.Store
 
 /**
- * The user-facing Task Detail Screen, showing a single task's title and description, or a progress indicator while the task has not yet loaded.
+ * The user-facing Task Detail Screen, showing a single task.
  *
- * @param store Provides the task detail state and receives its actions.
  * @param navigationStore Drives the bottom navigation bar.
+ * @param userAvatarStore The store for user avatar.
+ * @param store Provides the task detail state and receives its actions.
  */
 @Composable
 fun TaskDetailScreen(
-    store: Store<TaskDetailScreenState, TaskDetailScreenAction>,
     navigationStore: Store<NavigationState, Unit>,
+    userAvatarStore: Store<UserAvatarState, Unit>,
+    store: Store<TaskDetailScreenState, TaskDetailScreenAction>,
 ) {
     val state by store.stateFlow.collectAsStateWithLifecycle()
     val task = state.task
 
     Screen(
-        bottomBar = { Navigation(store = navigationStore) }
+        bottomBar = { Navigation(store = navigationStore) },
+        topBar = {
+            ActionBar(
+                title = "task",
+                avatar = { UserAvatar(store = userAvatarStore) },
+                mode = state.mode,
+                layout = state.layout,
+                write = state.write,
+                onModeChange = state.onModeChange,
+                onSearch = state.onSearch,
+                onOkClick = state.onOkClick,
+                onCancelClick = state.onCancelClick,
+                sortAscending = state.filterCriteria.sortAscending,
+                sortProperty = state.filterCriteria.sortProperty,
+                onSelectSortProperty = state.onSelectSortProperty,
+                onSortAscendingClick = state.onSortAscendingClick,
+                properties = state.properties,
+                visibilityProperties = state.filterCriteria.visibleProperties,
+                onVisibilityPropertiesChange = state.onVisibilityPropertiesChange,
+                searchableProperties = state.filterCriteria.searchableProperties,
+                onSearchablePropertiesChange = state.onSearchablePropertiesChange
+            )
+        }
     ) {
         TaskCard(
             enabled = task != null && state.editMode,
