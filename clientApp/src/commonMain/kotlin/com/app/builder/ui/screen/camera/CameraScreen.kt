@@ -22,7 +22,10 @@ import com.app.builder.core.platform.OS
 import com.app.builder.core.platform.platform
 import com.app.builder.ui.LocalCamera
 import com.app.builder.ui.Preview
-import com.app.builder.ui.component.bar.ActionBar
+import com.app.builder.ui.component.actionbar.ActionBar
+import com.app.builder.ui.component.actionbar.ActionBarAction
+import com.app.builder.ui.component.actionbar.ActionBarState
+import com.app.builder.ui.component.bar.TopActionBar
 import com.app.builder.ui.component.navigation.Navigation
 import com.app.builder.ui.component.navigation.NavigationState
 import com.app.builder.ui.component.useravatar.UserAvatar
@@ -40,13 +43,13 @@ import com.app.builder.ui.store.Store
 /**
  * The Camera Screen.
  *
+ * @param actionBarStore The store for action bar.
  * @param navigationStore Drives the bottom navigation bar.
- * @param userAvatarStore The store for user avatar.
  */
 @Composable
 fun CameraScreen(
+    actionBarStore: Store<ActionBarState, ActionBarAction>,
     navigationStore: Store<NavigationState, Unit>,
-    userAvatarStore: Store<UserAvatarState, Unit>,
 ) {
     val permissionManager = LocalPermissionManager.current
     val camera = LocalCamera.current
@@ -57,8 +60,8 @@ fun CameraScreen(
     var snackbarMessage by remember { mutableStateOf<String?>(value = null) }
 
     Screen(
+        topBar = { ActionBar(store = actionBarStore) },
         bottomBar = { Navigation(store = navigationStore) },
-        topBar = { ActionBar(title = "camera", avatar = { UserAvatar(store = userAvatarStore) }) },
         snackbarHost = {
             snackbarMessage?.let {
                 Snackbar(message = it, onDismiss = { snackbarMessage = null })
@@ -138,7 +141,7 @@ fun CameraScreen(
 @Composable
 private fun CameraScreenPreview() = Preview {
     CameraScreen(
+        actionBarStore = Store(initialState = ActionBarState (avatarName = "Camera")),
         navigationStore = Store(initialState = NavigationState()),
-        userAvatarStore = Store(initialState = UserAvatarState(userName = "Camera")),
     )
 }

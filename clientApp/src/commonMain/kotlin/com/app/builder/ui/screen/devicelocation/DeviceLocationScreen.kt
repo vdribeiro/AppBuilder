@@ -31,7 +31,10 @@ import com.app.builder.core.devicelocation.DeviceLocationProvider
 import com.app.builder.core.locale.getLocalDateTime
 import com.app.builder.ui.LocalColorScheme
 import com.app.builder.ui.Preview
-import com.app.builder.ui.component.bar.ActionBar
+import com.app.builder.ui.component.actionbar.ActionBar
+import com.app.builder.ui.component.actionbar.ActionBarAction
+import com.app.builder.ui.component.actionbar.ActionBarState
+import com.app.builder.ui.component.bar.TopActionBar
 import com.app.builder.ui.component.navigation.Navigation
 import com.app.builder.ui.component.navigation.NavigationState
 import com.app.builder.ui.component.useravatar.UserAvatar
@@ -55,13 +58,13 @@ import com.app.builder.ui.store.Store
 /**
  * The Device Location Screen.
  *
+ * @param actionBarStore The store for action bar.
  * @param navigationStore Drives the bottom navigation bar.
- * @param userAvatarStore The store for user avatar.
  */
 @Composable
 fun DeviceLocationScreen(
-    navigationStore: Store<NavigationState, Unit>,
-    userAvatarStore: Store<UserAvatarState, Unit>,
+    actionBarStore: Store<ActionBarState, ActionBarAction>,
+    navigationStore: Store<NavigationState, Unit>
 ) {
     val permissionManager = LocalPermissionManager.current
     val colorScheme = LocalColorScheme.current
@@ -75,8 +78,8 @@ fun DeviceLocationScreen(
     val active = true
 
     Screen(
-        bottomBar = { Navigation(store = navigationStore) },
-        topBar = { ActionBar(title = "device_location", avatar = { UserAvatar(store = userAvatarStore) }) }
+        topBar = { ActionBar(store = actionBarStore) },
+        bottomBar = { Navigation(store = navigationStore) }
     ) {
         LazyColumn(
             modifier = Modifier.fillMaxWidth(),
@@ -200,7 +203,7 @@ private fun Double.roundTo(decimals: Int): Double {
 @Composable
 private fun DeviceLocationScreenPreview() = Preview {
     DeviceLocationScreen(
+        actionBarStore = Store(initialState = ActionBarState (avatarName = "Device Locations")),
         navigationStore = Store(initialState = NavigationState()),
-        userAvatarStore = Store(initialState = UserAvatarState(userName = "DL")),
     )
 }

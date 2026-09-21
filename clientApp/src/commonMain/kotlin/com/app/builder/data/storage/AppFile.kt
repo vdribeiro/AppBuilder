@@ -5,13 +5,11 @@ import kotlinx.collections.immutable.persistentListOf
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.MapSerializer
-import kotlinx.serialization.builtins.nullable
 import kotlinx.serialization.builtins.serializer
 import com.app.builder.core.config.ClientConfigs
 import com.app.builder.core.config.ClientFlags
 import com.app.builder.core.config.ServerConfigs
 import com.app.builder.core.config.ServerFlags
-import com.app.builder.ui.component.bar.ActionBarMode
 
 /** The index of every file in this module. */
 object AppFile {
@@ -67,7 +65,7 @@ object AppFile {
     }
 
     /**
-     * Criteria used to filter, sort, and shape a list-detail view.
+     * Action bar data mainly used to filter, sort, and shape a list-detail view.
      *
      * @property mode Current display mode, controlling which actions/inputs are shown.
      * @property search Search query text.
@@ -75,23 +73,21 @@ object AppFile {
      * @property sortAscending Whether the list is sorted in ascending order.
      * @property visibleProperties Names of the property values shown as visible columns.
      * @property searchableProperties Names of the property values included when searching.
-     * @property selectedUuids UUIDs the user has selected.
      */
     @Serializable
-    data class FilterCriteria(
-        val mode: ActionBarMode = ActionBarMode.DEFAULT,
+    data class ActionBarData(
+        val mode: String = "",
         val search: String = "",
         val sortProperty: String = "",
         val sortAscending: Boolean = false,
         val visibleProperties: ImmutableList<String> = persistentListOf(),
         val searchableProperties: ImmutableList<String> = persistentListOf(),
-        val selectedUuids: ImmutableList<String> = persistentListOf(),
     )
 
     /** Task preferences. */
-    data object TaskPreferences: StorageFile<FilterCriteria>(path = "task_preferences", encrypted = false) {
+    data object TaskPreferences: StorageFile<ActionBarData>(path = "task_preferences", encrypted = false) {
 
-        override val serializer: KSerializer<FilterCriteria> = FilterCriteria.serializer()
+        override val serializer: KSerializer<ActionBarData> = ActionBarData.serializer()
     }
 
     /** Every file in this module. */
