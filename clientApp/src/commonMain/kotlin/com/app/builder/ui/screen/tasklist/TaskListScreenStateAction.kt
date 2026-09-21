@@ -7,7 +7,6 @@ import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.collections.immutable.toPersistentList
 import com.app.builder.data.storage.AppFile
 import com.app.builder.domain.Task
-import com.app.builder.ui.component.bar.ActionBarLayout
 import com.app.builder.ui.component.bar.ActionBarMode
 import com.app.builder.ui.component.list.TaskItem
 
@@ -70,22 +69,19 @@ sealed interface TaskListScreenAction {
 }
 
 /** Default values of task list filters. */
-val defaultFilterCriteria = AppFile.FilterCriteria(
+val defaultFilterCriteria = AppFile.ActionBarData(
+    mode = ActionBarMode.DEFAULT,
     search = "",
     sortProperty = Task.Property.MODIFIED_AT.name,
     sortAscending = false,
     visibleProperties = Task.Property.entries.map { it.name }.toPersistentList(),
     searchableProperties = Task.Property.entries.map { it.name }.toPersistentList(),
-    selectedUuids = persistentListOf()
 )
 
 /**
  * State of the task list, holding the tasks to display and whether batch delete selection is active.
  *
  * @property tasks Tasks currently displayed.
- * @property selectedUuids UUIDs of the tasks the user has picked.
- * @property mode The current display mode.
- * @property layout Which actions to show.
  * @property write Whether buttons that allow "write" operations should be shown.
  * @property properties The map of property keys to their display labels, used to populate the sort, visibility and search menus.
  * @property filterCriteria Criteria used to filter, sort, and shape the task list.
@@ -100,12 +96,9 @@ val defaultFilterCriteria = AppFile.FilterCriteria(
  */
 data class TaskListScreenState(
     val tasks: ImmutableList<TaskItem> = persistentListOf(),
-    val selectedUuids: ImmutableList<String> = persistentListOf(),
-    val mode: ActionBarMode = ActionBarMode.DEFAULT,
-    val layout: ActionBarLayout = ActionBarLayout.ALL,
     val write: Boolean = false,
     val properties: ImmutableMap<String, String> = persistentMapOf(),
-    val filterCriteria: AppFile.FilterCriteria = defaultFilterCriteria,
+    val filterCriteria: AppFile.ActionBarData = defaultFilterCriteria,
     val onModeChange: (ActionBarMode, ActionBarMode) -> Unit = { _, _ -> },
     val onSearch: (String) -> Unit = {},
     val onOkClick: (ActionBarMode) -> Unit = {},
@@ -115,5 +108,3 @@ data class TaskListScreenState(
     val onVisibilityPropertiesChange: (ImmutableList<String>) -> Unit = {},
     val onSearchablePropertiesChange: (ImmutableList<String>) -> Unit = {},
 )
-
-

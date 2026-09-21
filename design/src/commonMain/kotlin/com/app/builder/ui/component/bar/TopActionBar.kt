@@ -6,6 +6,7 @@ import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -41,14 +42,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.app.builder.plusOrMinus
 import com.app.builder.ui.Preview
+import com.app.builder.ui.component.image.Avatar
 import com.app.builder.ui.core.bar.TopBar
 import com.app.builder.ui.core.bar.TopBarVariant
 import com.app.builder.ui.core.button.Button
 import com.app.builder.ui.core.button.Dropdown
 import com.app.builder.ui.core.button.DropdownItem
 import com.app.builder.ui.core.image.Icon
+import com.app.builder.ui.core.image.Image
 import com.app.builder.ui.core.text.Input
 import com.app.builder.ui.core.text.Text
 
@@ -59,58 +61,55 @@ import com.app.builder.ui.core.text.Text
  * @param title Text shown as the action bar's title.
  * @param onBackClick Shows a back arrow when not null and executes this callback when clicked.
  * @param onLoginClick Shows a login button when not null and executes this callback when clicked.
- * @param avatar The avatar composable.
+ * @param avatarName The name to fit in the avatar. Only the first letter of the first and last name will show capitalized if no image is provided.
+ * @param avatarImage The image resource.
+ * @param onAvatarClick Callback for the avatar click action.
  * @param mode Current display mode, controlling which actions/inputs are shown.
  * @param layout Which set of actions to show, based on whether the screen displays a list, a detail, or both.
  * @param write Whether buttons that allow "write" operations should be shown.
  * @param onModeChange Called with the old and new mode whenever the user triggers a mode change.
- * @param onSearch Called with the debounced search query as the user types in search mode.
  * @param onOkClick Called with the current [mode] when the confirmation button is clicked.
  * @param onCancelClick Called with the current [mode] when the cancellation button is clicked.
+ * @param onSearch Called with the debounced search query as the user types in search mode.
  * @param sortAscending Whether the list is currently sorted in ascending order.
  * @param sortProperty Key of the property currently used to sort the list.
  * @param onSelectSortProperty Called with the selected property key when a sort-property menu item is clicked.
  * @param onSortAscendingClick Called with the new sort direction when the sort-direction button is clicked.
  * @param properties Map of property keys to their display labels, used to populate the sort, visibility and search menus.
- * @param visibilityProperties Property keys currently shown as visible columns.
- * @param onVisibilityPropertiesChange Called with the updated set of visible property keys when one is toggled.
+ * @param visibleProperties Property keys currently shown as visible columns.
+ * @param onVisiblePropertiesChange Called with the updated set of visible property keys when one is toggled.
  * @param searchableProperties Property keys currently included when searching.
  * @param onSearchablePropertiesChange Called with the updated set of searchable property keys when one is toggled.
- * @param additionalActions Optional additional actions composable.
  */
 @Composable
-fun ActionBar(
+fun TopActionBar(
     modifier: Modifier = Modifier,
     title: String = "",
     onBackClick: (() -> Unit)? = null,
     onLoginClick: (() -> Unit)? = null,
-    avatar: @Composable () -> Unit = {},
+    avatarName: String? = null,
+    avatarImage: Image? = null,
+    onAvatarClick: (() -> Unit)? = null,
     mode: ActionBarMode = ActionBarMode.DEFAULT,
     layout: ActionBarLayout = ActionBarLayout.NONE,
     write: Boolean = false,
-    onModeChange: (ActionBarMode, ActionBarMode) -> Unit = { _, _ -> },
-    onSearch: (String) -> Unit = {},
+    onModeChange: (ActionBarMode) -> Unit = {},
     onOkClick: (ActionBarMode) -> Unit = {},
     onCancelClick: (ActionBarMode) -> Unit = {},
+    onSearch: (String) -> Unit = {},
     sortAscending: Boolean = true,
     sortProperty: String = "",
     onSelectSortProperty: (String) -> Unit = {},
     onSortAscendingClick: (Boolean) -> Unit = {},
     properties: ImmutableMap<String, String> = persistentMapOf(),
-    visibilityProperties: ImmutableList<String> = properties.keys.toPersistentList(),
-    onVisibilityPropertiesChange: (ImmutableList<String>) -> Unit = {},
+    visibleProperties: ImmutableList<String> = properties.keys.toPersistentList(),
+    onVisiblePropertiesChange: (String) -> Unit = {},
     searchableProperties: ImmutableList<String> = properties.keys.toPersistentList(),
-    onSearchablePropertiesChange: (ImmutableList<String>) -> Unit = {},
-    additionalActions: @Composable () -> Unit = {},
+    onSearchablePropertiesChange: (String) -> Unit = {},
 ) {
     var actionsExpanded by remember { mutableStateOf(value = false) }
-    var mode by remember { mutableStateOf(value = mode) }
-    var sortAscending by remember { mutableStateOf(value = sortAscending) }
-    var sortProperty by remember { mutableStateOf(value = sortProperty) }
-    var sortMenuExpanded by remember { mutableStateOf(value = false) }
-    var visibilityProperties by remember { mutableStateOf(value = visibilityProperties) }
+    var sortingMenuExpanded by remember { mutableStateOf(value = false) }
     var visibilityMenuExpanded by remember { mutableStateOf(value = false) }
-    var searchableProperties by remember { mutableStateOf(value = searchableProperties) }
     var searchableMenuExpanded by remember { mutableStateOf(value = false) }
     var searchQuery by remember { mutableStateOf(value = "") }
     LaunchedEffect(key1 = Unit) {
@@ -120,13 +119,10 @@ fun ActionBar(
             .collect { onSearch(it) }
     }
 
-    val sortProperties = properties.map { property ->
+    val sortingProperties = properties.map { property ->
         DropdownItem(
             text = property.value,
-            onClick = {
-                sortProperty = property.key
-                onSelectSortProperty(sortProperty)
-            },
+            onClick = { onSelectSortProperty(property.key) },
             leadingIcon = {
                 if (sortProperty == property.key) {
                     Icon(
@@ -138,15 +134,12 @@ fun ActionBar(
         )
     }.toPersistentList()
 
-    val visibleProperties = properties.map { property ->
+    val visibilityProperties = properties.map { property ->
         DropdownItem(
             text = property.value,
-            onClick = {
-                visibilityProperties = visibilityProperties.plusOrMinus(element = property.key).toPersistentList()
-                onVisibilityPropertiesChange(visibilityProperties)
-            },
+            onClick = { onVisiblePropertiesChange(property.key) },
             leadingIcon = {
-                if (visibilityProperties.contains(element = property.key)) {
+                if (visibleProperties.contains(element = property.key)) {
                     Icon(
                         imageVector = Icons.Default.Check,
                         contentDescription = "checked"
@@ -156,13 +149,10 @@ fun ActionBar(
         )
     }.toPersistentList()
 
-    val searchProperties = properties.map { property ->
+    val searchableProperties = properties.map { property ->
         DropdownItem(
             text = property.value,
-            onClick = {
-                searchableProperties = searchableProperties.plusOrMinus(element = property.key).toPersistentList()
-                onSearchablePropertiesChange(searchableProperties)
-            },
+            onClick = { onSearchablePropertiesChange(property.key) },
             leadingIcon = {
                 if (searchableProperties.contains(element = property.key)) {
                     Icon(
@@ -182,7 +172,14 @@ fun ActionBar(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(space = 8.dp),
             ) {
-                avatar()
+                if (avatarName != null || avatarImage != null || onAvatarClick != null) Avatar(
+                    modifier = Modifier
+                        .testTag(tag = "action_avatar")
+                        .clickable { onAvatarClick?.invoke() },
+                    name = avatarName,
+                    image = avatarImage,
+                    size = 40.dp,
+                )
                 Text(text = title)
             }
         },
@@ -199,20 +196,12 @@ fun ActionBar(
                     if (write && (layout == ActionBarLayout.ALL || layout == ActionBarLayout.LIST)) {
                         Button(
                             modifier = Modifier.testTag(tag = "action_add"),
-                            onClick = {
-                                val previousMode = mode
-                                mode = ActionBarMode.ADD
-                                onModeChange(previousMode, mode)
-                            },
+                            onClick = { onModeChange(ActionBarMode.ADD) },
                             content = { Icon(imageVector = Icons.Default.Add) }
                         )
                         Button(
                             modifier = Modifier.testTag(tag = "action_batch_delete"),
-                            onClick = {
-                                val previousMode = mode
-                                mode = ActionBarMode.BATCH_DELETE
-                                onModeChange(previousMode, mode)
-                            },
+                            onClick = { onModeChange(ActionBarMode.BATCH_DELETE) },
                             content = { Icon(imageVector = Icons.Default.DeleteSweep) }
                         )
                     }
@@ -220,20 +209,12 @@ fun ActionBar(
                     if (write && (layout == ActionBarLayout.ALL || layout == ActionBarLayout.DETAIL)) {
                         Button(
                             modifier = Modifier.testTag(tag = "action_edit"),
-                            onClick = {
-                                val previousMode = mode
-                                mode = ActionBarMode.EDIT
-                                onModeChange(previousMode, mode)
-                            },
+                            onClick = { onModeChange(ActionBarMode.EDIT) },
                             content = { Icon(imageVector = Icons.Default.Edit) }
                         )
                         Button(
                             modifier = Modifier.testTag(tag = "action_delete"),
-                            onClick = {
-                                val previousMode = mode
-                                mode = ActionBarMode.DELETE
-                                onModeChange(previousMode, mode)
-                            },
+                            onClick = { onModeChange(ActionBarMode.DELETE) },
                             content = { Icon(imageVector = Icons.Default.Delete) }
                         )
                     }
@@ -263,9 +244,7 @@ fun ActionBar(
                             modifier = Modifier.testTag(tag = "action_ok"),
                             onClick = {
                                 onOkClick(mode)
-                                val previousMode = mode
-                                mode = ActionBarMode.DEFAULT
-                                onModeChange(previousMode, mode)
+                                onModeChange(ActionBarMode.DEFAULT)
                             },
                             content = { Icon(imageVector = Icons.Default.Check) }
                         )
@@ -273,9 +252,7 @@ fun ActionBar(
                             modifier = Modifier.testTag(tag = "action_cancel"),
                             onClick = {
                                 onCancelClick(mode)
-                                val previousMode = mode
-                                mode = ActionBarMode.DEFAULT
-                                onModeChange(previousMode, mode)
+                                onModeChange(ActionBarMode.DEFAULT)
                             },
                             content = { Icon(imageVector = Icons.Default.Close) }
                         )
@@ -292,34 +269,28 @@ fun ActionBar(
                                 modifier = Modifier.testTag(tag = "action_search"),
                                 onClick = {
                                     searchQuery = ""
-                                    val previousMode = mode
-                                    mode = ActionBarMode.SEARCH
-                                    onModeChange(previousMode, mode)
+                                    onModeChange(ActionBarMode.SEARCH)
                                 },
                                 content = { Icon(imageVector = Icons.Default.Search) }
                             )
                             Button(
                                 modifier = Modifier.testTag(tag = "action_sort"),
-                                onClick = {
-                                    sortAscending = !sortAscending
-                                    onSortAscendingClick(sortAscending)
-                                },
+                                onClick = { onSortAscendingClick(sortAscending) },
                                 content = { Icon(imageVector = if (sortAscending) Icons.Default.ArrowUpward else Icons.Default.ArrowDownward) }
                             )
                             Box {
                                 Button(
                                     modifier = Modifier.testTag(tag = "action_sort_property"),
-                                    onClick = { sortMenuExpanded = !sortMenuExpanded },
+                                    onClick = { sortingMenuExpanded = !sortingMenuExpanded },
                                     content = { Icon(imageVector = Icons.Default.FilterList) }
                                 )
                                 Dropdown(
                                     modifier = Modifier.testTag(tag = "action_sort_property_menu"),
-                                    expanded = sortMenuExpanded,
-                                    onDismissRequest = { sortMenuExpanded = !sortMenuExpanded },
-                                    items = sortProperties
+                                    expanded = sortingMenuExpanded,
+                                    onDismissRequest = { sortingMenuExpanded = !sortingMenuExpanded },
+                                    items = sortingProperties
                                 )
                             }
-                            additionalActions()
                             Box {
                                 Button(
                                     modifier = Modifier.testTag(tag = "action_visible_properties"),
@@ -330,7 +301,7 @@ fun ActionBar(
                                     modifier = Modifier.testTag(tag = "action_visible_properties_menu"),
                                     expanded = visibilityMenuExpanded,
                                     onDismissRequest = { visibilityMenuExpanded = !visibilityMenuExpanded },
-                                    items = visibleProperties
+                                    items = visibilityProperties
                                 )
                             }
                         }
@@ -357,15 +328,13 @@ fun ActionBar(
                                     modifier = Modifier.testTag(tag = "action_searchable_properties_menu"),
                                     expanded = searchableMenuExpanded,
                                     onDismissRequest = { searchableMenuExpanded = !searchableMenuExpanded },
-                                    items = searchProperties
+                                    items = searchableProperties
                                 )
                             }
                             Button(
                                 modifier = Modifier.testTag(tag = "action_search_close"),
                                 onClick = {
-                                    val previousMode = mode
-                                    mode = ActionBarMode.DEFAULT
-                                    onModeChange(previousMode, mode)
+                                    onModeChange(ActionBarMode.DEFAULT)
                                     searchQuery = ""
                                 },
                                 content = { Icon(imageVector = Icons.Default.Close) }
@@ -409,14 +378,14 @@ enum class ActionBarLayout {
 
 @Preview
 @Composable
-private fun ActionBarPreview() = Preview {
-    ActionBar(title = "None", onBackClick = {}, onLoginClick = {})
+private fun TopActionBarPreview() = Preview {
+    TopActionBar(title = "None", onBackClick = {}, onLoginClick = {})
 }
 
 @Preview
 @Composable
-private fun ActionBarAllPreview() = Preview {
-    ActionBar(
+private fun TopActionBarAllPreview() = Preview {
+    TopActionBar(
         title = "All",
         layout = ActionBarLayout.ALL,
         write = true,
@@ -430,8 +399,8 @@ private fun ActionBarAllPreview() = Preview {
 
 @Preview
 @Composable
-private fun ActionBarListPreview() = Preview {
-    ActionBar(
+private fun TopActionBarListPreview() = Preview {
+    TopActionBar(
         title = "Monuments",
         layout = ActionBarLayout.LIST,
         write = true,
@@ -445,8 +414,8 @@ private fun ActionBarListPreview() = Preview {
 
 @Preview
 @Composable
-private fun ActionBarDetailPreview() = Preview {
-    ActionBar(
+private fun TopActionBarDetailPreview() = Preview {
+    TopActionBar(
         title = "Big Monument",
         layout = ActionBarLayout.DETAIL,
         write = true,
@@ -455,8 +424,8 @@ private fun ActionBarDetailPreview() = Preview {
 
 @Preview
 @Composable
-private fun ActionBarReadPreview() = Preview {
-    ActionBar(
+private fun TopActionBarReadPreview() = Preview {
+    TopActionBar(
         title = "Read",
         layout = ActionBarLayout.ALL,
         write = false,

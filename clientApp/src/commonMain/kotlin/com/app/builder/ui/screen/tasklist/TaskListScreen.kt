@@ -5,8 +5,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.app.builder.ui.InjectTranslations
+import com.app.builder.ui.LocalSplitScreen
 import com.app.builder.ui.Preview
-import com.app.builder.ui.component.bar.ActionBar
+import com.app.builder.ui.component.bar.TopActionBar
+import com.app.builder.ui.component.bar.ActionBarLayout
 import com.app.builder.ui.component.list.TaskList
 import com.app.builder.ui.component.navigation.Navigation
 import com.app.builder.ui.component.navigation.NavigationState
@@ -30,14 +32,17 @@ fun TaskListScreen(
 ) {
     val state by store.stateFlow.collectAsStateWithLifecycle()
 
+    val splitScreen = LocalSplitScreen.current
+    val layout = if (splitScreen) ActionBarLayout.ALL else ActionBarLayout.DETAIL
+
     Screen(
         bottomBar = { Navigation(store = navigationStore) },
         topBar = {
-            ActionBar(
+            TopActionBar(
                 title = "tasks",
                 avatar = { UserAvatar(store = userAvatarStore) },
-                mode = state.mode,
-                layout = state.layout,
+                mode = state.filterCriteria.mode,
+                layout = layout,
                 write = state.write,
                 onModeChange = state.onModeChange,
                 onSearch = state.onSearch,
@@ -48,8 +53,8 @@ fun TaskListScreen(
                 onSelectSortProperty = state.onSelectSortProperty,
                 onSortAscendingClick = state.onSortAscendingClick,
                 properties = state.properties,
-                visibilityProperties = state.filterCriteria.visibleProperties,
-                onVisibilityPropertiesChange = state.onVisibilityPropertiesChange,
+                visibleProperties = state.filterCriteria.visibleProperties,
+                onVisiblePropertiesChange = state.onVisibilityPropertiesChange,
                 searchableProperties = state.filterCriteria.searchableProperties,
                 onSearchablePropertiesChange = state.onSearchablePropertiesChange
             )

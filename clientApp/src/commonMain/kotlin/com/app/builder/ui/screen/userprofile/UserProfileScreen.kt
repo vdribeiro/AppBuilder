@@ -7,7 +7,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.app.builder.AppInfo
 import com.app.builder.ui.Preview
-import com.app.builder.ui.component.bar.ActionBar
+import com.app.builder.ui.component.bar.TopActionBar
 import com.app.builder.ui.component.container.UserProfile
 import com.app.builder.ui.component.navigation.Navigation
 import com.app.builder.ui.component.navigation.NavigationState
@@ -35,7 +35,7 @@ fun UserProfileScreen(
     Screen(
         bottomBar = { Navigation(store = navigationStore) },
         topBar = {
-            ActionBar(
+            TopActionBar(
                 onBackClick = if (router.backStack.size > 1) {
                     { router.back() }
                 } else null

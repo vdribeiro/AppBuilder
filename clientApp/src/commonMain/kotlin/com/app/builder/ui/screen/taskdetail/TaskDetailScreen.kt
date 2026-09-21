@@ -9,7 +9,7 @@ import com.app.builder.core.security.uuid
 import com.app.builder.domain.Task
 import com.app.builder.ui.InjectTranslations
 import com.app.builder.ui.Preview
-import com.app.builder.ui.component.bar.ActionBar
+import com.app.builder.ui.component.bar.TopActionBar
 import com.app.builder.ui.component.card.TaskCard
 import com.app.builder.ui.component.navigation.Navigation
 import com.app.builder.ui.component.navigation.NavigationState
@@ -37,7 +37,7 @@ fun TaskDetailScreen(
     Screen(
         bottomBar = { Navigation(store = navigationStore) },
         topBar = {
-            ActionBar(
+            TopActionBar(
                 title = "task",
                 avatar = { UserAvatar(store = userAvatarStore) },
                 mode = state.mode,
@@ -52,8 +52,8 @@ fun TaskDetailScreen(
                 onSelectSortProperty = state.onSelectSortProperty,
                 onSortAscendingClick = state.onSortAscendingClick,
                 properties = state.properties,
-                visibilityProperties = state.filterCriteria.visibleProperties,
-                onVisibilityPropertiesChange = state.onVisibilityPropertiesChange,
+                visibleProperties = state.filterCriteria.visibleProperties,
+                onVisiblePropertiesChange = state.onVisibilityPropertiesChange,
                 searchableProperties = state.filterCriteria.searchableProperties,
                 onSearchablePropertiesChange = state.onSearchablePropertiesChange
             )

@@ -7,7 +7,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapNotNull
 import com.app.builder.core.flow.Dispatcher
 import com.app.builder.core.locale.now
 import com.app.builder.core.security.uuid
@@ -63,7 +63,9 @@ class TaskListScreenStore(
     private fun setup(): Job = launch(id = "setup") {
         Telemetry.info(tag = TAG, message = "Setup")
 
-        AppFile.TaskPreferences.load()?.let { taskPreferences -> updateState { it.copy(filterCriteria = taskPreferences) } } ?: save { it }
+        AppFile.TaskPreferences.load()?.let { taskPreferences ->
+            updateState { it.copy(filterCriteria = taskPreferences) }
+        } ?: AppFile.TaskPreferences.save { it }
 
         authenticationUseCases.observeCurrentUser().observe(id = "current_user") { user ->
             val write = user?.hasPermission(entityType = EntityType.TASK, permission = Permission.WRITE) ?: false
@@ -71,14 +73,14 @@ class TaskListScreenStore(
         }
 
         val tasksFlow = taskUseCases.observeTasks()
-        val criteriaFlow = stateFlow
-            .map { it.filterCriteria }
+        val criteria = AppFile.TaskPreferences.cache()
+            .mapNotNull { it }
             .distinctUntilChanged()
 
         combine(
-            flow = criteriaFlow,
-            flow2 = tasksFlow,
-        ) { criteria, tasks ->
+            flow = tasksFlow,
+            flow2 = criteria,
+        ) { tasks, criteria ->
             val comparator = taskComparator(sortProperty = criteria.sortProperty, sortAscending = criteria.sortAscending)
             tasks
                 .filter { it.matchesSearch(search = criteria.search, searchableProperties = criteria.searchableProperties) }
@@ -88,7 +90,12 @@ class TaskListScreenStore(
         }
             .flowOn(context = Dispatcher.Default)
             .observe(id = "filterTasks") { tasks ->
-                updateState { it.copy(tasks = tasks) }
+                updateState {
+                    it.copy(
+                        tasks = tasks,
+                        filterCriteria = criteria
+                    )
+                }
             }
 
         taskUseCases.upsertTask(
@@ -142,7 +149,7 @@ class TaskListScreenStore(
      */
     private fun search(action: TaskListScreenAction.Search): Job = launch(id = "search") {
         updateState { it.copy(filterCriteria = it.filterCriteria.copy(search = action.search)) }
-        save { it.copy(search = action.search) }
+        AppFile.TaskPreferences.save { (it ?: defaultFilterCriteria).copy(search = action.search) }
     }
 
     /**
@@ -152,7 +159,7 @@ class TaskListScreenStore(
      */
     private fun selectSortProperty(action: TaskListScreenAction.SelectSortProperty): Job = launch(id = "selectSortProperty") {
         updateState { it.copy(filterCriteria = it.filterCriteria.copy(sortProperty = action.property)) }
-        save { it.copy(sortProperty = action.property) }
+        AppFile.TaskPreferences.save { (it ?: defaultFilterCriteria).copy(sortProperty = action.property) }
     }
 
     /**
@@ -162,7 +169,7 @@ class TaskListScreenStore(
      */
     private fun selectSortOrder(action: TaskListScreenAction.SelectSortOrder): Job = launch(id = "selectSortOrder") {
         updateState { it.copy(filterCriteria = it.filterCriteria.copy(sortAscending = action.ascending)) }
-        save { it.copy(sortAscending = action.ascending) }
+        AppFile.TaskPreferences.save { (it ?: defaultFilterCriteria).copy(sortAscending = action.ascending) }
     }
 
     /**
@@ -172,7 +179,7 @@ class TaskListScreenStore(
      */
     private fun setVisibleProperties(action: TaskListScreenAction.VisibleProperties): Job = launch(id = "setVisibleProperties") {
         updateState { it.copy(filterCriteria = it.filterCriteria.copy(visibleProperties = action.properties)) }
-        save { it.copy(visibleProperties = action.properties) }
+        AppFile.TaskPreferences.save { (it ?: defaultFilterCriteria).copy(visibleProperties = action.properties) }
     }
 
     /**
@@ -182,16 +189,7 @@ class TaskListScreenStore(
      */
     private fun setSearchableProperties(action: TaskListScreenAction.SearchableProperties): Job = launch(id = "setSearchableProperties") {
         updateState { it.copy(filterCriteria = it.filterCriteria.copy(searchableProperties = action.properties)) }
-        save { it.copy(searchableProperties = action.properties) }
-    }
-
-    /**
-     * Persists the task list filter preferences, applying [function] to the previously saved criteria.
-     *
-     * @param function Transform applied to the current (or default) [AppFile.FilterCriteria] before saving.
-     */
-    private suspend fun save(function: (AppFile.FilterCriteria) -> AppFile.FilterCriteria) {
-        AppFile.TaskPreferences.save { function(it ?: defaultFilterCriteria) }
+        AppFile.TaskPreferences.save { (it ?: defaultFilterCriteria).copy(searchableProperties = action.properties) }
     }
 
     /**
