@@ -8,13 +8,10 @@ import com.app.builder.ui.Preview
 import com.app.builder.ui.component.actionbar.ActionBar
 import com.app.builder.ui.component.actionbar.ActionBarAction
 import com.app.builder.ui.component.actionbar.ActionBarState
-import com.app.builder.ui.component.bar.TopActionBar
 import com.app.builder.ui.component.button.PushPayloadType
 import com.app.builder.ui.component.container.PushForm
 import com.app.builder.ui.component.navigation.Navigation
 import com.app.builder.ui.component.navigation.NavigationState
-import com.app.builder.ui.component.useravatar.UserAvatar
-import com.app.builder.ui.component.useravatar.UserAvatarState
 import com.app.builder.ui.screen.Screen
 import com.app.builder.ui.store.Store
 
@@ -62,7 +59,7 @@ fun PushScreen(
 @Composable
 private fun PushScreenPreview() = Preview {
     PushScreen(
-        actionBarStore = Store(initialState = ActionBarState (avatarName = "Tails")),
+        actionBarStore = Store(initialState = ActionBarState(avatarName = "Tails")),
         navigationStore = Store(initialState = NavigationState()),
         store = Store(initialState = PushScreenState()),
     )

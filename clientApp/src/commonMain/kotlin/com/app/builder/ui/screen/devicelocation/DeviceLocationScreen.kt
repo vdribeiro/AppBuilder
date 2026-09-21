@@ -34,11 +34,8 @@ import com.app.builder.ui.Preview
 import com.app.builder.ui.component.actionbar.ActionBar
 import com.app.builder.ui.component.actionbar.ActionBarAction
 import com.app.builder.ui.component.actionbar.ActionBarState
-import com.app.builder.ui.component.bar.TopActionBar
 import com.app.builder.ui.component.navigation.Navigation
 import com.app.builder.ui.component.navigation.NavigationState
-import com.app.builder.ui.component.useravatar.UserAvatar
-import com.app.builder.ui.component.useravatar.UserAvatarState
 import com.app.builder.ui.core.button.ButtonGroup
 import com.app.builder.ui.core.button.ButtonGroupItem
 import com.app.builder.ui.core.button.ButtonGroupVariant
@@ -203,7 +200,7 @@ private fun Double.roundTo(decimals: Int): Double {
 @Composable
 private fun DeviceLocationScreenPreview() = Preview {
     DeviceLocationScreen(
-        actionBarStore = Store(initialState = ActionBarState (avatarName = "Device Locations")),
+        actionBarStore = Store(initialState = ActionBarState(avatarName = "Device Locations")),
         navigationStore = Store(initialState = NavigationState()),
     )
 }

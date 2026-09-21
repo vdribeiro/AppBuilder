@@ -38,11 +38,8 @@ import com.app.builder.ui.Preview
 import com.app.builder.ui.component.actionbar.ActionBar
 import com.app.builder.ui.component.actionbar.ActionBarAction
 import com.app.builder.ui.component.actionbar.ActionBarState
-import com.app.builder.ui.component.bar.TopActionBar
 import com.app.builder.ui.component.navigation.Navigation
 import com.app.builder.ui.component.navigation.NavigationState
-import com.app.builder.ui.component.useravatar.UserAvatar
-import com.app.builder.ui.component.useravatar.UserAvatarState
 import com.app.builder.ui.core.button.Button
 import com.app.builder.ui.core.button.ButtonGroup
 import com.app.builder.ui.core.button.ButtonGroupItem
@@ -257,7 +254,7 @@ private enum class NfcRecordKind { OPEN, UPSERT }
 @Composable
 private fun NfcScreenPreview() = Preview {
     NfcScreen(
-        actionBarStore = Store(initialState = ActionBarState (avatarName = "NFC")),
+        actionBarStore = Store(initialState = ActionBarState(avatarName = "NFC")),
         navigationStore = Store(initialState = NavigationState()),
     )
 }

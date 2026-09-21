@@ -9,8 +9,6 @@ import com.app.builder.ui.component.actionbar.ActionBarStore
 import com.app.builder.ui.component.navigation.NavigationRoute
 import com.app.builder.ui.component.navigation.NavigationState
 import com.app.builder.ui.component.navigation.NavigationStore
-import com.app.builder.ui.component.useravatar.UserAvatarState
-import com.app.builder.ui.component.useravatar.UserAvatarStore
 import com.app.builder.ui.navigation.LocalRouter
 import com.app.builder.ui.navigation.Screen
 import com.app.builder.ui.screen.nfc.NfcScreen

@@ -27,6 +27,7 @@ import com.app.builder.core.config.ClientConfigs
 import com.app.builder.core.config.ClientFlags
 import com.app.builder.core.flow.Dispatcher
 import com.app.builder.core.flow.LazyData
+import com.app.builder.core.nfc.TagProvider
 import com.app.builder.core.platform.appDataPath
 import com.app.builder.core.platform.developmentMode
 import com.app.builder.core.platform.platform
@@ -45,7 +46,6 @@ import com.app.builder.data.storage.files
 import com.app.builder.data.storage.logFiles
 import com.app.builder.data.translation.TranslationCache
 import com.app.builder.domain.deeplink.DeepLink
-import com.app.builder.core.nfc.TagProvider
 import com.app.builder.domain.push.PushProvider
 import com.app.builder.ui.core.image.clearImageCache
 import com.app.builder.ui.push.RegisterBroadcastLifecycle

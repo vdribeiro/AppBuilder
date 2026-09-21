@@ -15,7 +15,6 @@ import com.app.builder.ui.component.button.PermissionItem
 import com.app.builder.ui.component.container.RegistrationForm
 import com.app.builder.ui.component.navigation.Navigation
 import com.app.builder.ui.component.navigation.NavigationState
-import com.app.builder.ui.component.useravatar.UserAvatarState
 import com.app.builder.ui.screen.Screen
 import com.app.builder.ui.store.Store
 
@@ -72,7 +71,7 @@ private fun RegisterScreenPreview() = Preview {
         )
     )
     RegisterScreen(
-        actionBarStore = Store(initialState = ActionBarState (avatarName = "Knuckles")),
+        actionBarStore = Store(initialState = ActionBarState(avatarName = "Knuckles")),
         navigationStore = Store(initialState = NavigationState()),
         store = Store(
             initialState = RegistrationScreenState(
