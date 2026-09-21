@@ -8,12 +8,13 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.app.builder.domain.EntityType
 import com.app.builder.ui.InjectTranslations
 import com.app.builder.ui.Preview
-import com.app.builder.ui.component.bar.ActionBar
+import com.app.builder.ui.component.actionbar.ActionBar
+import com.app.builder.ui.component.actionbar.ActionBarAction
+import com.app.builder.ui.component.actionbar.ActionBarState
 import com.app.builder.ui.component.button.PermissionItem
 import com.app.builder.ui.component.container.RegistrationForm
 import com.app.builder.ui.component.navigation.Navigation
 import com.app.builder.ui.component.navigation.NavigationState
-import com.app.builder.ui.component.useravatar.UserAvatar
 import com.app.builder.ui.component.useravatar.UserAvatarState
 import com.app.builder.ui.screen.Screen
 import com.app.builder.ui.store.Store
@@ -21,21 +22,21 @@ import com.app.builder.ui.store.Store
 /**
  * The user-facing Register Screen.
  *
+ * @param actionBarStore The store for action bar.
  * @param navigationStore Drives the bottom navigation bar.
- * @param userAvatarStore The store for user avatar.
  * @param store Provides the registration screen state and receives its actions.
  */
 @Composable
 fun RegisterScreen(
+    actionBarStore: Store<ActionBarState, ActionBarAction>,
     navigationStore: Store<NavigationState, Unit>,
-    userAvatarStore: Store<UserAvatarState, Unit>,
     store: Store<RegistrationScreenState, RegistrationScreenAction>
 ) {
     val state by store.stateFlow.collectAsStateWithLifecycle()
 
     Screen(
         bottomBar = { Navigation(store = navigationStore) },
-        topBar = { ActionBar(title = "register", avatar = { UserAvatar(store = userAvatarStore) }) }
+        topBar = { ActionBar(store = actionBarStore) }
     ) {
         RegistrationForm(
             loading = state.loading,
@@ -71,8 +72,8 @@ private fun RegisterScreenPreview() = Preview {
         )
     )
     RegisterScreen(
+        actionBarStore = Store(initialState = ActionBarState (avatarName = "Knuckles")),
         navigationStore = Store(initialState = NavigationState()),
-        userAvatarStore = Store(initialState = UserAvatarState(userName = "Knuckles")),
         store = Store(
             initialState = RegistrationScreenState(
                 permissions = persistentListOf(
