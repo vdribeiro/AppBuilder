@@ -35,7 +35,10 @@ import com.app.builder.domain.EntityType
 import com.app.builder.ui.LocalColorScheme
 import com.app.builder.ui.LocalNfcController
 import com.app.builder.ui.Preview
-import com.app.builder.ui.component.bar.ActionBar
+import com.app.builder.ui.component.actionbar.ActionBar
+import com.app.builder.ui.component.actionbar.ActionBarAction
+import com.app.builder.ui.component.actionbar.ActionBarState
+import com.app.builder.ui.component.bar.TopActionBar
 import com.app.builder.ui.component.navigation.Navigation
 import com.app.builder.ui.component.navigation.NavigationState
 import com.app.builder.ui.component.useravatar.UserAvatar
@@ -61,13 +64,13 @@ import com.app.builder.ui.core.list.LazyColumn as ListLazyColumn
 /**
  * The Nfc Screen.
  *
+ * @param actionBarStore The store for action bar.
  * @param navigationStore Drives the bottom navigation bar.
- * @param userAvatarStore The store for user avatar.
  */
 @Composable
 fun NfcScreen(
+    actionBarStore: Store<ActionBarState, ActionBarAction>,
     navigationStore: Store<NavigationState, Unit>,
-    userAvatarStore: Store<UserAvatarState, Unit>,
 ) {
     val nfc = LocalNfcController.current
     val colorScheme = LocalColorScheme.current
@@ -89,8 +92,8 @@ fun NfcScreen(
 
     Screen(
         modifier = Modifier.imePadding(),
+        topBar = { ActionBar(store = actionBarStore) },
         bottomBar = { Navigation(store = navigationStore) },
-        topBar = { ActionBar(title = "nfc", avatar = { UserAvatar(store = userAvatarStore) }) },
         snackbarHost = {
             snackbarMessage?.let {
                 Snackbar(message = it, onDismiss = { snackbarMessage = null })
@@ -254,7 +257,7 @@ private enum class NfcRecordKind { OPEN, UPSERT }
 @Composable
 private fun NfcScreenPreview() = Preview {
     NfcScreen(
+        actionBarStore = Store(initialState = ActionBarState (avatarName = "NFC")),
         navigationStore = Store(initialState = NavigationState()),
-        userAvatarStore = Store(initialState = UserAvatarState(userName = "Nfc")),
     )
 }
