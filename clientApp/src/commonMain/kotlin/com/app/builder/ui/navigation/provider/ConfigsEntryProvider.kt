@@ -25,7 +25,7 @@ fun EntryProviderScope<NavKey>.configsProvider(useCases: UseCases) {
     entry<Screen.ClientFlags> {
         val router = LocalRouter.current
         ConfigsScreen(
-            actionBarStore = viewModel { ActionBarStore(state = ActionBarState(title = "Client Flags"), router = router, authenticationUseCases = useCases.authenticationUseCases) },
+            actionBarStore = viewModel { ActionBarStore(state = ActionBarState(title = "client_flag"), router = router, authenticationUseCases = useCases.authenticationUseCases) },
             navigationStore = viewModel { NavigationStore(state = NavigationState(selected = NavigationRoute.CLIENT_FLAG), router = router, authenticationUseCases = useCases.authenticationUseCases) },
             store = viewModel { ConfigScreenStore(state = ConfigScreenState(configType = ConfigType.CLIENT_FLAG), configUseCases = useCases.configUseCases) },
         )
@@ -33,7 +33,7 @@ fun EntryProviderScope<NavKey>.configsProvider(useCases: UseCases) {
     entry<Screen.ClientConfigs> {
         val router = LocalRouter.current
         ConfigsScreen(
-            actionBarStore = viewModel { ActionBarStore(state = ActionBarState(title = "Client Configs"), router = router, authenticationUseCases = useCases.authenticationUseCases) },
+            actionBarStore = viewModel { ActionBarStore(state = ActionBarState(title = "client_config"), router = router, authenticationUseCases = useCases.authenticationUseCases) },
             navigationStore = viewModel { NavigationStore(state = NavigationState(selected = NavigationRoute.CLIENT_CONFIG), router = router, authenticationUseCases = useCases.authenticationUseCases) },
             store = viewModel { ConfigScreenStore(state = ConfigScreenState(configType = ConfigType.CLIENT_CONFIG), configUseCases = useCases.configUseCases) },
         )
@@ -41,7 +41,7 @@ fun EntryProviderScope<NavKey>.configsProvider(useCases: UseCases) {
     entry<Screen.ServerFlags> {
         val router = LocalRouter.current
         ConfigsScreen(
-            actionBarStore = viewModel { ActionBarStore(state = ActionBarState(title = "Server Flags"), router = router, authenticationUseCases = useCases.authenticationUseCases) },
+            actionBarStore = viewModel { ActionBarStore(state = ActionBarState(title = "server_flag"), router = router, authenticationUseCases = useCases.authenticationUseCases) },
             navigationStore = viewModel { NavigationStore(state = NavigationState(selected = NavigationRoute.SERVER_FLAG), router = router, authenticationUseCases = useCases.authenticationUseCases) },
             store = viewModel { ConfigScreenStore(state = ConfigScreenState(configType = ConfigType.SERVER_FLAG), configUseCases = useCases.configUseCases) },
         )
@@ -49,7 +49,7 @@ fun EntryProviderScope<NavKey>.configsProvider(useCases: UseCases) {
     entry<Screen.ServerConfigs> {
         val router = LocalRouter.current
         ConfigsScreen(
-            actionBarStore = viewModel { ActionBarStore(state = ActionBarState(title = "Server Configs"), router = router, authenticationUseCases = useCases.authenticationUseCases) },
+            actionBarStore = viewModel { ActionBarStore(state = ActionBarState(title = "server_config"), router = router, authenticationUseCases = useCases.authenticationUseCases) },
             navigationStore = viewModel { NavigationStore(state = NavigationState(selected = NavigationRoute.SERVER_CONFIG), router = router, authenticationUseCases = useCases.authenticationUseCases) },
             store = viewModel { ConfigScreenStore(state = ConfigScreenState(configType = ConfigType.SERVER_CONFIG), configUseCases = useCases.configUseCases) },
         )
