@@ -4,6 +4,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
 import com.app.builder.domain.gateway.UseCases
+import com.app.builder.ui.component.actionbar.ActionBarState
+import com.app.builder.ui.component.actionbar.ActionBarStore
 import com.app.builder.ui.component.navigation.NavigationRoute
 import com.app.builder.ui.component.navigation.NavigationState
 import com.app.builder.ui.component.navigation.NavigationStore
@@ -22,8 +24,8 @@ fun EntryProviderScope<NavKey>.nfcProvider(useCases: UseCases) {
     entry<Screen.NFC> {
         val router = LocalRouter.current
         NfcScreen(
+            actionBarStore = viewModel { ActionBarStore(state = ActionBarState(title = "nfc"), router = router, authenticationUseCases = useCases.authenticationUseCases) },
             navigationStore = viewModel { NavigationStore(state = NavigationState(selected = NavigationRoute.NFC), router = router, authenticationUseCases = useCases.authenticationUseCases) },
-            userAvatarStore = viewModel { UserAvatarStore(state = UserAvatarState(), authenticationUseCases = useCases.authenticationUseCases) },
         )
     }
 }
