@@ -5,7 +5,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.app.builder.ui.Preview
-import com.app.builder.ui.component.bar.ActionBar
+import com.app.builder.ui.component.actionbar.ActionBar
+import com.app.builder.ui.component.actionbar.ActionBarAction
+import com.app.builder.ui.component.actionbar.ActionBarState
+import com.app.builder.ui.component.bar.TopActionBar
 import com.app.builder.ui.component.button.PushPayloadType
 import com.app.builder.ui.component.container.PushForm
 import com.app.builder.ui.component.navigation.Navigation
@@ -20,21 +23,21 @@ import com.app.builder.ui.store.Store
  * a type selector, a broadcast toggle, notification title/description fields (when the type is [PushPayloadType.NOTIFICATION]),
  * a user multi-selector (when not broadcasting), and a send button.
  *
+ * @param actionBarStore The store for action bar.
  * @param navigationStore Drives the bottom navigation bar.
- * @param userAvatarStore The store for user avatar.
  * @param store Provides the push form state and receives its actions.
  */
 @Composable
 fun PushScreen(
+    actionBarStore: Store<ActionBarState, ActionBarAction>,
     navigationStore: Store<NavigationState, Unit>,
-    userAvatarStore: Store<UserAvatarState, Unit>,
     store: Store<PushScreenState, PushScreenAction>,
 ) {
     val state by store.stateFlow.collectAsStateWithLifecycle()
 
     Screen(
+        topBar = { ActionBar(store = actionBarStore) },
         bottomBar = { Navigation(store = navigationStore) },
-        topBar = { ActionBar(title = "notifications", avatar = { UserAvatar(store = userAvatarStore) }) }
     ) {
         PushForm(
             type = state.type,
@@ -59,8 +62,8 @@ fun PushScreen(
 @Composable
 private fun PushScreenPreview() = Preview {
     PushScreen(
+        actionBarStore = Store(initialState = ActionBarState (avatarName = "Tails")),
         navigationStore = Store(initialState = NavigationState()),
-        userAvatarStore = Store(initialState = UserAvatarState(userName = "Tails")),
         store = Store(initialState = PushScreenState()),
     )
 }

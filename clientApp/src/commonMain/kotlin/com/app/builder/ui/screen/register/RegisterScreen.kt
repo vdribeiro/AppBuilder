@@ -35,8 +35,8 @@ fun RegisterScreen(
     val state by store.stateFlow.collectAsStateWithLifecycle()
 
     Screen(
-        bottomBar = { Navigation(store = navigationStore) },
-        topBar = { ActionBar(store = actionBarStore) }
+        topBar = { ActionBar(store = actionBarStore) },
+        bottomBar = { Navigation(store = navigationStore) }
     ) {
         RegistrationForm(
             loading = state.loading,
