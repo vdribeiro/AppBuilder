@@ -16,7 +16,7 @@ import com.app.builder.core.telemetry.Console
 import com.app.builder.ui.AppState
 import com.app.builder.ui.LocalAppState
 import com.app.builder.ui.Preview
-import com.app.builder.ui.component.bar.ActionBar
+import com.app.builder.ui.component.bar.TopActionBar
 import com.app.builder.ui.component.container.Feedback
 import com.app.builder.ui.navigation.LocalRouter
 import com.app.builder.ui.navigation.Router
@@ -38,7 +38,7 @@ fun ErrorScreen(error: Boolean) {
     Screen(
         modifier = Modifier.imePadding(),
         topBar = {
-            ActionBar(
+            TopActionBar(
                 title = "feedback",
                 onBackClick = {
                     val screen = when (appState) {
