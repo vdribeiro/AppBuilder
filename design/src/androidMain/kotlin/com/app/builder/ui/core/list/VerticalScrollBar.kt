@@ -45,6 +45,7 @@ private class ThumbGeometry(
 /**
  * Reads [LazyListState.scrollIndicatorState], which is annotated `@FrequentlyChangingValue` since it updates on every scroll frame.
  * Must only be called from a layout/draw phase or gesture callback, never directly from a composable body, or it will trigger a recomposition on every frame.
+ * @return The thumb's geometry, or `null` if the list has no scroll indicator state yet.
  */
 private fun thumbGeometryOf(
     state: LazyListState,

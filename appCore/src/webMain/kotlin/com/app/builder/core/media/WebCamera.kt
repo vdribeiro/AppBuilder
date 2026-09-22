@@ -183,7 +183,11 @@ internal class WebCamera: Camera() {
     }
 }
 
-/** Returns whether the browser exposes the `getUserMedia` API needed to access a camera. */
+/**
+ * Checks whether the browser exposes the `getUserMedia` API needed to access a camera.
+ *
+ * @return `true` if a camera can be requested, `false` otherwise.
+ */
 @JsFun(code = "() => !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia)")
 private external fun hasMediaDevicesSupport(): Boolean
 
@@ -199,7 +203,11 @@ private external fun hasMediaDevicesSupport(): Boolean
 )
 private external fun startMediaStream(video: HTMLVideoElement, facingMode: String)
 
-/** Returns and clears whether the active camera stream ended unexpectedly (e.g. permission denied/revoked) since the last poll. */
+/**
+ * Returns and clears whether the active camera stream ended unexpectedly (e.g. permission denied/revoked) since the last poll.
+ *
+ * @return `true` if the stream ended since the last poll, `false` otherwise.
+ */
 @JsFun(code = "() => { var e = !!window.__cameraStreamEnded; window.__cameraStreamEnded = false; return e; }")
 private external fun pollStreamEnded(): Boolean
 
@@ -207,7 +215,13 @@ private external fun pollStreamEnded(): Boolean
 @JsFun(code = "(video) => { if (video.srcObject) { video.srcObject.getTracks().forEach(function(t) { t.onended = null; t.stop(); }); video.srcObject = null; } window.__cameraStreamEnded = false; }")
 private external fun stopMediaStream(video: HTMLVideoElement)
 
-/** Draws [video]'s current frame onto [canvas] and returns the result as a JPEG data URL. */
+/**
+ * Draws [video]'s current frame onto [canvas].
+ *
+ * @param video The video element to read the current frame from.
+ * @param canvas The canvas the frame is drawn onto.
+ * @return The captured frame as a JPEG data URL.
+ */
 @JsFun(code = "(video, canvas) => { canvas.getContext('2d').drawImage(video, 0, 0); return canvas.toDataURL('image/jpeg'); }")
 private external fun captureFrame(video: HTMLVideoElement, canvas: HTMLCanvasElement): String
 
@@ -241,7 +255,11 @@ private external fun startMediaRecorder(video: HTMLVideoElement)
 )
 private external fun stopMediaRecorder()
 
-/** Returns the object URL written by the `onstop` callback, or an empty string if not yet available. */
+/**
+ * Returns the object URL written by the `onstop` callback.
+ *
+ * @return The recording's object URL, or an empty string if not yet available.
+ */
 @JsFun(code = "() => window.__cameraRecordingUrl || ''")
 private external fun pollRecordingUrl(): String
 

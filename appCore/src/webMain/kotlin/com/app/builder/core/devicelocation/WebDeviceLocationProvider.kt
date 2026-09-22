@@ -135,7 +135,11 @@ internal class WebDeviceLocationProvider: DeviceLocationProvider() {
     }
 }
 
-/** Checks whether this browser exposes `navigator.geolocation`. */
+/**
+ * Checks whether this browser exposes `navigator.geolocation`.
+ *
+ * @return `true` if the geolocation API is available, `false` otherwise.
+ */
 @JsFun(code = "() => 'geolocation' in navigator")
 private external fun isGeolocationSupported(): Boolean
 
@@ -175,6 +179,7 @@ private external fun requestPosition(slot: String, highAccuracy: Boolean, timeou
  * Returns and clears the fix stored on [slot], or an empty string if none has arrived yet.
  *
  * @param slot The window property to read.
+ * @return The fix as a JSON string, or an empty string if none has arrived yet.
  */
 @JsFun(code = "(slot) => { var r = window[slot] || ''; window[slot] = ''; return r; }")
 private external fun pollPosition(slot: String): String
@@ -183,6 +188,7 @@ private external fun pollPosition(slot: String): String
  * Returns and clears whether the request on [slot] reported failure since the last poll.
  *
  * @param slot The window property to read.
+ * @return `true` if the request reported failure since the last poll, `false` otherwise.
  */
 @JsFun(code = "(slot) => { var e = !!window[slot + 'Error']; window[slot + 'Error'] = false; return e; }")
 private external fun pollPositionError(slot: String): Boolean
