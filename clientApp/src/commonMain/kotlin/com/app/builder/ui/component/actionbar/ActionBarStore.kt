@@ -10,6 +10,7 @@ import com.app.builder.domain.EntityType
 import com.app.builder.domain.Permission
 import com.app.builder.domain.gateway.authentication.AuthenticationUseCases
 import com.app.builder.plusOrMinus
+import com.app.builder.toEnumOrNull
 import com.app.builder.ui.component.bar.ActionBarMode
 import com.app.builder.ui.component.image.toImage
 import com.app.builder.ui.core.image.Image
@@ -74,6 +75,7 @@ class ActionBarStore(
             val searchableProperties = searchableProperties.toPersistentList()
             updateState {
                 it.copy(
+                    mode = mode.toEnumOrNull<ActionBarMode>() ?: ActionBarMode.DEFAULT,
                     sortProperty = sortProperty,
                     sortAscending = sortAscending,
                     visibleProperties = visibleProperties,
