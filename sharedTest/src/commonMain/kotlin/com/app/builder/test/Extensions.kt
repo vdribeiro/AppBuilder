@@ -18,7 +18,12 @@ fun ComposeUiTest.printEverything(tag: String = "Full Tree") {
     onRoot(useUnmergedTree = true).printToLog(tag = tag)
 }
 
-/** Verify the number of items in a collection. */
+/**
+ * Verify the number of items in a collection.
+ *
+ * @param count The expected number of items.
+ * @return This [SemanticsNodeInteraction], so assertions can be chained.
+ */
 fun SemanticsNodeInteraction.count(count: Int): SemanticsNodeInteraction =
     if (runCatching { onChildren().assertCountEquals(expectedSize = count) }.isSuccess) this else
         assert(matcher = SemanticsMatcher(description = "Has $count items") { node ->

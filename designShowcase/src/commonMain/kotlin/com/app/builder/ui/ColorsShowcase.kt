@@ -72,7 +72,11 @@ fun ColorsShowcase() {
     }
 }
 
-/** Converts a color to its hexadecimal representation. */
+/**
+ * Converts a color to its hexadecimal representation.
+ *
+ * @return The color as an uppercase `#RRGGBB` string.
+ */
 private fun Color.toHex(): String {
     fun Float.toByteHex() = (this * 255f).toInt().coerceIn(minimumValue = 0, maximumValue = 255)
         .toString(radix = 16).padStart(length = 2, padChar = '0')

@@ -35,6 +35,11 @@ fun Modifier.onKeyPress(
 /**
  * Listens for a specific [sequence] of [Key] stokes and triggers the [onSequenceComplete] callback upon completion.
  * The sequence progress will automatically reset if the user pauses for longer than the specified [delay].
+ *
+ * @param sequence The [Key]s that have to be pressed in order for the sequence to complete.
+ * @param delay How long, in milliseconds, the user may pause before the progress resets.
+ * @param onSequenceComplete The action to perform once the whole [sequence] has been pressed.
+ * @return A [KeyEvent] handler to be given to a key listener, always returning `false` so the event keeps propagating.
  */
 @Composable
 fun rememberKeySequence(
@@ -64,6 +69,11 @@ fun rememberKeySequence(
 /**
  * Processes a [KeyEvent] to check its [progress] against a given key [sequence]
  * and return the new progress value after processing the event.
+ *
+ * @param sequence The [Key]s that have to be pressed in order for the sequence to complete.
+ * @param progress How many keys of [sequence] have been matched so far.
+ * @param onSequenceComplete The action to perform once the whole [sequence] has been pressed.
+ * @return The new progress, reset to `0` once the sequence completes or a key breaks it.
  */
 private fun KeyEvent.onSequence(
     sequence: List<Key>,

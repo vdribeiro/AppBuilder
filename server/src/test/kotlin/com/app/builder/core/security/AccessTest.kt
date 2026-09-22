@@ -24,7 +24,13 @@ class AccessTest: TestCase() {
         assertNotEquals(illegal = adminToken, actual = userToken)
     }
 
-    /** Creates an access token and asserts its claims match the given user and permissions. */
+    /**
+     * Creates an access token and asserts its claims match the given user and permissions.
+     *
+     * @param userUuid UUID of the user the token is issued for.
+     * @param permissions Permissions the token is expected to carry.
+     * @return The created access token.
+     */
     private fun testAccessToken(userUuid: Uuid, permissions: Map<EntityType, Permission>): String {
         val token = assertNotNull(actual = createAccessToken(userUuid = userUuid, permissions = permissions))
         val payload = createVerifier().verify(token)

@@ -120,6 +120,11 @@ open class DeviceLocationProvider {
     }
 }
 
+/**
+ * Returns the most recent known location.
+ *
+ * @return The last known [DeviceLocation], or `null` if none is available.
+ */
 suspend fun getLastKnownLocation(): DeviceLocation? = DeviceLocationProvider.instance.getLastKnownLocation()
 
 /**

@@ -190,6 +190,12 @@ fun DeviceLocationScreen(
     }
 }
 
+/**
+ * Rounds this value to a fixed number of decimal places.
+ *
+ * @param decimals How many decimal places to keep.
+ * @return This value rounded to [decimals] decimal places.
+ */
 private fun Double.roundTo(decimals: Int): Double {
     var factor = 1.0
     repeat(times = decimals) { factor *= 10.0 }
