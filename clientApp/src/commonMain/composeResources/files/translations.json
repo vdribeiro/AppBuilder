@@ -61,6 +61,41 @@
   },
   {
     "languageIso": "en",
+    "key": "registry",
+    "value": "Registry"
+  },
+  {
+    "languageIso": "en",
+    "key": "device_location",
+    "value": "Device Location"
+  },
+  {
+    "languageIso": "en",
+    "key": "file",
+    "value": "File"
+  },
+  {
+    "languageIso": "en",
+    "key": "camera",
+    "value": "Camera"
+  },
+  {
+    "languageIso": "en",
+    "key": "nfc",
+    "value": "NFC"
+  },
+  {
+    "languageIso": "en",
+    "key": "registration",
+    "value": "Registration"
+  },
+  {
+    "languageIso": "en",
+    "key": "feedback",
+    "value": "Feedback"
+  },
+  {
+    "languageIso": "en",
     "key": "title",
     "value": "Title"
   },
@@ -166,6 +201,16 @@
   },
   {
     "languageIso": "en",
+    "key": "checked",
+    "value": "Checked"
+  },
+  {
+    "languageIso": "en",
+    "key": "not_supported",
+    "value": "Not supported"
+  },
+  {
+    "languageIso": "en",
     "key": "users",
     "value": "%1$s Users"
   },
@@ -256,6 +301,41 @@
   },
   {
     "languageIso": "en",
+    "key": "task_title",
+    "value": "Title"
+  },
+  {
+    "languageIso": "en",
+    "key": "task_description",
+    "value": "Description"
+  },
+  {
+    "languageIso": "en",
+    "key": "task_modified_at",
+    "value": "Modified At"
+  },
+  {
+    "languageIso": "en",
+    "key": "task_deleted_at",
+    "value": "Deleted At"
+  },
+  {
+    "languageIso": "en",
+    "key": "task_state",
+    "value": "State"
+  },
+  {
+    "languageIso": "en",
+    "key": "task_state_todo",
+    "value": "To Do"
+  },
+  {
+    "languageIso": "en",
+    "key": "task_state_complete",
+    "value": "Complete"
+  },
+  {
+    "languageIso": "en",
     "key": "scan_nfc_tag",
     "value": "Hold your device near an NFC tag."
   },
@@ -266,7 +346,7 @@
   },
   {
     "languageIso": "en",
-    "key": "tag_read",
+    "key": "tag_write",
     "value": "Tag written."
   }
 ]

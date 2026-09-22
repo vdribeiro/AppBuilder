@@ -40,6 +40,8 @@ fun TaskDetailScreen(
     ) {
         TaskCard(
             enabled = task != null && state.editMode,
+            modifiedAt = task?.modifiedAt?.toString(),
+            deletedAt = task?.deletedAt?.toString(),
             title = task?.title,
             onTitleChange = { store.send(action = TaskDetailScreenAction.ChangeTitle(title = it)) },
             description = task?.description,
