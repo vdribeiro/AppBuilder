@@ -73,16 +73,17 @@ class ConfigScreenStore(
     private fun updateValue(state: ConfigScreenState, action: ConfigScreenAction.UpdateValue): Job = launch(id = "persist-${action.item.uuid}", replace = true) {
         Telemetry.info(tag = TAG, message = "Update Value")
 
-        // Validate input: Form values must be numbers for now
-        if (action.value is ConfigValue.Form && action.value.value.toLongOrNull() == null) return@launch Telemetry.error(tag = TAG, message = "Invalid form value")
+        val persistable = action.value !is ConfigValue.Form || action.value.value.toDoubleOrNull() != null
 
         val items = state.items.map {
             if (it.uuid == action.item.uuid) it.copy(
-                pending = true,
+                pending = persistable,
                 value = action.value
             ) else it
         }.toPersistentList()
         updateState { it.copy(items = items) }
+
+        if (!persistable) return@launch Telemetry.info(tag = TAG, message = "Waiting for a numeric form value before persisting")
 
         delay(timeMillis = DEBOUNCE_MILLIS)
 
@@ -93,11 +94,8 @@ class ConfigScreenStore(
             ConfigType.SERVER_CONFIG -> items.toConfig<ServerConfigs>()?.let { configUseCases.updateServerConfigs(configs = it) }
         }
 
-        val finishedItems = state.items.map {
-            if (it.uuid == action.item.uuid) it.copy(
-                pending = false,
-                value = action.value
-            ) else it
+        val finishedItems = items.map {
+            if (it.uuid == action.item.uuid) it.copy(pending = false) else it
         }.toPersistentList()
         updateState { it.copy(items = finishedItems) }
 
