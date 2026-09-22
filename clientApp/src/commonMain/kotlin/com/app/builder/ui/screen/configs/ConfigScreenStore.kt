@@ -23,7 +23,7 @@ import com.app.builder.ui.component.list.ConfigValue
 import com.app.builder.ui.store.Store
 
 /**
- * Store backing a config list screen for a given config yype, loading the relevant flags/configs and persisting changes made through [ConfigScreenAction.UpdateValue].
+ * Store backing a config list screen for a given config type, loading the relevant flags/configs and persisting changes made through [ConfigScreenAction.UpdateValue].
  *
  * @param state The initial [ConfigScreenState].
  * @property configUseCases The use cases used to read and persist flags/configs.

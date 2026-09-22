@@ -139,7 +139,7 @@ suspend fun ApplicationCall.getUserUuid(): Uuid? = runCatching {
 }.getOrNull()
 
 /**
- * Get the user permission from the JWT payload.
+ * Get the user permissions, preferring [permissionService] so that changes apply before the access token expires, and falling back to the JWT claim when the user is not cached.
  * Logs an error to telemetry if the process fails.
  *
  * @receiver [ApplicationCall] The context of the call.

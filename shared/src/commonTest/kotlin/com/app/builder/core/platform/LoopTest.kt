@@ -7,7 +7,7 @@ import com.app.builder.test.TestCase
 
 class LoopTest: TestCase() {
 
-    /** Verifies loop runs immediately, repeats on every interval, and stops once its job is cancelled. */
+    /** Verifies loop runs immediately, repeats on every interval, and stops once its job is canceled. */
     @Test
     fun loopRepeatsOnEveryIntervalAndStopsOnCancellation() = runUnitTest {
         var iterations = 0

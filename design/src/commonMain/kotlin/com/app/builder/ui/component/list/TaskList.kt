@@ -60,8 +60,8 @@ fun TaskList(
  * @property selected The visual emphasis state of the card.
  * @property modifiedAt The timestamp indicating when this task was last updated.
  * @property deletedAt The timestamp indicating when this task was last deleted.
- * @property title The title of the task. Defaults to empty.
- * @property description The description of the task. Defaults to empty.
+ * @property title The title of the task. Defaults to `null`.
+ * @property description The description of the task. Defaults to `null`.
  */
 @Stable
 data class TaskItem(

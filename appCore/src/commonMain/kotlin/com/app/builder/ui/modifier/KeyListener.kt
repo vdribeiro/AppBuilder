@@ -33,7 +33,7 @@ fun Modifier.onKeyPress(
 }
 
 /**
- * Listens for a specific [sequence] of [Key] stokes and triggers the [onSequenceComplete] callback upon completion.
+ * Listens for a specific [sequence] of [Key] strokes and triggers the [onSequenceComplete] callback upon completion.
  * The sequence progress will automatically reset if the user pauses for longer than the specified [delay].
  *
  * @param sequence The [Key]s that have to be pressed in order for the sequence to complete.

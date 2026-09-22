@@ -244,7 +244,7 @@ private class CounterStore: Store<CounterState, CounterAction>(initialState = Co
      * Exposes [Store.launch] for testing.
      *
      * @param id Identifier used to key the launched job.
-     * @param replace Whether an existing job under [id] should be cancelled and replaced.
+     * @param replace Whether an existing job under [id] should be canceled and replaced.
      * @param block The suspending work to run.
      * @return The [Job] representing the launched work.
      */
@@ -259,7 +259,7 @@ private class CounterStore: Store<CounterState, CounterAction>(initialState = Co
      *
      * @param source The flow to observe.
      * @param id Identifier used to key the observing job.
-     * @param replace Whether an existing job under [id] should be cancelled and replaced.
+     * @param replace Whether an existing job under [id] should be canceled and replaced.
      * @param timeout Milliseconds to keep observing after the last collector disappears.
      * @param block Invoked with every value emitted by [source].
      * @return The [Job] representing the observation.
