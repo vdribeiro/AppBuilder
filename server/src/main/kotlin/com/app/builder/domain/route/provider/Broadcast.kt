@@ -29,9 +29,9 @@ import com.app.builder.domain.route.validatePermission
 import com.app.builder.domain.usecase.registry.RegistryUseCases
 
 /**
- * Configures the SSE broadcast route.
- * This is a public endpoint. Any client may connect to receive notifications.
- * Protected by per-IP rate limiting and a global connection cap.
+ * Configures the broadcast routes.
+ * The SSE stream and the FCM topic subscription are public: any client may connect to receive notifications.
+ * Both are protected by per-IP rate limiting, and the stream additionally by a global connection cap.
  *
  * @param permissionService The permission service.
  * @param broadcastService The service managing SSE connections and event dispatch.

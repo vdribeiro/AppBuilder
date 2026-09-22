@@ -67,7 +67,7 @@ import com.app.builder.ui.core.text.Text
  * @param mode Current display mode, controlling which actions/inputs are shown.
  * @param layout Which set of actions to show, based on whether the screen displays a list, a detail, or both.
  * @param write Whether buttons that allow "write" operations should be shown.
- * @param onModeChange Called with the old and new mode whenever the user triggers a mode change.
+ * @param onModeChange Called with the new mode whenever the user triggers a mode change.
  * @param onOkClick Called with the current [mode] when the confirmation button is clicked.
  * @param onCancelClick Called with the current [mode] when the cancellation button is clicked.
  * @param onSearch Called with the debounced search query as the user types in search mode.
@@ -358,13 +358,13 @@ enum class ActionBarMode {
     DEFAULT,
     /** Search mode. The search layout is shown. */
     SEARCH,
-    /** Add mode. The confirmation and cancellation layout is shown */
+    /** Add mode. The confirmation and cancellation layout is shown. */
     ADD,
-    /** Edit mode. The confirmation and cancellation layout is shown */
+    /** Edit mode. The confirmation and cancellation layout is shown. */
     EDIT,
-    /** delete mode. The confirmation and cancellation layout is shown */
+    /** Delete mode. The confirmation and cancellation layout is shown. */
     DELETE,
-    /** Batch delete mode. The confirmation and cancellation layout is shown */
+    /** Batch delete mode. The confirmation and cancellation layout is shown. */
     BATCH_DELETE,
 }
 

@@ -37,7 +37,7 @@ class PermissionManager(
     /** Identifies this instance to prevent echoing signals. */
     private val instanceId = uuid()
 
-    /** Tracks the signal observation delivering broadcasts to this instance's sessions. */
+    /** Tracks the signal observation applying permission updates from other instances to this instance's cache. */
     private var listenJob: Job? = null
 
     /** Cache for user permissions. */

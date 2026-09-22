@@ -25,7 +25,7 @@ interface PermissionService {
      * Returns the user permissions for the given [userUuid].
      *
      * @param userUuid The user to look up.
-     * @return The permissions of the user, or null if the user is not found.
+     * @return The cached permissions of the user, or null if the user is not currently cached.
      */
     fun get(userUuid: Uuid): Map<EntityType, Permission>?
 }

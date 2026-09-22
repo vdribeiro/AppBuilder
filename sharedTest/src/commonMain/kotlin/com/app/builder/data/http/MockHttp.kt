@@ -35,7 +35,7 @@ import com.app.builder.domain.PushPayload
 /**
  * A [MockEngine] with the required capabilities for test cases.
  *
- * @property config The [MockEngineConfig] with the routes to handle.
+ * @param config The [MockEngineConfig] with the routes to handle.
  */
 class TestEngine(config: MockEngineConfig): MockEngine(config = config) {
     override val supportedCapabilities: Set<HttpClientEngineCapability<out Any>> = setOf(

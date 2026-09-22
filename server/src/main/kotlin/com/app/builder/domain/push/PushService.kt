@@ -28,7 +28,7 @@ interface PushService {
      * @param ticketUuid The ticket provided by the client.
      * @param deviceUuid The unique identifier of the device.
      * @param session The active WebSocket session.
-     * @return The User UUID associated with the ticket, or null if an error occurs or there in no matching user.
+     * @return The User UUID associated with the ticket, or null if an error occurs or there is no matching user.
      */
     suspend fun addConnection(ticketUuid: Uuid, deviceUuid: Uuid, session: DefaultWebSocketSession): Uuid?
 

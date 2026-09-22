@@ -23,7 +23,7 @@ import com.app.builder.core.platform.developmentMode as devMode
  * Ensures that all network requests adhere to a consistent set of rules for logging, timeouts, caching, and serialization.
  *
  * @param engine The underlying networking engine used to execute HTTP requests.
- * @param configurations Optional configurations for the [HttpClient].
+ * @property configurations Optional configurations for the [HttpClient].
  */
 class HttpClientFactory(engine: HttpClientEngine, private val configurations: Configurations = Configurations()) {
 
