@@ -115,7 +115,7 @@ class CameraTest: TestCase() {
         assertEquals(expected = Camera.State.Previewing, actual = camera.state.value)
     }
 
-    /** Verifies that calls invalid for the current state are ignored. */
+    /** Verifies that calls invalid for the current state leave the state untouched, with capturePhoto reporting the failure as a null result rather than being silently dropped. */
     @Test
     fun invalidCallsAreIgnored() = runUnitTest {
         val camera = recordingCamera()

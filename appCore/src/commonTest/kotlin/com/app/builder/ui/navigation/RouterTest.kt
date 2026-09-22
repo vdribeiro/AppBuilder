@@ -52,7 +52,7 @@ class RouterTest: TestCase() {
         assertEquals(expected = listOf(FakeScreen.List), actual = router.backStack.toList())
     }
 
-    /** Verifies that [Router.NavOption.REPLACE_FIRST] replaces the entire back stack with the new screen. */
+    /** Verifies that [Router.NavOption.REPLACE_FIRST] removes the first occurrence of the screen and everything above it before pushing the new instance. */
     @Test
     fun replaceFirst() = runUnitTest {
         router.navigate(screen = FakeScreen.Main)
@@ -98,7 +98,7 @@ class RouterTest: TestCase() {
         assertEquals(expected = listOf(FakeScreen.List, FakeScreen.Detail(uuid = "1"), FakeScreen.Main), actual = router.backStack.toList())
     }
 
-    /** Verifies that [Router.NavOption.POP] pops the back stack until the target screen or its first occurrence. */
+    /** Verifies that [Router.NavOption.POP] pops the back stack down to the last occurrence of the target screen, discarding the instance passed in. */
     @Test
     fun pop() = runUnitTest {
         router.navigate(screen = FakeScreen.Main)

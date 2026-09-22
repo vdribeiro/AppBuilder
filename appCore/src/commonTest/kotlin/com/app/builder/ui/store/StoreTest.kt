@@ -127,7 +127,7 @@ class StoreTest: TestCase() {
         assertEquals(expected = 42, actual = result.value)
     }
 
-    /** Verifies that [Store.observe] only forwards values while the UI is subscribed. */
+    /** Verifies that [Store.observe] forwards values while the UI is subscribed and throughout the pause timeout, then drops them once the timeout elapses. */
     @Test
     fun observeOnlyForwardsValuesWhileUIIsSubscribed() = runUnitTest { testDispatcher ->
         val store = CounterStore()
