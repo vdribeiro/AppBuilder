@@ -17,6 +17,10 @@ actual suspend fun createMockSqlDriver(
     }
 }
 
-/** Creates the web worker running the SQL.js SQLDelight driver. */
+/**
+ * Creates the web worker running the SQL.js SQLDelight driver.
+ *
+ * @return The newly created [Worker].
+ */
 @JsFun(code = """() => new Worker(new URL("@cashapp/sqldelight-sqljs-worker/sqljs.worker.js", import.meta.url))""")
 private external fun getWorker(): Worker
