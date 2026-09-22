@@ -10,8 +10,11 @@ import com.app.builder.ui.core.image.Image
 
 /** Actions that can be dispatched to an action bar store. */
 sealed interface ActionBarAction {
+    /** Requests back navigation. */
     data object Back: ActionBarAction
+    /** Opens the login screen. */
     data object Login: ActionBarAction
+    /** Opens the user profile screen. */
     data object OpenUser: ActionBarAction
     /**
      * Notifies that the mode has changed.
@@ -64,7 +67,19 @@ sealed interface ActionBarAction {
 }
 
 /**
+ * State of an action bar, holding what it displays and the sorting and property filters it applies to the screen below it.
  *
+ * @property title Text shown as the action bar's title.
+ * @property avatarName The name to fit in the avatar. Only the first letter of the first and last name will show capitalized if no image is provided.
+ * @property avatarImage The image resource.
+ * @property mode Current display mode, controlling which actions/inputs are shown.
+ * @property layout Which set of actions to show, based on whether the screen displays a list, a detail, or both.
+ * @property write Whether buttons that allow "write" operations should be shown.
+ * @property sortProperty Key of the property currently used to sort the list.
+ * @property sortAscending Whether the list is currently sorted in ascending order.
+ * @property properties Map of property keys to their display labels, used to populate the sort, visibility and search menus.
+ * @property visibleProperties Property keys currently shown as visible columns.
+ * @property searchableProperties Property keys currently included when searching.
  */
 data class ActionBarState(
     val title: String = "",
