@@ -35,7 +35,11 @@ class UserProfileScreenStore(
         }
     }
 
-    /** Observes the current user. */
+    /**
+     * Observes the current user.
+     *
+     * @return The [Job] representing this execution.
+     */
     private fun setup(): Job = launch(id = "setup") {
         Telemetry.info(tag = TAG, message = "Setup")
 
@@ -56,7 +60,11 @@ class UserProfileScreenStore(
         Telemetry.info(tag = TAG, message = "Setup complete")
     }
 
-    /** Logs out the current user. */
+    /**
+     * Logs out the current user.
+     *
+     * @return The [Job] representing this execution.
+     */
     private fun logout(): Job = launch(id = "logout") {
         Telemetry.info(tag = TAG, message = "Logout")
 
@@ -65,7 +73,11 @@ class UserProfileScreenStore(
         }
     }
 
-    /** Resets the app's local data. */
+    /**
+     * Resets the app's local data.
+     *
+     * @return The [Job] representing this execution.
+     */
     private fun reset(): Job = launch(id = "reset") {
         Telemetry.info(tag = TAG, message = "Reset")
 

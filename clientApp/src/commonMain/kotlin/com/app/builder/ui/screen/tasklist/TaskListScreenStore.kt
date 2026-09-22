@@ -49,11 +49,14 @@ class TaskListScreenStore(
         when (action) {
             is TaskListScreenAction.SelectTask -> selectTask(state = state, action = action)
             is TaskListScreenAction.Ok -> ok(state = state, action = action)
-            is TaskListScreenAction.Cancel -> cancel(state = state, action = action)
         }
     }
 
-    /** Observes tasks and keeps the displayed list in sync. */
+    /**
+     * Observes tasks and keeps the displayed list in sync.
+     *
+     * @return The [Job] representing this execution.
+     */
     private fun setup(): Job = launch(id = "setup") {
         Telemetry.info(tag = TAG, message = "Setup")
 
@@ -117,6 +120,7 @@ class TaskListScreenStore(
      *
      * @param state Current task list state.
      * @param action Action carrying the UUID of the selected task.
+     * @return The [Job] representing this execution.
      */
     private fun selectTask(state: TaskListScreenState, action: TaskListScreenAction.SelectTask): Job = launch(id = "selectTask") {
         when (state.mode) {
@@ -136,6 +140,13 @@ class TaskListScreenStore(
         }
     }
 
+    /**
+     * Commits the pending mode once the user confirms it.
+     *
+     * @param state Current task list state.
+     * @param action Action carrying the mode being confirmed.
+     * @return The [Job] representing this execution.
+     */
     private fun ok(state: TaskListScreenState, action: TaskListScreenAction.Ok): Job = launch(id = "ok") {
         when (action.mode) {
             ActionBarMode.DEFAULT -> TODO()
@@ -147,10 +158,11 @@ class TaskListScreenStore(
         }
     }
 
-    private fun cancel(state: TaskListScreenState, action: TaskListScreenAction.Cancel): Job = launch(id = "cancel") {
-
-    }
-
+    /**
+     * Extracts the [TaskListFilterCriteria] this state contributes to the displayed task list.
+     *
+     * @return The criteria derived from this state.
+     */
     private fun TaskListScreenState.toTaskListFilterCriteria(): TaskListFilterCriteria = TaskListFilterCriteria(
         selectedUuids = selectedUuids
     )
