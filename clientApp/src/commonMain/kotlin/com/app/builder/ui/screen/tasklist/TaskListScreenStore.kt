@@ -1,5 +1,6 @@
 package com.app.builder.ui.screen.tasklist
 
+import kotlin.uuid.Uuid
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
@@ -7,19 +8,19 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.mapNotNull
 import com.app.builder.core.flow.Dispatcher
-import com.app.builder.core.locale.now
+import com.app.builder.core.security.toUuid
 import com.app.builder.core.security.uuid
 import com.app.builder.core.telemetry.Telemetry
 import com.app.builder.data.storage.AppFile
-import com.app.builder.domain.EntityType
-import com.app.builder.domain.Permission
 import com.app.builder.domain.Task
 import com.app.builder.domain.Task.Property
-import com.app.builder.domain.gateway.authentication.AuthenticationUseCases
 import com.app.builder.domain.gateway.task.TaskUseCases
 import com.app.builder.plusOrMinus
+import com.app.builder.toEnumOrNull
 import com.app.builder.ui.component.bar.ActionBarMode
 import com.app.builder.ui.component.list.TaskItem
 import com.app.builder.ui.navigation.Router
@@ -31,15 +32,14 @@ import com.app.builder.ui.store.Store
  *
  * @param state Initial task list state.
  * @property router Router used to navigate to a task's detail screen.
- * @property authenticationUseCases Use cases used to observe the current user.
  * @property taskUseCases Use cases used to observe and delete tasks.
  */
 class TaskListScreenStore(
     state: TaskListScreenState,
     private val router: Router,
-    private val authenticationUseCases: AuthenticationUseCases,
     private val taskUseCases: TaskUseCases
 ): Store<TaskListScreenState, TaskListScreenAction>(initialState = state) {
+
     init {
         setup()
     }
@@ -48,14 +48,8 @@ class TaskListScreenStore(
         super.reducer(state = state, action = action)
         when (action) {
             is TaskListScreenAction.SelectTask -> selectTask(state = state, action = action)
-            is TaskListScreenAction.ModeChange -> changeMode(action = action)
-            is TaskListScreenAction.Search -> search(action = action)
-            is TaskListScreenAction.Ok -> {}
-            is TaskListScreenAction.Cancel -> {}
-            is TaskListScreenAction.SelectSortProperty -> selectSortProperty(action = action)
-            is TaskListScreenAction.SelectSortOrder -> selectSortOrder(action = action)
-            is TaskListScreenAction.VisibleProperties -> setVisibleProperties(action = action)
-            is TaskListScreenAction.SearchableProperties -> setSearchableProperties(action = action)
+            is TaskListScreenAction.Ok -> ok(state = state, action = action)
+            is TaskListScreenAction.Cancel -> cancel(state = state, action = action)
         }
     }
 
@@ -63,51 +57,57 @@ class TaskListScreenStore(
     private fun setup(): Job = launch(id = "setup") {
         Telemetry.info(tag = TAG, message = "Setup")
 
-        AppFile.TaskPreferences.load()?.let { taskPreferences ->
-            updateState { it.copy(filterCriteria = taskPreferences) }
-        } ?: AppFile.TaskPreferences.save { it }
-
-        authenticationUseCases.observeCurrentUser().observe(id = "current_user") { user ->
-            val write = user?.hasPermission(entityType = EntityType.TASK, permission = Permission.WRITE) ?: false
-            updateState { it.copy(write = write) }
-        }
-
-        val tasksFlow = taskUseCases.observeTasks()
-        val criteria = AppFile.TaskPreferences.cache()
+        val tasksFlow = taskUseCases.observeTasks().toStateFlow(initialValue = emptyList())
+        val actionBarDataFlow = AppFile.TaskPreferences.cache()
             .mapNotNull { it }
             .distinctUntilChanged()
+        val criteriaFlow = stateFlow
+            .map { it.toTaskListFilterCriteria() }
+            .distinctUntilChanged()
 
-        combine(
-            flow = tasksFlow,
-            flow2 = criteria,
-        ) { tasks, criteria ->
-            val comparator = taskComparator(sortProperty = criteria.sortProperty, sortAscending = criteria.sortAscending)
-            tasks
-                .filter { it.matchesSearch(search = criteria.search, searchableProperties = criteria.searchableProperties) }
-                .let { if (comparator == null) it else it.sortedWith(comparator = comparator) }
-                .map { it.toTaskItem(visibilityProperties = criteria.visibleProperties, selectedUuids = criteria.selectedUuids) }
-                .toPersistentList()
-        }
-            .flowOn(context = Dispatcher.Default)
-            .observe(id = "filterTasks") { tasks ->
-                updateState {
-                    it.copy(
-                        tasks = tasks,
-                        filterCriteria = criteria
+        actionBarDataFlow
+            .map { it.mode }
+            .distinctUntilChanged()
+            .observe(id = "syncMode") { newMode ->
+                val mode = newMode.toEnumOrNull<ActionBarMode>() ?: return@observe
+
+                if (mode == ActionBarMode.ADD) router.navigate(screen = Screen.TaskDetail(uuid = uuid().toString()), option = Router.NavOption.REPLACE_LAST)
+
+                updateState { state ->
+                    state.copy(
+                        mode = mode,
+                        selectedUuids = when {
+                            state.mode != mode -> persistentListOf()
+                            else -> state.selectedUuids
+                        }
                     )
                 }
             }
 
-        taskUseCases.upsertTask(
-            task = Task(
-                uuid = uuid(),
-                modifiedAt = now(),
-                deletedAt = null,
-                title = "Task Title",
-                description = "Task Description",
-                state = Task.State.TODO
-            )
-        )
+        val tasksActionBarFlow = combine(
+            flow = tasksFlow,
+            flow2 = actionBarDataFlow,
+        ) { tasks, actionBarData ->
+            tasks to actionBarData
+        }.mapLatest { (tasks, actionBarData) ->
+            val comparator = taskComparator(sortProperty = actionBarData.sortProperty, sortAscending = actionBarData.sortAscending)
+            tasks
+                .filter { it.matchesSearch(search = actionBarData.search, searchableProperties = actionBarData.searchableProperties) }
+                .let { if (comparator == null) it else it.sortedWith(comparator = comparator) } to actionBarData
+        }
+
+        combine(
+            flow = tasksActionBarFlow,
+            flow2 = criteriaFlow
+        ) { (tasks, actionBar), criteria ->
+            tasks
+                .map { it.toTaskItem(visibilityProperties = actionBar.visibleProperties, selectedUuids = criteria.selectedUuids) }
+                .toPersistentList()
+        }
+            .flowOn(context = Dispatcher.Default)
+            .observe(id = "filterTasks") { tasks ->
+                updateState { it.copy(tasks = tasks) }
+            }
 
         Telemetry.info(tag = TAG, message = "Setup complete")
     }
@@ -127,70 +127,33 @@ class TaskListScreenStore(
             ActionBarMode.DELETE -> router.navigate(screen = Screen.TaskDetail(uuid = action.taskUuid), option = Router.NavOption.REPLACE_LAST)
 
             ActionBarMode.BATCH_DELETE -> {
-                val selectedUuids = state.selectedUuids.plusOrMinus(element = action.taskUuid).toPersistentList()
-                updateState { it.copy(selectedUuids = selectedUuids) }
+                val selectedUuid = action.taskUuid.toUuid()
+                if (selectedUuid != null) {
+                    val selectedUuids = state.selectedUuids.plusOrMinus(element = selectedUuid).toPersistentList()
+                    updateState { it.copy(selectedUuids = selectedUuids) }
+                }
             }
         }
     }
 
-    /**
-     * Switches the action bar to [action]'s new mode.
-     *
-     * @param action Action carrying the new [ActionBarMode].
-     */
-    private fun changeMode(action: TaskListScreenAction.ModeChange): Job = launch(id = "changeMode") {
-        updateState { it.copy(mode = action.new, selectedUuids = persistentListOf()) }
+    private fun ok(state: TaskListScreenState, action: TaskListScreenAction.Ok): Job = launch(id = "ok") {
+        when (action.mode) {
+            ActionBarMode.DEFAULT -> TODO()
+            ActionBarMode.SEARCH -> TODO()
+            ActionBarMode.ADD -> TODO()
+            ActionBarMode.EDIT -> TODO()
+            ActionBarMode.DELETE -> TODO()
+            ActionBarMode.BATCH_DELETE -> TODO()
+        }
     }
 
-    /**
-     * Updates and persists the current search text.
-     *
-     * @param action Action carrying the new search text.
-     */
-    private fun search(action: TaskListScreenAction.Search): Job = launch(id = "search") {
-        updateState { it.copy(filterCriteria = it.filterCriteria.copy(search = action.search)) }
-        AppFile.TaskPreferences.save { (it ?: defaultFilterCriteria).copy(search = action.search) }
+    private fun cancel(state: TaskListScreenState, action: TaskListScreenAction.Cancel): Job = launch(id = "cancel") {
+
     }
 
-    /**
-     * Updates and persists the property tasks are sorted by.
-     *
-     * @param action Action carrying the newly selected [Property] name.
-     */
-    private fun selectSortProperty(action: TaskListScreenAction.SelectSortProperty): Job = launch(id = "selectSortProperty") {
-        updateState { it.copy(filterCriteria = it.filterCriteria.copy(sortProperty = action.property)) }
-        AppFile.TaskPreferences.save { (it ?: defaultFilterCriteria).copy(sortProperty = action.property) }
-    }
-
-    /**
-     * Updates and persists the sort order.
-     *
-     * @param action Action carrying whether sorting should be ascending.
-     */
-    private fun selectSortOrder(action: TaskListScreenAction.SelectSortOrder): Job = launch(id = "selectSortOrder") {
-        updateState { it.copy(filterCriteria = it.filterCriteria.copy(sortAscending = action.ascending)) }
-        AppFile.TaskPreferences.save { (it ?: defaultFilterCriteria).copy(sortAscending = action.ascending) }
-    }
-
-    /**
-     * Updates and persists which properties are visible on task items.
-     *
-     * @param action Action carrying the newly selected [Property] names.
-     */
-    private fun setVisibleProperties(action: TaskListScreenAction.VisibleProperties): Job = launch(id = "setVisibleProperties") {
-        updateState { it.copy(filterCriteria = it.filterCriteria.copy(visibleProperties = action.properties)) }
-        AppFile.TaskPreferences.save { (it ?: defaultFilterCriteria).copy(visibleProperties = action.properties) }
-    }
-
-    /**
-     * Updates and persists which properties are searchable.
-     *
-     * @param action Action carrying the newly selected [Property] names.
-     */
-    private fun setSearchableProperties(action: TaskListScreenAction.SearchableProperties): Job = launch(id = "setSearchableProperties") {
-        updateState { it.copy(filterCriteria = it.filterCriteria.copy(searchableProperties = action.properties)) }
-        AppFile.TaskPreferences.save { (it ?: defaultFilterCriteria).copy(searchableProperties = action.properties) }
-    }
+    private fun TaskListScreenState.toTaskListFilterCriteria(): TaskListFilterCriteria = TaskListFilterCriteria(
+        selectedUuids = selectedUuids
+    )
 
     /**
      * Checks whether this task's searchable properties contain the given [search] text.
@@ -237,9 +200,9 @@ class TaskListScreenStore(
      * @param selectedUuids UUIDs of the tasks the user has picked.
      * @return Task item with hidden properties set to `null`.
      */
-    private fun Task.toTaskItem(visibilityProperties: ImmutableList<String>, selectedUuids: ImmutableList<String>): TaskItem = TaskItem(
+    private fun Task.toTaskItem(visibilityProperties: ImmutableList<String>, selectedUuids: ImmutableList<Uuid>): TaskItem = TaskItem(
         uuid = uuid.toString(),
-        selected = uuid.toString() in selectedUuids,
+        selected = uuid in selectedUuids,
         modifiedAt = modifiedAt.takeIf { Property.MODIFIED_AT.name in visibilityProperties }?.toString(),
         deletedAt = deletedAt.takeIf { Property.DELETED_AT.name in visibilityProperties }?.toString(),
         title = title.takeIf { Property.TITLE.name in visibilityProperties },
