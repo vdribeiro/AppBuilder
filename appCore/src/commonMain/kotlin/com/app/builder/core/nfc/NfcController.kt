@@ -28,7 +28,7 @@ open class NfcController {
     /** Observable state of the NFC session. */
     val state: StateFlow<State> = _state.asStateFlow()
 
-    /** Release camera resources. */
+    /** Stops any active session and releases nfc resources. */
     fun dispose() {
         stop()
         runCatching {
@@ -81,7 +81,7 @@ open class NfcController {
     /** Release nfc resources. */
     protected open fun platformDispose() {}
 
-    /** Release camera resources. */
+    /** Stops the platform scan or write session. */
     protected open fun platformStop() {}
 
     /** Starts the platform scan session. */

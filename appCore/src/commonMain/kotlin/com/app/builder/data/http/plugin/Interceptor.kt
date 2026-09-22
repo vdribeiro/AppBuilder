@@ -30,7 +30,7 @@ import com.app.builder.data.storage.CoreFile
  * @throws NetworkDisabledException If network requests are globally disabled via feature flags.
  * @throws InternetDisabledException If no active internet connection is detected prior to the request.
  * @throws UnauthorizedException If the response yields a 401 Unauthorized status code.
- * @throws UnsuccessfulStatusException If the response yields a status code outside the 2xx success range (excluding 304 Not Modified).
+ * @throws UnsuccessfulStatusException If the response yields a status code outside the 2xx success range, other than 101 Switching Protocols, which allows WebSocket upgrades through, and 304 Not Modified.
  */
 internal fun <T: HttpClientEngineConfig> HttpClientConfig<T>.installInterceptor(
     isInternetAvailable: () -> Boolean = ::isInternetAvailable

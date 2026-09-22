@@ -30,7 +30,7 @@ class FcmMessagingService: FirebaseMessagingService() {
     /**
      * Convert a [RemoteMessage] into a [PushPayload].
      *
-     * @return the converted payload.
+     * @return The converted payload, or `null` if the message carries no [PushPayload.DATA_KEY] entry, or it cannot be decoded.
      */
     private fun RemoteMessage.toPushPayload(): PushPayload? =
         data[PushPayload.DATA_KEY]?.let { decode<PushPayload>(value = it) }

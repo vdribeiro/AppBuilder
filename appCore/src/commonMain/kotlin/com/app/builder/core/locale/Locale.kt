@@ -12,7 +12,7 @@ expect fun getLanguage(): String
 /**
  * Formats a UTC ISO-8601 string into a localized date-time string.
  *
- * @param utc The input timestamp string in UTC ISO-8601 format. Defaults to the current timestamp.
+ * @param utc The input timestamp string in UTC ISO-8601 format.
  * @return The localized date-time string, or the original [utc] string if formatting fails.
  */
 expect fun getLocalDateTime(utc: String): String

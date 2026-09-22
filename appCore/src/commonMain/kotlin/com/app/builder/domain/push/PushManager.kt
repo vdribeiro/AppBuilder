@@ -51,7 +51,7 @@ class PushManager(
     /** Guards concurrent start()/stop() transitions. */
     private val mutex = Mutex()
 
-    /** Tracks the current FCM token. */
+    /** Tracks the currently active FCM token registration loop. */
     private var tokenJob: Job? = null
 
     /** Tracks the currently active push loop. */
@@ -155,7 +155,7 @@ class PushManager(
     /**
      * Requests a ticket for a user.
      *
-     * @return The ticket UUID.
+     * @return The ticket UUID, or `null` if the request failed.
      */
     private suspend fun requestTicket(): Uuid? = withContext(context = Dispatcher.IO) {
         when (val result = httpClient.post<Unit, Uuid>(
