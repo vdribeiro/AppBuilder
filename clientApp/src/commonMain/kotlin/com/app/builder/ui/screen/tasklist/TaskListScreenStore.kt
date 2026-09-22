@@ -227,7 +227,8 @@ class TaskListScreenStore(
         modifiedAt = modifiedAt.takeIf { Property.MODIFIED_AT.name in visibilityProperties }?.toString(),
         deletedAt = deletedAt.takeIf { Property.DELETED_AT.name in visibilityProperties }?.toString(),
         title = title.takeIf { Property.TITLE.name in visibilityProperties },
-        description = description.takeIf { Property.DESCRIPTION.name in visibilityProperties }
+        description = description.takeIf { Property.DESCRIPTION.name in visibilityProperties },
+        state = state.name
     )
 
     /**

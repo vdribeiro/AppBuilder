@@ -62,8 +62,8 @@ fun ConfigCardSwitch(
                 verticalArrangement = Arrangement.spacedBy(space = 4.dp, alignment = Alignment.Top),
                 horizontalAlignment = Alignment.Start,
             ) {
-                Text(text = name, style = typography.titleMedium)
-                Text(text = description, style = typography.bodyMedium)
+                Text(text = name, translate = false, style = typography.titleMedium)
+                Text(text = description, translate = false, style = typography.bodyMedium)
             }
             AnimatedVisibility(
                 visible = pending,
@@ -119,8 +119,8 @@ fun ConfigCardInput(
                 verticalArrangement = Arrangement.spacedBy(space = 4.dp, alignment = Alignment.Top),
                 horizontalAlignment = Alignment.Start,
             ) {
-                Text(text = name, style = typography.titleMedium)
-                Text(text = description, style = typography.bodyMedium)
+                Text(text = name, translate = false, style = typography.titleMedium)
+                Text(text = description, translate = false, style = typography.bodyMedium)
             }
             AnimatedVisibility(
                 visible = pending,
