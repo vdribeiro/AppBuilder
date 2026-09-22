@@ -14,7 +14,6 @@ import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.mapNotNull
 import com.app.builder.core.flow.Dispatcher
 import com.app.builder.core.locale.now
-import com.app.builder.core.locale.toInstant
 import com.app.builder.core.security.toUuid
 import com.app.builder.core.security.uuid
 import com.app.builder.core.telemetry.Telemetry
@@ -232,14 +231,14 @@ class TaskListScreenStore(
     )
 
     /**
-     * Converts this item back into a [Task], stamped as deleted at [deletedAt].
+     * Converts this item back into a [Task].
      *
-     * @param deletedAt Timestamp recorded as the task's deletion time.
-     * @return The reconstructed [Task], or `null` if this item is missing its uuid, modified timestamp or state.
+     * @param deletedAt Timestamp recorded as the task's modification and deletion time.
+     * @return The reconstructed [Task], or `null` if this item is missing its uuid or state.
      */
     private fun TaskItem.toTask(deletedAt: Instant): Task? = Task(
         uuid = uuid.toUuid() ?: return null,
-        modifiedAt = modifiedAt?.toInstant() ?: return null,
+        modifiedAt = deletedAt,
         deletedAt = deletedAt,
         title = title.orEmpty(),
         description = description.orEmpty(),

@@ -148,9 +148,9 @@ fun ConfigCardInput(
 private fun String.toLabel(): String = buildString {
     this@toLabel.forEachIndexed { index, char ->
         when {
-            index == 0 -> append(value = char.uppercaseChar())
-            char.isUpperCase() -> append(value = ' ').append(value = char)
-            else -> append(value = char)
+            index == 0 -> append(char.uppercaseChar())
+            char.isUpperCase() -> append(' ').append(char)
+            else -> append(char)
         }
     }
 }
