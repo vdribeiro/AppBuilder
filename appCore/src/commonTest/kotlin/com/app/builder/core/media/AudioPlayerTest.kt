@@ -37,7 +37,11 @@ class AudioPlayerTest: TestCase() {
             events.add(element = "dispose")
         }
 
-        /** Exposes the protected [isPlaying] for assertions. */
+        /**
+         * Exposes the protected [isPlaying] for assertions.
+         *
+         * @return `true` if the player is playing, `false` otherwise.
+         */
         fun callIsPlaying(): Boolean = isPlaying()
     }
 

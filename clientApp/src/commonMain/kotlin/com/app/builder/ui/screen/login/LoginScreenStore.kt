@@ -29,6 +29,7 @@ class LoginScreenStore(
      * Handles the login submission.
      *
      * @param state The current screen state, providing the username and password to submit.
+     * @return The [Job] representing this execution.
      */
     private fun submitLogin(state: LoginScreenState): Job = launch(id = "submitLogin") {
         Telemetry.info(tag = TAG, message = "Attempting login for ${state.username}")

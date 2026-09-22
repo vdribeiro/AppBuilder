@@ -23,15 +23,8 @@ sealed interface TaskListScreenAction {
      * @param mode The pending mode.
      */
     data class Ok(val mode: ActionBarMode): TaskListScreenAction
-    /**
-     * Cancels the current pending mode and returns to the default layout.
-     *
-     * @param mode The pending mode.
-     */
-    data class Cancel(val mode: ActionBarMode): TaskListScreenAction
 }
 
-/** Default values of task list filters. */
 val defaultFilterCriteria = AppFile.ActionBarData(
     mode = ActionBarMode.DEFAULT.name,
     search = "",
@@ -45,6 +38,8 @@ val defaultFilterCriteria = AppFile.ActionBarData(
  * State of the task list, holding the tasks to display and whether batch delete selection is active.
  *
  * @property tasks Tasks currently displayed.
+ * @property mode Current action bar mode, controlling how a task selection is handled.
+ * @property selectedUuids UUIDs of the tasks picked while in batch delete mode.
  */
 data class TaskListScreenState(
     val tasks: ImmutableList<TaskItem> = persistentListOf(),
@@ -52,10 +47,22 @@ data class TaskListScreenState(
     val selectedUuids: ImmutableList<Uuid> = persistentListOf()
 )
 
+/**
+ * Slice of [TaskListScreenState] the displayed task list is derived from, kept separate so unrelated state changes do not re-filter the list.
+ *
+ * @property selectedUuids UUIDs of the tasks picked while in batch delete mode.
+ */
 data class TaskListFilterCriteria(
     val selectedUuids: ImmutableList<Uuid>
 )
 
+/**
+ * Groups the inputs the displayed task list is built from.
+ *
+ * @property tasks Tasks observed from storage, before filtering and sorting.
+ * @property actionBarData Persisted action bar data holding the search query, sorting and property filters.
+ * @property criteria Criteria derived from the current screen state.
+ */
 data class TaskListActionBarFilterCombine(
     val tasks: List<Task>,
     val actionBarData: AppFile.ActionBarData,

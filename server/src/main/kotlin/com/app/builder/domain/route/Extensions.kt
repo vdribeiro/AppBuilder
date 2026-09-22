@@ -190,6 +190,7 @@ suspend fun ApplicationCall.validatePermission(
  * @param entityUuid The unique identifier of the entity targeted by the request, if any.
  * @param userUuid The optional user unique identifier.
  * @param payload The request payload to record, if any.
+ * @return The [Registry] describing this call, or `null` if it could not be built.
  */
 fun ApplicationCall.toRegistry(
     entityType: EntityType,

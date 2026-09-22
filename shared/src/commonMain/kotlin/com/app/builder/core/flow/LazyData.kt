@@ -12,6 +12,11 @@ class LazyData<T>(private val load: suspend () -> T) {
     private val mutex = Mutex()
     /** The cached result of [load], once computed. */
     private var _data: T? = null
-    /** Returns the cached value, loading it via [load] on first access. */
+    /**
+     * Returns the cached value, loading it via [load] on first access.
+     * Concurrent callers are serialized on [mutex], so [load] runs at most once.
+     *
+     * @return The value produced by [load], cached for every subsequent call.
+     */
     suspend fun get(): T = _data ?: mutex.withLock { _data ?: load().also { _data = it } }
 }

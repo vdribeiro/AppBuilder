@@ -43,7 +43,11 @@ class ConfigScreenStore(
         }
     }
 
-    /** Loads the config items matching the configType and updates state with the resulting list. */
+    /**
+     * Loads the config items matching the configType and updates state with the resulting list.
+     *
+     * @return The [Job] representing this execution.
+     */
     private fun setup(): Job = launch(id = "setup") {
         Telemetry.info(tag = TAG, message = "Setup")
 
@@ -64,6 +68,7 @@ class ConfigScreenStore(
      *
      * @param state The current state.
      * @param action The [ConfigScreenAction.UpdateValue] action.
+     * @return The [Job] representing this execution.
      */
     private fun updateValue(state: ConfigScreenState, action: ConfigScreenAction.UpdateValue): Job = launch(id = "persist-${action.item.uuid}", replace = true) {
         Telemetry.info(tag = TAG, message = "Update Value")

@@ -39,6 +39,11 @@ fun NavigationShowcase() {
     }
 }
 
+/**
+ * Builds the sample navigation items used by the previews.
+ *
+ * @return The sample [NavigationItem]s, with the selected one tracked across recompositions.
+ */
 @Composable
 private fun getItems(): PersistentList<NavigationItem> {
     var selectedIndex by remember { mutableIntStateOf(value = 0) }

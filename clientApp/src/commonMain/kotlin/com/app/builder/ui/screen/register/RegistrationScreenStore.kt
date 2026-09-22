@@ -40,7 +40,11 @@ class RegistrationScreenStore(
         }
     }
 
-    /** Initializes the state with a permission item for each [EntityType]. */
+    /**
+     * Initializes the state with a permission item for each [EntityType].
+     *
+     * @return The [Job] representing this execution.
+     */
     private fun setup(): Job = launch(id = "setup") {
         Telemetry.info(tag = TAG, message = "Setup")
 
@@ -60,6 +64,7 @@ class RegistrationScreenStore(
      * Replaces the matching permission item in state with the given, toggled [permission].
      *
      * @param permission Updated permission item to store in place of the one with the same id.
+     * @return The [Job] representing this execution.
      */
     private fun togglePermission(permission: PermissionItem): Job = launch(id = "togglePermission") {
         val permissions = state.permissions
@@ -72,6 +77,7 @@ class RegistrationScreenStore(
      * Builds a registration screen from the current [state] and registers the new user and credentials.
      *
      * @param state Current registration screen state used to build the user and credentials.
+     * @return The [Job] representing this execution.
      */
     private fun submitRegister(state: RegistrationScreenState): Job = launch(id = "submitRegister") {
         Telemetry.info(tag = TAG, message = "Attempting registration for ${state.username}")

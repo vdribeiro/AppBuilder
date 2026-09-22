@@ -24,7 +24,11 @@ class TaskDetailScreenStore(
         setup()
     }
 
-    /** Observes the task with [taskUuid], creating a placeholder if it doesn't exist yet, and observes the cached action bar state to keep edit mode in sync. */
+    /**
+     * Observes the task with [taskUuid], creating a placeholder if it doesn't exist yet, and observes the cached action bar state to keep edit mode in sync.
+     *
+     * @return The [Job] representing this execution.
+     */
     private fun setup(): Job = launch(id = "setup") {
         Telemetry.info(tag = TAG, message = "Setup")
 

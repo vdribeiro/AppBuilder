@@ -41,7 +41,11 @@ class PushScreenStore(
         }
     }
 
-    /** Observes the list of users and updates state with them mapped to [UserItem]s. */
+    /**
+     * Observes the list of users and updates state with them mapped to [UserItem]s.
+     *
+     * @return The [Job] representing this execution.
+     */
     private fun setup(): Job = launch(id = "setup") {
         Telemetry.info(tag = TAG, message = "Setup")
 
@@ -58,6 +62,7 @@ class PushScreenStore(
      *
      * @param state The current state.
      * @param action The [PushScreenAction.ToggleUser] action.
+     * @return The [Job] representing this execution.
      */
     private fun toggleUser(state: PushScreenState, action: PushScreenAction.ToggleUser): Job = launch(id = "toggleUser") {
         val filteredList = state.selectedUsers.filterNot { user -> user.uuid == action.user.uuid }
@@ -70,6 +75,7 @@ class PushScreenStore(
      * Builds the push payload(s) from [state] and sends them one by one, tracking how many succeeded.
      *
      * @param state The current state.
+     * @return The [Job] representing this execution.
      */
     private fun send(state: PushScreenState): Job = launch(id = "send") {
         Telemetry.info(tag = TAG, message = "Send: type=${state.type}, broadcast=${state.broadcast}, selectedUsers=${state.selectedUsers}, title=${state.notificationTitle}, description=${state.notificationDescription}")

@@ -40,7 +40,11 @@ class NavigationStore(
         setup()
     }
 
-    /** Observes the current user's permissions and rebuilds the navigation items allowed for each entity type. */
+    /**
+     * Observes the current user's permissions and rebuilds the navigation items allowed for each entity type.
+     *
+     * @return The [Job] representing this execution.
+     */
     private fun setup(): Job = launch(id = "setup") {
         Telemetry.info(tag = TAG, message = "Setup")
 
