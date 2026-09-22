@@ -11,6 +11,11 @@ import com.app.builder.ui.Preview
 import com.app.builder.ui.component.bar.TopActionBar
 import com.app.builder.ui.store.Store
 
+/**
+ * Renders a [TopActionBar] driven by [store], forwarding every user interaction back to it as an [ActionBarAction].
+ *
+ * @param store Store holding the [ActionBarState] to render and receiving the dispatched actions.
+ */
 @Composable
 fun ActionBar(store: Store<ActionBarState, ActionBarAction>) {
     val state by store.stateFlow.collectAsStateWithLifecycle()
@@ -48,9 +53,7 @@ fun ActionBar(store: Store<ActionBarState, ActionBarAction>) {
 private fun ActionBarPreview() = Preview {
     ActionBar(
         store = Store(
-            initialState = ActionBarState(
-
-            )
+            initialState = ActionBarState()
         )
     )
 }
