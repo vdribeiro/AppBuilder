@@ -137,6 +137,7 @@ abstract class SharedTestCase {
      * Prepares the environment by calling [setup], then executes the given [block]. Finally clears with [reset].
      *
      * @param timeout The maximum duration the test is allowed to run before failing.
+     * @param block The test body, receiving the [TestDispatcher] the environment was set up with.
      */
     protected fun runServerTest(timeout: Duration = 60.seconds, block: suspend ApplicationTestBuilder.(TestDispatcher) -> Unit) {
         testApplication {

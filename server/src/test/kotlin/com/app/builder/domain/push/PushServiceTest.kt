@@ -179,7 +179,12 @@ class PushServiceTest: TestCase() {
         assertFalse(actual = pushService.acknowledgePush(pushUuid = notification.uuid))
     }
 
-    /** Creates a second [PushManager] sharing this test's database, simulating another server instance. */
+    /**
+     * Creates a second [PushManager] sharing this test's database, simulating another server instance.
+     *
+     * @param fcmService The FCM service the other instance delivers through.
+     * @return The other [PushManager] instance.
+     */
     private suspend fun createOtherInstance(fcmService: FcmService): PushManager {
         val useCases = dependency.get().useCases
         return PushManager(

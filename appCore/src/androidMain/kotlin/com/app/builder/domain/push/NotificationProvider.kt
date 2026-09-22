@@ -23,6 +23,11 @@ actual object NotificationProvider {
     /** Notifications general channel. */
     private val channel: String = "general".also { createChannel(channelId = it) }
 
+    /**
+     * Checks whether the app may post notifications, which only requires a runtime grant from Android 13 onwards.
+     *
+     * @return `true` if notifications can be posted, `false` otherwise.
+     */
     private fun hasPermission(): Boolean =
         when {
             Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU -> ContextCompat.checkSelfPermission(applicationContext, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED

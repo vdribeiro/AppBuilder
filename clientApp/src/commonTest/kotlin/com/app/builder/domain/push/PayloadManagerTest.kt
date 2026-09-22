@@ -10,6 +10,11 @@ import com.app.builder.test.TestCase
 
 class PayloadManagerTest: TestCase() {
 
+    /**
+     * Hands a payload to the [PayloadManager] under test.
+     *
+     * @param payload Payload to handle.
+     */
     private suspend fun handlePushPayload(payload: PushPayload) =
         (dependency.get().payloadService as PayloadManager).handlePushPayload(payload = payload)
 
