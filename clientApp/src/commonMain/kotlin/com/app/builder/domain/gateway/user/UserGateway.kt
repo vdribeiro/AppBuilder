@@ -47,7 +47,7 @@ import database.AppDatabase
  * @property user The current user.
  * @property database The SQLite database instance for user data.
  * @property httpClient The HTTP client used for network operations.
- * @property scheduler The job scheduler for background users.
+ * @property scheduler The job scheduler for background tasks.
  */
 class UserGateway(
     private val user: User,
@@ -260,7 +260,7 @@ class UserGateway(
     /**
      * Synchronizes a single remote user with the local database.
      * This function performs a conflict-aware update by fetching the local equivalent of the user and comparing their `modifiedAt` timestamps.
-     * The user is only saved to the database if it does not exist locally or if the remote version is newer.
+     * The user is only saved to the database if it does not exist locally, or if the remote version is not older than the local one.
      *
      * @param user The remote [User] domain model to evaluate and potentially save.
      */
@@ -273,7 +273,7 @@ class UserGateway(
      * Synchronizes a batch of remote users with the local database.
      * This function performs an optimized, conflict-aware synchronization.
      * It first queries the local database in chunks to find existing users.
-     * It then compares the `modifiedAt` timestamps in memory to determine which users require an update.
+     * It then compares the `modifiedAt` timestamps in memory, keeping any remote user that is not older than its local counterpart.
      * Finally, it upserts the outdated users.
      *
      * @param users The list of remote [User] objects to synchronize locally.
@@ -291,7 +291,7 @@ class UserGateway(
      * SQLite limits the number of bound parameters allowed in a single statement,
      * so large lists are split into batches before querying.
      *
-     * @param uuids The user UUIDs to look up, scoped to the currently active user.
+     * @param uuids The user UUIDs to look up. Unlike the task equivalent, this lookup is not scoped to the current user.
      * @return The matching [UserSchema] entities, merged across all chunks.
      */
     private suspend fun getUsersByUuidsFromDatabase(uuids: List<Uuid>): List<UserSchema> = buildList {

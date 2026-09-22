@@ -261,7 +261,7 @@ class TaskGateway(
     /**
      * Synchronizes a single remote task with the local database.
      * This function performs a conflict-aware update by fetching the local equivalent of the task and comparing their `modifiedAt` timestamps.
-     * The task is only saved to the database if it does not exist locally or if the remote version is newer.
+     * The task is only saved to the database if it does not exist locally, or if the remote version is not older than the local one.
      *
      * @param task The remote [Task] domain model to evaluate and potentially save.
      */
@@ -274,7 +274,7 @@ class TaskGateway(
      * Synchronizes a batch of remote tasks with the local database.
      * This function performs an optimized, conflict-aware synchronization.
      * It first queries the local database in chunks to find existing tasks.
-     * It then compares the `modifiedAt` timestamps in memory to determine which tasks require an update.
+     * It then compares the `modifiedAt` timestamps in memory, keeping any remote task that is not older than its local counterpart.
      * Finally, it upserts the outdated tasks.
      *
      * @param tasks The list of remote [Task] objects to synchronize locally.

@@ -34,7 +34,7 @@ sealed class URL(val path: String) {
     data object DeviceTokens: URL(path = "/api/device-tokens")
     /** Endpoint to subscribe a device's FCM token to the broadcast topic. */
     data object BroadcastSubscribe: URL(path = "/api/broadcast/subscribe")
-    /** Endpoint for push payloads. */
+    /** Endpoint for the public SSE broadcast stream, and for publishing a broadcast to every connected client. */
     data object Broadcast: URL(path = "/api/broadcast")
     /** Endpoint to get short-lived one time tickets for authenticated connections. */
     data object Tickets: URL(path = "/api/tickets")

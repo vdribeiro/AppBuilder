@@ -43,6 +43,8 @@ import kotlinx.coroutines.Job as CoroutinesJob
  * Jobs fetching full collections require a clean slate.
  * A Global Job will **suspend execution** if there are *any* pending or actively running Targeted Jobs for that specific Entity Type.
  * This guarantees that local unsynced mutations are pushed to the server *before* the app pulls the latest global state, preventing data overwrites.
+ * The guard is symmetric: while a Global Job is running for an Entity Type, Targeted Jobs for that same type are held back until it completes,
+ * so a full sync never interleaves with mutations against the table it is reading.
  *
  * ### Lifecycle & Crash Recovery
  * - **State Machine:** Jobs transition from `PENDING` -> `RUNNING` -> `COMPLETE` / `FAILED`.
@@ -228,7 +230,7 @@ class JobScheduler(
 
     /**
      * Determines the next state for a job that returned [JobResult.Retry] or encountered a network error.
-     * Increments the attempt counter and transitions to `FAILED` if the maximum threshold is exceeded.
+     * Increments the attempt counter and transitions to `FAILED` once the attempts reach [ClientConfigs.schedulerMaxAttempts], otherwise back to `PENDING`.
      *
      * @param job The job to process.
      * @return A mutated copy of the job reflecting the new state and attempt count.

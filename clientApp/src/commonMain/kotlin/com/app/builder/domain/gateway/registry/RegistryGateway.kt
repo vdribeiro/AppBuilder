@@ -38,7 +38,7 @@ import database.AppDatabase
  * @property user The current user.
  * @property database The SQLite database instance for registry data.
  * @property httpClient The HTTP client used for network operations.
- * @property scheduler The job scheduler for background registries.
+ * @property scheduler The job scheduler for background tasks.
  */
 class RegistryGateway(
     private val user: User,
