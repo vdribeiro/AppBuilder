@@ -14,16 +14,26 @@ class PushTest: TestCase() {
     private class RecordingBroadcastService: BroadcastService {
         /** The lifecycle actions invoked on this fixture, in order. */
         val events = mutableListOf<String>()
-        override suspend fun stop() { events.add(element = "stop") }
-        override fun start() { events.add(element = "start") }
+        override suspend fun stop() {
+            events.add(element = "stop")
+        }
+
+        override fun start() {
+            events.add(element = "start")
+        }
     }
 
     /** A [PushService] fixture that records every invoked lifecycle action. */
     private class RecordingPushService: PushService {
         /** The lifecycle actions invoked on this fixture, in order. */
         val events = mutableListOf<String>()
-        override suspend fun stop() { events.add(element = "stop") }
-        override fun start() { events.add(element = "start") }
+        override suspend fun stop() {
+            events.add(element = "stop")
+        }
+
+        override fun start() {
+            events.add(element = "start")
+        }
     }
 
     /** Verifies that [RegisterBroadcastLifecycle] drives the service lifecycle only on the guarded platforms, leaving it untouched everywhere else. */

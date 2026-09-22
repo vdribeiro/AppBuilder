@@ -20,7 +20,6 @@ import com.app.builder.core.platform.OS
 import com.app.builder.core.telemetry.Telemetry
 import com.app.builder.data.database.safeTransaction
 import com.app.builder.data.database.table.RegistryTable
-import com.app.builder.domain.EntityType
 import com.app.builder.domain.Registry
 import com.app.builder.toEnumOrNull
 

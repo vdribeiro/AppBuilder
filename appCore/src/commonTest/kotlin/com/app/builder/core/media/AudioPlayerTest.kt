@@ -204,7 +204,9 @@ class AudioPlayerTest: TestCase() {
     fun exceptionFromPlatformPlayForceStopsPlayback() = runUnitTest {
         val audioPlayer = object: AudioPlayer() {
             override val available: Boolean = true
-            override fun platformPlay() { throw IllegalStateException("boom") }
+            override fun platformPlay() {
+                throw IllegalStateException("boom")
+            }
         }
 
         audioPlayer.play()
@@ -217,7 +219,9 @@ class AudioPlayerTest: TestCase() {
     fun exceptionFromPlatformPauseForceStopsPlayback() = runUnitTest {
         val audioPlayer = object: AudioPlayer() {
             override val available: Boolean = true
-            override fun platformPause() { throw IllegalStateException("boom") }
+            override fun platformPause() {
+                throw IllegalStateException("boom")
+            }
         }
         audioPlayer.setPlaylist(playlist = listOf("a"))
         audioPlayer.play()

@@ -9,18 +9,18 @@ import com.app.builder.core.locale.now
 import com.app.builder.core.platform.OS
 import com.app.builder.core.security.uuid
 import com.app.builder.data.serializer.encode
+import com.app.builder.domain.Authentication
+import com.app.builder.domain.BearerToken
 import com.app.builder.domain.DeviceLocation
 import com.app.builder.domain.EntityType
 import com.app.builder.domain.Permission
 import com.app.builder.domain.PushPayload
+import com.app.builder.domain.RegistrationForm
 import com.app.builder.domain.Registry
 import com.app.builder.domain.Task
 import com.app.builder.domain.Translation
 import com.app.builder.domain.User
-import com.app.builder.domain.RegistrationForm
 import com.app.builder.domain.UserCredentials
-import com.app.builder.domain.Authentication
-import com.app.builder.domain.BearerToken
 
 /** A collection of fake data for testing. */
 object FakeData {

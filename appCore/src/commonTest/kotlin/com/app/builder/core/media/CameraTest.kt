@@ -232,7 +232,9 @@ class CameraTest: TestCase() {
         val camera = object: Camera() {
             override val available: Boolean = true
             override fun hasPermission(): Boolean = true
-            override fun platformDispose() { platformDisposed = true }
+            override fun platformDispose() {
+                platformDisposed = true
+            }
         }
         camera.startPreview()
 
@@ -249,7 +251,9 @@ class CameraTest: TestCase() {
         val camera = object: Camera() {
             override val available: Boolean = true
             override fun hasPermission(): Boolean = true
-            override fun platformToggleFacing() { reportedFacing = facing }
+            override fun platformToggleFacing() {
+                reportedFacing = facing
+            }
         }
         camera.startPreview()
 
@@ -266,7 +270,9 @@ class CameraTest: TestCase() {
         val camera = object: Camera() {
             override val available: Boolean = true
             override fun hasPermission(): Boolean = true
-            override fun platformStartPreview() { throw IllegalStateException("boom") }
+            override fun platformStartPreview() {
+                throw IllegalStateException("boom")
+            }
         }
 
         camera.startPreview()

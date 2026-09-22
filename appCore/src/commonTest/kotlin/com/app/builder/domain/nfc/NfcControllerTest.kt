@@ -136,7 +136,9 @@ class NfcControllerTest: TestCase() {
     fun exceptionFromPlatformReadForceStopsSession() = runUnitTest {
         val reader = object: NfcController() {
             override val available: Boolean = true
-            override fun platformRead() { throw IllegalStateException("boom") }
+            override fun platformRead() {
+                throw IllegalStateException("boom")
+            }
         }
 
         reader.read()
@@ -149,7 +151,9 @@ class NfcControllerTest: TestCase() {
     fun exceptionFromPlatformWriteForceStopsSession() = runUnitTest {
         val reader = object: NfcController() {
             override val available: Boolean = true
-            override fun platformWrite(records: List<NfcRecord>) { throw IllegalStateException("boom") }
+            override fun platformWrite(records: List<NfcRecord>) {
+                throw IllegalStateException("boom")
+            }
         }
 
         reader.write(records = listOf(fillerRecord))

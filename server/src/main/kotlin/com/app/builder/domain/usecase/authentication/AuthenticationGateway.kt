@@ -26,13 +26,13 @@ import com.app.builder.data.database.table.UserSessionTable
 import com.app.builder.data.database.table.UserTable
 import com.app.builder.data.serializer.decode
 import com.app.builder.data.serializer.encode
-import com.app.builder.domain.EntityType
-import com.app.builder.domain.Permission
-import com.app.builder.domain.User
-import com.app.builder.domain.RegistrationForm
-import com.app.builder.domain.UserCredentials
 import com.app.builder.domain.Authentication
 import com.app.builder.domain.BearerToken
+import com.app.builder.domain.EntityType
+import com.app.builder.domain.Permission
+import com.app.builder.domain.RegistrationForm
+import com.app.builder.domain.User
+import com.app.builder.domain.UserCredentials
 import com.app.builder.domain.permission.createAccessToken
 
 /**

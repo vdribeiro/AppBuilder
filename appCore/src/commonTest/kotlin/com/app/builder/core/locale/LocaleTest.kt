@@ -3,8 +3,8 @@ package com.app.builder.core.locale
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import com.app.builder.test.TestCase
 
 class LocaleTest: TestCase() {

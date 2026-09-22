@@ -1,10 +1,10 @@
 package com.app.builder.domain.usecase.authentication
 
 import kotlin.uuid.Uuid
-import com.app.builder.domain.RegistrationForm
-import com.app.builder.domain.UserCredentials
 import com.app.builder.domain.Authentication
 import com.app.builder.domain.BearerToken
+import com.app.builder.domain.RegistrationForm
+import com.app.builder.domain.UserCredentials
 
 /** Defines the business workflows for user registration, login, and session management. */
 interface AuthenticationUseCases {
