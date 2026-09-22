@@ -70,6 +70,8 @@ class ActionBarStore(
         storageFile?.load() ?: storageFile?.save { defaults }
 
         storageFile?.cache()?.value?.run {
+            val visibleProperties = visibleProperties.toPersistentList()
+            val searchableProperties = searchableProperties.toPersistentList()
             updateState {
                 it.copy(
                     sortProperty = sortProperty,
@@ -106,6 +108,7 @@ class ActionBarStore(
      * @return The [Job] representing this execution.
      */
     private fun changeMode(action: ActionBarAction.ModeChange): Job = launch(id = "changeMode") {
+        updateState { it.copy(mode = action.mode) }
         storageFile?.save { (it ?: defaults).copy(mode = action.mode.name) }
     }
 

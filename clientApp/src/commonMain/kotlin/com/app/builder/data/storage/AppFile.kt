@@ -1,7 +1,5 @@
 package com.app.builder.data.storage
 
-import kotlinx.collections.immutable.ImmutableList
-import kotlinx.collections.immutable.persistentListOf
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.MapSerializer
@@ -80,8 +78,8 @@ object AppFile {
         val search: String = "",
         val sortProperty: String = "",
         val sortAscending: Boolean = false,
-        val visibleProperties: ImmutableList<String> = persistentListOf(),
-        val searchableProperties: ImmutableList<String> = persistentListOf(),
+        val visibleProperties: List<String> = emptyList(),
+        val searchableProperties: List<String> = emptyList(),
     )
 
     /** Task preferences. */

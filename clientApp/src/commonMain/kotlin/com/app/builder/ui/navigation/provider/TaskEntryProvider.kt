@@ -49,8 +49,8 @@ fun EntryProviderScope<NavKey>.taskProvider(useCases: UseCases) {
         sortProperty = defaultFilterCriteria.sortProperty,
         sortAscending = defaultFilterCriteria.sortAscending,
         properties = propertyMap,
-        visibleProperties = defaultFilterCriteria.visibleProperties,
-        searchableProperties = defaultFilterCriteria.searchableProperties
+        visibleProperties = properties,
+        searchableProperties = properties
     )
 
     entry<Screen.TaskList>(metadata = split()) {

@@ -183,7 +183,7 @@ class TaskListScreenStore(
      * @param searchableProperties Names of the [Property] values to search within.
      * @return `true` if any of the searchable properties contains [search], ignoring case.
      */
-    private fun Task.matchesSearch(search: String, searchableProperties: ImmutableList<String>): Boolean {
+    private fun Task.matchesSearch(search: String, searchableProperties: List<String>): Boolean {
         if (search.isBlank()) return true
         return searchableProperties.any { property ->
             when (property) {
@@ -221,7 +221,7 @@ class TaskListScreenStore(
      * @param selectedUuids UUIDs of the tasks the user has picked.
      * @return Task item with hidden properties set to `null`.
      */
-    private fun Task.toTaskItem(visibilityProperties: ImmutableList<String>, selectedUuids: ImmutableList<Uuid>): TaskItem = TaskItem(
+    private fun Task.toTaskItem(visibilityProperties: List<String>, selectedUuids: ImmutableList<Uuid>): TaskItem = TaskItem(
         uuid = uuid.toString(),
         selected = uuid in selectedUuids,
         modifiedAt = modifiedAt.takeIf { Property.MODIFIED_AT.name in visibilityProperties }?.toString(),
@@ -230,6 +230,12 @@ class TaskListScreenStore(
         description = description.takeIf { Property.DESCRIPTION.name in visibilityProperties }
     )
 
+    /**
+     * Converts this item back into a [Task], stamped as deleted at [deletedAt].
+     *
+     * @param deletedAt Timestamp recorded as the task's deletion time.
+     * @return The reconstructed [Task], or `null` if this item is missing its uuid, modified timestamp or state.
+     */
     private fun TaskItem.toTask(deletedAt: Instant): Task? = Task(
         uuid = uuid.toUuid() ?: return null,
         modifiedAt = modifiedAt?.toInstant() ?: return null,

@@ -62,6 +62,7 @@ fun TaskList(
  * @property deletedAt The timestamp indicating when this task was last deleted.
  * @property title The title of the task. Defaults to `null`.
  * @property description The description of the task. Defaults to `null`.
+ * @property state Name of the task's state. Defaults to `null`.
  */
 @Stable
 data class TaskItem(

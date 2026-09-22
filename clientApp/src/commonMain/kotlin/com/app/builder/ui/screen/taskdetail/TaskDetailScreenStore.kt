@@ -89,6 +89,13 @@ class TaskDetailScreenStore(
         }
     }
 
+    /**
+     * Saves the edited task when the confirmed mode is one that edits it, and does nothing for the modes that do not.
+     *
+     * @param state Current task detail state, holding the task being edited.
+     * @param action Action carrying the mode being confirmed.
+     * @return The [Job] representing this execution.
+     */
     private fun ok(state: TaskDetailScreenState, action: TaskDetailScreenAction.Ok): Job = launch(id = "ok") {
         when (action.mode) {
             ActionBarMode.DEFAULT,
