@@ -62,7 +62,7 @@ fun ConfigCardSwitch(
                 verticalArrangement = Arrangement.spacedBy(space = 4.dp, alignment = Alignment.Top),
                 horizontalAlignment = Alignment.Start,
             ) {
-                Text(text = name, translate = false, style = typography.titleMedium)
+                Text(text = name.toLabel(), translate = false, style = typography.titleMedium)
                 Text(text = description, translate = false, style = typography.bodyMedium)
             }
             AnimatedVisibility(
@@ -119,7 +119,7 @@ fun ConfigCardInput(
                 verticalArrangement = Arrangement.spacedBy(space = 4.dp, alignment = Alignment.Top),
                 horizontalAlignment = Alignment.Start,
             ) {
-                Text(text = name, translate = false, style = typography.titleMedium)
+                Text(text = name.toLabel(), translate = false, style = typography.titleMedium)
                 Text(text = description, translate = false, style = typography.bodyMedium)
             }
             AnimatedVisibility(
@@ -135,6 +135,22 @@ fun ConfigCardInput(
                 value = value,
                 onValueChange = { onValueChange(it) }
             )
+        }
+    }
+}
+
+/**
+ * Converts a camelCase config field name into a human-readable label, splitting it on each capital and capitalizing the first letter.
+ *
+ * @receiver The raw config field name, as declared in the flags/configs class.
+ * @return The label to display, so `featureFlag` reads as `Feature Flag`.
+ */
+private fun String.toLabel(): String = buildString {
+    this@toLabel.forEachIndexed { index, char ->
+        when {
+            index == 0 -> append(value = char.uppercaseChar())
+            char.isUpperCase() -> append(value = ' ').append(value = char)
+            else -> append(value = char)
         }
     }
 }
