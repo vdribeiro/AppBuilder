@@ -334,7 +334,7 @@ class AuthenticationGateway(
      * Persists an authenticated user session.
      *
      * @param userSession The user and session to persist.
-     * @return The [User] instance if successful, or null if encryption or database operations fail.
+     * @return The [User] instance if successful, or null if the database operation fails.
      */
     private suspend fun saveUserAndSession(userSession: UserSession): User? {
         if (!upsertUserAndSession(userSession = userSession)) return null

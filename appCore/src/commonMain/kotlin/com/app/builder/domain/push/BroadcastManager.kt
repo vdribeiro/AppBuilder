@@ -43,7 +43,7 @@ class BroadcastManager(
     /** Guards concurrent start()/stop() transitions. */
     private val mutex = Mutex()
 
-    /** Tracks the current FCM token. */
+    /** Tracks the currently active FCM token subscription loop. */
     private var tokenJob: Job? = null
 
     /** Tracks the currently active broadcast loop. */

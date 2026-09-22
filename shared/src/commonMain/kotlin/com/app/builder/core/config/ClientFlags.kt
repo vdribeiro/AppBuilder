@@ -33,7 +33,7 @@ data class ClientFlags(
     val home: Boolean,
     /** Toggles the Login screen. When false, falls back to the error screen. */
     val login: Boolean,
-    /** Toggles the screen for managing push notifications. When false, falls back to the error screen. */
+    /** Toggles the screen for managing push notifications, and whether the notification permission may be granted. When false, the screen falls back to the error screen and any request for the notification permission is refused. */
     val notifications: Boolean,
     /** Toggles the User Profile screen. When false, falls back to the error screen. */
     val userProfile: Boolean,

@@ -29,7 +29,7 @@ internal class AppleDeviceLocationProvider: DeviceLocationProvider() {
     override val available: Boolean = runCatching {
         CLLocationManager.locationServicesEnabled()
     }.onFailure {
-        Telemetry.error(tag = TAG, message = "Unable to check audio player availability", throwable = it)
+        Telemetry.error(tag = TAG, message = "Unable to check location provider availability", throwable = it)
     }.getOrDefault(defaultValue = false)
 
     /**
