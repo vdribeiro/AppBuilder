@@ -62,7 +62,11 @@ class PushTest: TestCase() {
         waitForIdle()
     }
 
-    /** The lifecycle actions expected once the composable enters composition: the guarded platforms bring the service to the foreground, the rest never touch it. */
+    /**
+     * The lifecycle actions expected once the composable enters composition: the guarded platforms bring the service to the foreground, the rest never touch it.
+     *
+     * @return The lifecycle actions expected on the current platform.
+     */
     private fun expectedEvents(): List<String> = when (platform.os) {
         OS.Android, OS.Ios -> listOf(element = "start")
         OS.Windows, OS.Mac, OS.Linux, OS.Web, OS.Unknown -> emptyList()

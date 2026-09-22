@@ -105,7 +105,11 @@ class ConnectionUseCasesTest: TestCase() {
         assertEquals(expected = listOf(deviceUuid), actual = connectionUseCases.getConnectedDeviceUuids(userUuid = FakeData.user.uuid))
     }
 
-    /** Returns the set of device UUIDs currently stored in the connection table. */
+    /**
+     * Reads the connection table directly, bypassing the use cases under test.
+     *
+     * @return The device UUIDs currently stored in the connection table.
+     */
     private suspend fun R2dbcDatabase.storedDeviceUuids(): Set<Uuid> = safeTransaction {
         ConnectionTable.selectAll().map { it[ConnectionTable.deviceUuid] }.toList().toSet()
     }.getOrThrow()

@@ -246,6 +246,7 @@ private class CounterStore: Store<CounterState, CounterAction>(initialState = Co
      * @param id Identifier used to key the launched job.
      * @param replace Whether an existing job under [id] should be cancelled and replaced.
      * @param block The suspending work to run.
+     * @return The [Job] representing the launched work.
      */
     fun runLaunch(
         id: String,
@@ -261,6 +262,7 @@ private class CounterStore: Store<CounterState, CounterAction>(initialState = Co
      * @param replace Whether an existing job under [id] should be cancelled and replaced.
      * @param timeout Milliseconds to keep observing after the last collector disappears.
      * @param block Invoked with every value emitted by [source].
+     * @return The [Job] representing the observation.
      */
     fun runObserve(
         source: Flow<Int>,

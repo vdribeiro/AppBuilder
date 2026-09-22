@@ -12,7 +12,11 @@ import com.app.builder.test.TestCase
 
 class DeviceLocationProviderTest: TestCase() {
 
-    /** A fixture [DeviceLocation] used to exercise capture updates. */
+    /**
+     * A fixture [DeviceLocation] used to exercise capture updates.
+     *
+     * @return The fixture [DeviceLocation].
+     */
     private fun fixtureLocation(): DeviceLocation = DeviceLocation(
         uuid = Uuid.random(),
         provider = "fused",
@@ -26,7 +30,11 @@ class DeviceLocationProviderTest: TestCase() {
         speed = null,
     )
 
-    /** A [DeviceLocationProvider] that reports itself as available and permitted, so the public lifecycle methods are not short-circuited by their guards. */
+    /**
+     * A [DeviceLocationProvider] that reports itself as available and permitted, so the public lifecycle methods are not short-circuited by their guards.
+     *
+     * @return A [DeviceLocationProvider] that always reports itself available and permitted.
+     */
     private fun testProvider(): DeviceLocationProvider = object: DeviceLocationProvider() {
         override val available: Boolean = true
         override fun hasPermission(): Boolean = true

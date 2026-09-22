@@ -10,13 +10,21 @@ import com.app.builder.test.TestCase
 
 class CameraTest: TestCase() {
 
-    /** A [Camera] that reports itself as available and permitted, so the public lifecycle methods are not short-circuited by their guards. */
+    /**
+     * A [Camera] that reports itself as available and permitted, so the public lifecycle methods are not short-circuited by their guards.
+     *
+     * @return A [Camera] that always reports itself available and permitted.
+     */
     private fun testCamera(): Camera = object: Camera() {
         override val available: Boolean = true
         override fun hasPermission(): Boolean = true
     }
 
-    /** A [testCamera] whose recording hooks succeed synchronously, for tests that need a genuine [Camera.State.Recording] transition. */
+    /**
+     * A [testCamera] whose recording hooks succeed synchronously, for tests that need a genuine [Camera.State.Recording] transition.
+     *
+     * @return A [Camera] whose recording hooks succeed synchronously.
+     */
     private fun recordingCamera(): Camera = object: Camera() {
         /** The callback given to [platformStartRecording], invoked by [platformStopRecording]. */
         private var onResult: ((String) -> Unit)? = null
