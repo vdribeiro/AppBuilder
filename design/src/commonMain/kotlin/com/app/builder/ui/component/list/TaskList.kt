@@ -71,6 +71,7 @@ data class TaskItem(
     val deletedAt: String? = null,
     val title: String? = null,
     val description: String? = null,
+    val state: String? = null
 )
 
 @Preview

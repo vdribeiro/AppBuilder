@@ -1,5 +1,6 @@
 package com.app.builder.ui.screen.tasklist
 
+import kotlin.time.Instant
 import kotlin.uuid.Uuid
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -12,6 +13,8 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.mapNotNull
 import com.app.builder.core.flow.Dispatcher
+import com.app.builder.core.locale.now
+import com.app.builder.core.locale.toInstant
 import com.app.builder.core.security.toUuid
 import com.app.builder.core.security.uuid
 import com.app.builder.core.telemetry.Telemetry
@@ -39,7 +42,6 @@ class TaskListScreenStore(
     private val router: Router,
     private val taskUseCases: TaskUseCases
 ): Store<TaskListScreenState, TaskListScreenAction>(initialState = state) {
-
     init {
         setup()
     }
@@ -149,12 +151,19 @@ class TaskListScreenStore(
      */
     private fun ok(state: TaskListScreenState, action: TaskListScreenAction.Ok): Job = launch(id = "ok") {
         when (action.mode) {
-            ActionBarMode.DEFAULT -> TODO()
-            ActionBarMode.SEARCH -> TODO()
-            ActionBarMode.ADD -> TODO()
-            ActionBarMode.EDIT -> TODO()
-            ActionBarMode.DELETE -> TODO()
-            ActionBarMode.BATCH_DELETE -> TODO()
+            ActionBarMode.DEFAULT,
+            ActionBarMode.SEARCH,
+            ActionBarMode.ADD,
+            ActionBarMode.EDIT,
+            ActionBarMode.DELETE -> Unit
+
+            ActionBarMode.BATCH_DELETE -> {
+                val now = now()
+                state.tasks.filter { it.uuid.toUuid() in state.selectedUuids }.forEach {
+                    it.toTask(deletedAt = now)?.let { task -> taskUseCases.upsertTask(task = task) }
+                }
+            }
+
         }
     }
 
@@ -219,6 +228,15 @@ class TaskListScreenStore(
         deletedAt = deletedAt.takeIf { Property.DELETED_AT.name in visibilityProperties }?.toString(),
         title = title.takeIf { Property.TITLE.name in visibilityProperties },
         description = description.takeIf { Property.DESCRIPTION.name in visibilityProperties }
+    )
+
+    private fun TaskItem.toTask(deletedAt: Instant): Task? = Task(
+        uuid = uuid.toUuid() ?: return null,
+        modifiedAt = modifiedAt?.toInstant() ?: return null,
+        deletedAt = deletedAt,
+        title = title.orEmpty(),
+        description = description.orEmpty(),
+        state = state?.toEnumOrNull() ?: return null
     )
 
     companion object {

@@ -18,18 +18,6 @@ sealed interface TaskDetailScreenAction {
      */
     data class ChangeDescription(val description: String): TaskDetailScreenAction
     /**
-     * Notifies that the mode has changed.
-     *
-     * @param new The new mode it has changed to.
-     */
-    data class ModeChange(val new: ActionBarMode): TaskDetailScreenAction
-    /**
-     * Updates the current search query.
-     *
-     * @param search New search query text.
-     */
-    data class Search(val search: String): TaskDetailScreenAction
-    /**
      * Confirms and commits the current pending mode.
      *
      * @param mode The pending mode.
