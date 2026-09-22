@@ -70,7 +70,19 @@ class ActionBarStore(
     private fun setup(): Job = launch(id = "setup") {
         Telemetry.info(tag = TAG, message = "Setup")
 
+        // Assert file exists
         storageFile?.load() ?: storageFile?.save { defaults }
+
+        storageFile?.cache()?.value?.run {
+            updateState {
+                it.copy(
+                    sortProperty = sortProperty,
+                    sortAscending = sortAscending,
+                    visibleProperties = visibleProperties,
+                    searchableProperties = searchableProperties
+                )
+            }
+        }
 
         authenticationUseCases.observeCurrentUser().observe(id = "current_user") { user ->
             val userImage = when (user) {

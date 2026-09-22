@@ -3,9 +3,6 @@ package com.app.builder.ui.screen.tasklist
 import kotlin.uuid.Uuid
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
-import kotlinx.collections.immutable.toPersistentList
-import com.app.builder.data.storage.AppFile
-import com.app.builder.domain.Task
 import com.app.builder.ui.component.bar.ActionBarMode
 import com.app.builder.ui.component.list.TaskItem
 
@@ -24,15 +21,6 @@ sealed interface TaskListScreenAction {
      */
     data class Ok(val mode: ActionBarMode): TaskListScreenAction
 }
-
-val defaultFilterCriteria = AppFile.ActionBarData(
-    mode = ActionBarMode.DEFAULT.name,
-    search = "",
-    sortProperty = Task.Property.MODIFIED_AT.name,
-    sortAscending = false,
-    visibleProperties = Task.Property.entries.map { it.name }.toPersistentList(),
-    searchableProperties = Task.Property.entries.map { it.name }.toPersistentList(),
-)
 
 /**
  * State of the task list, holding the tasks to display and whether batch delete selection is active.
@@ -54,17 +42,4 @@ data class TaskListScreenState(
  */
 data class TaskListFilterCriteria(
     val selectedUuids: ImmutableList<Uuid>
-)
-
-/**
- * Groups the inputs the displayed task list is built from.
- *
- * @property tasks Tasks observed from storage, before filtering and sorting.
- * @property actionBarData Persisted action bar data holding the search query, sorting and property filters.
- * @property criteria Criteria derived from the current screen state.
- */
-data class TaskListActionBarFilterCombine(
-    val tasks: List<Task>,
-    val actionBarData: AppFile.ActionBarData,
-    val criteria: TaskListFilterCriteria
 )
