@@ -10,10 +10,6 @@ import com.app.builder.ui.core.image.Image
 
 /** Actions that can be dispatched to an action bar store. */
 sealed interface ActionBarAction {
-    /** Requests back navigation. */
-    data object Back: ActionBarAction
-    /** Opens the login screen. */
-    data object Login: ActionBarAction
     /** Opens the user profile screen. */
     data object OpenUser: ActionBarAction
     /**

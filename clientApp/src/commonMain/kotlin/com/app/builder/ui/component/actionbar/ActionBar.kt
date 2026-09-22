@@ -24,8 +24,6 @@ fun ActionBar(store: Store<ActionBarState, ActionBarAction>) {
             .testTag(tag = "action_bar")
             .fillMaxWidth(),
         title = state.title,
-        onBackClick = { store.send(action = ActionBarAction.Back) },
-        onLoginClick = { store.send(action = ActionBarAction.Login) },
         avatarName = state.avatarName,
         avatarImage = state.avatarImage,
         onAvatarClick = { store.send(action = ActionBarAction.OpenUser) },

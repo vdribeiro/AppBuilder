@@ -5,27 +5,25 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.tooling.preview.Preview
 import com.app.builder.data.resource.ImageResource
 import com.app.builder.ui.Preview
-import com.app.builder.ui.component.actionbar.ActionBar
-import com.app.builder.ui.component.actionbar.ActionBarAction
-import com.app.builder.ui.component.actionbar.ActionBarState
+import com.app.builder.ui.component.bar.TopActionBar
 import com.app.builder.ui.component.image.toImage
 import com.app.builder.ui.core.image.Image
 import com.app.builder.ui.core.text.Text
+import com.app.builder.ui.navigation.LocalRouter
+import com.app.builder.ui.navigation.Screen
 import com.app.builder.ui.screen.Screen
-import com.app.builder.ui.store.Store
 
-/**
- * The Home Screen.
- *
- * @param actionBarStore The store for action bar.
- */
+/** The Home Screen. */
 @Composable
-fun HomeScreen(
-    actionBarStore: Store<ActionBarState, ActionBarAction>,
-) {
+fun HomeScreen() {
+    val router = LocalRouter.current
     Screen(
         contentAlignment = Alignment.Center,
-        topBar = { ActionBar(store = actionBarStore) },
+        topBar = {
+            TopActionBar(
+                onLoginClick = { router.navigate(screen = Screen.Login) }
+            )
+        },
     ) {
         Image(image = ImageResource.Kotlin.toImage())
         Text(text = "Home")
@@ -35,7 +33,5 @@ fun HomeScreen(
 @Preview
 @Composable
 private fun HomeScreenPreview() = Preview {
-    HomeScreen(
-        actionBarStore = Store(initialState = ActionBarState(avatarName = "Robotnik")),
-    )
+    HomeScreen()
 }

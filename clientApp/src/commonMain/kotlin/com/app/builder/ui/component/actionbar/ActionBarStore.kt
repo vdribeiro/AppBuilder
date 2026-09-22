@@ -26,7 +26,6 @@ import com.app.builder.ui.store.Store
  * @property storageFile File the action bar data is persisted to, or `null` to keep it in memory only.
  * @property defaults Action bar data used when [storageFile] holds nothing yet.
  * @property entityType Entity the write permission is checked against, or `null` when the screen has no entity.
- * @property onBackClick Shows a back arrow when not null and executes this callback when clicked.
  * @property onOkClick Called with the current mode when the confirmation button is clicked.
  * @property onCancelClick Called with the current mode when the cancellation button is clicked.
  */
@@ -37,7 +36,6 @@ class ActionBarStore(
     private val storageFile: StorageFile<AppFile.ActionBarData>? = null,
     private val defaults: AppFile.ActionBarData = AppFile.ActionBarData(),
     private val entityType: EntityType? = null,
-    private val onBackClick: (() -> Unit)? = null,
     private val onOkClick: (ActionBarMode) -> Unit = {},
     private val onCancelClick: (ActionBarMode) -> Unit = {},
 ): Store<ActionBarState, ActionBarAction>(initialState = state) {
@@ -48,8 +46,6 @@ class ActionBarStore(
     override fun reducer(state: ActionBarState, action: ActionBarAction) {
         super.reducer(state, action)
         when (action) {
-            ActionBarAction.Back -> onBackClick?.invoke()
-            ActionBarAction.Login -> router.navigate(screen = Screen.Login)
             ActionBarAction.OpenUser -> router.navigate(screen = Screen.UserProfile)
             is ActionBarAction.ModeChange -> changeMode(action = action)
             is ActionBarAction.Search -> search(action = action)

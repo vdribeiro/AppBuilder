@@ -75,7 +75,7 @@ fun UnauthenticatedNavigation(
         entryProviderScope = {
             errorProvider()
             if (useCases == null) return@Navigation
-            if (ClientFlags.flags.home) homeProvider(useCases = useCases)
+            if (ClientFlags.flags.home) homeProvider()
             if (ClientFlags.flags.userProfile) userProfileProvider(useCases = useCases)
             if (ClientFlags.flags.login) authenticationProvider(useCases = useCases)
         }
