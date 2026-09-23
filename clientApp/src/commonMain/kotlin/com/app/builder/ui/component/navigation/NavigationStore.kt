@@ -7,6 +7,7 @@ import androidx.compose.material.icons.filled.AppRegistration
 import androidx.compose.material.icons.filled.Camera
 import androidx.compose.material.icons.filled.FileOpen
 import androidx.compose.material.icons.filled.Flag
+import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.GpsFixed
 import androidx.compose.material.icons.filled.ManageAccounts
 import androidx.compose.material.icons.filled.MusicNote
@@ -106,6 +107,14 @@ class NavigationStore(
                         text = "camera",
                         icon = Icons.Filled.Camera,
                         onClick = { router.navigate(screen = Screen.Camera, option = Router.NavOption.CLEAR) },
+                    )
+                )
+                add(
+                    NavigationItem(
+                        selected = state.selected == NavigationRoute.DEVICE_FILE,
+                        text = "device_file",
+                        icon = Icons.Filled.Folder,
+                        onClick = { router.navigate(screen = Screen.DeviceFiles, option = Router.NavOption.CLEAR) },
                     )
                 )
                 add(

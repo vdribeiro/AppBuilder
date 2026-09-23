@@ -17,6 +17,7 @@ import com.app.builder.ui.navigation.provider.errorProvider
 import com.app.builder.ui.navigation.provider.homeProvider
 import com.app.builder.ui.navigation.provider.nfcProvider
 import com.app.builder.ui.navigation.provider.pushProvider
+import com.app.builder.ui.navigation.provider.deviceFilesProvider
 import com.app.builder.ui.navigation.provider.taskProvider
 import com.app.builder.ui.navigation.provider.userProfileProvider
 import com.app.builder.ui.navigation.provider.userProvider
@@ -106,6 +107,7 @@ fun AuthenticatedNavigation(
             if (ClientFlags.flags.locationCapture) deviceLocationProvider(useCases = useCases)
             if (ClientFlags.flags.nfc) nfcProvider(useCases = useCases)
             if (ClientFlags.flags.camera) cameraProvider(useCases = useCases)
+            deviceFilesProvider(useCases = useCases)
             if (ClientFlags.flags.music) audioProvider(useCases = useCases)
             if (ClientFlags.flags.notifications) pushProvider(useCases = useCases)
             if (ClientFlags.flags.tasks) taskProvider(useCases = useCases)

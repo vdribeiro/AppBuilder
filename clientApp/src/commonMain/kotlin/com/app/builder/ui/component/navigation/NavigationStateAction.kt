@@ -24,6 +24,7 @@ enum class NavigationRoute {
     DEVICE_LOCATION,
     NFC,
     CAMERA,
+    DEVICE_FILE,
     AUDIO,
     NOTIFICATION,
     CLIENT_FLAG,

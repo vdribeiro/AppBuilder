@@ -15,9 +15,4 @@ sealed class AudioResource(val path: String) {
     data object Pulse: AudioResource(path = "tracks/pulse.mp3")
     /** A sustained ambient chord under a slow tremolo. */
     data object Drone: AudioResource(path = "tracks/drone.mp3")
-
-    companion object {
-        /** Every registered track, in the order they are offered for playback. */
-        val entries: List<AudioResource> = listOf(Ping, Chime, Pulse, Drone)
-    }
 }

@@ -17,6 +17,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.app.builder.core.config.ClientFlags
 import com.app.builder.core.media.AudioPlayer
 import com.app.builder.data.resource.AudioResource
+import com.app.builder.data.resource.AudioResource.Chime
+import com.app.builder.data.resource.AudioResource.Drone
+import com.app.builder.data.resource.AudioResource.Ping
+import com.app.builder.data.resource.AudioResource.Pulse
 import com.app.builder.ui.LocalAudioPlayer
 import com.app.builder.ui.Preview
 import com.app.builder.ui.component.actionbar.ActionBar
@@ -26,6 +30,7 @@ import com.app.builder.ui.component.navigation.Navigation
 import com.app.builder.ui.component.navigation.NavigationState
 import com.app.builder.ui.core.button.Button
 import com.app.builder.ui.core.button.ButtonStyle
+import com.app.builder.ui.core.button.Checkbox
 import com.app.builder.ui.core.button.Switch
 import com.app.builder.ui.core.text.Text
 import com.app.builder.ui.screen.Screen
@@ -46,8 +51,10 @@ fun AudioScreen(
 
     val state by audioPlayer.state.collectAsStateWithLifecycle()
 
+    var selected by remember { mutableStateOf(value = setOf<AudioResource>(AudioResource.Ping)) }
     var loop by remember { mutableStateOf(value = true) }
     var shuffle by remember { mutableStateOf(value = false) }
+    val entries: List<AudioResource> by lazy { listOf(Ping, Chime, Pulse, Drone) }
 
     Screen(
         topBar = { ActionBar(store = actionBarStore) },
@@ -64,6 +71,28 @@ fun AudioScreen(
         ) {
             Text(text = state.toString(), translate = false)
 
+            Text(text = "audio_tracks")
+            entries.forEach { track ->
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(space = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Checkbox(
+                        checked = track in selected,
+                        onCheckedChange = { checked -> selected = if (checked) selected + track else selected - track }
+                    )
+                    Text(
+                        text = track.path
+                            .substringAfterLast(delimiter = '/')
+                            .substringBeforeLast(delimiter = '.')
+                            .replace(oldValue = "_", newValue = " ")
+                            .replaceFirstChar { it.uppercase() },
+                        translate = false
+                    )
+                }
+            }
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(space = 8.dp),
@@ -79,8 +108,13 @@ fun AudioScreen(
                 modifier = Modifier.fillMaxWidth(),
                 style = ButtonStyle.FILLED,
                 text = "Set playlist",
+                enabled = selected.isNotEmpty(),
             ) {
-                audioPlayer.setPlaylist(playlist = listOf(AudioResource.Ping.path), loop = loop, shuffle = shuffle)
+                audioPlayer.setPlaylist(
+                    playlist = entries.filter { it in selected }.map { it.path },
+                    loop = loop,
+                    shuffle = shuffle
+                )
             }
 
             Row(
