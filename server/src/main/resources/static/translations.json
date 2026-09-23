@@ -81,6 +81,11 @@
   },
   {
     "languageIso": "en",
+    "key": "design",
+    "value": "Design"
+  },
+  {
+    "languageIso": "en",
     "key": "camera",
     "value": "Camera"
   },
