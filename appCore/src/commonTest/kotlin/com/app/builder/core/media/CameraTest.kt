@@ -252,7 +252,7 @@ class CameraTest: TestCase() {
             override val available: Boolean = true
             override fun hasPermission(): Boolean = true
             override fun platformToggleFacing() {
-                reportedFacing = facing
+                reportedFacing = facing.value
             }
         }
         camera.startPreview()

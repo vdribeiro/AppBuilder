@@ -53,6 +53,7 @@ fun CameraScreen(
     val coroutineScope = rememberCoroutineScope()
 
     val state by camera.state.collectAsStateWithLifecycle()
+    val facing by camera.facing.collectAsStateWithLifecycle()
 
     var snackbarMessage by remember { mutableStateOf<String?>(value = null) }
 
@@ -128,6 +129,14 @@ fun CameraScreen(
                     enabled = state == Camera.State.Recording,
                 ) {
                     camera.stopRecording()
+                }
+                Button(
+                    modifier = Modifier.weight(weight = 1f),
+                    style = ButtonStyle.FILLED,
+                    text = if (facing == Camera.Facing.BACK) "Front" else "Back",
+                    enabled = state == Camera.State.Previewing,
+                ) {
+                    camera.toggleFacing()
                 }
             }
         }

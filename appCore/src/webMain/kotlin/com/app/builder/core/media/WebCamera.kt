@@ -93,7 +93,7 @@ internal class WebCamera: Camera() {
     override fun platformStartPreview() {
         super.platformStartPreview()
         val video = this@WebCamera.videoElement ?: error(message = "No video element")
-        val facingMode = if (facing == Facing.BACK) "environment" else "user"
+        val facingMode = if (facing.value == Facing.BACK) "environment" else "user"
         startMediaStream(video = video, facingMode = facingMode)
         streamWatchJob = scope.launch {
             loop { if (pollStreamEnded()) return@loop stopPreview() }

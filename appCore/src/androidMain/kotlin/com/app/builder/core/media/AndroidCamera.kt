@@ -108,7 +108,7 @@ internal class AndroidCamera: Camera() {
         val surfaceProvider = this@AndroidCamera.surfaceProvider ?: error(message = "No surface provider")
         val videoCapture = this@AndroidCamera.videoCapture ?: error(message = "No video capture")
 
-        val selector = if (facing == Facing.BACK) CameraSelector.DEFAULT_BACK_CAMERA else CameraSelector.DEFAULT_FRONT_CAMERA
+        val selector = if (facing.value == Facing.BACK) CameraSelector.DEFAULT_BACK_CAMERA else CameraSelector.DEFAULT_FRONT_CAMERA
         val preview = Preview.Builder().build().apply { this.surfaceProvider = surfaceProvider }
         val imageCapture = ImageCapture.Builder().build().also { this@AndroidCamera.imageCapture = it }
 

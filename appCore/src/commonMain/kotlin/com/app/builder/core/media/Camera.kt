@@ -1,6 +1,5 @@
 package com.app.builder.core.media
 
-import kotlin.concurrent.Volatile
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -37,9 +36,10 @@ open class Camera {
     /** Observable state of the camera. */
     val state: StateFlow<State> = _state.asStateFlow()
 
+    /** Backing state for [facing]. */
+    private val _facing: MutableStateFlow<Facing> = MutableStateFlow(value = Facing.BACK)
     /** The active lens direction used when binding the capture session. */
-    @Volatile
-    protected var facing: Facing = Facing.BACK
+    val facing: StateFlow<Facing> = _facing.asStateFlow()
 
     /**
      * Returns if the camera is permitted on this device.
@@ -136,9 +136,11 @@ open class Camera {
         runCatching {
             if (!ClientFlags.flags.camera || !available || !hasPermission()) return@runCatching stopPreview()
             if (state.value != State.Previewing) return@runCatching
-            facing = when (facing) {
-                Facing.FRONT -> Facing.BACK
-                Facing.BACK -> Facing.FRONT
+            _facing.update {
+                when (it) {
+                    Facing.FRONT -> Facing.BACK
+                    Facing.BACK -> Facing.FRONT
+                }
             }
             platformToggleFacing()
         }.onFailure {
