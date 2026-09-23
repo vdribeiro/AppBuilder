@@ -107,7 +107,7 @@ fun AuthenticatedNavigation(
             if (ClientFlags.flags.locationCapture) deviceLocationProvider(useCases = useCases)
             if (ClientFlags.flags.nfc) nfcProvider(useCases = useCases)
             if (ClientFlags.flags.camera) cameraProvider(useCases = useCases)
-            deviceFilesProvider(useCases = useCases)
+            if (ClientFlags.flags.deviceFiles) deviceFilesProvider(useCases = useCases)
             if (ClientFlags.flags.music) audioProvider(useCases = useCases)
             if (ClientFlags.flags.notifications) pushProvider(useCases = useCases)
             if (ClientFlags.flags.tasks) taskProvider(useCases = useCases)

@@ -18,6 +18,7 @@ import androidx.compose.material.icons.filled.Task
 import androidx.compose.material.icons.outlined.Flag
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.Translate
+import com.app.builder.core.config.ClientFlags
 import com.app.builder.core.telemetry.Telemetry
 import com.app.builder.domain.EntityType
 import com.app.builder.domain.gateway.authentication.AuthenticationUseCases
@@ -109,7 +110,7 @@ class NavigationStore(
                         onClick = { router.navigate(screen = Screen.Camera, option = Router.NavOption.CLEAR) },
                     )
                 )
-                add(
+                if (ClientFlags.flags.deviceFiles) add(
                     NavigationItem(
                         selected = state.selected == NavigationRoute.DEVICE_FILE,
                         text = "device_file",

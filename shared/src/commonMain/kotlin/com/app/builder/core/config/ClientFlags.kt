@@ -35,6 +35,8 @@ data class ClientFlags(
     val login: Boolean,
     /** Toggles the screen for managing push notifications, and whether the notification permission may be granted. When false, the screen falls back to the error screen and any request for the notification permission is refused. */
     val notifications: Boolean,
+    /** Toggles the Device Files screen, listing the files the application holds on the device. When false, the screen is not reachable and its navigation item is hidden. */
+    val deviceFiles: Boolean,
     /** Toggles the User Profile screen. When false, falls back to the error screen. */
     val userProfile: Boolean,
     /** Toggles the user screens. When false, falls back to the error screen. */
@@ -60,6 +62,7 @@ data class ClientFlags(
             home = true,
             login = true,
             notifications = true,
+            deviceFiles = true,
             userProfile = true,
             users = true,
             tasks = true,
