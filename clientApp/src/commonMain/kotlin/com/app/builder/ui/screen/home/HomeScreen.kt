@@ -21,6 +21,8 @@ fun HomeScreen() {
         contentAlignment = Alignment.Center,
         topBar = {
             TopActionBar(
+                avatarImage = ImageResource.Kotlin.toImage(),
+                onAvatarClick = { router.navigate(screen = Screen.UserProfile) },
                 onLoginClick = { router.navigate(screen = Screen.Login) }
             )
         },
