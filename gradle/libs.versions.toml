@@ -237,6 +237,7 @@ design-web = [
 ]
 appcore-common = [
     "kotlinx-coroutines-core",
+    "kotlinx-collections-immutable",
     "kotlinx-datetime",
     "ktor",
     "ktor-logging",
@@ -250,6 +251,7 @@ appcore-common = [
     "compose-runtime",
     "compose-ui",
     "compose-foundation",
+    "compose-icons",
     "compose-preview",
     "lifecycle",
     "lifecycle-runtime",
