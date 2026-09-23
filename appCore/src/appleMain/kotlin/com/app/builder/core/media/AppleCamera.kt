@@ -3,6 +3,9 @@ package com.app.builder.core.media
 import platform.AVFoundation.AVAuthorizationStatusAuthorized
 import platform.AVFoundation.AVCaptureDevice
 import platform.AVFoundation.AVCaptureDeviceInput
+import platform.AVFoundation.AVCaptureDevicePositionBack
+import platform.AVFoundation.AVCaptureDevicePositionFront
+import platform.AVFoundation.AVCaptureDeviceTypeBuiltInWideAngleCamera
 import platform.AVFoundation.AVCaptureFileOutput
 import platform.AVFoundation.AVCaptureFileOutputRecordingDelegateProtocol
 import platform.AVFoundation.AVCaptureInput
@@ -15,6 +18,7 @@ import platform.AVFoundation.AVCaptureSession
 import platform.AVFoundation.AVCaptureSessionPresetHigh
 import platform.AVFoundation.AVMediaTypeVideo
 import platform.AVFoundation.authorizationStatusForMediaType
+import platform.AVFoundation.defaultDeviceWithDeviceType
 import platform.AVFoundation.fileDataRepresentation
 import platform.Foundation.NSError
 import platform.Foundation.NSTemporaryDirectory
@@ -66,9 +70,14 @@ internal class AppleCamera: Camera() {
         session = null
     }
 
-    /** Resolves the default video device and adds it as an input to [session]. */
+    /** Resolves the wide-angle video device for the current [facing] direction, falling back to the default device, and adds it as an input to [session]. */
     private fun attachInput(session: AVCaptureSession) = runCatching {
-        val device = AVCaptureDevice.defaultDeviceWithMediaType(mediaType = AVMediaTypeVideo) ?: error(message = "Unable to resolve default video device")
+        val position = if (facing.value == Facing.BACK) AVCaptureDevicePositionBack else AVCaptureDevicePositionFront
+        val device = AVCaptureDevice.defaultDeviceWithDeviceType(
+            deviceType = AVCaptureDeviceTypeBuiltInWideAngleCamera,
+            mediaType = AVMediaTypeVideo,
+            position = position,
+        ) ?: AVCaptureDevice.defaultDeviceWithMediaType(mediaType = AVMediaTypeVideo) ?: error(message = "Unable to resolve video device")
         val input = AVCaptureDeviceInput(device = device, error = null)
         if (session.canAddInput(input = input)) session.addInput(input = input)
     }.onFailure {

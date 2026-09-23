@@ -104,16 +104,24 @@ fun CameraScreen(
                 Button(
                     modifier = Modifier.weight(weight = 1f),
                     style = ButtonStyle.FILLED,
-                    text = "Photo",
+                    text = if (facing == Camera.Facing.BACK) "Front" else "Back",
                     enabled = state == Camera.State.Previewing,
                 ) {
-                    camera.capturePhoto { path -> snackbarMessage = path }
+                    camera.toggleFacing()
                 }
             }
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(space = 8.dp)
             ) {
+                Button(
+                    modifier = Modifier.weight(weight = 1f),
+                    style = ButtonStyle.FILLED,
+                    text = "Photo",
+                    enabled = state == Camera.State.Previewing,
+                ) {
+                    camera.capturePhoto { path -> snackbarMessage = path }
+                }
                 Button(
                     modifier = Modifier.weight(weight = 1f),
                     style = ButtonStyle.FILLED,
@@ -130,14 +138,7 @@ fun CameraScreen(
                 ) {
                     camera.stopRecording()
                 }
-                Button(
-                    modifier = Modifier.weight(weight = 1f),
-                    style = ButtonStyle.FILLED,
-                    text = if (facing == Camera.Facing.BACK) "Front" else "Back",
-                    enabled = state == Camera.State.Previewing,
-                ) {
-                    camera.toggleFacing()
-                }
+
             }
         }
     }
