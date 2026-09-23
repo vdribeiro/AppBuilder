@@ -29,6 +29,8 @@ data class ClientFlags(
     val locationCapture: Boolean,
     /** Toggles the scrollbar on screens it is not enforced. */
     val scrollBar: Boolean,
+    /** Toggles the design section screens, showcasing the design system's components, icons, colors, shapes and typography. When false, the screens are not reachable and their navigation item is hidden. */
+    val design: Boolean,
     /** Toggles the Home screen. When false, falls back to the error screen. */
     val home: Boolean,
     /** Toggles the Login screen. When false, falls back to the error screen. */
@@ -59,6 +61,7 @@ data class ClientFlags(
             pushSync = true,
             locationCapture = false,
             scrollBar = true,
+            design = true,
             home = true,
             login = true,
             notifications = true,
