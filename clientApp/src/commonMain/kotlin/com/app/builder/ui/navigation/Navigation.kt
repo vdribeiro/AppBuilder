@@ -8,6 +8,7 @@ import com.app.builder.core.config.ClientFlags
 import com.app.builder.domain.EntityType
 import com.app.builder.domain.deeplink.DeepLink
 import com.app.builder.domain.gateway.UseCases
+import com.app.builder.ui.navigation.provider.audioProvider
 import com.app.builder.ui.navigation.provider.authenticationProvider
 import com.app.builder.ui.navigation.provider.cameraProvider
 import com.app.builder.ui.navigation.provider.configsProvider
@@ -105,6 +106,7 @@ fun AuthenticatedNavigation(
             if (ClientFlags.flags.locationCapture) deviceLocationProvider(useCases = useCases)
             if (ClientFlags.flags.nfc) nfcProvider(useCases = useCases)
             if (ClientFlags.flags.camera) cameraProvider(useCases = useCases)
+            if (ClientFlags.flags.music) audioProvider(useCases = useCases)
             if (ClientFlags.flags.notifications) pushProvider(useCases = useCases)
             if (ClientFlags.flags.tasks) taskProvider(useCases = useCases)
         }

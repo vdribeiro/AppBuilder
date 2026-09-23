@@ -9,6 +9,7 @@ import androidx.compose.material.icons.filled.FileOpen
 import androidx.compose.material.icons.filled.Flag
 import androidx.compose.material.icons.filled.GpsFixed
 import androidx.compose.material.icons.filled.ManageAccounts
+import androidx.compose.material.icons.filled.MusicNote
 import androidx.compose.material.icons.filled.Nfc
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Settings
@@ -105,6 +106,14 @@ class NavigationStore(
                         text = "camera",
                         icon = Icons.Filled.Camera,
                         onClick = { router.navigate(screen = Screen.Camera, option = Router.NavOption.CLEAR) },
+                    )
+                )
+                add(
+                    NavigationItem(
+                        selected = state.selected == NavigationRoute.AUDIO,
+                        text = "audio",
+                        icon = Icons.Filled.MusicNote,
+                        onClick = { router.navigate(screen = Screen.Audio, option = Router.NavOption.CLEAR) },
                     )
                 )
                 if (permissions[EntityType.NOTIFICATION] != null) add(

@@ -86,6 +86,26 @@
   },
   {
     "languageIso": "en",
+    "key": "audio",
+    "value": "Audio"
+  },
+  {
+    "languageIso": "en",
+    "key": "audio_unavailable",
+    "value": "Audio playback is unavailable"
+  },
+  {
+    "languageIso": "en",
+    "key": "audio_loop",
+    "value": "Loop"
+  },
+  {
+    "languageIso": "en",
+    "key": "audio_shuffle",
+    "value": "Shuffle"
+  },
+  {
+    "languageIso": "en",
     "key": "registration",
     "value": "Registration"
   },

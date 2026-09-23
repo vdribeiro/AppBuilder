@@ -95,6 +95,10 @@ sealed interface Screen: NavKey {
     @Serializable
     @SerialName(value = "screen_camera")
     data object Camera: Screen
+    /** A screen with audio playback. */
+    @Serializable
+    @SerialName(value = "screen_audio")
+    data object Audio: Screen
     /** The screen listing all tasks. */
     @Serializable
     @SerialName(value = "screen_task_list")

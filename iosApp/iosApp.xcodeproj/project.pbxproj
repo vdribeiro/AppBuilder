@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		64A1A0CFE5E5D1EBA756E876 /* Pods_iosApp.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F3361CF8F121E960CC349C72 /* Pods_iosApp.framework */; };
 		F35A793B2EA16F1B007065BF /* libsqlite3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = F35A793A2EA16F1B007065BF /* libsqlite3.tbd */; };
+		F3A0D1022F0000010000A002 /* tracks in Resources */ = {isa = PBXBuildFile; fileRef = F3A0D1012F0000010000A001 /* tracks */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -17,6 +18,7 @@
 		D7DBFAC133931E36C8FF40EC /* Pods-iosApp.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-iosApp.debug.xcconfig"; path = "Target Support Files/Pods-iosApp/Pods-iosApp.debug.xcconfig"; sourceTree = "<group>"; };
 		F3361CF8F121E960CC349C72 /* Pods_iosApp.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_iosApp.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		F35A793A2EA16F1B007065BF /* libsqlite3.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsqlite3.tbd; path = usr/lib/libsqlite3.tbd; sourceTree = SDKROOT; };
+		F3A0D1012F0000010000A001 /* tracks */ = {isa = PBXFileReference; lastKnownFileType = folder; name = tracks; path = ../clientApp/src/commonMain/resources/tracks; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -57,6 +59,7 @@
 			isa = PBXGroup;
 			children = (
 				B9DA97B32DC1472C00A4DA20 /* iosApp */,
+				F3A0D1012F0000010000A001 /* tracks */,
 				F35A79392EA16F1B007065BF /* Frameworks */,
 				B9DA97B22DC1472C00A4DA20 /* Products */,
 				C898DD34B943CB5F4E357F91 /* Pods */,
@@ -157,6 +160,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F3A0D1022F0000010000A002 /* tracks in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
