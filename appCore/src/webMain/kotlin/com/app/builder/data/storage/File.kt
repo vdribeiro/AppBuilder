@@ -45,4 +45,26 @@ actual suspend fun clearCache(): Boolean = withContext(context = Dispatcher.IO) 
     }.getOrDefault(defaultValue = false)
 }
 
+actual suspend fun listFiles(path: String): List<DeviceFile> = withContext(context = Dispatcher.IO) {
+    runCatching {
+        val prefix = "${path}_"
+        (0 until localStorage.length)
+            .mapNotNull { localStorage.key(index = it) }
+            .filter { it.startsWith(prefix = prefix) }
+            .map { key ->
+                DeviceFile(
+                    path = key,
+                    name = key.removePrefix(prefix = prefix),
+                    size = localStorage.getItem(key = key)?.length?.toLong() ?: 0L,
+                    modifiedAt = null
+                )
+            }
+    }.onFailure {
+        Telemetry.error(tag = TAG, message = "Unable to list files in $path", throwable = it)
+    }.getOrDefault(defaultValue = emptyList())
+}
+
+// The browser has no file system.
+actual suspend fun openFile(path: String): Boolean = false
+
 private const val TAG = "File"

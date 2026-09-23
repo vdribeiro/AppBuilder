@@ -31,3 +31,34 @@ expect suspend fun deleteFile(path: String): Boolean
  * @return `true` if the operation completes successfully, `false` if an I/O error occurs or permissions are denied.
  */
 expect suspend fun clearCache(): Boolean
+
+/**
+ * Lists every file held under [path], including the ones in its subdirectories.
+ *
+ * @param path The absolute path of the directory to list, typically the application data or cache directory.
+ * @return The files found, or an empty list if the directory does not exist or cannot be read.
+ */
+expect suspend fun listFiles(path: String): List<DeviceFile>
+
+/**
+ * Hands [path] over to the platform's default handler for its type, so the file opens outside the application.
+ *
+ * @param path The absolute path of the file to open.
+ * @return `true` if a handler was launched, `false` if the platform has no handler for it or the hand off failed.
+ */
+expect suspend fun openFile(path: String): Boolean
+
+/**
+ * A file held in one of the application's own directories.
+ *
+ * @property path The absolute path of the file, or the storage key on platforms without a file system.
+ * @property name The file name, including its extension.
+ * @property size The size of the file in bytes.
+ * @property modifiedAt The epoch milliseconds of the last modification, or null when the platform does not track it.
+ */
+data class DeviceFile(
+    val path: String,
+    val name: String,
+    val size: Long,
+    val modifiedAt: Long?
+)
