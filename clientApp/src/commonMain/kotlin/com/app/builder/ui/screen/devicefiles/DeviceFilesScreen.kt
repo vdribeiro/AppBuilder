@@ -10,7 +10,7 @@ import com.app.builder.ui.Preview
 import com.app.builder.ui.component.actionbar.ActionBar
 import com.app.builder.ui.component.actionbar.ActionBarAction
 import com.app.builder.ui.component.actionbar.ActionBarState
-import com.app.builder.ui.component.list.FileList
+import com.app.builder.ui.component.list.DeviceFileList
 import com.app.builder.ui.component.navigation.Navigation
 import com.app.builder.ui.component.navigation.NavigationState
 import com.app.builder.ui.core.overlay.Snackbar
@@ -43,7 +43,7 @@ fun DeviceFilesScreen(
             }
         }
     ) {
-        FileList(
+        DeviceFileList(
             items = state.files,
             onClick = { store.send(action = DeviceFilesScreenAction.OpenFile(path = it.path)) }
         )

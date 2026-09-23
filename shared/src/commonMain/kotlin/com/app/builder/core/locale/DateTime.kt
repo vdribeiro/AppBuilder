@@ -31,3 +31,10 @@ fun markNow(): TimeSource.Monotonic.ValueTimeMark = TimeSource.Monotonic.markNow
  * @return The parsed [Instant] object, or null if parsing fails.
  */
 fun String.toInstant(): Instant? = runCatching { Instant.parse(input = this) }.getOrNull()
+
+/**
+ * Parses an epoch in milliseconds into an [Instant] object.
+ *
+ * @return The parsed [Instant] object, or null if parsing fails.
+ */
+fun Long.toInstant(): Instant? = runCatching { Instant.fromEpochMilliseconds(epochMilliseconds = this) }.getOrNull()

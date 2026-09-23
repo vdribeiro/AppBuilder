@@ -9,7 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
-import com.app.builder.core.telemetry.Telemetry
+import com.app.builder.core.locale.toInstant
 import com.app.builder.ui.LocalTypography
 import com.app.builder.ui.Preview
 import com.app.builder.ui.core.button.Button
@@ -44,13 +44,7 @@ fun DatePicker(
             confirmText?.let {
                 Button(
                     text = confirmText,
-                    onClick = {
-                        onDateSelected(runCatching {
-                            state.selectedDateMillis?.let { Instant.fromEpochMilliseconds(it) }
-                        }.onFailure {
-                            Telemetry.error(tag = TAG, message = "Unable to convert date", throwable = it)
-                        }.getOrNull())
-                    }
+                    onClick = { onDateSelected(state.selectedDateMillis?.toInstant()) }
                 )
             }
         },

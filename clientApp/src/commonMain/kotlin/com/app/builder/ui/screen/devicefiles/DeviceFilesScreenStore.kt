@@ -1,16 +1,17 @@
 package com.app.builder.ui.screen.devicefiles
 
-import kotlin.time.Instant
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.Job
 import com.app.builder.core.flow.Dispatcher
+import com.app.builder.core.locale.getLocalDateTime
+import com.app.builder.core.locale.toInstant
 import com.app.builder.core.platform.appCachePath
 import com.app.builder.core.platform.appDataPath
 import com.app.builder.core.telemetry.Telemetry
 import com.app.builder.data.storage.DeviceFile
 import com.app.builder.data.storage.listFiles
 import com.app.builder.data.storage.openFile
-import com.app.builder.ui.component.list.FileItem
+import com.app.builder.ui.component.list.DeviceFileItem
 import com.app.builder.ui.store.Store
 
 /** Store backing the device files screen, listing the application's own files and handing them over to the platform when opened. */
@@ -40,7 +41,7 @@ class DeviceFilesScreenStore(
 
         val files = (listFiles(path = appCachePath) + listFiles(path = appDataPath))
             .sortedByDescending { it.modifiedAt ?: 0L }
-            .map { it.toFileItem() }
+            .map { it.toDeviceFileItem() }
             .toPersistentList()
 
         updateState { it.copy(files = files) }
@@ -60,14 +61,14 @@ class DeviceFilesScreenStore(
     /**
      * Converts a [DeviceFile] into the item rendered by the list.
      *
-     * @return The [FileItem] describing this file.
+     * @return The [DeviceFileItem] describing this file.
      */
-    private fun DeviceFile.toFileItem(): FileItem = FileItem(
+    private fun DeviceFile.toDeviceFileItem(): DeviceFileItem = DeviceFileItem(
         path = path,
         name = name,
         description = listOfNotNull(
             size.toReadableSize(),
-            modifiedAt?.let { Instant.fromEpochMilliseconds(epochMilliseconds = it).toString() }
+            modifiedAt?.toInstant()?.let { getLocalDateTime(utc = it.toString()) }
         ).joinToString(separator = " - ")
     )
 

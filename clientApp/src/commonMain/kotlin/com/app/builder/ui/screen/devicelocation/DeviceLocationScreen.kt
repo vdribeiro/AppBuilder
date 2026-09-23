@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.dp
 import com.app.builder.core.devicelocation.DeviceLocation
 import com.app.builder.core.devicelocation.DeviceLocationProvider
 import com.app.builder.core.locale.getLocalDateTime
+import com.app.builder.core.locale.toInstant
 import com.app.builder.ui.LocalColorScheme
 import com.app.builder.ui.Preview
 import com.app.builder.ui.component.actionbar.ActionBar
@@ -176,7 +177,7 @@ fun DeviceLocationScreen(
                         fix.altitude?.let { "altitude: ${it.roundTo(decimals = 1)}m" },
                         fix.bearing?.let { "bearing: ${it.roundTo(decimals = 0).toInt()}°" },
                         fix.speed?.let { "speed: ${it.roundTo(decimals = 1)}m/s" },
-                        "time: ${getLocalDateTime(utc = Instant.fromEpochMilliseconds(epochMilliseconds = fix.fixTime).toString())}",
+                        fix.fixTime.toInstant()?.toString()?.let { "time: ${getLocalDateTime(utc = it)}" },
                     )
                     ListItem(
                         leadingContent = { Icon(imageVector = Icons.Default.LocationOn) },

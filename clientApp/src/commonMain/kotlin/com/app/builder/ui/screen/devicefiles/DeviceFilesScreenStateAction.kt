@@ -2,7 +2,7 @@ package com.app.builder.ui.screen.devicefiles
 
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
-import com.app.builder.ui.component.list.FileItem
+import com.app.builder.ui.component.list.DeviceFileItem
 
 /** Actions that can be dispatched to a device files store. */
 sealed interface DeviceFilesScreenAction {
@@ -25,6 +25,6 @@ sealed interface DeviceFilesScreenAction {
  * @property message Message shown to the user, or null when there is nothing to report.
  */
 data class DeviceFilesScreenState(
-    val files: ImmutableList<FileItem> = persistentListOf(),
+    val files: ImmutableList<DeviceFileItem> = persistentListOf(),
     val message: String? = null
 )
