@@ -39,10 +39,6 @@ sealed interface Screen: NavKey {
     @Serializable
     @SerialName(value = "screen_design_components")
     data object DesignComponents: Screen
-    /** The design section's icon catalog. */
-    @Serializable
-    @SerialName(value = "screen_design_icons")
-    data object DesignIcons: Screen
     /** The design section's color catalog. */
     @Serializable
     @SerialName(value = "screen_design_colors")

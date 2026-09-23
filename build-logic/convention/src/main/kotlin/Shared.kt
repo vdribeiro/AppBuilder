@@ -131,6 +131,63 @@ fun KotlinDependencyHandler.npm(library: Provider<MinimalExternalModuleDependenc
     return npm(name = dependency.module.name, version = dependency.versionConstraint.displayName)
 }
 
+/** The build setting pinning a pod to the app's deployment target, also used to detect an already patched Podfile. */
+private val podDeploymentTargetSetting: String = "config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '$iosTarget'"
+
+/** The line of the generated Podfile the deployment target setting is inserted into, which is the loop over every pod's build configurations. */
+private val podBuildConfigurationLoop: String = "target.build_configurations.each do |config|"
+
+/** A whole `post_install` hook, appended when the generated Podfile no longer holds [podBuildConfigurationLoop]. It repeats the plugin's own signing workaround, since a Podfile only keeps its last hook. */
+private val podPostInstallHook: String = """
+
+post_install do |installer|
+  installer.pods_project.targets.each do |target|
+    target.build_configurations.each do |config|
+
+      # Disable signing for all synthetic pods KT-54314
+      config.build_settings['EXPANDED_CODE_SIGN_IDENTITY'] = ""
+      config.build_settings['CODE_SIGNING_REQUIRED'] = "NO"
+      config.build_settings['CODE_SIGNING_ALLOWED'] = "NO"
+
+      $podDeploymentTargetSetting
+    end
+  end
+end
+"""
+
+/**
+ * Pins every pod of the CocoaPods synthetic projects to [iosTarget].
+ * The Kotlin CocoaPods plugin generates a Podfile of its own per target family and builds its pods to produce the cinterop bindings.
+ * CocoaPods keeps each pod's own podspec minimum even when the Podfile platform is higher, and the plugin's generated hook only raises a target that sits below iOS 12, so dependencies that still declare iOS 12,
+ * reach the generated project with a deployment target that Xcode 16 and up refuses to build, failing every `podBuild` task and with it the Gradle sync.
+ * This rewrites the generated Podfile in place, after it is generated and before its pods are installed, so every pod is built against the same deployment target as the app, which is what `iosApp/Podfile` already does for the Xcode project.
+ * The rewrite changes the Podfile, so the install and build tasks that consume it rerun on their own.
+ */
+fun Project.configurePodDeploymentTarget() {
+    val syntheticDirectory: Provider<Directory> = layout.buildDirectory.dir("cocoapods/synthetic")
+    tasks.matching { it.name.startsWith(prefix = "podGen") }.configureEach {
+        doLast {
+            val family = name.removePrefix(prefix = "podGen").lowercase()
+            val podfile = syntheticDirectory.get().asFile.resolve(relative = "$family/Podfile")
+            if (!podfile.exists()) return@doLast
+
+            val contents = podfile.readText()
+            if (contents.contains(other = podDeploymentTargetSetting)) return@doLast
+
+            val loop = contents.lines().firstOrNull { it.trimEnd().endsWith(suffix = podBuildConfigurationLoop) }
+            podfile.writeText(
+                text = when (loop) {
+                    null -> contents + podPostInstallHook
+                    else -> contents.replaceFirst(
+                        oldValue = loop,
+                        newValue = "$loop\n${loop.takeWhile { it.isWhitespace() }}  $podDeploymentTargetSetting"
+                    )
+                }
+            )
+        }
+    }
+}
+
 @OptIn(ExperimentalWasmDsl::class)
 fun KotlinMultiplatformExtension.configureMultiplatformTargets(binary: Boolean = true): Pair<List<KotlinNativeTarget>, List<KotlinTarget>> {
     jvmToolchain(jdkVersion = jdkVersion)

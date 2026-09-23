@@ -14,6 +14,15 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import com.app.builder.test.TestCase
+import com.app.builder.ui.showcase.core.bar.TopBarShowcase
+import com.app.builder.ui.showcase.core.card.CardShowcase
+import com.app.builder.ui.showcase.core.divider.DividerShowcase
+import com.app.builder.ui.showcase.core.image.ImageShowcase
+import com.app.builder.ui.showcase.core.list.ListShowcase
+import com.app.builder.ui.showcase.core.navigation.NavigationShowcase
+import com.app.builder.ui.showcase.core.overlay.OverlayShowcase
+import com.app.builder.ui.showcase.core.progress.ProgressShowcase
+import com.app.builder.ui.showcase.core.text.TextShowcase
 
 class DesignScreenTest: TestCase() {
 
@@ -92,15 +101,6 @@ class DesignScreenTest: TestCase() {
         waitForIdle()
 
         onNodeWithText(text = "Display large").assertIsDisplayed()
-    }
-
-    /** Verifies that the icons section renders. */
-    @Test
-    fun designIconsSection() = runUITest {
-        setShowcase { DesignScreen(section = DesignSection.ICONS) }
-        waitForIdle()
-
-        onNodeWithTag(testTag = "design_navigation_bar").assertIsDisplayed()
     }
 
     /** Verifies that the progress showcase renders its sections. */
