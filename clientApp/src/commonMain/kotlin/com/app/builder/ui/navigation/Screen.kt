@@ -35,26 +35,34 @@ sealed interface Screen: NavKey {
     @Serializable
     @SerialName(value = "screen_translations")
     data object Translations: Screen
+    /** The design section's component catalog. */
+    @Serializable
+    @SerialName(value = "screen_design_components")
+    data object DesignComponents: Screen
+    /** The design section's icon catalog. */
+    @Serializable
+    @SerialName(value = "screen_design_icons")
+    data object DesignIcons: Screen
+    /** The design section's color catalog. */
+    @Serializable
+    @SerialName(value = "screen_design_colors")
+    data object DesignColors: Screen
+    /** The design section's shape catalog. */
+    @Serializable
+    @SerialName(value = "screen_design_shapes")
+    data object DesignShapes: Screen
+    /** The design section's typography catalog. */
+    @Serializable
+    @SerialName(value = "screen_design_typography")
+    data object DesignTypography: Screen
     /** The push notifications screen. */
     @Serializable
     @SerialName(value = "screen_push")
     data object Push: Screen
-    /** The screen listing client-side feature flags. */
+    /** The screen listing the client and server feature flags and configs. */
     @Serializable
-    @SerialName(value = "screen_client_flags")
-    data object ClientFlags: Screen
-    /** The screen listing client-side configs. */
-    @Serializable
-    @SerialName(value = "screen_client_configs")
-    data object ClientConfigs: Screen
-    /** The screen listing server-side feature flags. */
-    @Serializable
-    @SerialName(value = "screen_server_flags")
-    data object ServerFlags: Screen
-    /** The screen listing server-side configs. */
-    @Serializable
-    @SerialName(value = "screen_server_configs")
-    data object ServerConfigs: Screen
+    @SerialName(value = "screen_configs")
+    data object Configs: Screen
     /** The screen listing all registries. */
     @Serializable
     @SerialName(value = "screen_registry_list")
