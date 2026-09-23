@@ -27,9 +27,6 @@ enum class NavigationRoute {
     DEVICE_FILE,
     AUDIO,
     NOTIFICATION,
-    CLIENT_FLAG,
-    CLIENT_CONFIG,
-    SERVER_FLAG,
-    SERVER_CONFIG,
+    CONFIG,
     TRANSLATION
 }

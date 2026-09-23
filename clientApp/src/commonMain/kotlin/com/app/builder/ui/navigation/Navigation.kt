@@ -12,6 +12,7 @@ import com.app.builder.ui.navigation.provider.audioProvider
 import com.app.builder.ui.navigation.provider.authenticationProvider
 import com.app.builder.ui.navigation.provider.cameraProvider
 import com.app.builder.ui.navigation.provider.configsProvider
+import com.app.builder.ui.navigation.provider.designProvider
 import com.app.builder.ui.navigation.provider.deviceLocationProvider
 import com.app.builder.ui.navigation.provider.errorProvider
 import com.app.builder.ui.navigation.provider.homeProvider
@@ -102,6 +103,7 @@ fun AuthenticatedNavigation(
             errorProvider()
             if (useCases == null) return@Navigation
             configsProvider(useCases = useCases)
+            if (ClientFlags.flags.design) designProvider()
             if (ClientFlags.flags.userProfile) userProfileProvider(useCases = useCases)
             if (ClientFlags.flags.users) userProvider(useCases = useCases)
             if (ClientFlags.flags.locationCapture) deviceLocationProvider(useCases = useCases)
@@ -146,10 +148,10 @@ private fun setBackStack(
 ) {
     // TODO - check app state
     val backStack = when (entityType) {
-        EntityType.CLIENT_FLAG -> listOf(Screen.ClientFlags)
-        EntityType.CLIENT_CONFIG -> listOf(Screen.ClientConfigs)
-        EntityType.SERVER_FLAG -> listOf(Screen.ServerFlags)
-        EntityType.SERVER_CONFIG -> listOf(Screen.ServerConfigs)
+        EntityType.CLIENT_FLAG,
+        EntityType.CLIENT_CONFIG,
+        EntityType.SERVER_FLAG,
+        EntityType.SERVER_CONFIG -> listOf(Screen.Configs)
         EntityType.REGISTRY -> buildList<Screen> { add(Screen.RegistryList); entityUuid?.let { add(Screen.RegistryDetail(uuid = it.toString())) } }
         EntityType.NOTIFICATION -> listOf(Screen.Push)
         EntityType.TRANSLATION -> listOf(Screen.Translations)
