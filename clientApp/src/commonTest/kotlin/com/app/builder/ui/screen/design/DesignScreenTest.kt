@@ -1,4 +1,4 @@
-package com.app.builder.ui.showcase
+package com.app.builder.ui.screen.design
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
