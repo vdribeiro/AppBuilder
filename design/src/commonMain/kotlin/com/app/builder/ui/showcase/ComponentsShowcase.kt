@@ -1,4 +1,4 @@
-package com.app.builder.ui
+package com.app.builder.ui.showcase
 
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.launch
@@ -21,20 +21,19 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.graphics.vector.ImageVector
-import com.app.builder.CategorySection
-import com.app.builder.ui.core.bar.TopBarShowcase
-import com.app.builder.ui.core.button.ButtonShowcase
-import com.app.builder.ui.core.card.CardShowcase
-import com.app.builder.ui.core.divider.DividerShowcase
-import com.app.builder.ui.core.image.ImageShowcase
 import com.app.builder.ui.core.list.LazyColumn
-import com.app.builder.ui.core.list.ListShowcase
 import com.app.builder.ui.core.navigation.NavigationItem
 import com.app.builder.ui.core.navigation.NavigationRail
-import com.app.builder.ui.core.navigation.NavigationShowcase
-import com.app.builder.ui.core.overlay.OverlayShowcase
-import com.app.builder.ui.core.progress.ProgressShowcase
-import com.app.builder.ui.core.text.TextShowcase
+import com.app.builder.ui.showcase.core.bar.TopBarShowcase
+import com.app.builder.ui.showcase.core.button.ButtonShowcase
+import com.app.builder.ui.showcase.core.card.CardShowcase
+import com.app.builder.ui.showcase.core.divider.DividerShowcase
+import com.app.builder.ui.showcase.core.image.ImageShowcase
+import com.app.builder.ui.showcase.core.list.ListShowcase
+import com.app.builder.ui.showcase.core.navigation.NavigationShowcase
+import com.app.builder.ui.showcase.core.overlay.OverlayShowcase
+import com.app.builder.ui.showcase.core.progress.ProgressShowcase
+import com.app.builder.ui.showcase.core.text.TextShowcase
 
 /** The items for the rail's destinations and the scrollable content below it in display order. */
 private val railSections: List<Triple<String, ImageVector, @Composable () -> Unit>> = listOf(

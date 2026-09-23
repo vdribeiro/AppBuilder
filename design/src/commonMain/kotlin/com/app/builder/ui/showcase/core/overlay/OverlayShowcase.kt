@@ -1,4 +1,4 @@
-package com.app.builder.ui.core.overlay
+package com.app.builder.ui.showcase.core.overlay
 
 import kotlin.time.Clock
 import androidx.compose.foundation.layout.Arrangement
@@ -19,11 +19,20 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.app.builder.ShowcaseSection
 import com.app.builder.ui.core.button.Button
 import com.app.builder.ui.core.container.Scaffold
 import com.app.builder.ui.core.image.Icon
+import com.app.builder.ui.core.overlay.Badge
+import com.app.builder.ui.core.overlay.BadgedBox
+import com.app.builder.ui.core.overlay.DatePicker
+import com.app.builder.ui.core.overlay.Dialog
+import com.app.builder.ui.core.overlay.ModalBottomSheet
+import com.app.builder.ui.core.overlay.Position
+import com.app.builder.ui.core.overlay.Snackbar
+import com.app.builder.ui.core.overlay.TimePicker
+import com.app.builder.ui.core.overlay.Tooltip
 import com.app.builder.ui.core.text.Text
+import com.app.builder.ui.showcase.ShowcaseSection
 
 /** Displays badges, date and time pickers, modal bottom sheets, dialogs, snackbars, and tooltips. */
 @Composable

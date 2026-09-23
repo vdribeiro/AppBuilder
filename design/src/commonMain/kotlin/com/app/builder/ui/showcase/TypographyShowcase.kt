@@ -1,10 +1,11 @@
-package com.app.builder.ui
+package com.app.builder.ui.showcase
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.app.builder.ui.LocalTypography
 import com.app.builder.ui.core.list.LazyColumn
 import com.app.builder.ui.core.text.Text
 

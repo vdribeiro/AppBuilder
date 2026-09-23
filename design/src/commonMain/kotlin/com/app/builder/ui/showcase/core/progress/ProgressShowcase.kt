@@ -1,4 +1,4 @@
-package com.app.builder.ui.core.progress
+package com.app.builder.ui.showcase.core.progress
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -11,8 +11,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.app.builder.ShowcaseSection
+import com.app.builder.ui.core.progress.ProgressIndicator
+import com.app.builder.ui.core.progress.Slider
 import com.app.builder.ui.core.text.Text
+import com.app.builder.ui.showcase.ShowcaseSection
 
 /** Displays circular and linear progress indicators alongside continuous and stepped sliders. */
 @Composable

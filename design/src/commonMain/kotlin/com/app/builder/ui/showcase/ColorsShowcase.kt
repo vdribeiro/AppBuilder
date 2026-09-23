@@ -1,4 +1,4 @@
-package com.app.builder.ui
+package com.app.builder.ui.showcase
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -14,6 +14,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.app.builder.ui.LocalColorScheme
+import com.app.builder.ui.LocalShapes
 import com.app.builder.ui.core.text.Text
 
 /** A labeled color role paired with its contrasting "on" color, used to render a swatch. */

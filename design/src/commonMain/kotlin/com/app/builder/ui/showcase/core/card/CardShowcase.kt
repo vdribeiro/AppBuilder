@@ -1,4 +1,4 @@
-package com.app.builder.ui.core.card
+package com.app.builder.ui.showcase.core.card
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -11,8 +11,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.app.builder.ShowcaseSection
+import com.app.builder.ui.core.card.Card
 import com.app.builder.ui.core.text.Text
+import com.app.builder.ui.showcase.ShowcaseSection
 
 /** Displays the selectable card component. */
 @Composable

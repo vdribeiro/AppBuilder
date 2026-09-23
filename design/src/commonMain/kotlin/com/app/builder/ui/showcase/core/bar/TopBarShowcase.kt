@@ -1,4 +1,4 @@
-package com.app.builder.ui.core.bar
+package com.app.builder.ui.showcase.core.bar
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -10,9 +10,11 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.app.builder.ShowcaseSection
+import com.app.builder.ui.core.bar.TopBar
+import com.app.builder.ui.core.bar.TopBarVariant
 import com.app.builder.ui.core.button.Button
 import com.app.builder.ui.core.image.Icon
+import com.app.builder.ui.showcase.ShowcaseSection
 
 /** Displays the small, medium, and large top bar variants. */
 @Composable

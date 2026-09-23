@@ -1,4 +1,4 @@
-package com.app.builder.ui.core.image
+package com.app.builder.ui.showcase.core.image
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -10,10 +10,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
-import appbuilder.designshowcase.generated.resources.Res
-import appbuilder.designshowcase.generated.resources.sample_image
-import com.app.builder.ShowcaseSection
+import appbuilder.design.generated.resources.Res
+import appbuilder.design.generated.resources.sample_image
 import com.app.builder.ui.LocalColorScheme
+import com.app.builder.ui.core.image.Icon
+import com.app.builder.ui.core.image.Image
+import com.app.builder.ui.showcase.ShowcaseSection
 
 /** Displays icons and images, including content scaling options. */
 @Composable

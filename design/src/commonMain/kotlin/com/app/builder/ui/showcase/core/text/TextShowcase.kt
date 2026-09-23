@@ -1,4 +1,4 @@
-package com.app.builder.ui.core.text
+package com.app.builder.ui.showcase.core.text
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -18,9 +18,11 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.app.builder.ShowcaseSection
 import com.app.builder.ui.LocalColorScheme
 import com.app.builder.ui.core.image.Icon
+import com.app.builder.ui.core.text.Input
+import com.app.builder.ui.core.text.SearchBar
+import com.app.builder.ui.showcase.ShowcaseSection
 
 /** Displays text styles, text inputs, and search bars in both inline and full-screen forms. */
 @Composable

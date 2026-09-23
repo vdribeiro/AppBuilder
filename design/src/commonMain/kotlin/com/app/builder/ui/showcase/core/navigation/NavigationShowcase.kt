@@ -1,4 +1,4 @@
-package com.app.builder.ui.core.navigation
+package com.app.builder.ui.showcase.core.navigation
 
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
@@ -18,8 +18,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.app.builder.ShowcaseSection
+import com.app.builder.ui.core.navigation.NavigationBar
+import com.app.builder.ui.core.navigation.NavigationItem
+import com.app.builder.ui.core.navigation.NavigationRail
+import com.app.builder.ui.core.navigation.Tab
+import com.app.builder.ui.core.navigation.Tabs
 import com.app.builder.ui.core.overlay.Badge
+import com.app.builder.ui.showcase.ShowcaseSection
 
 /** Displays navigation bars, navigation rails in their various configurations, and tabs. */
 @Composable

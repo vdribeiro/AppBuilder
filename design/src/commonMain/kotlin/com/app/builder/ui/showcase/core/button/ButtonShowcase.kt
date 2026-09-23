@@ -1,4 +1,4 @@
-package com.app.builder.ui.core.button
+package com.app.builder.ui.showcase.core.button
 
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.persistentSetOf
@@ -25,9 +25,23 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.app.builder.ShowcaseSection
+import com.app.builder.ui.core.button.Button
+import com.app.builder.ui.core.button.ButtonGroup
+import com.app.builder.ui.core.button.ButtonGroupItem
+import com.app.builder.ui.core.button.ButtonGroupVariant
+import com.app.builder.ui.core.button.ButtonStyle
+import com.app.builder.ui.core.button.Checkbox
+import com.app.builder.ui.core.button.Chip
+import com.app.builder.ui.core.button.ChipVariant
+import com.app.builder.ui.core.button.Dropdown
+import com.app.builder.ui.core.button.DropdownItem
+import com.app.builder.ui.core.button.Fab
+import com.app.builder.ui.core.button.FabSize
+import com.app.builder.ui.core.button.RadioButton
+import com.app.builder.ui.core.button.Switch
 import com.app.builder.ui.core.image.Icon
 import com.app.builder.ui.core.text.Text
+import com.app.builder.ui.showcase.ShowcaseSection
 
 /** Displays buttons, fabs, button groups, checkboxes, radio buttons, switches, dropdowns, and chips in their various styles and states. */
 @Composable

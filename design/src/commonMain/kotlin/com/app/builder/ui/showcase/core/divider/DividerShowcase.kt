@@ -1,4 +1,4 @@
-package com.app.builder.ui.core.divider
+package com.app.builder.ui.showcase.core.divider
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -8,8 +8,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.app.builder.ShowcaseSection
+import com.app.builder.ui.core.divider.Axis
+import com.app.builder.ui.core.divider.Divider
 import com.app.builder.ui.core.text.Text
+import com.app.builder.ui.showcase.ShowcaseSection
 
 /** Displays horizontal and vertical dividers separating sample content. */
 @Composable
