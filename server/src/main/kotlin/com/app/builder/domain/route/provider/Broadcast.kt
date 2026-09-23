@@ -32,6 +32,7 @@ import com.app.builder.domain.usecase.registry.RegistryUseCases
  * Configures the broadcast routes.
  * The SSE stream and the FCM topic subscription are public: any client may connect to receive notifications.
  * Both are protected by per-IP rate limiting, and the stream additionally by a global connection cap.
+ * Publishing a broadcast is a separate authenticated endpoint on the same path, and requires write permission.
  *
  * @param permissionService The permission service.
  * @param broadcastService The service managing SSE connections and event dispatch.

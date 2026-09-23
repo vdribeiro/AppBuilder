@@ -14,7 +14,11 @@ import com.app.builder.data.storage.openFile
 import com.app.builder.ui.component.list.DeviceFileItem
 import com.app.builder.ui.store.Store
 
-/** Store backing the device files screen, listing the application's own files and handing them over to the platform when opened. */
+/**
+ * Store backing the device files screen, listing the application's own files and handing them over to the platform when opened.
+ *
+ * @param state The initial [DeviceFilesScreenState].
+ */
 class DeviceFilesScreenStore(
     state: DeviceFilesScreenState
 ): Store<DeviceFilesScreenState, DeviceFilesScreenAction>(initialState = state) {

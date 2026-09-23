@@ -9,7 +9,7 @@ import appbuilder.clientapp.generated.resources.ic_launcher
  * Ensures UI components reference images via strongly-typed objects rather than raw IDs or paths, facilitating easier maintenance and refactoring.
  *
  * @property url Remote address of the image.
- * @property path The relative file path locating the asset within the `commonMain/composeResources/drawable` directory.
+ * @property path The asset's path relative to `commonMain/composeResources`, including the `drawable/` prefix.
  * @property drawable The generated [DrawableResource] reference.
  */
 sealed class ImageResource(

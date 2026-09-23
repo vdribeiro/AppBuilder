@@ -96,7 +96,7 @@ fun UserProfile(
             }
         }
 
-        item {
+        if (!guest) item {
             UserProfileSection(title = "device") {
                 ListItem(
                     headlineText = "language",

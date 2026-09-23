@@ -94,7 +94,7 @@ object PushProvider {
     /**
      * Map a [PushPayload] to a [DeepLink].
      *
-     * @return The converted [DeepLink].
+     * @return The converted [DeepLink], or `null` for payloads that do not target an entity.
      */
     private fun PushPayload.toDeepLink(): DeepLink? = when (this) {
         is PushPayload.EntityNotification -> DeepLink.Entity(
