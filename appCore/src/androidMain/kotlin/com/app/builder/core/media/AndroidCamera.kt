@@ -19,6 +19,7 @@ import androidx.camera.view.PreviewView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
 import com.app.builder.applicationContext
+import com.app.builder.core.platform.appCachePath
 import com.app.builder.core.telemetry.Telemetry
 
 /** Android [Camera] implementation backed by CameraX. */
@@ -131,14 +132,14 @@ internal class AndroidCamera: Camera() {
     }
 
     /**
-     * Captures a still image and writes it to a timestamped `.jpg` file in the app cache directory.
+     * Captures a still image and writes it to a timestamped `.jpg` file in the application cache directory.
      *
      * @param onResult Invoked with the absolute path on success, or null on failure.
      */
     override fun platformCapturePhoto(onResult: (String?) -> Unit) {
         super.platformCapturePhoto(onResult = onResult)
         val capture = imageCapture ?: return onResult(null)
-        val file = File(applicationContext.cacheDir, "photo_${System.currentTimeMillis()}.jpg")
+        val file = File(appCachePath, "photo_${System.currentTimeMillis()}.jpg")
         val outputOptions = ImageCapture.OutputFileOptions.Builder(file).build()
         val executor = ContextCompat.getMainExecutor(applicationContext)
         capture.takePicture(outputOptions, executor, object: ImageCapture.OnImageSavedCallback {
@@ -154,14 +155,14 @@ internal class AndroidCamera: Camera() {
     }
 
     /**
-     * Begins recording video to a timestamped `.mp4` file in the app cache directory.
+     * Begins recording video to a timestamped `.mp4` file in the application cache directory.
      *
      * @param onResult Invoked with the absolute path once the recording is finalized without error.
      */
     override fun platformStartRecording(onResult: (String) -> Unit) {
         super.platformStartRecording(onResult = onResult)
         val recorder = this@AndroidCamera.recorder ?: error(message = "No recorder")
-        val file = File(applicationContext.cacheDir, "video_${System.currentTimeMillis()}.mp4")
+        val file = File(appCachePath, "video_${System.currentTimeMillis()}.mp4")
         val outputOptions = FileOutputOptions.Builder(file).build()
         val executor = ContextCompat.getMainExecutor(applicationContext)
         activeRecording = recorder.prepareRecording(applicationContext, outputOptions)

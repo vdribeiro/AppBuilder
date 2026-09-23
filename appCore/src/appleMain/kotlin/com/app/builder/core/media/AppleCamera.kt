@@ -21,11 +21,11 @@ import platform.AVFoundation.authorizationStatusForMediaType
 import platform.AVFoundation.defaultDeviceWithDeviceType
 import platform.AVFoundation.fileDataRepresentation
 import platform.Foundation.NSError
-import platform.Foundation.NSTemporaryDirectory
 import platform.Foundation.NSURL
 import platform.Foundation.writeToFile
 import platform.darwin.NSObject
 import com.app.builder.core.locale.epoch
+import com.app.builder.core.platform.appCachePath
 import com.app.builder.core.telemetry.Telemetry
 
 /** Apple [Camera] implementation backed by AVFoundation. */
@@ -109,13 +109,13 @@ internal class AppleCamera: Camera() {
     }
 
     /**
-     * Captures a still image to a timestamped `.jpg` file in [NSTemporaryDirectory].
+     * Captures a still image to a timestamped `.jpg` file in [appCachePath].
      *
      * @param onResult Invoked with the absolute path once written, or null on failure.
      */
     override fun platformCapturePhoto(onResult: (String?) -> Unit) {
         super.platformCapturePhoto(onResult = onResult)
-        val path = "${NSTemporaryDirectory()}photo_${epoch()}.jpg"
+        val path = "$appCachePath/photo_${epoch()}.jpg"
         photoOutput.capturePhotoWithSettings(
             settings = AVCapturePhotoSettings.photoSettings(),
             delegate = PhotoDelegate(path = path, onSaved = onResult),
@@ -123,13 +123,13 @@ internal class AppleCamera: Camera() {
     }
 
     /**
-     * Starts recording video to a timestamped `.mov` file in [NSTemporaryDirectory].
+     * Starts recording video to a timestamped `.mov` file in [appCachePath].
      *
      * @param onResult Invoked with the absolute path once the recording is finalized without error.
      */
     override fun platformStartRecording(onResult: (String) -> Unit) {
         super.platformStartRecording(onResult = onResult)
-        val url = NSURL.fileURLWithPath(path = "${NSTemporaryDirectory()}video_${epoch()}.mov")
+        val url = NSURL.fileURLWithPath(path = "$appCachePath/video_${epoch()}.mov")
         movieOutput.startRecordingToOutputFileURL(
             outputFileURL = url,
             recordingDelegate = MovieDelegate(onFinish = onResult, onError = { stopPreview() }),

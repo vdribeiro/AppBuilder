@@ -76,6 +76,11 @@
   },
   {
     "languageIso": "en",
+    "key": "stored_file",
+    "value": "Files"
+  },
+  {
+    "languageIso": "en",
     "key": "camera",
     "value": "Camera"
   },
@@ -373,5 +378,10 @@
     "languageIso": "en",
     "key": "tag_write",
     "value": "Tag written."
+  },
+  {
+    "languageIso": "en",
+    "key": "unable_to_open_file",
+    "value": "Unable to open this file"
   }
 ]
