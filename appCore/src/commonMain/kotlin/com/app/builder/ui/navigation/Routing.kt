@@ -2,6 +2,9 @@ package com.app.builder.ui.navigation
 
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.togetherWith
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.ProvidableCompositionLocal
@@ -49,6 +52,9 @@ fun Navigation(
         modifier = modifier.navigationHandler(onBack = { router.back() }),
         onBack = { router.back() },
         backStack = router.backStack,
+        transitionSpec = { EnterTransition.None togetherWith ExitTransition.None },
+        popTransitionSpec = { EnterTransition.None togetherWith ExitTransition.None },
+        predictivePopTransitionSpec = { EnterTransition.None togetherWith ExitTransition.None },
         sceneStrategies = listOf(
             splitSceneStrategy,
         ),
