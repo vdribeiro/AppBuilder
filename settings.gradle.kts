@@ -34,7 +34,6 @@ dependencyResolutionManagement {
 include(":shared")
 include(":sharedTest")
 include(":design")
-include(":designShowcase")
 include(":appCore")
 include(":clientApp")
 include(":server")

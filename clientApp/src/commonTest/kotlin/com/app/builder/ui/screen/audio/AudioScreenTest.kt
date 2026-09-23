@@ -26,7 +26,7 @@ private class FakeAudioPlayer: AudioPlayer() {
 
 class AudioScreenTest: TestCase() {
 
-    /** Verifies that the audio screen renders its bars and track list, and that playback can only start once a playlist has been set. */
+    /** Verifies that the audio screen renders its bars and track list, and that its transport controls follow the player's state. */
     @Test
     fun audioScreen() = runUITest {
         val authenticatedUseCases = dependency.get()
@@ -36,9 +36,10 @@ class AudioScreenTest: TestCase() {
 
         val actionBarStore = ActionBarStore(state = ActionBarState(title = "audio"), router = router, authenticationUseCases = authenticatedUseCases.authenticationUseCases)
         val navigationStore = NavigationStore(state = NavigationState(selected = NavigationRoute.AUDIO), router = router, authenticationUseCases = authenticatedUseCases.authenticationUseCases)
+        val audioPlayer = FakeAudioPlayer()
 
         setUI {
-            CompositionLocalProvider(LocalAudioPlayer provides FakeAudioPlayer()) {
+            CompositionLocalProvider(LocalAudioPlayer provides audioPlayer) {
                 AudioScreen(actionBarStore = actionBarStore, navigationStore = navigationStore)
             }
         }
@@ -47,11 +48,41 @@ class AudioScreenTest: TestCase() {
         onNodeWithTag(testTag = "navigation_bar").assertIsDisplayed()
         onNodeWithText(text = "Ping").assertIsDisplayed()
 
-        onNodeWithText(text = "Play").assertIsNotEnabled()
+        // Idle: nothing is playing yet, so only Play is offered.
+        onNodeWithText(text = "Play").assertIsEnabled()
+        onNodeWithText(text = "Pause").assertIsNotEnabled()
+        onNodeWithText(text = "Stop").assertIsNotEnabled()
 
+        // Setting a playlist leaves the player idle, so the controls do not move.
         onNodeWithText(text = "Set playlist").performClick()
         waitForIdle()
 
         onNodeWithText(text = "Play").assertIsEnabled()
+        onNodeWithText(text = "Pause").assertIsNotEnabled()
+        onNodeWithText(text = "Stop").assertIsNotEnabled()
+
+        // Playing: Play gives way to Pause and Stop.
+        onNodeWithText(text = "Play").performClick()
+        waitUntil { audioPlayer.state.value == AudioPlayer.State.Playing }
+
+        onNodeWithText(text = "Play").assertIsNotEnabled()
+        onNodeWithText(text = "Pause").assertIsEnabled()
+        onNodeWithText(text = "Stop").assertIsEnabled()
+
+        // Paused: playback can resume or be stopped.
+        onNodeWithText(text = "Pause").performClick()
+        waitUntil { audioPlayer.state.value == AudioPlayer.State.Paused }
+
+        onNodeWithText(text = "Play").assertIsEnabled()
+        onNodeWithText(text = "Pause").assertIsNotEnabled()
+        onNodeWithText(text = "Stop").assertIsEnabled()
+
+        // Stopped: back to the idle controls.
+        onNodeWithText(text = "Stop").performClick()
+        waitUntil { audioPlayer.state.value == AudioPlayer.State.Idle }
+
+        onNodeWithText(text = "Play").assertIsEnabled()
+        onNodeWithText(text = "Pause").assertIsNotEnabled()
+        onNodeWithText(text = "Stop").assertIsNotEnabled()
     }
 }
