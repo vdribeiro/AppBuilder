@@ -81,6 +81,7 @@ A few things are pre-wired so that the above needs no setup, and are worth knowi
         * [Tests](#tests)
     * [UI Specifics](#ui-specifics)
         * [Navigation](#navigation)
+        * [Design Showcase](#design-showcase)
     * [Translations](#translations)
         * [JSON Structure](#json-structure)
         * [Usage](#usage)
@@ -183,8 +184,7 @@ A few things are pre-wired so that the above needs no setup, and are worth knowi
 
 * `shared`: Code that is reused across all target platforms (Client and Server).
 * `sharedTest`: Test fixtures, base test cases, and mocks reused by every other module's test suite.
-* `design`: Design System where all UI components live.
-* `designShowcase`: An app for previewing and experimenting with the `design` module.
+* `design`: Design System where all UI components live, each with its own showcase.
 * `appCore`: Reusable Compose Multiplatform app infrastructure used by `clientApp`.
 * `clientApp`: The end-user client app for Android, iOS, Desktop, and Web.
 * `server`: The backend for the application.
@@ -375,6 +375,7 @@ Annotations used to exclude tests from coverage reports.
 * `Preview`: Wrapper composable that applies the application theme for accurate rendering in previews.
 * **core**: Building blocks, carrying no knowledge of the app's domain, organized by category.
 * **component**: Composite components assembled from the core blocks, which do know the domain types they render.
+* **showcase**: The catalog of the module, mirroring the package it documents one to one.
 
 The split is what keeps the module reusable: `core` could be lifted into an unrelated project unchanged, while `component` is where the app's shapes appear. 
 Neither holds a state or talks to a gateway. A component takes its data and its callbacks as parameters, which is why the whole module is previewable.
@@ -474,6 +475,8 @@ Neither holds a state or talks to a gateway. A component takes its data and its 
     * `PermissionManager`: Manager for checking and requesting system permissions declared in `Permission`. The latter also provides `LocalPermissionManager`.
 * **screen**: UI entry points built with components. Each screen is also a sub-package containing the composable and respective store for state management, all co-located.
     * `Screen`: Wrapper composable that provides the foundational UI. Provides `LocalScaffold`.
+* **showcase**: Hosts the design system's catalog as a section of the app. See [Design Showcase](#design-showcase).
+    * `DesignScreen`: The showcase screen, rendering a `DesignSection` with its own navigation bar. The catalogs it renders live in `design`.
 
 #### root level
 
@@ -849,6 +852,17 @@ The UI state uses `kotlinx.collections.immutable` to prevent accidental mutation
 * `POP` — pops back to the last instance of that screen class, discarding the new instance passed in
 * `IGNORE` — pushes only if that screen class isn't already on top
 
+### Design Showcase
+
+The design showcase is a catalog of every design system component, color, shape and typography style, and it is a section of the app rather than a separate target, so it is reachable on every platform the client ships to.
+
+The catalogs live in `design` (`ui/showcase`), next to what they document: the package mirrors the component package one to one.
+`appCore` (`ui/showcase`) holds only the host, `DesignScreen`, which knows nothing about the client's routing: it takes the `DesignSection` to render plus an `onSectionClick` and an `onAppClick` callback.
+`clientApp` owns the wiring. `Screen.Design{Section}` is one navigation key per section, `designProvider` maps each key to its section and routes both callbacks back through the `Router`, and the navigation bar's `design` item enters the section.
+Inside the showcase, the app's navigation bar is replaced by the showcase's own, whose `App` entry navigates back to the app's landing screen. Both directions use `NavOption.CLEAR`, like every other navigation bar entry.
+
+The whole section is gated by the `design` client flag, so a production build can drop it by flipping one flag.
+
 ## Translations
 
 Translations are defined in the server file `main/resources/static/translations.json`.
@@ -999,7 +1013,7 @@ Standard compile commands for different platforms include:
 * **Web**: `./gradlew clean :clientApp:wasmJsBrowserDistribution`
 * **Server**: `./gradlew :server:buildFatJar`
 
-Module-qualify the tasks (e.g. `:clientApp:`, `:designShowcase:`) since multiple modules share the same unqualified task names.
+Module-qualify the tasks (e.g. `:clientApp:`, `:server:`) since multiple modules share the same unqualified task names.
 
 # Offline Engine
 
@@ -1416,7 +1430,7 @@ The in-flight requests are held in a `SupervisorJob` scope of the manager's own,
 * **No-op implementations** — `NoOpRouter`, `NoOpJobFactory`, `NoOpTranslationStore`, `NoOpSqlDriver`, `NoOpHttpClientEngine`, `NoOpFcmService`. A consistent way to keep a subsystem optional without nullability spreading through its callers.
 * **`build-logic`** — convention plugins that centralize target configuration and the desktop packaging and notarization pipeline; the root `build.gradle.kts` adds `bumpVersion`, propagating a version across Gradle, Xcode and the server, 
 and each module's own `build.gradle.kts` drives its Kover verification off the `@ExcludeFromTesting` annotation instead of Gradle-side path lists.
-* **`designShowcase`** — a runnable catalog of every design system component, color, shape and typography style on Android, Desktop and Web, which doubles as the fastest way to review a component across targets.
+* **Design showcase** (`design/ui/showcase`) — a catalog of every design system component, color, shape and typography style, in a package that mirrors the components it documents, reachable from the app's navigation bar as its own section, which doubles as the fastest way to review a component across targets.
 
 # FAQ
 
