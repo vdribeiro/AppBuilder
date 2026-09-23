@@ -9,4 +9,15 @@ package com.app.builder.data.resource
 sealed class AudioResource(val path: String) {
     /** A short notification ping sound. */
     data object Ping: AudioResource(path = "tracks/ping.mp3")
+    /** An arpeggio climbing and falling back through a major chord. */
+    data object Chime: AudioResource(path = "tracks/chime.mp3")
+    /** A low note re-struck at a steady beat. */
+    data object Pulse: AudioResource(path = "tracks/pulse.mp3")
+    /** A sustained ambient chord under a slow tremolo. */
+    data object Drone: AudioResource(path = "tracks/drone.mp3")
+
+    companion object {
+        /** Every registered track, in the order they are offered for playback. */
+        val entries: List<AudioResource> = listOf(Ping, Chime, Pulse, Drone)
+    }
 }

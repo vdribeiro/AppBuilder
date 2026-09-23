@@ -14,11 +14,11 @@ import com.app.builder.Dependency.getUserDependency
 import com.app.builder.domain.EntityType
 import com.app.builder.test.FakeData
 import com.app.builder.test.TestCase
+import com.app.builder.ui.component.actionbar.ActionBarState
+import com.app.builder.ui.component.actionbar.ActionBarStore
 import com.app.builder.ui.component.navigation.NavigationRoute
 import com.app.builder.ui.component.navigation.NavigationState
 import com.app.builder.ui.component.navigation.NavigationStore
-import com.app.builder.ui.component.useravatar.UserAvatarState
-import com.app.builder.ui.component.useravatar.UserAvatarStore
 
 class RegisterScreenTest: TestCase() {
 
@@ -33,9 +33,9 @@ class RegisterScreenTest: TestCase() {
         val navigationStore = NavigationStore(state = NavigationState(selected = NavigationRoute.USER), router = router, authenticationUseCases = authenticatedUseCases.authenticationUseCases)
         val registrationScreenStore = RegistrationScreenStore(state = RegistrationScreenState(), authenticationUseCases = authenticatedUseCases.authenticationUseCases)
 
-        val userAvatarStore = UserAvatarStore(state = UserAvatarState(), authenticationUseCases = authenticatedUseCases.authenticationUseCases)
+        val actionBarStore = ActionBarStore(state = ActionBarState(title = "registration"), router = router, authenticationUseCases = authenticatedUseCases.authenticationUseCases)
 
-        setUI { RegisterScreen(navigationStore = navigationStore, userAvatarStore = userAvatarStore, store = registrationScreenStore) }
+        setUI { RegisterScreen(actionBarStore = actionBarStore, navigationStore = navigationStore, store = registrationScreenStore) }
 
         onNodeWithTag(testTag = "navigation_bar").assertIsDisplayed()
         assertTrue(actual = navigationStore.state.items.first { it.text == "user" }.selected)

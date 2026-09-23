@@ -8,12 +8,12 @@ import androidx.compose.ui.test.onNodeWithTag
 import com.app.builder.Dependency.getUserDependency
 import com.app.builder.test.FakeData
 import com.app.builder.test.TestCase
+import com.app.builder.ui.component.actionbar.ActionBarState
+import com.app.builder.ui.component.actionbar.ActionBarStore
 import com.app.builder.ui.component.list.ConfigValue
 import com.app.builder.ui.component.navigation.NavigationRoute
 import com.app.builder.ui.component.navigation.NavigationState
 import com.app.builder.ui.component.navigation.NavigationStore
-import com.app.builder.ui.component.useravatar.UserAvatarState
-import com.app.builder.ui.component.useravatar.UserAvatarStore
 
 class ConfigsScreenTest: TestCase() {
 
@@ -28,9 +28,9 @@ class ConfigsScreenTest: TestCase() {
         val navigationStore = NavigationStore(state = NavigationState(selected = NavigationRoute.CLIENT_FLAG), router = router, authenticationUseCases = authenticatedUseCases.authenticationUseCases)
         val configScreenStore = ConfigScreenStore(state = ConfigScreenState(configType = ConfigType.CLIENT_FLAG), configUseCases = authenticatedUseCases.configUseCases)
 
-        val userAvatarStore = UserAvatarStore(state = UserAvatarState(), authenticationUseCases = authenticatedUseCases.authenticationUseCases)
+        val actionBarStore = ActionBarStore(state = ActionBarState(title = "client_flag"), router = router, authenticationUseCases = authenticatedUseCases.authenticationUseCases)
 
-        setUI { ConfigsScreen(navigationStore = navigationStore, userAvatarStore = userAvatarStore, store = configScreenStore) }
+        setUI { ConfigsScreen(actionBarStore = actionBarStore, navigationStore = navigationStore, store = configScreenStore) }
 
         onNodeWithTag(testTag = "navigation_bar").assertIsDisplayed()
         assertTrue(actual = navigationStore.state.items.first { it.text == "client_flag" }.selected)
@@ -57,9 +57,9 @@ class ConfigsScreenTest: TestCase() {
         val navigationStore = NavigationStore(state = NavigationState(selected = NavigationRoute.CLIENT_CONFIG), router = router, authenticationUseCases = authenticatedUseCases.authenticationUseCases)
         val configScreenStore = ConfigScreenStore(state = ConfigScreenState(configType = ConfigType.CLIENT_CONFIG), configUseCases = authenticatedUseCases.configUseCases)
 
-        val userAvatarStore = UserAvatarStore(state = UserAvatarState(), authenticationUseCases = authenticatedUseCases.authenticationUseCases)
+        val actionBarStore = ActionBarStore(state = ActionBarState(title = "client_config"), router = router, authenticationUseCases = authenticatedUseCases.authenticationUseCases)
 
-        setUI { ConfigsScreen(navigationStore = navigationStore, userAvatarStore = userAvatarStore, store = configScreenStore) }
+        setUI { ConfigsScreen(actionBarStore = actionBarStore, navigationStore = navigationStore, store = configScreenStore) }
 
         onNodeWithTag(testTag = "navigation_bar").assertIsDisplayed()
         assertTrue(actual = navigationStore.state.items.first { it.text == "client_config" }.selected)
@@ -86,9 +86,9 @@ class ConfigsScreenTest: TestCase() {
         val navigationStore = NavigationStore(state = NavigationState(selected = NavigationRoute.SERVER_FLAG), router = router, authenticationUseCases = authenticatedUseCases.authenticationUseCases)
         val configScreenStore = ConfigScreenStore(state = ConfigScreenState(configType = ConfigType.SERVER_FLAG), configUseCases = authenticatedUseCases.configUseCases)
 
-        val userAvatarStore = UserAvatarStore(state = UserAvatarState(), authenticationUseCases = authenticatedUseCases.authenticationUseCases)
+        val actionBarStore = ActionBarStore(state = ActionBarState(title = "server_flag"), router = router, authenticationUseCases = authenticatedUseCases.authenticationUseCases)
 
-        setUI { ConfigsScreen(navigationStore = navigationStore, userAvatarStore = userAvatarStore, store = configScreenStore) }
+        setUI { ConfigsScreen(actionBarStore = actionBarStore, navigationStore = navigationStore, store = configScreenStore) }
 
         onNodeWithTag(testTag = "navigation_bar").assertIsDisplayed()
         assertTrue(actual = navigationStore.state.items.first { it.text == "server_flag" }.selected)
@@ -115,9 +115,9 @@ class ConfigsScreenTest: TestCase() {
         val navigationStore = NavigationStore(state = NavigationState(selected = NavigationRoute.SERVER_CONFIG), router = router, authenticationUseCases = authenticatedUseCases.authenticationUseCases)
         val configScreenStore = ConfigScreenStore(state = ConfigScreenState(configType = ConfigType.SERVER_CONFIG), configUseCases = authenticatedUseCases.configUseCases)
 
-        val userAvatarStore = UserAvatarStore(state = UserAvatarState(), authenticationUseCases = authenticatedUseCases.authenticationUseCases)
+        val actionBarStore = ActionBarStore(state = ActionBarState(title = "server_config"), router = router, authenticationUseCases = authenticatedUseCases.authenticationUseCases)
 
-        setUI { ConfigsScreen(navigationStore = navigationStore, userAvatarStore = userAvatarStore, store = configScreenStore) }
+        setUI { ConfigsScreen(actionBarStore = actionBarStore, navigationStore = navigationStore, store = configScreenStore) }
 
         onNodeWithTag(testTag = "navigation_bar").assertIsDisplayed()
         assertTrue(actual = navigationStore.state.items.first { it.text == "server_config" }.selected)

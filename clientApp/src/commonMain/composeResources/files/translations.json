@@ -96,6 +96,11 @@
   },
   {
     "languageIso": "en",
+    "key": "audio_tracks",
+    "value": "Tracks"
+  },
+  {
+    "languageIso": "en",
     "key": "audio_loop",
     "value": "Loop"
   },
