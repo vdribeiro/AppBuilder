@@ -38,6 +38,7 @@ val unauthenticatedScreen: Screen
 /** The screen to land on once loaded, for an authenticated session. */
 val authenticatedScreen: Screen
     get() = when {
+        ClientFlags.flags.home -> Screen.Home
         ClientFlags.flags.userProfile -> Screen.UserProfile
         else -> Screen.Error(error = true)
     }
@@ -78,7 +79,7 @@ fun UnauthenticatedNavigation(
         entryProviderScope = {
             errorProvider()
             if (useCases == null) return@Navigation
-            if (ClientFlags.flags.home) homeProvider()
+            if (ClientFlags.flags.home) homeProvider(useCases = useCases)
             if (ClientFlags.flags.userProfile) userProfileProvider(useCases = useCases)
             if (ClientFlags.flags.login) authenticationProvider(useCases = useCases)
         }
@@ -103,6 +104,7 @@ fun AuthenticatedNavigation(
             errorProvider()
             if (useCases == null) return@Navigation
             configsProvider(useCases = useCases)
+            if (ClientFlags.flags.home) homeProvider(useCases = useCases)
             if (ClientFlags.flags.design) designProvider()
             if (ClientFlags.flags.userProfile) userProfileProvider(useCases = useCases)
             if (ClientFlags.flags.users) userProvider(useCases = useCases)

@@ -8,6 +8,7 @@ import androidx.compose.material.icons.filled.Camera
 import androidx.compose.material.icons.filled.FileOpen
 import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.GpsFixed
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.ManageAccounts
 import androidx.compose.material.icons.filled.MusicNote
 import androidx.compose.material.icons.filled.Nfc
@@ -52,6 +53,14 @@ class NavigationStore(
         authenticationUseCases.observeCurrentUser().observe(id = "current_user") { user ->
             val permissions = user?.permissions ?: return@observe
             val items = buildList {
+                if (ClientFlags.flags.home) add(
+                    NavigationItem(
+                        selected = state.selected == NavigationRoute.HOME,
+                        text = "home",
+                        icon = Icons.Filled.Home,
+                        onClick = { router.navigate(screen = Screen.Home, option = Router.NavOption.CLEAR) },
+                    )
+                )
                 if (ClientFlags.flags.tasks && permissions[EntityType.TASK] != null) add(
                     NavigationItem(
                         selected = state.selected == NavigationRoute.TASK,

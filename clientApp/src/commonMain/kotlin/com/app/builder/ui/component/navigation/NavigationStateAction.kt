@@ -17,6 +17,7 @@ data class NavigationState(
 
 /** Navigation routes. */
 enum class NavigationRoute {
+    HOME,
     TASK,
     FILE,
     USER,
