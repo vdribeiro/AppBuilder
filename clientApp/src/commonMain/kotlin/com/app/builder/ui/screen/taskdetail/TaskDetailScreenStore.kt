@@ -88,7 +88,7 @@ class TaskDetailScreenStore(
             is TaskDetailScreenAction.ChangeTitle -> updateState { it.copy(task = it.task?.copy(title = action.title)) }
             is TaskDetailScreenAction.ChangeDescription -> updateState { it.copy(task = it.task?.copy(description = action.description)) }
             is TaskDetailScreenAction.Ok -> ok(state = state, action = action)
-            is TaskDetailScreenAction.Cancel -> cancel(state = state, action = action)
+            is TaskDetailScreenAction.Cancel -> cancel(action = action)
         }
     }
 
@@ -111,15 +111,17 @@ class TaskDetailScreenStore(
         }
     }
 
-    private fun cancel(state: TaskDetailScreenState, action: TaskDetailScreenAction.Cancel): Job = launch(id = "cancel") {
+    private fun cancel(action: TaskDetailScreenAction.Cancel): Job = launch(id = "cancel") {
         when (action.mode) {
-            ActionBarMode.DEFAULT -> TODO()
-            ActionBarMode.SEARCH -> TODO()
+            ActionBarMode.DEFAULT,
+            ActionBarMode.SEARCH,
+            ActionBarMode.EDIT,
+            ActionBarMode.DELETE,
+            ActionBarMode.BATCH_DELETE -> Unit
+
             ActionBarMode.ADD -> router.back()
-            ActionBarMode.EDIT -> TODO()
-            ActionBarMode.DELETE -> TODO()
-            ActionBarMode.BATCH_DELETE -> TODO()
         }
+
         updateState { it.copy(editMode = false) }
     }
 
