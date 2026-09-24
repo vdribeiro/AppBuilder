@@ -17,6 +17,9 @@ import com.app.builder.ui.core.bar.TopBar
 import com.app.builder.ui.core.navigation.NavigationBar
 import com.app.builder.ui.core.navigation.NavigationItem
 import com.app.builder.ui.core.text.Text
+import com.app.builder.ui.navigation.LocalRouter
+import com.app.builder.ui.navigation.Router
+import com.app.builder.ui.navigation.Screen
 import com.app.builder.ui.screen.Screen
 import com.app.builder.ui.showcase.ColorsShowcase
 import com.app.builder.ui.showcase.ComponentsShowcase
@@ -51,8 +54,11 @@ fun DesignScreen(
     onSectionClick: (DesignSection) -> Unit = {},
     onAppClick: () -> Unit = {},
 ) {
+    val router = LocalRouter.current
+
     Screen(
         modifier = modifier,
+        onBackClick = { router.navigate(screen = Screen.Home, option = Router.NavOption.CLEAR) },
         topBar = { TopBar(title = { Text(text = "Design Showcase", translate = false) }) },
         bottomBar = {
             DesignNavigation(

@@ -27,6 +27,9 @@ import com.app.builder.ui.component.navigation.NavigationState
 import com.app.builder.ui.core.list.LazyColumn
 import com.app.builder.ui.core.navigation.NavigationItem
 import com.app.builder.ui.core.navigation.NavigationRail
+import com.app.builder.ui.navigation.LocalRouter
+import com.app.builder.ui.navigation.Router
+import com.app.builder.ui.navigation.Screen
 import com.app.builder.ui.screen.Screen
 import com.app.builder.ui.showcase.CategorySection
 import com.app.builder.ui.store.Store
@@ -46,6 +49,8 @@ fun ConfigsScreen(
 ) {
     val state by store.stateFlow.collectAsStateWithLifecycle()
 
+    val router = LocalRouter.current
+
     val listState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
     val selectedIndex by remember {
@@ -53,6 +58,7 @@ fun ConfigsScreen(
     }
 
     Screen(
+        onBackClick = { router.navigate(screen = Screen.Home, option = Router.NavOption.CLEAR) },
         topBar = { ActionBar(store = actionBarStore) },
         bottomBar = { Navigation(store = navigationStore) }
     ) {

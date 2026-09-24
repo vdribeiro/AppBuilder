@@ -48,6 +48,7 @@ import com.app.builder.ui.core.list.ListItem
 import com.app.builder.ui.core.progress.ProgressIndicator
 import com.app.builder.ui.core.text.Text
 import com.app.builder.ui.devicelocation.LocalDeviceLocationProvider
+import com.app.builder.ui.navigation.LocalRouter
 import com.app.builder.ui.permission.LocalPermissionManager
 import com.app.builder.ui.permission.Permission
 import com.app.builder.ui.screen.Screen
@@ -64,6 +65,7 @@ fun DeviceLocationScreen(
     actionBarStore: Store<ActionBarState, ActionBarAction>,
     navigationStore: Store<NavigationState, Unit>
 ) {
+    val router = LocalRouter.current
     val permissionManager = LocalPermissionManager.current
     val colorScheme = LocalColorScheme.current
     val coroutineScope = rememberCoroutineScope()

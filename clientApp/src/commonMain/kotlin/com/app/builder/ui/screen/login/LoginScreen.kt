@@ -12,6 +12,9 @@ import com.app.builder.ui.InjectTranslations
 import com.app.builder.ui.Preview
 import com.app.builder.ui.component.container.Login
 import com.app.builder.ui.modifier.onKeyPress
+import com.app.builder.ui.navigation.LocalRouter
+import com.app.builder.ui.navigation.Router
+import com.app.builder.ui.navigation.Screen
 import com.app.builder.ui.screen.Screen
 import com.app.builder.ui.store.Store
 
@@ -24,8 +27,11 @@ import com.app.builder.ui.store.Store
 fun LoginScreen(store: Store<LoginScreenState, LoginScreenAction>) {
     val state by store.stateFlow.collectAsStateWithLifecycle()
 
+    val router = LocalRouter.current
+
     Screen(
         modifier = Modifier.imePadding(),
+        onBackClick = { router.back() },
         contentAlignment = Alignment.Center
     ) {
         Login(

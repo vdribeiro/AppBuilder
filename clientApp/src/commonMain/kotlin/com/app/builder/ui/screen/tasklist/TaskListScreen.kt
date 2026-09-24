@@ -12,6 +12,9 @@ import com.app.builder.ui.component.actionbar.ActionBarState
 import com.app.builder.ui.component.list.TaskList
 import com.app.builder.ui.component.navigation.Navigation
 import com.app.builder.ui.component.navigation.NavigationState
+import com.app.builder.ui.navigation.LocalRouter
+import com.app.builder.ui.navigation.Router
+import com.app.builder.ui.navigation.Screen
 import com.app.builder.ui.screen.Screen
 import com.app.builder.ui.store.Store
 
@@ -30,7 +33,10 @@ fun TaskListScreen(
 ) {
     val state by store.stateFlow.collectAsStateWithLifecycle()
 
+    val router = LocalRouter.current
+
     Screen(
+        onBackClick = { router.navigate(screen = Screen.Home, option = Router.NavOption.CLEAR) },
         topBar = { ActionBar(store = actionBarStore) },
         bottomBar = { Navigation(store = navigationStore) },
     ) {

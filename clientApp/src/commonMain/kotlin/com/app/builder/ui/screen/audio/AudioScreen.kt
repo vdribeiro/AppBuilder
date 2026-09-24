@@ -33,6 +33,9 @@ import com.app.builder.ui.core.button.ButtonStyle
 import com.app.builder.ui.core.button.Checkbox
 import com.app.builder.ui.core.button.Switch
 import com.app.builder.ui.core.text.Text
+import com.app.builder.ui.navigation.LocalRouter
+import com.app.builder.ui.navigation.Router
+import com.app.builder.ui.navigation.Screen
 import com.app.builder.ui.screen.Screen
 import com.app.builder.ui.store.Store
 
@@ -48,6 +51,7 @@ fun AudioScreen(
     navigationStore: Store<NavigationState, Unit>,
 ) {
     val audioPlayer = LocalAudioPlayer.current
+    val router = LocalRouter.current
 
     val state by audioPlayer.state.collectAsStateWithLifecycle()
 
@@ -57,6 +61,7 @@ fun AudioScreen(
     val entries: List<AudioResource> by lazy { listOf(Ping, Chime, Pulse, Drone) }
 
     Screen(
+        onBackClick = { router.navigate(screen = Screen.Home, option = Router.NavOption.CLEAR) },
         topBar = { ActionBar(store = actionBarStore) },
         bottomBar = { Navigation(store = navigationStore) },
     ) {

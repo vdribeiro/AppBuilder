@@ -32,6 +32,9 @@ import com.app.builder.ui.core.button.ButtonStyle
 import com.app.builder.ui.core.overlay.Snackbar
 import com.app.builder.ui.core.text.Text
 import com.app.builder.ui.media.CameraPreview
+import com.app.builder.ui.navigation.LocalRouter
+import com.app.builder.ui.navigation.Router
+import com.app.builder.ui.navigation.Screen
 import com.app.builder.ui.permission.LocalPermissionManager
 import com.app.builder.ui.permission.Permission
 import com.app.builder.ui.screen.Screen
@@ -48,6 +51,7 @@ fun CameraScreen(
     actionBarStore: Store<ActionBarState, ActionBarAction>,
     navigationStore: Store<NavigationState, Unit>,
 ) {
+    val router = LocalRouter.current
     val permissionManager = LocalPermissionManager.current
     val camera = LocalCamera.current
     val coroutineScope = rememberCoroutineScope()
@@ -58,6 +62,7 @@ fun CameraScreen(
     var snackbarMessage by remember { mutableStateOf<String?>(value = null) }
 
     Screen(
+        onBackClick = { router.navigate(screen = Screen.Home, option = Router.NavOption.CLEAR) },
         topBar = { ActionBar(store = actionBarStore) },
         bottomBar = { Navigation(store = navigationStore) },
         snackbarHost = {

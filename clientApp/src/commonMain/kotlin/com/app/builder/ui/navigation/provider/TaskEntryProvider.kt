@@ -85,7 +85,8 @@ fun EntryProviderScope<NavKey>.taskProvider(useCases: UseCases) {
                     storageFile = AppFile.TaskPreferences,
                     defaults = defaultFilterCriteria,
                     entityType = EntityType.TASK,
-                    onOkClick = { mode -> store.send(action = TaskDetailScreenAction.Ok(mode = mode)) }
+                    onOkClick = { mode -> store.send(action = TaskDetailScreenAction.Ok(mode = mode)) },
+                    onCancelClick = { mode -> store.send(action = TaskDetailScreenAction.Cancel(mode = mode)) }
                 )
             },
             navigationStore = viewModel { NavigationStore(state = NavigationState(selected = NavigationRoute.TASK), router = router, authenticationUseCases = useCases.authenticationUseCases) },

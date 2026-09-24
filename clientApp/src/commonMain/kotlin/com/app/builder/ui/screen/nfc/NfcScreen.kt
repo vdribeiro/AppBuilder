@@ -54,6 +54,9 @@ import com.app.builder.ui.core.overlay.Snackbar
 import com.app.builder.ui.core.progress.ProgressIndicator
 import com.app.builder.ui.core.text.Input
 import com.app.builder.ui.core.text.Text
+import com.app.builder.ui.navigation.LocalRouter
+import com.app.builder.ui.navigation.Router
+import com.app.builder.ui.navigation.Screen
 import com.app.builder.ui.screen.Screen
 import com.app.builder.ui.store.Store
 import com.app.builder.ui.core.list.LazyColumn as ListLazyColumn
@@ -69,6 +72,7 @@ fun NfcScreen(
     actionBarStore: Store<ActionBarState, ActionBarAction>,
     navigationStore: Store<NavigationState, Unit>,
 ) {
+    val router = LocalRouter.current
     val nfc = LocalNfcController.current
     val colorScheme = LocalColorScheme.current
 
@@ -89,6 +93,7 @@ fun NfcScreen(
 
     Screen(
         modifier = Modifier.imePadding(),
+        onBackClick = { router.navigate(screen = Screen.Home, option = Router.NavOption.CLEAR) },
         topBar = { ActionBar(store = actionBarStore) },
         bottomBar = { Navigation(store = navigationStore) },
         snackbarHost = {

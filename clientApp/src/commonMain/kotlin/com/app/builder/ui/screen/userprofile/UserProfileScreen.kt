@@ -12,6 +12,7 @@ import com.app.builder.ui.component.container.UserProfile
 import com.app.builder.ui.component.navigation.Navigation
 import com.app.builder.ui.component.navigation.NavigationState
 import com.app.builder.ui.navigation.LocalRouter
+import com.app.builder.ui.navigation.Router
 import com.app.builder.ui.navigation.Screen
 import com.app.builder.ui.navigation.open
 import com.app.builder.ui.screen.Screen
@@ -33,14 +34,15 @@ fun UserProfileScreen(
     val uri = LocalUriHandler.current
 
     Screen(
-        bottomBar = { Navigation(store = navigationStore) },
+        onBackClick = { router.back() },
         topBar = {
             TopActionBar(
                 onBackClick = if (router.backStack.size > 1) {
                     { router.back() }
                 } else null
             )
-        }
+        },
+        bottomBar = { Navigation(store = navigationStore) }
     ) {
         UserProfile(
             guest = state.guest,

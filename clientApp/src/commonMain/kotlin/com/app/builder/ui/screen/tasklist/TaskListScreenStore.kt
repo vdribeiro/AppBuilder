@@ -33,7 +33,7 @@ import com.app.builder.ui.store.Store
  * Store backing the task list, combining tasks with the shared action bar state to filter, sort, and select them.
  *
  * @param state Initial task list state.
- * @property router Router used to navigate to a task's detail screen.
+ * @property router The router used for navigation.
  * @property taskUseCases Use cases used to observe and delete tasks.
  */
 class TaskListScreenStore(

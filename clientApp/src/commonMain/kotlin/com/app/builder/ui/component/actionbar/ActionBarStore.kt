@@ -22,7 +22,7 @@ import com.app.builder.ui.store.Store
  * Store backing an action bar, resolving the current user's avatar and write permission and persisting its mode, sorting and property filters.
  *
  * @param state Initial action bar state.
- * @property router Router used to navigate to the login and user profile screens.
+ * @property router The router used for navigation.
  * @property authenticationUseCases Use cases used to observe the current user.
  * @property storageFile File the action bar data is persisted to, or `null` to keep it in memory only.
  * @property defaults Action bar data used when [storageFile] holds nothing yet.

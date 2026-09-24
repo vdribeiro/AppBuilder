@@ -11,17 +11,20 @@ import com.app.builder.domain.Task
 import com.app.builder.domain.gateway.task.TaskUseCases
 import com.app.builder.toEnumOrNull
 import com.app.builder.ui.component.bar.ActionBarMode
+import com.app.builder.ui.navigation.Router
 import com.app.builder.ui.store.Store
 
 /**
  * Store backing the Task Detail Screen, observing the task and the action bar's edit mode, and applying title/description edits.
  *
  * @param state Initial Task Detail Screen state.
+ * @property router The router used for navigation.
  * @property taskUseCases Use cases used to observe the task.
  * @property taskUuid UUID of the task being displayed.
  */
 class TaskDetailScreenStore(
     state: TaskDetailScreenState,
+    private val router: Router,
     private val taskUseCases: TaskUseCases,
     private val taskUuid: String
 ): Store<TaskDetailScreenState, TaskDetailScreenAction>(initialState = state) {
@@ -85,7 +88,7 @@ class TaskDetailScreenStore(
             is TaskDetailScreenAction.ChangeTitle -> updateState { it.copy(task = it.task?.copy(title = action.title)) }
             is TaskDetailScreenAction.ChangeDescription -> updateState { it.copy(task = it.task?.copy(description = action.description)) }
             is TaskDetailScreenAction.Ok -> ok(state = state, action = action)
-            is TaskDetailScreenAction.Cancel -> updateState { it.copy(editMode = false) }
+            is TaskDetailScreenAction.Cancel -> cancel(state = state, action = action)
         }
     }
 
@@ -106,6 +109,18 @@ class TaskDetailScreenStore(
             ActionBarMode.ADD,
             ActionBarMode.EDIT -> state.task?.let { taskUseCases.upsertTask(task = it) }
         }
+    }
+
+    private fun cancel(state: TaskDetailScreenState, action: TaskDetailScreenAction.Cancel): Job = launch(id = "cancel") {
+        when (action.mode) {
+            ActionBarMode.DEFAULT -> TODO()
+            ActionBarMode.SEARCH -> TODO()
+            ActionBarMode.ADD -> router.back()
+            ActionBarMode.EDIT -> TODO()
+            ActionBarMode.DELETE -> TODO()
+            ActionBarMode.BATCH_DELETE -> TODO()
+        }
+        updateState { it.copy(editMode = false) }
     }
 
     companion object {

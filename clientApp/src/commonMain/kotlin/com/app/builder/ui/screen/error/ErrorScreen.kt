@@ -20,6 +20,7 @@ import com.app.builder.ui.component.bar.TopActionBar
 import com.app.builder.ui.component.container.Feedback
 import com.app.builder.ui.navigation.LocalRouter
 import com.app.builder.ui.navigation.Router
+import com.app.builder.ui.navigation.Screen
 import com.app.builder.ui.navigation.authenticatedScreen
 import com.app.builder.ui.navigation.loadingScreen
 import com.app.builder.ui.navigation.unauthenticatedScreen
@@ -37,16 +38,19 @@ fun ErrorScreen(error: Boolean) {
 
     Screen(
         modifier = Modifier.imePadding(),
+        onBackClick = { router.navigate(screen = Screen.Home, option = Router.NavOption.CLEAR) },
         topBar = {
             TopActionBar(
                 title = "feedback",
                 onBackClick = {
-                    val screen = when (appState) {
-                        AppState.LOADING -> loadingScreen
-                        AppState.UNAUTHENTICATED -> unauthenticatedScreen
-                        AppState.AUTHENTICATED -> authenticatedScreen
-                    }
-                    router.navigate(screen = screen, option = Router.NavOption.CLEAR)
+                    if (error) {
+                        val screen = when (appState) {
+                            AppState.LOADING -> loadingScreen
+                            AppState.UNAUTHENTICATED -> unauthenticatedScreen
+                            AppState.AUTHENTICATED -> authenticatedScreen
+                        }
+                        router.navigate(screen = screen, option = Router.NavOption.CLEAR)
+                    } else router.back()
                 }
             )
         }
