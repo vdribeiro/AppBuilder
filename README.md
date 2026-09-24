@@ -475,8 +475,6 @@ Neither holds a state or talks to a gateway. A component takes its data and its 
     * `PermissionManager`: Manager for checking and requesting system permissions declared in `Permission`. The latter also provides `LocalPermissionManager`.
 * **screen**: UI entry points built with components. Each screen is also a sub-package containing the composable and respective store for state management, all co-located.
     * `Screen`: Wrapper composable that provides the foundational UI. Provides `LocalScaffold`.
-* **showcase**: Hosts the design system's catalog as a section of the app. See [Design Showcase](#design-showcase).
-    * `DesignScreen`: The showcase screen, rendering a `DesignSection` with its own navigation bar. The catalogs it renders live in `design`.
 
 #### root level
 
@@ -527,6 +525,7 @@ Neither holds a state or talks to a gateway. A component takes its data and its 
     * `Navigation`: Composables that set up the navigation and define the possible navigation destinations within the app.
 * **component**: UI components implementations. Each component is a sub-package containing the composable and respective store for state management, all co-located.
 * **screen**: UI entry points built with components. Each screen is also a sub-package containing the composable and respective store for state management, all co-located.
+    * `design/DesignScreen`: The design section's screen, rendering a `DesignSection` with its own navigation bar. The catalogs it renders live in `design`. See [Design Showcase](#design-showcase).
 
 #### root level
 
@@ -857,8 +856,8 @@ The UI state uses `kotlinx.collections.immutable` to prevent accidental mutation
 The design showcase is a catalog of every design system component, color, shape and typography style, and it is a section of the app rather than a separate target, so it is reachable on every platform the client ships to.
 
 The catalogs live in `design` (`ui/showcase`), next to what they document: the package mirrors the component package one to one.
-`appCore` (`ui/showcase`) holds only the host, `DesignScreen`, which knows nothing about the client's routing: it takes the `DesignSection` to render plus an `onSectionClick` and an `onAppClick` callback.
-`clientApp` owns the wiring. `Screen.Design{Section}` is one navigation key per section, `designProvider` maps each key to its section and routes both callbacks back through the `Router`, and the navigation bar's `design` item enters the section.
+The host, `ui/screen/design/DesignScreen`, sits in `clientApp` alongside every other screen, and stays free of routing itself: it takes the `DesignSection` to render plus an `onSectionClick` and an `onAppClick` callback.
+The wiring sits next to it: `Screen.Design{Section}` is one navigation key per section, `designProvider` maps each key to its section and routes both callbacks back through the `Router`, and the navigation bar's `design` item enters the section.
 Inside the showcase, the app's navigation bar is replaced by the showcase's own, whose `App` entry navigates back to the app's landing screen. Both directions use `NavOption.CLEAR`, like every other navigation bar entry.
 
 The whole section is gated by the `design` client flag, so a production build can drop it by flipping one flag.

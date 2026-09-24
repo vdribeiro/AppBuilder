@@ -3,8 +3,8 @@ package com.app.builder.ui.component.list
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.ui.Alignment
@@ -15,7 +15,6 @@ import com.app.builder.core.security.uuid
 import com.app.builder.ui.Preview
 import com.app.builder.ui.component.card.ConfigCardInput
 import com.app.builder.ui.component.card.ConfigCardSwitch
-import com.app.builder.ui.core.list.LazyColumn
 
 /**
  * A config entry.
@@ -54,7 +53,7 @@ sealed interface ConfigValue {
 }
 
 /**
- * A scrollable list of flag or config entries.
+ * A list of flag or config entries.
  *
  * @param modifier The [Modifier] to be applied to the root layout.
  * @param items An [ImmutableList] of [ConfigItem]s.
@@ -66,14 +65,14 @@ fun ConfigList(
     items: ImmutableList<ConfigItem> = persistentListOf(),
     onValueChange: (ConfigItem, ConfigValue) -> Unit = { _, _ -> }
 ) {
-    LazyColumn(
+    Column(
         modifier = modifier
             .testTag(tag = "config_list")
-            .fillMaxSize(),
+            .fillMaxWidth(),
         horizontalAlignment = Alignment.Start,
         verticalArrangement = Arrangement.Top
     ) {
-        itemsIndexed(items = items, key = { _, item -> item.uuid }) { index, item ->
+        items.forEachIndexed { index, item ->
             when (item.value) {
                 is ConfigValue.Toggle -> ConfigCardSwitch(
                     modifier = Modifier.testTag(tag = "config_card_$index"),
