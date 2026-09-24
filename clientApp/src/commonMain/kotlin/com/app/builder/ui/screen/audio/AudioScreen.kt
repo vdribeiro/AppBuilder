@@ -55,7 +55,7 @@ fun AudioScreen(
 
     val state by audioPlayer.state.collectAsStateWithLifecycle()
 
-    var selected by remember { mutableStateOf(value = setOf<AudioResource>(AudioResource.Ping)) }
+    var selected by remember { mutableStateOf(value = setOf<AudioResource>(Ping)) }
     var loop by remember { mutableStateOf(value = true) }
     var shuffle by remember { mutableStateOf(value = false) }
     val entries: List<AudioResource> by lazy { listOf(Ping, Chime, Pulse, Drone) }

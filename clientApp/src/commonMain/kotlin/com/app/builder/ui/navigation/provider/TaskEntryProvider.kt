@@ -75,7 +75,7 @@ fun EntryProviderScope<NavKey>.taskProvider(useCases: UseCases) {
     entry<Screen.TaskDetail>(metadata = split()) {
         val router = LocalRouter.current
         val splitScreen = LocalSplitScreen.current
-        val store = viewModel { TaskDetailScreenStore(state = TaskDetailScreenState(), taskUseCases = useCases.taskUseCases, taskUuid = it.uuid) }
+        val store = viewModel { TaskDetailScreenStore(state = TaskDetailScreenState(), router = router, taskUseCases = useCases.taskUseCases, taskUuid = it.uuid) }
         TaskDetailScreen(
             actionBarStore = viewModel {
                 ActionBarStore(
