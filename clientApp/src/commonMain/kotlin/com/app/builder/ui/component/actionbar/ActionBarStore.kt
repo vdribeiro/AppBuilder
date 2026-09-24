@@ -48,6 +48,7 @@ class ActionBarStore(
         super.reducer(state, action)
         when (action) {
             ActionBarAction.OpenUser -> router.navigate(screen = Screen.UserProfile)
+            ActionBarAction.Login -> router.navigate(screen = Screen.Login)
             is ActionBarAction.ModeChange -> changeMode(action = action)
             is ActionBarAction.Search -> search(action = action)
             is ActionBarAction.SelectSortProperty -> selectSortProperty(action = action)
@@ -93,6 +94,7 @@ class ActionBarStore(
 
             updateState {
                 it.copy(
+                    guest = user == null,
                     avatarName = user?.name,
                     avatarImage = userImage,
                     write = write

@@ -27,6 +27,9 @@ fun ActionBar(store: Store<ActionBarState, ActionBarAction>) {
         avatarName = state.avatarName,
         avatarImage = state.avatarImage,
         onAvatarClick = { store.send(action = ActionBarAction.OpenUser) },
+        onLoginClick = if (state.guest) {
+            { store.send(action = ActionBarAction.Login) }
+        } else null,
         mode = state.mode,
         layout = state.layout,
         write = state.write,

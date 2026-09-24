@@ -12,13 +12,14 @@ import com.app.builder.ui.core.navigation.NavigationBar
 import com.app.builder.ui.store.Store
 
 /**
- * Renders the app's navigation bar from the given [store]'s [NavigationState].
+ * Renders the app's navigation bar from the given [store]'s [NavigationState], or nothing while it holds no items.
  *
  * @param store The store providing the [NavigationState] items to render.
  */
 @Composable
 fun Navigation(store: Store<NavigationState, Unit>) {
     val state by store.stateFlow.collectAsStateWithLifecycle()
+    if (state.items.isEmpty()) return
     NavigationBar(
         modifier = Modifier
             .testTag(tag = "navigation_bar")

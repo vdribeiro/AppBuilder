@@ -12,6 +12,8 @@ import com.app.builder.ui.core.image.Image
 sealed interface ActionBarAction {
     /** Opens the user profile screen. */
     data object OpenUser: ActionBarAction
+    /** Opens the login screen. */
+    data object Login: ActionBarAction
     /**
      * Notifies that the mode has changed.
      *
@@ -66,6 +68,7 @@ sealed interface ActionBarAction {
  * State of an action bar, holding what it displays and the sorting and property filters it applies to the screen below it.
  *
  * @property title Text shown as the action bar's title.
+ * @property guest true if there is no authenticated user, false otherwise.
  * @property avatarName The name to fit in the avatar. Only the first letter of the first and last name will show capitalized if no image is provided.
  * @property avatarImage The image resource.
  * @property mode Current display mode, controlling which actions/inputs are shown.
@@ -79,6 +82,7 @@ sealed interface ActionBarAction {
  */
 data class ActionBarState(
     val title: String = "",
+    val guest: Boolean = true,
     val avatarName: String? = null,
     val avatarImage: Image? = null,
     val mode: ActionBarMode = ActionBarMode.DEFAULT,
