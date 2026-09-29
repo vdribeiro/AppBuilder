@@ -27,7 +27,7 @@ class TaskDetailScreenTest: TestCase() {
         authenticatedUseCases.authenticationUseCases.login(credentials = FakeData.adminCredentials)
         authenticatedUseCases.taskUseCases.upsertTask(task = FakeData.task)
 
-        val store = TaskDetailScreenStore(state = TaskDetailScreenState(), taskUseCases = authenticatedUseCases.taskUseCases, taskUuid = FakeData.task.uuid.toString())
+        val store = TaskDetailScreenStore(state = TaskDetailScreenState(), router = router, taskUseCases = authenticatedUseCases.taskUseCases, taskUuid = FakeData.task.uuid.toString())
         val navigationStore = NavigationStore(state = NavigationState(selected = NavigationRoute.TASK), router = router, authenticationUseCases = authenticatedUseCases.authenticationUseCases)
         val actionBarStore = ActionBarStore(state = ActionBarState(title = "task", layout = ActionBarLayout.DETAIL), router = router, authenticationUseCases = authenticatedUseCases.authenticationUseCases)
 

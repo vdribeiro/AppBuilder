@@ -275,7 +275,7 @@ fun TopActionBar(
                             )
                             Button(
                                 modifier = Modifier.testTag(tag = "action_sort"),
-                                onClick = { onSortAscendingClick(sortAscending) },
+                                onClick = { onSortAscendingClick(!sortAscending) },
                                 content = { Icon(imageVector = if (sortAscending) Icons.Default.ArrowUpward else Icons.Default.ArrowDownward) }
                             )
                             Box {

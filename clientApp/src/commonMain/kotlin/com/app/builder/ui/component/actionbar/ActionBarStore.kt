@@ -68,19 +68,19 @@ class ActionBarStore(
     private fun setup(): Job = launch(id = "setup") {
         Telemetry.info(tag = TAG, message = "Setup")
 
-        // Assert file exists
-        storageFile?.load() ?: storageFile?.save { defaults }
+        // Assert the file exists and holds every value, then adopt it
+        storageFile?.run {
+            val persisted = load()
+            val data = persisted.withDefaults()
+            if (data != persisted) save { data }
 
-        storageFile?.cache()?.value?.run {
-            val visibleProperties = visibleProperties.toPersistentList()
-            val searchableProperties = searchableProperties.toPersistentList()
             updateState {
                 it.copy(
-                    mode = mode.toEnumOrNull<ActionBarMode>() ?: ActionBarMode.DEFAULT,
-                    sortProperty = sortProperty,
-                    sortAscending = sortAscending,
-                    visibleProperties = visibleProperties,
-                    searchableProperties = searchableProperties
+                    mode = data.mode.toEnumOrNull<ActionBarMode>() ?: ActionBarMode.DEFAULT,
+                    sortProperty = data.sortProperty,
+                    sortAscending = data.sortAscending,
+                    visibleProperties = data.visibleProperties.toPersistentList(),
+                    searchableProperties = data.searchableProperties.toPersistentList()
                 )
             }
         }
@@ -103,6 +103,21 @@ class ActionBarStore(
         }
 
         Telemetry.info(tag = TAG, message = "Setup complete")
+    }
+
+    /**
+     * Backfills every value this payload is missing with the [defaults], so a payload persisted before a value existed does not leave the list unsorted or unsearchable.
+     *
+     * @return The persisted payload completed with the [defaults], or the [defaults] when nothing is persisted yet.
+     */
+    private fun AppFile.ActionBarData?.withDefaults(): AppFile.ActionBarData = when (this) {
+        null -> defaults
+        else -> copy(
+            mode = mode.ifBlank { defaults.mode },
+            sortProperty = sortProperty.ifBlank { defaults.sortProperty },
+            visibleProperties = visibleProperties.ifEmpty { defaults.visibleProperties },
+            searchableProperties = searchableProperties.ifEmpty { defaults.searchableProperties }
+        )
     }
 
     /**
