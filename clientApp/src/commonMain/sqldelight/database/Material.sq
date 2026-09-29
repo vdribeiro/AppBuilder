@@ -1,0 +1,47 @@
+import kotlin.time.Instant;
+import kotlin.uuid.Uuid;
+
+CREATE TABLE IF NOT EXISTS Material (
+    uuid TEXT AS Uuid NOT NULL PRIMARY KEY,
+    modifiedAt TEXT AS Instant NOT NULL,
+    deletedAt TEXT AS Instant,
+    name TEXT NOT NULL,
+    code TEXT NOT NULL
+);
+
+truncateMaterial:
+DELETE FROM Material;
+
+deleteMaterial:
+UPDATE Material
+SET modifiedAt = :utc,
+    deletedAt = :utc
+WHERE uuid = :materialUuid
+    AND uuid IN (
+        SELECT materialUuid
+        FROM MaterialUserJoin
+        WHERE userUuid = :userUuid
+    );
+
+upsertMaterial:
+INSERT OR REPLACE INTO Material VALUES ?;
+
+getMaterials:
+SELECT Material.*
+FROM Material
+INNER JOIN MaterialUserJoin ON Material.uuid = MaterialUserJoin.materialUuid
+WHERE MaterialUserJoin.userUuid = :userUuid;
+
+getMaterialsByUuids:
+SELECT Material.*
+FROM Material
+INNER JOIN MaterialUserJoin ON Material.uuid = MaterialUserJoin.materialUuid
+WHERE MaterialUserJoin.userUuid = :userUuid
+AND Material.uuid IN :materialUuids;
+
+getMaterial:
+SELECT Material.*
+FROM Material
+INNER JOIN MaterialUserJoin ON Material.uuid = MaterialUserJoin.materialUuid
+WHERE MaterialUserJoin.userUuid = :userUuid
+AND Material.uuid = :materialUuid;

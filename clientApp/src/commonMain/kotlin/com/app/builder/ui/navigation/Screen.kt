@@ -119,6 +119,42 @@ sealed interface Screen: NavKey {
     @Serializable
     @SerialName(value = "screen_task_detail")
     data class TaskDetail(val uuid: String): Screen
+    /** The screen listing all buildings. */
+    @Serializable
+    @SerialName(value = "screen_building_list")
+    data object BuildingList: Screen
+    /**
+     * The screen showing the details of a single building.
+     *
+     * @property uuid The unique identifier of the building to display.
+     */
+    @Serializable
+    @SerialName(value = "screen_building_detail")
+    data class BuildingDetail(val uuid: String): Screen
+    /** The screen listing all equipments. */
+    @Serializable
+    @SerialName(value = "screen_equipment_list")
+    data object EquipmentList: Screen
+    /**
+     * The screen showing the details of a single equipment.
+     *
+     * @property uuid The unique identifier of the equipment to display.
+     */
+    @Serializable
+    @SerialName(value = "screen_equipment_detail")
+    data class EquipmentDetail(val uuid: String): Screen
+    /** The screen listing all materials. */
+    @Serializable
+    @SerialName(value = "screen_material_list")
+    data object MaterialList: Screen
+    /**
+     * The screen showing the details of a single material.
+     *
+     * @property uuid The unique identifier of the material to display.
+     */
+    @Serializable
+    @SerialName(value = "screen_material_detail")
+    data class MaterialDetail(val uuid: String): Screen
     /** The screen listing all files. */
     @Serializable
     @SerialName(value = "screen_file_list")

@@ -59,6 +59,9 @@ class JobProvider(
             EntityType.DEVICE_LOCATION -> deviceLocationRepository.executeSyncDeviceLocations(job = job)
             EntityType.USER -> userRepository.executeSyncUsers(job = job)
             EntityType.TASK -> taskRepository.executeSyncTasks(job = job)
+            EntityType.BUILDING -> buildingRepository.executeSyncBuildings(job = job)
+            EntityType.EQUIPMENT -> equipmentRepository.executeSyncEquipments(job = job)
+            EntityType.MATERIAL -> materialRepository.executeSyncMaterials(job = job)
             else -> null
         }
     } ?: JobResult.NoOp
@@ -73,6 +76,9 @@ class JobProvider(
         when (job.entityType) {
             EntityType.USER -> userRepository.executeSyncUser(job = job)
             EntityType.TASK -> taskRepository.executeSyncTask(job = job)
+            EntityType.BUILDING -> buildingRepository.executeSyncBuilding(job = job)
+            EntityType.EQUIPMENT -> equipmentRepository.executeSyncEquipment(job = job)
+            EntityType.MATERIAL -> materialRepository.executeSyncMaterial(job = job)
             else -> null
         }
     } ?: JobResult.NoOp
@@ -88,6 +94,9 @@ class JobProvider(
             EntityType.SESSION -> authenticationRepository.executeLogin(job = job)
             EntityType.USER -> userRepository.executeUpsertUser(job = job)
             EntityType.TASK -> taskRepository.executeUpsertTask(job = job)
+            EntityType.BUILDING -> buildingRepository.executeUpsertBuilding(job = job)
+            EntityType.EQUIPMENT -> equipmentRepository.executeUpsertEquipment(job = job)
+            EntityType.MATERIAL -> materialRepository.executeUpsertMaterial(job = job)
             else -> null
         }
     } ?: JobResult.NoOp

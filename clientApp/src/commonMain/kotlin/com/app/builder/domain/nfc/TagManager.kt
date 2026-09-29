@@ -16,7 +16,10 @@ import com.app.builder.core.nfc.NfcTag
 import com.app.builder.core.nfc.TagProvider
 import com.app.builder.core.security.uuid
 import com.app.builder.core.telemetry.Telemetry
+import com.app.builder.domain.Building
 import com.app.builder.domain.EntityType
+import com.app.builder.domain.Equipment
+import com.app.builder.domain.Material
 import com.app.builder.domain.Task
 import com.app.builder.domain.User
 import com.app.builder.domain.deeplink.DeepLink
@@ -111,6 +114,36 @@ class TagManager(
                     title = now().toString(),
                     description = "",
                     state = Task.State.TODO
+                )
+            )
+
+            EntityType.BUILDING -> useCases.buildingUseCases.upsertBuilding(
+                building = Building(
+                    uuid = record.entityUuid ?: uuid(),
+                    modifiedAt = now(),
+                    deletedAt = null,
+                    name = now().toString(),
+                    code = ""
+                )
+            )
+
+            EntityType.EQUIPMENT -> useCases.equipmentUseCases.upsertEquipment(
+                equipment = Equipment(
+                    uuid = record.entityUuid ?: uuid(),
+                    modifiedAt = now(),
+                    deletedAt = null,
+                    name = now().toString(),
+                    code = ""
+                )
+            )
+
+            EntityType.MATERIAL -> useCases.materialUseCases.upsertMaterial(
+                material = Material(
+                    uuid = record.entityUuid ?: uuid(),
+                    modifiedAt = now(),
+                    deletedAt = null,
+                    name = now().toString(),
+                    code = ""
                 )
             )
 

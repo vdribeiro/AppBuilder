@@ -1,6 +1,5 @@
 package com.app.builder.ui.screen.tasklist
 
-import kotlin.time.Instant
 import kotlin.uuid.Uuid
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -104,13 +103,13 @@ class TaskListScreenStore(
             flow = tasksActionBarFlow,
             flow2 = criteriaFlow
         ) { (tasks, actionBar), criteria ->
-            tasks
+            tasks.toPersistentList() to tasks
                 .map { it.toTaskItem(visibilityProperties = actionBar.visibleProperties, selectedUuids = criteria.selectedUuids) }
                 .toPersistentList()
         }
             .flowOn(context = Dispatcher.Default)
-            .observe(id = "filterTasks") { tasks ->
-                updateState { it.copy(tasks = tasks) }
+            .observe(id = "filterTasks") { (entities, tasks) ->
+                updateState { it.copy(tasks = tasks, entities = entities) }
             }
 
         Telemetry.info(tag = TAG, message = "Setup complete")
@@ -158,8 +157,8 @@ class TaskListScreenStore(
 
             ActionBarMode.BATCH_DELETE -> {
                 val now = now()
-                state.tasks.filter { it.uuid.toUuid() in state.selectedUuids }.forEach {
-                    it.toTask(deletedAt = now)?.let { task -> taskUseCases.upsertTask(task = task) }
+                state.entities.filter { it.uuid in state.selectedUuids }.forEach {
+                    taskUseCases.upsertTask(task = it.copy(modifiedAt = now, deletedAt = now))
                 }
             }
 
@@ -228,21 +227,6 @@ class TaskListScreenStore(
         title = title.takeIf { Property.TITLE.name in visibilityProperties },
         description = description.takeIf { Property.DESCRIPTION.name in visibilityProperties },
         state = state.name
-    )
-
-    /**
-     * Converts this item back into a [Task].
-     *
-     * @param deletedAt Timestamp recorded as the task's modification and deletion time.
-     * @return The reconstructed [Task], or `null` if this item is missing its uuid or state.
-     */
-    private fun TaskItem.toTask(deletedAt: Instant): Task? = Task(
-        uuid = uuid.toUuid() ?: return null,
-        modifiedAt = deletedAt,
-        deletedAt = deletedAt,
-        title = title.orEmpty(),
-        description = description.orEmpty(),
-        state = state?.toEnumOrNull() ?: return null
     )
 
     companion object {

@@ -388,5 +388,95 @@
     "languageIso": "en",
     "key": "unable_to_open_file",
     "value": "Unable to open this file"
+  },
+  {
+    "languageIso": "en",
+    "key": "building",
+    "value": "Building"
+  },
+  {
+    "languageIso": "en",
+    "key": "buildings",
+    "value": "Buildings"
+  },
+  {
+    "languageIso": "en",
+    "key": "building_name",
+    "value": "Name"
+  },
+  {
+    "languageIso": "en",
+    "key": "building_code",
+    "value": "Code"
+  },
+  {
+    "languageIso": "en",
+    "key": "building_modified_at",
+    "value": "Modified At"
+  },
+  {
+    "languageIso": "en",
+    "key": "building_deleted_at",
+    "value": "Deleted At"
+  },
+  {
+    "languageIso": "en",
+    "key": "equipment",
+    "value": "Equipment"
+  },
+  {
+    "languageIso": "en",
+    "key": "equipments",
+    "value": "Equipments"
+  },
+  {
+    "languageIso": "en",
+    "key": "equipment_name",
+    "value": "Name"
+  },
+  {
+    "languageIso": "en",
+    "key": "equipment_code",
+    "value": "Code"
+  },
+  {
+    "languageIso": "en",
+    "key": "equipment_modified_at",
+    "value": "Modified At"
+  },
+  {
+    "languageIso": "en",
+    "key": "equipment_deleted_at",
+    "value": "Deleted At"
+  },
+  {
+    "languageIso": "en",
+    "key": "material",
+    "value": "Material"
+  },
+  {
+    "languageIso": "en",
+    "key": "materials",
+    "value": "Materials"
+  },
+  {
+    "languageIso": "en",
+    "key": "material_name",
+    "value": "Name"
+  },
+  {
+    "languageIso": "en",
+    "key": "material_code",
+    "value": "Code"
+  },
+  {
+    "languageIso": "en",
+    "key": "material_modified_at",
+    "value": "Modified At"
+  },
+  {
+    "languageIso": "en",
+    "key": "material_deleted_at",
+    "value": "Deleted At"
   }
 ]

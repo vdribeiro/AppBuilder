@@ -1,0 +1,13 @@
+import kotlin.uuid.Uuid;
+
+CREATE TABLE IF NOT EXISTS MaterialUserJoin (
+    materialUuid TEXT AS Uuid NOT NULL,
+    userUuid TEXT AS Uuid NOT NULL,
+    PRIMARY KEY (materialUuid, userUuid)
+);
+
+truncateMaterialUserJoin:
+DELETE FROM MaterialUserJoin;
+
+upsertMaterialUserJoin:
+INSERT OR REPLACE INTO MaterialUserJoin VALUES ?;

@@ -3,6 +3,7 @@ package com.app.builder.ui.screen.tasklist
 import kotlin.uuid.Uuid
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
+import com.app.builder.domain.Task
 import com.app.builder.ui.component.bar.ActionBarMode
 import com.app.builder.ui.component.list.TaskItem
 
@@ -26,11 +27,13 @@ sealed interface TaskListScreenAction {
  * State of the task list, holding the tasks to display and whether batch delete selection is active.
  *
  * @property tasks Tasks currently displayed.
+ * @property entities Tasks the displayed items were built from, kept so an action can read the properties the items hide.
  * @property mode Current action bar mode, controlling how a task selection is handled.
  * @property selectedUuids UUIDs of the tasks picked while in batch delete mode.
  */
 data class TaskListScreenState(
     val tasks: ImmutableList<TaskItem> = persistentListOf(),
+    val entities: ImmutableList<Task> = persistentListOf(),
     val mode: ActionBarMode = ActionBarMode.DEFAULT,
     val selectedUuids: ImmutableList<Uuid> = persistentListOf()
 )

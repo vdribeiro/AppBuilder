@@ -11,8 +11,11 @@ import com.app.builder.core.security.uuid
 import com.app.builder.data.serializer.encode
 import com.app.builder.domain.Authentication
 import com.app.builder.domain.BearerToken
+import com.app.builder.domain.Building
 import com.app.builder.domain.DeviceLocation
 import com.app.builder.domain.EntityType
+import com.app.builder.domain.Equipment
+import com.app.builder.domain.Material
 import com.app.builder.domain.Permission
 import com.app.builder.domain.PushPayload
 import com.app.builder.domain.RegistrationForm
@@ -77,6 +80,9 @@ object FakeData {
                 EntityType.USER -> Permission.WRITE
                 EntityType.DEVICE_LOCATION -> Permission.WRITE
                 EntityType.TASK -> Permission.READ
+                EntityType.BUILDING -> Permission.READ
+                EntityType.EQUIPMENT -> Permission.READ
+                EntityType.MATERIAL -> Permission.READ
                 EntityType.FILE -> Permission.READ
             }?.let { type to it }
         }.toMap(),
@@ -164,6 +170,30 @@ object FakeData {
         title = "Task Title",
         description = "Task Description",
         state = Task.State.TODO
+    )
+
+    val building: Building = Building(
+        uuid = uuid(),
+        modifiedAt = now(),
+        deletedAt = null,
+        name = "Building Name",
+        code = "BUILDING-001"
+    )
+
+    val equipment: Equipment = Equipment(
+        uuid = uuid(),
+        modifiedAt = now(),
+        deletedAt = null,
+        name = "Equipment Name",
+        code = "EQUIPMENT-001"
+    )
+
+    val material: Material = Material(
+        uuid = uuid(),
+        modifiedAt = now(),
+        deletedAt = null,
+        name = "Material Name",
+        code = "MATERIAL-001"
     )
 
     val deviceLocation: DeviceLocation = DeviceLocation(

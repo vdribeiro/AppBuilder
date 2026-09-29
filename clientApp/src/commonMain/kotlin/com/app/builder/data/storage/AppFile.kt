@@ -35,7 +35,13 @@ object AppFile {
             /** The UTC instant when users were last synchronized. */
             USERS_LAST_SYNC_UTC,
             /** The UTC instant when tasks were last synchronized. */
-            TASKS_LAST_SYNC_UTC
+            TASKS_LAST_SYNC_UTC,
+            /** The UTC instant when buildings were last synchronized. */
+            BUILDINGS_LAST_SYNC_UTC,
+            /** The UTC instant when equipments were last synchronized. */
+            EQUIPMENTS_LAST_SYNC_UTC,
+            /** The UTC instant when materials were last synchronized. */
+            MATERIALS_LAST_SYNC_UTC
         }
 
         override val serializer: KSerializer<Map<Key, String>> =
@@ -88,6 +94,24 @@ object AppFile {
         override val serializer: KSerializer<ActionBarData> = ActionBarData.serializer()
     }
 
+    /** Building preferences. */
+    data object BuildingPreferences: StorageFile<ActionBarData>(path = "building_preferences", encrypted = false) {
+
+        override val serializer: KSerializer<ActionBarData> = ActionBarData.serializer()
+    }
+
+    /** Equipment preferences. */
+    data object EquipmentPreferences: StorageFile<ActionBarData>(path = "equipment_preferences", encrypted = false) {
+
+        override val serializer: KSerializer<ActionBarData> = ActionBarData.serializer()
+    }
+
+    /** Material preferences. */
+    data object MaterialPreferences: StorageFile<ActionBarData>(path = "material_preferences", encrypted = false) {
+
+        override val serializer: KSerializer<ActionBarData> = ActionBarData.serializer()
+    }
+
     /** Every file in this module. */
     val all: List<StorageFile<*>> = listOf(
         Preferences,
@@ -96,6 +120,9 @@ object AppFile {
         ClientRemoteConfigs,
         ServerFeatureFlags,
         ServerRemoteConfigs,
-        TaskPreferences
+        TaskPreferences,
+        BuildingPreferences,
+        EquipmentPreferences,
+        MaterialPreferences
     )
 }

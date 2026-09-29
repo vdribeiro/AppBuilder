@@ -16,7 +16,10 @@ class AppFileTest: TestCase() {
         assertEquals(expected = "server_flags", actual = AppFile.ServerFeatureFlags.path)
         assertEquals(expected = "server_configs", actual = AppFile.ServerRemoteConfigs.path)
         assertEquals(expected = "task_preferences", actual = AppFile.TaskPreferences.path)
+        assertEquals(expected = "building_preferences", actual = AppFile.BuildingPreferences.path)
+        assertEquals(expected = "equipment_preferences", actual = AppFile.EquipmentPreferences.path)
+        assertEquals(expected = "material_preferences", actual = AppFile.MaterialPreferences.path)
 
-        assertEquals(expected = 7, actual = AppFile.all.size)
+        assertEquals(expected = 10, actual = AppFile.all.size)
     }
 }

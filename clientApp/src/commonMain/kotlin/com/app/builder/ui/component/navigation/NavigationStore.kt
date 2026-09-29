@@ -3,12 +3,15 @@ package com.app.builder.ui.component.navigation
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.Job
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Apartment
 import androidx.compose.material.icons.filled.AppRegistration
 import androidx.compose.material.icons.filled.Camera
 import androidx.compose.material.icons.filled.FileOpen
 import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.GpsFixed
+import androidx.compose.material.icons.filled.Handyman
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Inventory2
 import androidx.compose.material.icons.filled.ManageAccounts
 import androidx.compose.material.icons.filled.MusicNote
 import androidx.compose.material.icons.filled.Nfc
@@ -67,6 +70,30 @@ class NavigationStore(
                         text = "task",
                         icon = Icons.Filled.Task,
                         onClick = { router.navigate(screen = Screen.TaskList, option = Router.NavOption.CLEAR) },
+                    )
+                )
+                if (ClientFlags.flags.buildings && permissions[EntityType.BUILDING] != null) add(
+                    NavigationItem(
+                        selected = state.selected == NavigationRoute.BUILDING,
+                        text = "building",
+                        icon = Icons.Filled.Apartment,
+                        onClick = { router.navigate(screen = Screen.BuildingList, option = Router.NavOption.CLEAR) },
+                    )
+                )
+                if (ClientFlags.flags.equipments && permissions[EntityType.EQUIPMENT] != null) add(
+                    NavigationItem(
+                        selected = state.selected == NavigationRoute.EQUIPMENT,
+                        text = "equipment",
+                        icon = Icons.Filled.Handyman,
+                        onClick = { router.navigate(screen = Screen.EquipmentList, option = Router.NavOption.CLEAR) },
+                    )
+                )
+                if (ClientFlags.flags.materials && permissions[EntityType.MATERIAL] != null) add(
+                    NavigationItem(
+                        selected = state.selected == NavigationRoute.MATERIAL,
+                        text = "material",
+                        icon = Icons.Filled.Inventory2,
+                        onClick = { router.navigate(screen = Screen.MaterialList, option = Router.NavOption.CLEAR) },
                     )
                 )
                 if (permissions[EntityType.FILE] != null) add(

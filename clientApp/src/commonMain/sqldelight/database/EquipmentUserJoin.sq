@@ -1,0 +1,13 @@
+import kotlin.uuid.Uuid;
+
+CREATE TABLE IF NOT EXISTS EquipmentUserJoin (
+    equipmentUuid TEXT AS Uuid NOT NULL,
+    userUuid TEXT AS Uuid NOT NULL,
+    PRIMARY KEY (equipmentUuid, userUuid)
+);
+
+truncateEquipmentUserJoin:
+DELETE FROM EquipmentUserJoin;
+
+upsertEquipmentUserJoin:
+INSERT OR REPLACE INTO EquipmentUserJoin VALUES ?;

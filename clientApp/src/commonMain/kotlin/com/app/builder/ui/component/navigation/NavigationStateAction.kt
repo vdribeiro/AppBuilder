@@ -19,6 +19,10 @@ data class NavigationState(
 enum class NavigationRoute {
     HOME,
     TASK,
+    BUILDING,
+    EQUIPMENT,
+    MATERIAL,
+
     FILE,
     USER,
     REGISTRY,

@@ -4,8 +4,14 @@ import kotlinx.coroutines.withContext
 import com.app.builder.core.flow.Dispatcher
 import com.app.builder.core.telemetry.Telemetry
 import database.AppDatabase
+import database.Building
+import database.BuildingUserJoin
 import database.DeviceLocation
+import database.Equipment
+import database.EquipmentUserJoin
 import database.Job
+import database.Material
+import database.MaterialUserJoin
 import database.Registry
 import database.Session
 import database.Task
@@ -22,6 +28,12 @@ typealias UserSchema = User
 typealias DeviceLocationSchema = DeviceLocation
 typealias TaskSchema = Task
 typealias TaskUserJoinSchema = TaskUserJoin
+typealias BuildingSchema = Building
+typealias BuildingUserJoinSchema = BuildingUserJoin
+typealias EquipmentSchema = Equipment
+typealias EquipmentUserJoinSchema = EquipmentUserJoin
+typealias MaterialSchema = Material
+typealias MaterialUserJoinSchema = MaterialUserJoin
 
 /**
  * Clears all persisted records across all database tables.
@@ -38,6 +50,12 @@ suspend fun AppDatabase.reset() = withContext(context = Dispatcher.IO) {
             deviceLocationQueries.truncateDeviceLocation()
             taskQueries.truncateTask()
             taskUserJoinQueries.truncateTaskUserJoin()
+            buildingQueries.truncateBuilding()
+            buildingUserJoinQueries.truncateBuildingUserJoin()
+            equipmentQueries.truncateEquipment()
+            equipmentUserJoinQueries.truncateEquipmentUserJoin()
+            materialQueries.truncateMaterial()
+            materialUserJoinQueries.truncateMaterialUserJoin()
         }
     }.onFailure {
         Telemetry.error(tag = TAG, message = "Unable to clear database", throwable = it)

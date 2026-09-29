@@ -45,6 +45,12 @@ data class ClientFlags(
     val users: Boolean,
     /** Toggles the task screens and whether task entities are queued for background sync. When false, task screens fall back to the error screen and task data is excluded from sync even if the user has permission to read it. */
     val tasks: Boolean,
+    /** Toggles the building screens and whether building entities are queued for background sync. When false, building screens fall back to the error screen and building data is excluded from sync even if the user has permission to read it. */
+    val buildings: Boolean,
+    /** Toggles the equipment screens and whether equipment entities are queued for background sync. When false, equipment screens fall back to the error screen and equipment data is excluded from sync even if the user has permission to read it. */
+    val equipments: Boolean,
+    /** Toggles the material screens and whether material entities are queued for background sync. When false, material screens fall back to the error screen and material data is excluded from sync even if the user has permission to read it. */
+    val materials: Boolean,
 ) {
     companion object {
 
@@ -69,6 +75,9 @@ data class ClientFlags(
             userProfile = true,
             users = true,
             tasks = true,
+            buildings = true,
+            equipments = true,
+            materials = true,
         )
 
         /** Backing state flow tracking feature flag changes. */

@@ -6,6 +6,12 @@ import app.cash.sqldelight.db.SqlDriver
 import com.app.builder.data.database.adapter.InstantColumnAdapter
 import com.app.builder.data.database.adapter.UuidColumnAdapter
 import database.AppDatabase
+import database.Building
+import database.BuildingUserJoin
+import database.Equipment
+import database.EquipmentUserJoin
+import database.Material
+import database.MaterialUserJoin
 import database.DeviceLocation
 import database.Job
 import database.Registry
@@ -62,6 +68,33 @@ class DatabaseFactory(driver: SqlDriver) {
         ),
         TaskUserJoinAdapter = TaskUserJoin.Adapter(
             taskUuidAdapter = UuidColumnAdapter,
+            userUuidAdapter = UuidColumnAdapter,
+        ),
+        BuildingAdapter = Building.Adapter(
+            uuidAdapter = UuidColumnAdapter,
+            modifiedAtAdapter = InstantColumnAdapter,
+            deletedAtAdapter = InstantColumnAdapter
+        ),
+        BuildingUserJoinAdapter = BuildingUserJoin.Adapter(
+            buildingUuidAdapter = UuidColumnAdapter,
+            userUuidAdapter = UuidColumnAdapter,
+        ),
+        EquipmentAdapter = Equipment.Adapter(
+            uuidAdapter = UuidColumnAdapter,
+            modifiedAtAdapter = InstantColumnAdapter,
+            deletedAtAdapter = InstantColumnAdapter
+        ),
+        EquipmentUserJoinAdapter = EquipmentUserJoin.Adapter(
+            equipmentUuidAdapter = UuidColumnAdapter,
+            userUuidAdapter = UuidColumnAdapter,
+        ),
+        MaterialAdapter = Material.Adapter(
+            uuidAdapter = UuidColumnAdapter,
+            modifiedAtAdapter = InstantColumnAdapter,
+            deletedAtAdapter = InstantColumnAdapter
+        ),
+        MaterialUserJoinAdapter = MaterialUserJoin.Adapter(
+            materialUuidAdapter = UuidColumnAdapter,
             userUuidAdapter = UuidColumnAdapter,
         ),
         UserAdapter = User.Adapter(

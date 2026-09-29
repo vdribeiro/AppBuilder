@@ -16,5 +16,8 @@ enum class EntityType {
     USER,
     DEVICE_LOCATION,
     TASK,
+    BUILDING,
+    EQUIPMENT,
+    MATERIAL,
     FILE,
 }

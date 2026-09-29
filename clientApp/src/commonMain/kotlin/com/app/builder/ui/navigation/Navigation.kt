@@ -10,15 +10,18 @@ import com.app.builder.domain.deeplink.DeepLink
 import com.app.builder.domain.gateway.UseCases
 import com.app.builder.ui.navigation.provider.audioProvider
 import com.app.builder.ui.navigation.provider.authenticationProvider
+import com.app.builder.ui.navigation.provider.buildingProvider
 import com.app.builder.ui.navigation.provider.cameraProvider
 import com.app.builder.ui.navigation.provider.configsProvider
 import com.app.builder.ui.navigation.provider.designProvider
+import com.app.builder.ui.navigation.provider.deviceFilesProvider
 import com.app.builder.ui.navigation.provider.deviceLocationProvider
+import com.app.builder.ui.navigation.provider.equipmentProvider
 import com.app.builder.ui.navigation.provider.errorProvider
 import com.app.builder.ui.navigation.provider.homeProvider
+import com.app.builder.ui.navigation.provider.materialProvider
 import com.app.builder.ui.navigation.provider.nfcProvider
 import com.app.builder.ui.navigation.provider.pushProvider
-import com.app.builder.ui.navigation.provider.deviceFilesProvider
 import com.app.builder.ui.navigation.provider.taskProvider
 import com.app.builder.ui.navigation.provider.userProfileProvider
 import com.app.builder.ui.navigation.provider.userProvider
@@ -115,6 +118,9 @@ fun AuthenticatedNavigation(
             if (ClientFlags.flags.music) audioProvider(useCases = useCases)
             if (ClientFlags.flags.notifications) pushProvider(useCases = useCases)
             if (ClientFlags.flags.tasks) taskProvider(useCases = useCases)
+            if (ClientFlags.flags.buildings) buildingProvider(useCases = useCases)
+            if (ClientFlags.flags.equipments) equipmentProvider(useCases = useCases)
+            if (ClientFlags.flags.materials) materialProvider(useCases = useCases)
         }
     )
 }
@@ -161,6 +167,9 @@ private fun setBackStack(
         EntityType.USER -> buildList<Screen> { add(Screen.UserList); entityUuid?.let { add(Screen.UserDetail(uuid = it.toString())) } }
         EntityType.DEVICE_LOCATION -> listOf(Screen.DeviceLocation)
         EntityType.TASK -> buildList<Screen> { add(Screen.TaskList); entityUuid?.let { add(Screen.TaskDetail(uuid = it.toString())) } }
+        EntityType.BUILDING -> buildList<Screen> { add(Screen.BuildingList); entityUuid?.let { add(Screen.BuildingDetail(uuid = it.toString())) } }
+        EntityType.EQUIPMENT -> buildList<Screen> { add(Screen.EquipmentList); entityUuid?.let { add(Screen.EquipmentDetail(uuid = it.toString())) } }
+        EntityType.MATERIAL -> buildList<Screen> { add(Screen.MaterialList); entityUuid?.let { add(Screen.MaterialDetail(uuid = it.toString())) } }
         EntityType.FILE -> TODO()
     }
     if (backStack.isNotEmpty()) router.backStack.apply {

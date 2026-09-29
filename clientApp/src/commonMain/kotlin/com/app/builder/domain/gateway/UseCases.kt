@@ -1,7 +1,10 @@
 package com.app.builder.domain.gateway
 
 import com.app.builder.domain.gateway.authentication.AuthenticationUseCases
+import com.app.builder.domain.gateway.building.BuildingUseCases
 import com.app.builder.domain.gateway.config.ConfigUseCases
+import com.app.builder.domain.gateway.equipment.EquipmentUseCases
+import com.app.builder.domain.gateway.material.MaterialUseCases
 import com.app.builder.domain.gateway.push.PushUseCases
 import com.app.builder.domain.gateway.registry.RegistryUseCases
 import com.app.builder.domain.gateway.task.TaskUseCases
@@ -21,4 +24,10 @@ interface UseCases {
     val userUseCases: UserUseCases
     /** The use cases for managing tasks. */
     val taskUseCases: TaskUseCases
+    /** The use cases for managing buildings. */
+    val buildingUseCases: BuildingUseCases
+    /** The use cases for managing equipments. */
+    val equipmentUseCases: EquipmentUseCases
+    /** The use cases for managing materials. */
+    val materialUseCases: MaterialUseCases
 }
