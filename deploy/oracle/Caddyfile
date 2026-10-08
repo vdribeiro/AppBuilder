@@ -1,0 +1,14 @@
+{$SITE_ADDRESS} {
+	encode zstd gzip
+
+	reverse_proxy server:8080 {
+		# WebSocket upgrades are handled natively; this is what keeps SSE from being buffered.
+		flush_interval -1
+
+		# No timeout on the response body, so a broadcast stream is never cut mid-flight.
+		transport http {
+			read_timeout 0
+			write_timeout 0
+		}
+	}
+}

@@ -1,0 +1,19 @@
+#cloud-config
+# It performs the two one-time host setup steps from README.md before the first login,
+# opening the host firewall and installing Docker. The VCN security list still has to be
+# changed by hand in the console; that firewall lives outside the machine.
+package_update: true
+packages:
+  - iptables-persistent
+
+runcmd:
+  # Oracle's Ubuntu images drop everything except SSH. Inserted at the top of the chain
+  # rather than at a fixed position, so this does not depend on the shipped rules.
+  - iptables -I INPUT -m state --state NEW -p tcp --dport 80 -j ACCEPT
+  - iptables -I INPUT -m state --state NEW -p tcp --dport 443 -j ACCEPT
+  - netfilter-persistent save
+  # Docker, plus the login user's permission to use it without sudo.
+  - curl -fsSL https://get.docker.com -o /tmp/get-docker.sh
+  - sh /tmp/get-docker.sh
+  - usermod -aG docker ubuntu
+  - rm -f /tmp/get-docker.sh

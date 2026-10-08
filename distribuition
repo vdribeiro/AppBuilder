@@ -27,3 +27,6 @@
                 --set-secrets="ADMIN_PASSWORD=password:latest,DB_PASSWORD=password:latest,JWT_SECRET=jwt:latest"
     Web:    ./gradlew wasmJsBrowserDistribution
             firebase deploy --only hosting
+    Oracle:
+            fill in ~/appbuilder/.env on the VM once, then
+            SSH_HOST=ubuntu@<public-ip> ./deploy/oracle/deploy.sh
