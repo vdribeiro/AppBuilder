@@ -16,11 +16,9 @@ import com.app.builder.core.telemetry.Telemetry
 import com.app.builder.data.serializer.decode
 import com.app.builder.data.serializer.encode
 import com.app.builder.data.signal.InstanceSignal
-import com.app.builder.domain.EntityType
-import com.app.builder.domain.Permission
 
 /**
- * Manages cache for user permissions to allow changes to take effect immediately, without a database lookup on every authenticated request.
+ * Manages cache for user authorization state to allow changes to take effect immediately, without a database lookup on every authenticated request.
  *
  * @property instanceSignal Relays payloads to every server instance.
  */
@@ -40,8 +38,8 @@ class PermissionManager(
     /** Tracks the signal observation applying permission updates from other instances to this instance's cache. */
     private var listenJob: Job? = null
 
-    /** Cache for user permissions. */
-    private val cache = ConcurrentHashMap<Uuid, Map<EntityType, Permission>>()
+    /** Cache for user authorization state. */
+    private val cache = ConcurrentHashMap<Uuid, UserAccess>()
 
     override suspend fun stop() = withContext(context = Dispatcher.IO) {
         mutex.withLock {
@@ -60,16 +58,16 @@ class PermissionManager(
         }
     }
 
-    override suspend fun set(userUuid: Uuid, permissions: Map<EntityType, Permission>?) {
-        if (permissions != null) cache[userUuid] = permissions else cache.remove(key = userUuid)
-        val payload = encode(value = userUuid to permissions) ?: run {
-            Telemetry.error(tag = TAG, message = "Unable to encode user permissions")
+    override suspend fun set(userUuid: Uuid, access: UserAccess?) {
+        if (access != null) cache[userUuid] = access else cache.remove(key = userUuid)
+        val payload = encode<Pair<Uuid, UserAccess?>>(value = userUuid to access) ?: run {
+            Telemetry.error(tag = TAG, message = "Unable to encode user access")
             return
         }
         instanceSignal.notify(channel = CHANNEL, payload = payload)
     }
 
-    override fun get(userUuid: Uuid): Map<EntityType, Permission>? = cache[userUuid]
+    override fun get(userUuid: Uuid): UserAccess? = cache[userUuid]
 
     /**
      * Observes other instances.
@@ -80,8 +78,9 @@ class PermissionManager(
             instanceSignal.observe(channel = CHANNEL).collect { envelope ->
                 if (envelope.substringBefore(delimiter = ENVELOPE_SEPARATOR) == instanceId.toString()) return@collect
                 val payload = envelope.substringAfter(delimiter = ENVELOPE_SEPARATOR)
-                val userPermissions = decode<Pair<Uuid, Map<EntityType, Permission>>>(value = payload) ?: return@collect
-                cache[userPermissions.first] = userPermissions.second
+                val userAccess = decode<Pair<Uuid, UserAccess?>>(value = payload) ?: return@collect
+                val access = userAccess.second
+                if (access != null) cache[userAccess.first] = access else cache.remove(key = userAccess.first)
             }
         }
     }

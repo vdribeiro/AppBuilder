@@ -22,12 +22,17 @@ class PermissionServiceTest: TestCase() {
 
         awaitUntil { instanceSignal.subscriptions.value > 0 }
 
+        val access = UserAccess(permissions = FakeData.user.permissions, deletedAt = null)
         assertNull(actual = permissionService.get(userUuid = userUuid))
-        permissionService.set(userUuid = userUuid, permissions = FakeData.user.permissions)
-        assertEquals(expected = FakeData.user.permissions, actual = permissionService.get(userUuid = userUuid))
+        permissionService.set(userUuid = userUuid, access = access)
+        assertEquals(expected = access, actual = permissionService.get(userUuid = userUuid))
 
         awaitUntil { otherInstance.get(userUuid = userUuid) != null }
-        assertEquals(expected = FakeData.user.permissions, actual = otherInstance.get(userUuid = userUuid))
+        assertEquals(expected = access, actual = otherInstance.get(userUuid = userUuid))
+
+        // A removal has to propagate as a removal: decoding it as non-null would fail and leave the other instance serving a stale entry.
+        permissionService.set(userUuid = userUuid, access = null)
+        awaitUntil { otherInstance.get(userUuid = userUuid) == null }
         permissionService.stop()
         otherInstance.stop()
 

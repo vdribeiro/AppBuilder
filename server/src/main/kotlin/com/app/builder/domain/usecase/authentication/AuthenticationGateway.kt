@@ -33,6 +33,7 @@ import com.app.builder.domain.Permission
 import com.app.builder.domain.RegistrationForm
 import com.app.builder.domain.User
 import com.app.builder.domain.UserCredentials
+import com.app.builder.domain.permission.UserAccess
 import com.app.builder.domain.permission.createAccessToken
 
 /**
@@ -48,7 +49,7 @@ class AuthenticationGateway(
         val user = registrationForm.user
         val credentials = registrationForm.credentials
         val password = hashPassword(password = credentials.password) ?: return@withContext null
-        val newAccessToken = createAccessToken(userUuid = user.uuid, permissions = user.permissions) ?: return@withContext null
+        val newAccessToken = createAccessToken(userUuid = user.uuid, access = UserAccess(permissions = user.permissions, deletedAt = user.deletedAt)) ?: return@withContext null
         val newRefreshToken = createRefreshToken() ?: return@withContext null
         val now = now()
         val uuid = uuid()
@@ -104,7 +105,12 @@ class AuthenticationGateway(
         if (!verifyPassword(password = credentials.password, hash = storedHash)) return@withContext null
 
         val user = runCatching { row.toUser() }.getOrNull() ?: return@withContext null
-        val newAccessToken = createAccessToken(userUuid = user.uuid, permissions = user.permissions) ?: return@withContext null
+        if (user.deletedAt != null) {
+            Telemetry.error(tag = TAG, message = "Rejected login for deleted user ${user.uuid}")
+            return@withContext null
+        }
+
+        val newAccessToken = createAccessToken(userUuid = user.uuid, access = UserAccess(permissions = user.permissions, deletedAt = null)) ?: return@withContext null
         val newRefreshToken = createRefreshToken() ?: return@withContext null
         val now = now()
         val uuid = uuid()
@@ -160,15 +166,20 @@ class AuthenticationGateway(
             Telemetry.error(tag = TAG, message = "Unable to get user uuid", throwable = it)
         }.getOrNull() ?: return@withContext null
 
-        val permissions = database.safeTransaction {
+        val userRow = database.safeTransaction {
             UserTable.selectAll()
                 .where { UserTable.uuid eq userUuid }
-                .firstOrNull()?.get(UserTable.permissions)
+                .firstOrNull()
         }.onFailure {
-            Telemetry.error(tag = TAG, message = "Unable to get permissions for $userUuid", throwable = it)
-        }.getOrNull()?.let { decode<Map<EntityType, Permission>>(value = it) } ?: return@withContext null
+            Telemetry.error(tag = TAG, message = "Unable to get user $userUuid", throwable = it)
+        }.getOrNull() ?: return@withContext null
 
-        val newAccessToken = createAccessToken(userUuid = userUuid, permissions = permissions) ?: return@withContext null
+        val access = UserAccess(
+            permissions = decode<Map<EntityType, Permission>>(value = userRow[UserTable.permissions]) ?: return@withContext null,
+            deletedAt = userRow[UserTable.deletedAt]
+        )
+
+        val newAccessToken = createAccessToken(userUuid = userUuid, access = access) ?: return@withContext null
         val newRefreshToken = createRefreshToken() ?: return@withContext null
 
         database.safeTransaction {

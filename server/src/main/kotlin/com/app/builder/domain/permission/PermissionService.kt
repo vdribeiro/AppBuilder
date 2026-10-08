@@ -1,10 +1,8 @@
 package com.app.builder.domain.permission
 
 import kotlin.uuid.Uuid
-import com.app.builder.domain.EntityType
-import com.app.builder.domain.Permission
 
-/** Permissions service that manages user permissions. */
+/** Permissions service that manages user authorization state. */
 interface PermissionService {
 
     /** Stops listening the instance signal. */
@@ -14,18 +12,18 @@ interface PermissionService {
     fun start()
 
     /**
-     * Sets the permissions of the user.
+     * Sets the authorization state of the user.
      *
      * @param userUuid The user to update.
-     * @param permissions The new permissions.
+     * @param access The new authorization state, or null to drop the user from the cache.
      */
-    suspend fun set(userUuid: Uuid, permissions: Map<EntityType, Permission>?)
+    suspend fun set(userUuid: Uuid, access: UserAccess?)
 
     /**
-     * Returns the user permissions for the given [userUuid].
+     * Returns the authorization state for the given [userUuid].
      *
      * @param userUuid The user to look up.
-     * @return The cached permissions of the user, or null if the user is not currently cached.
+     * @return The cached [UserAccess], or null if the user is not currently cached.
      */
-    fun get(userUuid: Uuid): Map<EntityType, Permission>?
+    fun get(userUuid: Uuid): UserAccess?
 }
