@@ -192,6 +192,22 @@ suspend fun ApplicationCall.validatePermission(
 }.getOrDefault(defaultValue = false)
 
 /**
+ * Checks that the caller's account has not been deleted, responding to the call when it has.
+ *
+ * @receiver [ApplicationCall] The context of the call.
+ * @param permissionService The permission service.
+ * @return `true` if the account is still active, `false` otherwise.
+ */
+suspend fun ApplicationCall.validateActive(permissionService: PermissionService): Boolean = runCatching {
+    (getAccess(permissionService = permissionService)!!.deletedAt == null).also {
+        if (!it) respondSafely(status = HttpStatusCode.Forbidden, message = "Account is deleted")
+    }
+}.onFailure {
+    Telemetry.error(tag = TAG, message = "Unable to check the account state", throwable = it)
+    respondSafely(status = HttpStatusCode.Forbidden, message = "Account is deleted")
+}.getOrDefault(defaultValue = false)
+
+/**
  * Records a registry entry for the current request, sourcing client and device metadata from the request headers and the authenticated user's uuid from the JWT payload.
  * This is best-effort telemetry, not a business invariant: it never touches the response, and any failure (missing header, unparseable value, unauthenticated call) is only logged.
  *

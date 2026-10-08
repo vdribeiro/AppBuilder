@@ -25,6 +25,7 @@ import com.app.builder.domain.route.getQueryMap
 import com.app.builder.domain.route.getUserUuid
 import com.app.builder.domain.route.receive
 import com.app.builder.domain.route.respondSafely
+import com.app.builder.domain.route.validateActive
 import com.app.builder.domain.route.toRegistry
 import com.app.builder.domain.route.validatePermission
 import com.app.builder.domain.usecase.devicetoken.DeviceTokenUseCases
@@ -48,6 +49,7 @@ fun Route.pushRoutes(
     authenticate {
         post(path = URL.DeviceTokens.path) {
             val userUuid = call.getUserUuid() ?: return@post
+            if (!call.validateActive(permissionService = permissionService)) return@post
             val registration = call.receive<DeviceToken>() ?: return@post
             if (registration.token.isBlank() || registration.deviceUuid == null) {
                 call.respondSafely(status = HttpStatusCode.BadRequest, message = "Invalid device token parameters")
@@ -69,6 +71,7 @@ fun Route.pushRoutes(
 
         post(path = URL.Tickets.path) {
             val userUuid = call.getUserUuid() ?: return@post
+            if (!call.validateActive(permissionService = permissionService)) return@post
             val ticket = pushService.generateTicket(userUuid = userUuid) ?: run {
                 call.respondSafely(status = HttpStatusCode.InternalServerError, message = "Unable to generate ticket")
                 return@post
