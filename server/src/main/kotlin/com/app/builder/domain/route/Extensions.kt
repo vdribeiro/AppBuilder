@@ -21,7 +21,8 @@ import com.app.builder.domain.EntityType
 import com.app.builder.domain.Permission
 import com.app.builder.domain.Registry
 import com.app.builder.domain.permission.PermissionService
-import com.app.builder.domain.permission.getPermissions
+import com.app.builder.domain.permission.UserAccess
+import com.app.builder.domain.permission.getAccess
 import com.auth0.jwt.interfaces.Payload
 
 /**
@@ -139,24 +140,25 @@ suspend fun ApplicationCall.getUserUuid(): Uuid? = runCatching {
 }.getOrNull()
 
 /**
- * Get the user permissions, preferring [permissionService] so that changes apply before the access token expires, and falling back to the JWT claim when the user is not cached.
+ * Get the user's authorization state, preferring [permissionService] so that changes apply before the access token expires, and falling back to the JWT claim when the user is not cached.
  * Logs an error to telemetry if the process fails.
  *
  * @receiver [ApplicationCall] The context of the call.
  * @param permissionService The permission service.
- * @return [Map] The user permissions, or null if it fails.
+ * @return The [UserAccess], or null if it fails.
  */
-suspend fun ApplicationCall.getPermissions(permissionService: PermissionService): Map<EntityType, Permission>? = runCatching {
+suspend fun ApplicationCall.getAccess(permissionService: PermissionService): UserAccess? = runCatching {
     val userUuid = getUserUuid() ?: return null
-    permissionService.get(userUuid = userUuid) ?: getJwtPayload()!!.getPermissions()!!
+    permissionService.get(userUuid = userUuid) ?: getJwtPayload()!!.getAccess()!!
 }.onFailure {
-    Telemetry.error(tag = TAG, message = "Unable to get user permissions", throwable = it)
+    Telemetry.error(tag = TAG, message = "Unable to get user access", throwable = it)
     respondSafely(status = HttpStatusCode.Unauthorized, message = "Invalid token")
 }.getOrNull()
 
 /**
  * Checks if the user has the required [permission] for the [entityType], responding to the call when they do not.
  * Permissions are taken from [permissionService] so that changes apply before the access token expires, falling back to the token claim when the user is not cached.
+ * A deleted account is also narrowed to draining what it already had: reads are refused outright, and a write is accepted only when the action predates the deletion.
  *
  * @receiver [ApplicationCall] The context of the call.
  * @param permissionService The permission service.
@@ -169,10 +171,18 @@ suspend fun ApplicationCall.validatePermission(
     entityType: EntityType,
     permission: Permission
 ): Boolean = runCatching {
-    when (getPermissions(permissionService = permissionService)!![entityType]) {
+    val access = getAccess(permissionService = permissionService)!!
+    val deletedAt = access.deletedAt
+    val granted = when (access.permissions[entityType]) {
         Permission.WRITE -> true
         Permission.READ -> permission == Permission.READ
         else -> false
+    }
+    when {
+        !granted -> false
+        deletedAt == null -> true
+        permission != Permission.WRITE -> false
+        else -> getHeaderMap()[Header.RequestUtc.header]?.toInstant()?.let { it <= deletedAt } == true
     }.also {
         if (!it) respondSafely(status = HttpStatusCode.Forbidden, message = "Not authorized to $permission $entityType")
     }
