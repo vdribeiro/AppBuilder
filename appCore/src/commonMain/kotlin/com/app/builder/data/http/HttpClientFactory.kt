@@ -33,12 +33,12 @@ class HttpClientFactory(engine: HttpClientEngine, private val configurations: Co
     /** Installs and configures the foundational plugins required for the [HttpClient] pipeline. */
     private fun <T: HttpClientEngineConfig> HttpClientConfig<T>.install() = with(receiver = configurations) {
         installLogging(logLevel = logLevel)
+        installInterceptor()
         installAuth(loadTokens = loadTokens, refreshTokens = refreshTokens)
         if (!devMode) installHttpTimeout(connectTimeoutMillis = connectTimeoutMillis, socketTimeoutMillis = socketTimeoutMillis, requestTimeoutMillis = requestTimeoutMillis)
         installHttpCache()
         installContentNegotiation()
         installContentEncoding()
-        installInterceptor()
         installSse()
         installWebSocket(pingInterval = configurations.pingInterval)
     }

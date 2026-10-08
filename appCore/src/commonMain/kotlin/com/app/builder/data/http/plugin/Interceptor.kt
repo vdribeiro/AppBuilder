@@ -2,6 +2,7 @@ package com.app.builder.data.http.plugin
 
 import io.ktor.client.HttpClientConfig
 import io.ktor.client.engine.HttpClientEngineConfig
+import io.ktor.client.plugins.api.Send
 import io.ktor.client.plugins.api.createClientPlugin
 import io.ktor.client.request.HttpRequestBuilder
 import io.ktor.client.request.header
@@ -53,12 +54,15 @@ internal fun <T: HttpClientEngineConfig> HttpClientConfig<T>.installInterceptor(
             request.headerIfAbsent(key = Header.Model, value = platform.model)
             request.headerIfAbsent(key = Header.DeviceUuid, value = getDeviceUuid().toString())
         }
-        onResponse { response ->
+        on(Send) { request ->
+            val call = proceed(request)
+            val response = call.response
             if (response.status == HttpStatusCode.Unauthorized) throw UnauthorizedException()
             if (response.status != HttpStatusCode.SwitchingProtocols && response.status.value !in (200 until 300) && response.status != HttpStatusCode.NotModified) throw UnsuccessfulStatusException(status = response.status)
 
             val result = response.handleTimeSynchronization()
             if (!result) Telemetry.error(tag = TAG, message = "Unable to synchronize clock")
+            call
         }
     })
 }
