@@ -2,10 +2,14 @@ package com.app.builder.domain.route.provider
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
+import kotlin.time.Duration.Companion.milliseconds
 import io.ktor.client.call.body
 import io.ktor.client.request.get as ktorGet
 import io.ktor.http.HttpStatusCode
+import com.app.builder.core.locale.now
 import com.app.builder.core.security.uuid
+import com.app.builder.data.http.Header
 import com.app.builder.data.http.HttpRequest
 import com.app.builder.data.http.Query
 import com.app.builder.data.http.URL
@@ -107,5 +111,28 @@ class UserTest: TestCase() {
         val fetched = adminClient.ktorGet(urlString = "${URL.Users.path}/${updatedUser.uuid}")
         assertEquals(expected = HttpStatusCode.OK, actual = fetched.status)
         assertEquals(expected = updatedUser, actual = fetched.body<User>())
+    }
+
+    /** Verifies that a user without session write permission cannot clear its own deletedAt, which would otherwise resurrect the account and lift the restrictions on the session it still holds. */
+    @Test
+    fun upsertUserCannotResurrectItself() = runServerTest {
+        installRouting()
+
+        val deletedUser = FakeData.user.copy(deletedAt = now())
+        val adminClient = createClient(token = adminBearerToken.accessToken)
+        assertEquals(expected = HttpStatusCode.OK, actual = adminClient.post(request = HttpRequest(url = URL.Users), body = deletedUser).status)
+
+        // Backdated so the write clears the deleted-user gate, leaving the carry-over below as the only thing stopping it clearing the flag on itself.
+        val deletedUserClient = createClient(token = bearerToken.accessToken)
+        val response = deletedUserClient.post(
+            request = HttpRequest(url = URL.Users, headerMap = mapOf(Header.RequestUtc to (deletedUser.deletedAt!! - 60_000L.milliseconds).toString())),
+            body = FakeData.user.copy(name = "Resurrected", deletedAt = null)
+        )
+        assertEquals(expected = HttpStatusCode.OK, actual = response.status)
+        assertNotNull(actual = response.body<User>().deletedAt)
+
+        val fetched = adminClient.ktorGet(urlString = "${URL.Users.path}/${FakeData.user.uuid}")
+        assertEquals(expected = HttpStatusCode.OK, actual = fetched.status)
+        assertNotNull(actual = fetched.body<User>().deletedAt)
     }
 }

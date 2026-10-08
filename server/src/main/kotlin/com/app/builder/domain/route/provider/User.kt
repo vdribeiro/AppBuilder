@@ -18,8 +18,9 @@ import com.app.builder.domain.EntityType
 import com.app.builder.domain.Permission
 import com.app.builder.domain.User
 import com.app.builder.domain.permission.PermissionService
+import com.app.builder.domain.permission.UserAccess
 import com.app.builder.domain.route.getParameters
-import com.app.builder.domain.route.getPermissions
+import com.app.builder.domain.route.getAccess
 import com.app.builder.domain.route.getQueryMap
 import com.app.builder.domain.route.getUserUuid
 import com.app.builder.domain.route.receive
@@ -88,19 +89,19 @@ fun Route.userRoutes(
                 val user = call.receive<User>() ?: return@post
 
                 // Users can only change themselves, unless it also has session write permission
-                val hasPermission = call.getPermissions(permissionService = permissionService)?.get(EntityType.SESSION) == Permission.WRITE
+                val hasPermission = call.getAccess(permissionService = permissionService)?.permissions?.get(EntityType.SESSION) == Permission.WRITE
                 if (user.uuid != userUuid && !hasPermission) {
                     call.respondSafely(status = HttpStatusCode.Forbidden, message = "Not authorized to modify user ${user.uuid}")
                     return@post
                 }
-                // Also, only a user with session write permission can change user permissions
+                // Also, only a user with session write permission can change user permissions or the deleted state.
                 val validatedUser = if (hasPermission) user else {
                     val dbUser = userUseCases.getUser(uuid = user.uuid) ?: run {
                         Telemetry.error(tag = TAG, message = "Unable to get user ${user.uuid}")
                         call.respondSafely(status = HttpStatusCode.InternalServerError, message = "Error getting user ${user.uuid}")
                         return@post
                     }
-                    user.copy(permissions = dbUser.permissions)
+                    user.copy(permissions = dbUser.permissions, deletedAt = dbUser.deletedAt)
                 }
 
                 val success = userUseCases.upsertUser(user = validatedUser)
@@ -109,7 +110,7 @@ fun Route.userRoutes(
                     call.respondSafely(status = HttpStatusCode.InternalServerError, message = "Error upserting user")
                     return@post
                 }
-                if (hasPermission) permissionService.set(userUuid = validatedUser.uuid, permissions = validatedUser.permissions)
+                if (hasPermission) permissionService.set(userUuid = validatedUser.uuid, access = UserAccess(permissions = validatedUser.permissions, deletedAt = validatedUser.deletedAt))
 
                 call.respondSafely(status = HttpStatusCode.OK, message = validatedUser)
                 Telemetry.info(tag = TAG, message = "Upserted user ${validatedUser.uuid}")
