@@ -11,6 +11,7 @@ import com.app.builder.core.locale.now
 import com.app.builder.core.security.uuid
 import com.app.builder.data.database.create
 import com.app.builder.data.database.reset
+import com.app.builder.domain.DeviceToken
 import com.app.builder.test.FakeData
 import com.app.builder.test.TestCase
 
@@ -34,6 +35,31 @@ class UserUseCasesTest: TestCase() {
         val renamed = FakeData.user.copy(name = "Renamed")
         assertTrue(actual = userUseCases.upsertUser(user = renamed))
         assertEquals(expected = renamed, actual = userUseCases.getUser(uuid = FakeData.user.uuid))
+    }
+
+    /**
+     * Verifies that deleting a user purges its device tokens in the same operation.
+     * Registering a new one is already refused, so without this the account would keep receiving pushes on whatever it had registered before it went.
+     */
+    @Test
+    fun upsertUserPurgesDeviceTokensOnDelete() = runServerTest {
+        dependency.get().database.reset()
+        dependency.get().database.create()
+
+        val useCases = dependency.get().useCases
+        val userUseCases = useCases.userUseCases
+        val deviceTokenUseCases = useCases.deviceTokenUseCases
+
+        assertTrue(actual = userUseCases.upsertUser(user = FakeData.user))
+        assertTrue(actual = deviceTokenUseCases.registerToken(userUuid = FakeData.user.uuid, registration = DeviceToken(deviceUuid = uuid(), token = "fcmToken")))
+        assertEquals(expected = 1, actual = deviceTokenUseCases.getTokens(userUuid = FakeData.user.uuid).size)
+
+        // An ordinary update leaves them alone.
+        assertTrue(actual = userUseCases.upsertUser(user = FakeData.user.copy(name = "Renamed")))
+        assertEquals(expected = 1, actual = deviceTokenUseCases.getTokens(userUuid = FakeData.user.uuid).size)
+
+        assertTrue(actual = userUseCases.upsertUser(user = FakeData.user.copy(deletedAt = now())))
+        assertTrue(actual = deviceTokenUseCases.getTokens(userUuid = FakeData.user.uuid).isEmpty())
     }
 
     /** Verifies that fetching users since a last sync timestamp only returns users modified after that time. */

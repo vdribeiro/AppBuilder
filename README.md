@@ -63,6 +63,7 @@ A few things are pre-wired so that the above needs no setup, and are worth knowi
     * [Environment Setup](#environment-setup)
     * [Development vs Production](#development-vs-production)
     * [API Routes](#api-routes)
+    * [Account Deletion](#account-deletion)
     * [Push Notifications](#push-notifications)
         * [Multi-Instance Scaling](#multi-instance-scaling)
         * [Client Connection Lifecycle](#client-connection-lifecycle)
@@ -135,6 +136,7 @@ A few things are pre-wired so that the above needs no setup, and are worth knowi
     * [How do I handle platform-specific permissions?](#how-do-i-handle-platform-specific-permissions)
     * [How do I add offline support for a new operation?](#how-do-i-add-offline-support-for-a-new-operation)
     * [How are data sync conflicts handled between the client and server?](#how-are-data-sync-conflicts-handled-between-the-client-and-server)
+    * [What happens to a deleted user's un-synced offline work?](#what-happens-to-a-deleted-users-un-synced-offline-work)
     * [How do I turn a feature off, or roll one out gradually?](#how-do-i-turn-a-feature-off-or-roll-one-out-gradually)
     * [How do I add a new translation or language?](#how-do-i-add-a-new-translation-or-language)
     * [How do I run the tests, and why does the build fail on coverage?](#how-do-i-run-the-tests-and-why-does-the-build-fail-on-coverage)
@@ -671,7 +673,7 @@ Paths come from the shared `URL` registry.
 | `POST /api/logout` · `/api/refresh-tokens`                   | Logout / rotate tokens                                         | refresh token                                     | `authentication` |
 | `GET (SSE) /api/broadcast` · `POST /api/broadcast/subscribe` | Broadcast stream / FCM topic subscribe                         | — (rate-limited)                                  | `broadcast`      |
 | `POST /api/broadcast`                                        | Send a broadcast                                               | JWT, `NOTIFICATION` `WRITE`                       | `broadcast`      |
-| `POST /api/device-tokens` · `/api/tickets`                   | Register FCM token / mint a WebSocket ticket                   | JWT                                               | `push`           |
+| `POST /api/device-tokens` · `/api/tickets`                   | Register FCM token / mint a WebSocket ticket                   | JWT, account not deleted                          | `push`           |
 | `WS /api/push`                                               | Push connection; inbound frames are delivery acknowledgements  | ticket                                            | `push`           |
 | `POST /api/push`                                             | Send a targeted push                                           | JWT, `NOTIFICATION` `WRITE`                       | `push`           |
 | `GET /api/users`                                             | List users                                                     | JWT, `USER` `READ`                                | `users`          |
@@ -685,7 +687,33 @@ Paths come from the shared `URL` registry.
 | `GET /api/[feature]/{uuid}`                                  | Fetch a single entity by uuid                                  | JWT, `ENTITY` `READ`                              | feature-specific |
 | `POST /api/[feature]`                                        | Upsert a feature                                               | JWT, `ENTITY` `WRITE`                             | feature-specific |
 
-(*1) A user may always update itself, only `SESSION` `WRITE` may modify another user or change permissions.
+(*1) A user may always update itself, only `SESSION` `WRITE` may modify another user, change permissions or change `deletedAt`. A deleted account is narrowed further still, see [Account Deletion](#account-deletion).
+
+## Account Deletion
+
+Deleting a user is a soft delete: `deletedAt` is set and the row stays, so the deletion delta-syncs to every device like any other change.
+What it does to that account's access is deliberately narrow, because the offline engine makes the obvious answer destructive.
+
+A deleted account:
+
+* **Cannot log in again.** The password still verifies, so this check is the only thing standing between a deleted user and a brand new session.
+* **Keeps refreshing the session it already had**, for as long as it takes. There is no deadline to miss.
+* **May only write work it created before the deletion**, judged by the request header's UTC.
+* **Cannot read any data its permissions used to reach**, and cannot register a device or open a push stream either.
+
+The reason the session is not simply revoked is what a refusal costs a queued job.
+A device that was offline when the account was deleted would lose the field work it is holding rather than have it delayed, and a deadline only moves the question to how long a device might plausibly stay offline.
+Keeping the session alive and judging each write by when it was created preserves that work while still refusing anything the account had no business doing.
+
+The distinction is available server-side because the headers carry the moment the job was created and sent. The gap between the two is how long the work sat in the queue.
+
+Clearing `deletedAt` is treated exactly like changing permissions: only `SESSION` `WRITE` may do it, and a self-update carries the stored value over.
+Without that, a deleted account would backdate a single write to its own record, clear the flag, and lift every restriction above.
+
+Enforcement is served from a permission cache, so a deletion applies across every instance at once, and it is written into the access token the next time that token is refreshed, after which it no longer depends on the cache at all.
+An instance restarting before that first refresh falls back to a token minted while the account was still live, and the account is unrestricted again until the token expires, and closed for good by the refresh that follows.
+
+The header timestamps are client supplied and only bounded against the future, so there is a trust assumption as a tampered client can backdate indefinitely. It is the same trust assumption the rest of the engine runs on, see [Clock Trust](#clock-trust).
 
 ## Push Notifications
 
@@ -1524,6 +1552,16 @@ Collection fetches are paginated: a fixed `last_sync_utc` watermark bounds the w
 Scheduling conflicts are governed by `Job.ConflictPolicy`: typically, `GET` jobs use `IGNORE` (skip if an identical fetch is already pending) and `POST`/`DELETE` jobs use `APPEND` (queue normally, preserving the full operation history).
 
 See [Delta Sync](#delta-sync) for the full mechanism, including the push-triggered single-entity sync path that complements it.
+
+---
+
+### What happens to a deleted user's un-synced offline work?
+
+It still syncs. Deleting a user sets `deletedAt` but leaves the existing session usable to give the opportunity for a user to flush its pending work.
+The account keeps refreshing indefinitely and may write anything it created before the deletion. 
+It cannot log in again, cannot read the data it used to reach, and cannot write anything created afterwards.
+
+See [Account Deletion](#account-deletion).
 
 ---
 

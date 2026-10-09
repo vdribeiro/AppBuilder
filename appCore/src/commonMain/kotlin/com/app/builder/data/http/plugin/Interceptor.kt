@@ -54,8 +54,8 @@ internal fun <T: HttpClientEngineConfig> HttpClientConfig<T>.installInterceptor(
             request.headerIfAbsent(key = Header.Model, value = platform.model)
             request.headerIfAbsent(key = Header.DeviceUuid, value = getDeviceUuid().toString())
         }
-        on(Send) { request ->
-            val call = proceed(request)
+        on(hook = Send) { request ->
+            val call = proceed(requestBuilder = request)
             val response = call.response
             if (response.status == HttpStatusCode.Unauthorized) throw UnauthorizedException()
             if (response.status != HttpStatusCode.SwitchingProtocols && response.status.value !in (200 until 300) && response.status != HttpStatusCode.NotModified) throw UnsuccessfulStatusException(status = response.status)

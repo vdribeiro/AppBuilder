@@ -13,12 +13,14 @@ import org.jetbrains.exposed.v1.core.greaterEq
 import org.jetbrains.exposed.v1.core.less
 import org.jetbrains.exposed.v1.core.or
 import org.jetbrains.exposed.v1.r2dbc.R2dbcDatabase
+import org.jetbrains.exposed.v1.r2dbc.deleteWhere
 import org.jetbrains.exposed.v1.r2dbc.selectAll
 import org.jetbrains.exposed.v1.r2dbc.upsert
 import com.app.builder.core.config.ServerConfigs
 import com.app.builder.core.flow.Dispatcher
 import com.app.builder.core.telemetry.Telemetry
 import com.app.builder.data.database.safeTransaction
+import com.app.builder.data.database.table.DeviceTokenTable
 import com.app.builder.data.database.table.UserTable
 import com.app.builder.data.serializer.decode
 import com.app.builder.data.serializer.encode
@@ -75,7 +77,7 @@ class UserGateway(
 
     override suspend fun upsertUser(user: User): Boolean = withContext(context = Dispatcher.IO) {
         database.safeTransaction {
-            UserTable.upsert {
+            val upserted = UserTable.upsert {
                 it[UserTable.uuid] = user.uuid
                 it[UserTable.modifiedAt] = user.modifiedAt
                 it[UserTable.deletedAt] = user.deletedAt
@@ -83,6 +85,8 @@ class UserGateway(
                 it[UserTable.name] = user.name
                 it[UserTable.avatar] = user.avatar
             }.insertedCount > 0
+            if (user.deletedAt != null) DeviceTokenTable.deleteWhere { DeviceTokenTable.userUuid eq user.uuid }
+            upserted
         }.onFailure {
             Telemetry.error(tag = TAG, message = "Unable to upsert user ${user.uuid}", throwable = it)
         }.getOrDefault(defaultValue = false)

@@ -10,6 +10,7 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.websocket.CloseReason
 import io.ktor.websocket.Frame
 import io.ktor.websocket.close
+import com.app.builder.core.locale.now
 import com.app.builder.core.security.uuid
 import com.app.builder.data.http.HttpRequest
 import com.app.builder.data.http.Query
@@ -18,6 +19,7 @@ import com.app.builder.data.http.post
 import com.app.builder.data.http.webSocket
 import com.app.builder.domain.DeviceToken
 import com.app.builder.domain.PushPayload
+import com.app.builder.domain.permission.UserAccess
 import com.app.builder.test.FakeData
 import com.app.builder.test.TestCase
 
@@ -47,6 +49,29 @@ class PushTest: TestCase() {
         val registration = DeviceToken(deviceUuid = deviceUuid, token = "fcmToken")
         val response = client.post<DeviceToken>(request = HttpRequest(url = URL.DeviceTokens), body = registration)
         assertEquals(expected = HttpStatusCode.OK, actual = response.status)
+    }
+
+    /**
+     * Verifies that a deleted account is refused both push routes.
+     * Neither asks for a permission, so they sit outside the restriction that narrows a deleted account everywhere else and would otherwise let it keep registering devices and opening push streams on a session it is allowed to keep refreshing.
+     */
+    @Test
+    fun deletedUserCannotRegisterForPush() = runServerTest {
+        installRouting()
+        val permissionService = dependency.get().permissionService
+
+        val client = createClient(token = bearerToken.accessToken)
+        val registration = DeviceToken(deviceUuid = uuid(), token = "fcmToken")
+        assertEquals(expected = HttpStatusCode.OK, actual = client.post<DeviceToken>(request = HttpRequest(url = URL.DeviceTokens), body = registration).status)
+        assertEquals(expected = HttpStatusCode.OK, actual = client.post<Unit>(request = HttpRequest(url = URL.Tickets)).status)
+
+        permissionService.set(
+            userUuid = FakeData.user.uuid,
+            access = UserAccess(permissions = FakeData.user.permissions, deletedAt = now())
+        )
+
+        assertEquals(expected = HttpStatusCode.Forbidden, actual = client.post<DeviceToken>(request = HttpRequest(url = URL.DeviceTokens), body = registration).status)
+        assertEquals(expected = HttpStatusCode.Forbidden, actual = client.post<Unit>(request = HttpRequest(url = URL.Tickets)).status)
     }
 
     /** Verifies that registering a device token requires authentication. */
