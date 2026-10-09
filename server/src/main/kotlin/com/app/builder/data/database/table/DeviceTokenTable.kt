@@ -11,5 +11,5 @@ object DeviceTokenTable: Table(name = "device_token") {
     /** The FCM registration token for the device. */
     val token = text(name = "token")
 
-    override val primaryKey = PrimaryKey(firstColumn = deviceUuid)
+    override val primaryKey = PrimaryKey(userUuid, deviceUuid)
 }

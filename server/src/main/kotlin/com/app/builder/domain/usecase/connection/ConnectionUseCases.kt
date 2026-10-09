@@ -28,7 +28,7 @@ interface ConnectionUseCases {
      * @param instanceId The server instance requesting the removal.
      * @return `true` if a row was removed, `false` otherwise.
      */
-    suspend fun removeConnection(deviceUuid: Uuid, instanceId: Uuid): Boolean
+    suspend fun removeConnection(userUuid: Uuid, deviceUuid: Uuid, instanceId: Uuid): Boolean
 
     /**
      * Retrieves the devices of a user that currently hold a live connection on any instance.
