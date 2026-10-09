@@ -32,4 +32,6 @@ object Env {
     val jwtSecret: String? = getEnv(name = "JWT_SECRET")
     /** The GCP project ID. */
     val gcpProjectId: String? = getEnv(name = "GCP_PROJECT_ID")
+    /** The number of trusted reverse proxies sitting in front of the server, used to resolve the caller's address for rate limiting. Zero, the default, means the server is reached directly and `X-Forwarded-For` is not trusted at all. */
+    val trustedProxyHops: Int = getEnv(name = "TRUSTED_PROXY_HOPS")?.toIntOrNull() ?: 0
 }
