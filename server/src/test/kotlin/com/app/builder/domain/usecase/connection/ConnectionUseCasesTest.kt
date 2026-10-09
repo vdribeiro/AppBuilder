@@ -32,7 +32,7 @@ class ConnectionUseCasesTest: TestCase() {
         val deviceUuid = uuid()
 
         assertTrue(actual = connectionUseCases.getConnectedDeviceUuids(userUuid = FakeData.user.uuid).isEmpty())
-        assertFalse(actual = connectionUseCases.removeConnection(deviceUuid = deviceUuid, instanceId = instanceId))
+        assertFalse(actual = connectionUseCases.removeConnection(userUuid = FakeData.user.uuid, deviceUuid = deviceUuid, instanceId = instanceId))
 
         assertTrue(actual = connectionUseCases.addConnection(userUuid = FakeData.user.uuid, deviceUuid = deviceUuid, instanceId = instanceId))
         assertEquals(expected = listOf(deviceUuid), actual = connectionUseCases.getConnectedDeviceUuids(userUuid = FakeData.user.uuid))
@@ -40,8 +40,8 @@ class ConnectionUseCasesTest: TestCase() {
         assertTrue(actual = connectionUseCases.addConnection(userUuid = FakeData.user.uuid, deviceUuid = deviceUuid, instanceId = instanceId))
         assertEquals(expected = listOf(deviceUuid), actual = connectionUseCases.getConnectedDeviceUuids(userUuid = FakeData.user.uuid))
 
-        assertFalse(actual = connectionUseCases.removeConnection(deviceUuid = deviceUuid, instanceId = uuid()))
-        assertTrue(actual = connectionUseCases.removeConnection(deviceUuid = deviceUuid, instanceId = instanceId))
+        assertFalse(actual = connectionUseCases.removeConnection(userUuid = FakeData.user.uuid, deviceUuid = deviceUuid, instanceId = uuid()))
+        assertTrue(actual = connectionUseCases.removeConnection(userUuid = FakeData.user.uuid, deviceUuid = deviceUuid, instanceId = instanceId))
         assertTrue(actual = connectionUseCases.getConnectedDeviceUuids(userUuid = FakeData.user.uuid).isEmpty())
     }
 
@@ -125,5 +125,52 @@ class ConnectionUseCasesTest: TestCase() {
 
         ServerConfigs.set { it.copy(presenceTtl = -1_000L) }
         assertTrue(actual = connectionUseCases.getConnectedDeviceUuids(userUuid = FakeData.user.uuid).isEmpty())
+    }
+
+    /**
+     * Verifies that connecting under another user's device uuid neither displaces their presence nor allows it to be removed on their behalf.
+     * Presence drives whether a payload goes over the socket or through FCM, so a displaced row misdirects delivery for a user who did nothing.
+     */
+    @Test
+    fun connectionCannotDisplaceAnotherUsersDevice() = runServerTest {
+        val connectionUseCases = dependency.get()
+            .useCases
+            .connectionUseCases
+
+        val victim = FakeData.user.uuid
+        val attacker = FakeData.adminUser.uuid
+        val deviceUuid = uuid()
+        val instanceId = uuid()
+
+        assertTrue(actual = connectionUseCases.addConnection(userUuid = victim, deviceUuid = deviceUuid, instanceId = instanceId))
+        assertTrue(actual = connectionUseCases.addConnection(userUuid = attacker, deviceUuid = deviceUuid, instanceId = instanceId))
+
+        // Both presences stand, rather than the later connection overwriting the earlier one.
+        assertEquals(expected = listOf(deviceUuid), actual = connectionUseCases.getConnectedDeviceUuids(userUuid = victim))
+        assertEquals(expected = listOf(deviceUuid), actual = connectionUseCases.getConnectedDeviceUuids(userUuid = attacker))
+
+        // Disconnecting takes only the caller's own row, even when both are held by the same instance.
+        assertTrue(actual = connectionUseCases.removeConnection(userUuid = attacker, deviceUuid = deviceUuid, instanceId = instanceId))
+        assertEquals(expected = listOf(deviceUuid), actual = connectionUseCases.getConnectedDeviceUuids(userUuid = victim))
+    }
+
+    /** Verifies that one user holds presence on several devices at once, and that dropping one leaves the others connected. */
+    @Test
+    fun connectionsAreKeptPerDeviceForTheSameUser() = runServerTest {
+        val connectionUseCases = dependency.get()
+            .useCases
+            .connectionUseCases
+
+        val userUuid = FakeData.user.uuid
+        val instanceId = uuid()
+        val phone = uuid()
+        val tablet = uuid()
+
+        assertTrue(actual = connectionUseCases.addConnection(userUuid = userUuid, deviceUuid = phone, instanceId = instanceId))
+        assertTrue(actual = connectionUseCases.addConnection(userUuid = userUuid, deviceUuid = tablet, instanceId = instanceId))
+        assertEquals(expected = setOf(phone, tablet), actual = connectionUseCases.getConnectedDeviceUuids(userUuid = userUuid).toSet())
+
+        assertTrue(actual = connectionUseCases.removeConnection(userUuid = userUuid, deviceUuid = phone, instanceId = instanceId))
+        assertEquals(expected = listOf(tablet), actual = connectionUseCases.getConnectedDeviceUuids(userUuid = userUuid))
     }
 }

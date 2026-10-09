@@ -108,7 +108,7 @@ class PushManager(
             connections.remove(userUuid)
             observationJobs.remove(userUuid)?.cancel()
         }
-        connectionUseCases.removeConnection(deviceUuid = deviceUuid, instanceId = instanceId)
+        connectionUseCases.removeConnection(userUuid = userUuid, deviceUuid = deviceUuid, instanceId = instanceId)
         return true
     }
 

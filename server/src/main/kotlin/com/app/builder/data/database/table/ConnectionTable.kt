@@ -14,5 +14,5 @@ object ConnectionTable: Table(name = "connection") {
     /** The timestamp of the last presence heartbeat for this connection. */
     val updatedAt = timestamp(name = "updated_at")
 
-    override val primaryKey = PrimaryKey(firstColumn = deviceUuid)
+    override val primaryKey = PrimaryKey(userUuid, deviceUuid)
 }

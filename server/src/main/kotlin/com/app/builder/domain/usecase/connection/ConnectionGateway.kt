@@ -9,7 +9,7 @@ import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.core.greaterEq
 import org.jetbrains.exposed.v1.core.less
-import org.jetbrains.exposed.v1.core.neq
+import org.jetbrains.exposed.v1.core.not
 import org.jetbrains.exposed.v1.r2dbc.R2dbcDatabase
 import org.jetbrains.exposed.v1.r2dbc.deleteWhere
 import org.jetbrains.exposed.v1.r2dbc.selectAll
@@ -40,7 +40,7 @@ class ConnectionGateway(
         database.safeTransaction {
             val liveConnections = ConnectionTable
                 .selectAll()
-                .where { (ConnectionTable.updatedAt greaterEq liveSince) and (ConnectionTable.deviceUuid neq deviceUuid) }
+                .where { (ConnectionTable.updatedAt greaterEq liveSince) and not((ConnectionTable.userUuid eq userUuid) and (ConnectionTable.deviceUuid eq deviceUuid)) }
                 .map { it[ConnectionTable.userUuid] }
                 .toList()
 
@@ -64,9 +64,9 @@ class ConnectionGateway(
         }.getOrDefault(defaultValue = false)
     }
 
-    override suspend fun removeConnection(deviceUuid: Uuid, instanceId: Uuid): Boolean = withContext(context = Dispatcher.IO) {
+    override suspend fun removeConnection(userUuid: Uuid, deviceUuid: Uuid, instanceId: Uuid): Boolean = withContext(context = Dispatcher.IO) {
         database.safeTransaction {
-            ConnectionTable.deleteWhere { (ConnectionTable.deviceUuid eq deviceUuid) and (ConnectionTable.instanceId eq instanceId) } > 0
+            ConnectionTable.deleteWhere { (ConnectionTable.userUuid eq userUuid) and (ConnectionTable.deviceUuid eq deviceUuid) and (ConnectionTable.instanceId eq instanceId) } > 0
         }.onFailure {
             Telemetry.error(tag = TAG, message = "Unable to remove connection for device $deviceUuid", throwable = it)
         }.getOrDefault(defaultValue = false)

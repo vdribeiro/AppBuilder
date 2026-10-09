@@ -3,7 +3,9 @@ package com.app.builder.domain.usecase.devicetoken
 import kotlin.uuid.Uuid
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.withContext
+import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.core.neq
 import org.jetbrains.exposed.v1.r2dbc.R2dbcDatabase
 import org.jetbrains.exposed.v1.r2dbc.deleteWhere
 import org.jetbrains.exposed.v1.r2dbc.selectAll
@@ -25,6 +27,9 @@ class DeviceTokenGateway(
 
     override suspend fun registerToken(userUuid: Uuid, registration: DeviceToken): Boolean = withContext(context = Dispatcher.IO) {
         database.safeTransaction {
+            DeviceTokenTable.deleteWhere {
+                (DeviceTokenTable.token eq registration.token) and (DeviceTokenTable.userUuid neq userUuid)
+            }
             DeviceTokenTable.upsert {
                 it[DeviceTokenTable.deviceUuid] = registration.deviceUuid!!
                 it[DeviceTokenTable.userUuid] = userUuid
