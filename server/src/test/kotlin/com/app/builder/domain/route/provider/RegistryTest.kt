@@ -20,21 +20,22 @@ class RegistryTest: TestCase() {
     @Test
     fun getRegistries() = runServerTest {
         installRouting()
+        val request = HttpRequest(url = URL.Registries, queryMap = mapOf(Query.LastSyncUtc to "1970-01-01T00:00:00Z"))
 
         val client = createClient(token = null)
         assertEquals(expected = HttpStatusCode.Unauthorized, actual = client.get(request = HttpRequest(url = URL.Registries)).status)
 
         val userClient = createClient(token = bearerToken.accessToken)
-        val request = HttpRequest(url = URL.Registries, queryMap = mapOf(Query.LastSyncUtc to "1970-01-01T00:00:00Z"))
+        assertEquals(expected = HttpStatusCode.Forbidden, actual = userClient.get(request = request).status)
 
-        val emptyResponse = userClient.get(request = request)
+        val adminClient = createClient(token = adminBearerToken.accessToken)
+        val emptyResponse = adminClient.get(request = request)
         assertEquals(expected = HttpStatusCode.OK, actual = emptyResponse.status)
         assertTrue(actual = emptyResponse.body<List<Registry>>().isEmpty())
 
-        val adminClient = createClient(token = adminBearerToken.accessToken)
         adminClient.post(request = HttpRequest(url = URL.Registries), body = FakeData.registry)
 
-        val listResponse = userClient.get(request = request)
+        val listResponse = adminClient.get(request = request)
         assertEquals(expected = HttpStatusCode.OK, actual = listResponse.status)
         assertEquals(expected = 1, actual = listResponse.body<List<Registry>>().size)
     }
@@ -47,7 +48,6 @@ class RegistryTest: TestCase() {
         val client = createClient(token = null)
         assertEquals(expected = HttpStatusCode.Unauthorized, actual = client.post(request = HttpRequest(url = URL.Registries), body = FakeData.registry).status)
 
-        // FakeData.user only has read permission for the registry entity type.
         val userClient = createClient(token = bearerToken.accessToken)
         assertEquals(expected = HttpStatusCode.Forbidden, actual = userClient.post(request = HttpRequest(url = URL.Registries), body = FakeData.registry).status)
 
