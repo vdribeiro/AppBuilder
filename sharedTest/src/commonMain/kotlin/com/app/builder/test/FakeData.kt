@@ -70,7 +70,7 @@ object FakeData {
                 EntityType.CLIENT_CONFIG -> Permission.READ
                 EntityType.SERVER_FLAG -> null
                 EntityType.SERVER_CONFIG -> null
-                EntityType.REGISTRY -> Permission.READ
+                EntityType.REGISTRY -> null
                 EntityType.NOTIFICATION -> null
                 EntityType.TRANSLATION -> Permission.READ
                 EntityType.SESSION -> Permission.READ
