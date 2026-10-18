@@ -5,6 +5,8 @@ import java.security.MessageDigest
 import javax.crypto.Cipher
 import javax.crypto.KeyGenerator
 import javax.crypto.SecretKey
+import javax.crypto.SecretKeyFactory
+import javax.crypto.spec.PBEKeySpec
 import javax.crypto.spec.GCMParameterSpec
 import kotlin.io.encoding.Base64
 import kotlinx.coroutines.withContext
@@ -76,6 +78,18 @@ actual suspend fun hash(content: String): String? = withContext(context = Dispat
     }.getOrNull() ?: if (developmentMode) return@withContext content else null
 }
 
+actual suspend fun deriveKey(password: String, salt: String): String? = withContext(context = Dispatcher.Default) {
+    runCatching {
+        val spec = PBEKeySpec(password.toCharArray(), salt.encodeToByteArray(), DERIVATION_ROUNDS, DERIVED_KEY_SIZE)
+        SecretKeyFactory.getInstance(DERIVATION_ALGORITHM)
+            .generateSecret(spec)
+            .encoded
+            .joinToString(separator = "") { it.toUByte().toString(radix = 16).padStart(length = 2, padChar = '0') }
+    }.onFailure {
+        Telemetry.error(tag = TAG, message = "Unable to derive key", throwable = it)
+    }.getOrNull()
+}
+
 private const val TAG = "Cryptography"
 
 /** The length, in bits, of the GCM authentication tag appended to the ciphertext. */
@@ -98,3 +112,9 @@ private const val PADDING = KeyProperties.ENCRYPTION_PADDING_NONE
 private const val SPEC = "$ALGORITHM/$BLOCK_MODE/$PADDING"
 /** The digest algorithm used to compute content hashes. */
 private const val HASH_ALGORITHM = KeyProperties.DIGEST_SHA256
+/** The key derivation function used to turn a password into a verifier. */
+private const val DERIVATION_ALGORITHM = "PBKDF2WithHmacSHA256"
+/** The number of PBKDF2 rounds. */
+private const val DERIVATION_ROUNDS = 210_000
+/** The size, in bits, of the derived key. */
+private const val DERIVED_KEY_SIZE = 256

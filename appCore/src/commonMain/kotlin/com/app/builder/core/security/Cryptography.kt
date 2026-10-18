@@ -23,3 +23,12 @@ expect suspend fun decrypt(content: String): String?
  * @return The generated hash string, or null if hashing fails.
  */
 expect suspend fun hash(content: String): String?
+
+/**
+ * Derives a key from a password using PBKDF2-HMAC-SHA256.
+ *
+ * @param password The password to derive from.
+ * @param salt The per-entry salt.
+ * @return The derived key as a hex string, or null if derivation fails.
+ */
+expect suspend fun deriveKey(password: String, salt: String): String?

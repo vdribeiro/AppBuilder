@@ -12,6 +12,7 @@ import kotlinx.cinterop.value
 import kotlinx.coroutines.withContext
 import platform.CoreCrypto.CCCrypt
 import platform.CoreCrypto.CCHmac
+import platform.CoreCrypto.CCKeyDerivationPBKDF
 import platform.CoreCrypto.CC_SHA256
 import platform.CoreCrypto.CC_SHA256_DIGEST_LENGTH
 import platform.CoreCrypto.kCCAlgorithmAES
@@ -19,6 +20,8 @@ import platform.CoreCrypto.kCCBlockSizeAES128
 import platform.CoreCrypto.kCCDecrypt
 import platform.CoreCrypto.kCCEncrypt
 import platform.CoreCrypto.kCCHmacAlgSHA256
+import platform.CoreCrypto.kCCPBKDF2
+import platform.CoreCrypto.kCCPRFHmacAlgSHA256
 import platform.CoreCrypto.kCCKeySizeAES256
 import platform.CoreCrypto.kCCOptionPKCS7Padding
 import platform.CoreCrypto.kCCSuccess
@@ -211,6 +214,30 @@ actual suspend fun hash(content: String): String? = withContext(context = Dispat
     }.getOrNull() ?: if (developmentMode) return@withContext content else null
 }
 
+actual suspend fun deriveKey(password: String, salt: String): String? = withContext(context = Dispatcher.Default) {
+    runCatching {
+        memScoped {
+            val saltBytes = salt.encodeToByteArray().toUByteArray()
+            val derived = UByteArray(size = DERIVED_KEY_SIZE)
+            val status = CCKeyDerivationPBKDF(
+                algorithm = kCCPBKDF2,
+                password = password,
+                passwordLen = password.encodeToByteArray().size.toULong(),
+                salt = saltBytes.refTo(index = 0),
+                saltLen = saltBytes.size.toULong(),
+                prf = kCCPRFHmacAlgSHA256,
+                rounds = DERIVATION_ROUNDS,
+                derivedKey = derived.refTo(index = 0),
+                derivedKeyLen = derived.size.toULong()
+            )
+            if (status != kCCSuccess) error(message = "Unable to derive key: $status")
+            derived.joinToString(separator = "") { it.toString(radix = 16).padStart(length = 2, padChar = '0') }
+        }
+    }.onFailure {
+        Telemetry.error(tag = TAG, message = "Unable to derive key", throwable = it)
+    }.getOrNull()
+}
+
 private const val TAG = "Cryptography"
 
 /** The length, in bytes, of the initialization vector used for AES encryption. */
@@ -227,3 +254,7 @@ private const val HMAC_ALGORITHM = kCCHmacAlgSHA256
 private const val ALGORITHM = kCCAlgorithmAES
 /** The padding scheme applied to the plaintext before encryption. */
 private const val PADDING = kCCOptionPKCS7Padding
+/** The number of PBKDF2 rounds. */
+private const val DERIVATION_ROUNDS = 210_000u
+/** The size, in bytes, of the derived key. */
+private const val DERIVED_KEY_SIZE = 32

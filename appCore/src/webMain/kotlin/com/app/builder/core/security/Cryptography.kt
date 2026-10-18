@@ -167,3 +167,41 @@ actual suspend fun hash(content: String): String? = withContext(context = Dispat
 private external fun hashJs(content: String): Promise<JsString>
 
 private const val TAG = "Cryptography"
+
+/** The number of PBKDF2 rounds. */
+private const val DERIVATION_ROUNDS = 210_000
+/** The size, in bits, of the derived key. */
+private const val DERIVED_KEY_SIZE = 256
+
+actual suspend fun deriveKey(password: String, salt: String): String? = withContext(context = Dispatcher.Default) {
+    runCatching {
+        deriveKeyJs(password = password, salt = salt, rounds = DERIVATION_ROUNDS, size = DERIVED_KEY_SIZE).await().toString()
+    }.onFailure {
+        Telemetry.error(tag = TAG, message = "Unable to derive key", throwable = it)
+    }.getOrNull()
+}
+
+/**
+ * Derives a key from [password] with PBKDF2-HMAC-SHA256 using the Web Crypto API.
+ *
+ * @param password The password to derive from.
+ * @param salt The per-entry salt.
+ * @param rounds The number of PBKDF2 rounds.
+ * @param size The size, in bits, of the derived key.
+ * @return A [Promise] resolving to the lowercase hexadecimal derived key.
+ */
+@JsFun(
+    code = """
+        async (password, salt, rounds, size) => {
+            const encoder = new TextEncoder();
+            const key = await crypto.subtle.importKey("raw", encoder.encode(password), "PBKDF2", false, ["deriveBits"]);
+            const bits = await crypto.subtle.deriveBits(
+                { name: "PBKDF2", salt: encoder.encode(salt), iterations: rounds, hash: "SHA-256" },
+                key,
+                size
+            );
+            return Array.from(new Uint8Array(bits)).map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+        """
+)
+private external fun deriveKeyJs(password: String, salt: String, rounds: Int, size: Int): Promise<JsString>
