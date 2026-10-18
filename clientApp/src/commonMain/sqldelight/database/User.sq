@@ -36,8 +36,8 @@ SELECT User.*
 FROM User
 WHERE User.uuid = :userUuid;
 
-getUserBySessionHash:
+getUserByUsername:
 SELECT User.*
 FROM User
 INNER JOIN Session ON uuid = userUuid
-WHERE hash = :hash;
+WHERE username = :username;

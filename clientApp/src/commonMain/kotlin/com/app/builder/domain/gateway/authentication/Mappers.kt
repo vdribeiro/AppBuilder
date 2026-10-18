@@ -3,7 +3,7 @@ package com.app.builder.domain.gateway.authentication
 import io.ktor.client.plugins.auth.providers.BearerTokens
 import com.app.builder.core.security.decrypt
 import com.app.builder.core.security.encrypt
-import com.app.builder.core.security.hash
+import com.app.builder.core.security.deriveKey
 import com.app.builder.data.database.SessionSchema
 import com.app.builder.data.database.UserSchema
 import com.app.builder.data.serializer.decode
@@ -50,7 +50,9 @@ fun User.toUserSchema(): UserSchema = UserSchema(
  */
 fun UserSession.toSessionSchema(): SessionSchema = SessionSchema(
     userUuid = user.uuid,
-    hash = hash,
+    username = username,
+    salt = salt,
+    verifier = verifier,
     accessToken = accessToken,
     refreshToken = refreshToken
 )
@@ -108,12 +110,10 @@ fun BearerToken.toBearerTokens(): BearerTokens = BearerTokens(
 )
 
 /**
- * Hash [UserCredentials].
+ * Derives the verifier for these [UserCredentials].
  *
- * @return The resulting hash, or `null` if hashing failed.
+ * @param salt The random salt to derive with.
+ * @return The derived verifier, or `null` if derivation failed.
  */
-suspend fun UserCredentials.hash(): String? {
-    val hash = hash(content = "$username$password")
-    if (hash.isNullOrBlank()) return null
-    return hash
-}
+suspend fun UserCredentials.deriveVerifier(salt: String): String? =
+    deriveKey(password = password, salt = salt)?.takeIf { it.isNotBlank() }
