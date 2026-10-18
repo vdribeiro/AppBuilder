@@ -2,10 +2,14 @@ import kotlin.uuid.Uuid;
 
 CREATE TABLE IF NOT EXISTS Session (
     userUuid TEXT AS Uuid NOT NULL PRIMARY KEY,
-    hash TEXT NOT NULL,
+    username TEXT NOT NULL,
+    salt TEXT NOT NULL,
+    verifier TEXT NOT NULL,
     accessToken TEXT NOT NULL,
     refreshToken TEXT NOT NULL
 );
+
+CREATE INDEX IF NOT EXISTS session_username ON Session(username);
 
 truncateSession:
 DELETE FROM Session;
@@ -27,3 +31,8 @@ getSession:
 SELECT Session.*
 FROM Session
 WHERE userUuid = :userUuid;
+
+getSessionByUsername:
+SELECT Session.*
+FROM Session
+WHERE username = :username;
