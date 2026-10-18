@@ -8,6 +8,7 @@ import org.jetbrains.exposed.v1.r2dbc.R2dbcDatabaseConfig
 import com.app.builder.core.platform.Env
 import io.r2dbc.postgresql.PostgresqlConnectionConfiguration
 import io.r2dbc.postgresql.PostgresqlConnectionFactory
+import io.r2dbc.postgresql.client.SSLMode
 import io.r2dbc.spi.ConnectionFactories
 import io.r2dbc.spi.ConnectionFactory
 
@@ -49,6 +50,11 @@ object DatabaseFactory {
                 .database(name)
                 .username(user)
                 .password(password)
+                .apply {
+                    // REQUIRE encrypts the connection without validating the server certificate against a trust store.
+                    // VERIFY_FULL would additionally need the provider's root certificate supplied through sslRootCert.
+                    if (Env.dbSsl) sslMode(SSLMode.REQUIRE)
+                }
                 .build()
         )
     }
