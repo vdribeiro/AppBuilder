@@ -8,7 +8,8 @@ import kotlinx.coroutines.flow.firstOrNull
 import app.cash.sqldelight.async.coroutines.awaitAsOneOrNull
 import com.app.builder.Dependency.getUserDependency
 import com.app.builder.core.config.ClientFlags
-import com.app.builder.core.security.hash
+import com.app.builder.core.security.deriveKey
+import com.app.builder.core.security.uuid
 import com.app.builder.data.database.SessionSchema
 import com.app.builder.test.FakeData
 import com.app.builder.test.TestCase
@@ -29,17 +30,17 @@ class AuthenticationUseCasesTest: TestCase() {
             .database
             .sessionQueries
 
-        val hash = hash(content = "${FakeData.adminCredentials.username}${FakeData.adminCredentials.password}")!!
+        val username = FakeData.adminCredentials.username
 
         assertNull(actual = authenticationUseCases.observeCurrentUser().firstOrNull())
-        assertNull(actual = userDao.getUserBySessionHash(hash = hash).awaitAsOneOrNull())
+        assertNull(actual = userDao.getUserByUsername(username = username).awaitAsOneOrNull())
         assertNull(actual = sessionDao.getSession(userUuid = FakeData.adminUser.uuid).awaitAsOneOrNull())
 
         val user = authenticationUseCases.register(registrationForm = FakeData.adminRegistrationForm)
         assertNotNull(actual = user)
 
         assertEquals(expected = FakeData.adminUser, actual = user)
-        assertEquals(expected = FakeData.adminUser, actual = userDao.getUserBySessionHash(hash = hash).awaitAsOneOrNull()?.toUser())
+        assertEquals(expected = FakeData.adminUser, actual = userDao.getUserByUsername(username = username).awaitAsOneOrNull()?.toUser())
         assertEquals(expected = FakeData.adminUser.uuid, actual = sessionDao.getSession(userUuid = FakeData.adminUser.uuid).awaitAsOneOrNull()?.userUuid)
 
         assertNull(actual = authenticationUseCases.observeCurrentUser().firstOrNull())
@@ -72,17 +73,17 @@ class AuthenticationUseCasesTest: TestCase() {
             .database
             .sessionQueries
 
-        val hash = hash(content = "${FakeData.adminCredentials.username}${FakeData.adminCredentials.password}")!!
+        val username = FakeData.adminCredentials.username
 
         assertNull(actual = authenticationUseCases.observeCurrentUser().firstOrNull())
-        assertNull(actual = userDao.getUserBySessionHash(hash = hash).awaitAsOneOrNull())
+        assertNull(actual = userDao.getUserByUsername(username = username).awaitAsOneOrNull())
         assertNull(actual = sessionDao.getSession(userUuid = FakeData.adminUser.uuid).awaitAsOneOrNull())
 
         val user = authenticationUseCases.login(credentials = FakeData.adminCredentials)
         assertNotNull(actual = user)
 
         assertEquals(expected = FakeData.adminUser, actual = user)
-        assertEquals(expected = FakeData.adminUser, actual = userDao.getUserBySessionHash(hash = hash).awaitAsOneOrNull()?.toUser())
+        assertEquals(expected = FakeData.adminUser, actual = userDao.getUserByUsername(username = username).awaitAsOneOrNull()?.toUser())
         assertEquals(expected = FakeData.adminUser.uuid, actual = sessionDao.getSession(userUuid = FakeData.adminUser.uuid).awaitAsOneOrNull()?.userUuid)
 
         assertEquals(expected = FakeData.adminUser.uuid, actual = authenticationUseCases.observeCurrentUser().firstOrNull()?.uuid)
@@ -103,17 +104,20 @@ class AuthenticationUseCasesTest: TestCase() {
             .database
             .sessionQueries
 
-        val hash = hash(content = "${FakeData.adminCredentials.username}${FakeData.adminCredentials.password}")!!
+        val username = FakeData.adminCredentials.username
 
         assertNull(actual = authenticationUseCases.observeCurrentUser().firstOrNull())
-        assertNull(actual = userDao.getUserBySessionHash(hash = hash).awaitAsOneOrNull())
+        assertNull(actual = userDao.getUserByUsername(username = username).awaitAsOneOrNull())
         assertNull(actual = sessionDao.getSession(userUuid = FakeData.adminUser.uuid).awaitAsOneOrNull())
 
+        val salt = uuid().toString()
         userDao.upsertUser(User = FakeData.adminUser.toUserSchema())
         sessionDao.upsertSession(
             SessionSchema(
                 userUuid = FakeData.adminUser.uuid,
-                hash = hash,
+                username = username,
+                salt = salt,
+                verifier = deriveKey(password = FakeData.adminCredentials.password, salt = salt)!!,
                 accessToken = FakeData.adminBearerToken.accessToken,
                 refreshToken = FakeData.adminBearerToken.refreshToken
             )
@@ -122,7 +126,7 @@ class AuthenticationUseCasesTest: TestCase() {
         val user = authenticationUseCases.login(credentials = FakeData.adminCredentials)
 
         assertEquals(expected = FakeData.adminUser, actual = user)
-        assertEquals(expected = FakeData.adminUser, actual = userDao.getUserBySessionHash(hash = hash).awaitAsOneOrNull()?.toUser())
+        assertEquals(expected = FakeData.adminUser, actual = userDao.getUserByUsername(username = username).awaitAsOneOrNull()?.toUser())
         assertEquals(expected = FakeData.adminUser.uuid, actual = sessionDao.getSession(userUuid = FakeData.adminUser.uuid).awaitAsOneOrNull()?.userUuid)
 
         assertEquals(expected = FakeData.adminUser.uuid, actual = authenticationUseCases.observeCurrentUser().firstOrNull()?.uuid)

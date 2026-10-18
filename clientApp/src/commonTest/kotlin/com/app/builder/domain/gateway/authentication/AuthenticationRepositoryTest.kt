@@ -9,7 +9,6 @@ import kotlinx.coroutines.flow.firstOrNull
 import app.cash.sqldelight.async.coroutines.awaitAsOneOrNull
 import com.app.builder.Dependency.getUserDependency
 import com.app.builder.core.config.ClientFlags
-import com.app.builder.core.security.hash
 import com.app.builder.data.database.SessionSchema
 import com.app.builder.data.serializer.encode
 import com.app.builder.domain.EntityType
@@ -38,10 +37,10 @@ class AuthenticationRepositoryTest: TestCase() {
             .database
             .sessionQueries
 
-        val hash = hash(content = "${FakeData.adminCredentials.username}${FakeData.adminCredentials.password}")!!
+        val username = FakeData.adminCredentials.username
 
         assertNull(actual = authenticationUseCases.observeCurrentUser().firstOrNull())
-        assertNull(actual = userDao.getUserBySessionHash(hash = hash).awaitAsOneOrNull())
+        assertNull(actual = userDao.getUserByUsername(username = username).awaitAsOneOrNull())
         assertNull(actual = sessionDao.getSession(userUuid = FakeData.adminUser.uuid).awaitAsOneOrNull())
 
         val job = Job(userUuid = Uuid.NIL, entityType = EntityType.SESSION, type = Job.Type.POST)
@@ -50,7 +49,7 @@ class AuthenticationRepositoryTest: TestCase() {
         val jobResult = authenticationRepository.executeLogin(job = job.copy(payload = encode(value = FakeData.adminCredentials)))
         assertTrue(actual = jobResult is JobResult.Success)
 
-        assertEquals(expected = FakeData.adminUser, actual = userDao.getUserBySessionHash(hash = hash).awaitAsOneOrNull()?.toUser())
+        assertEquals(expected = FakeData.adminUser, actual = userDao.getUserByUsername(username = username).awaitAsOneOrNull()?.toUser())
         assertEquals(expected = FakeData.adminUser.uuid, actual = sessionDao.getSession(userUuid = FakeData.adminUser.uuid).awaitAsOneOrNull()?.userUuid)
 
         assertNull(actual = authenticationUseCases.observeCurrentUser().firstOrNull())
@@ -90,7 +89,9 @@ class AuthenticationRepositoryTest: TestCase() {
         sessionDao.upsertSession(
             SessionSchema(
                 userUuid = FakeData.adminUser.uuid,
-                hash = "hash",
+                username = FakeData.adminCredentials.username,
+                salt = "salt",
+                verifier = "verifier",
                 accessToken = FakeData.adminBearerToken.accessToken,
                 refreshToken = FakeData.adminBearerToken.refreshToken
             )
@@ -121,7 +122,9 @@ class AuthenticationRepositoryTest: TestCase() {
         sessionDao.upsertSession(
             SessionSchema(
                 userUuid = FakeData.adminUser.uuid,
-                hash = "hash",
+                username = FakeData.adminCredentials.username,
+                salt = "salt",
+                verifier = "verifier",
                 accessToken = FakeData.adminBearerToken.accessToken,
                 refreshToken = FakeData.adminBearerToken.refreshToken
             )
@@ -152,7 +155,9 @@ class AuthenticationRepositoryTest: TestCase() {
         sessionDao.upsertSession(
             SessionSchema(
                 userUuid = FakeData.adminUser.uuid,
-                hash = "hash",
+                username = FakeData.adminCredentials.username,
+                salt = "salt",
+                verifier = "verifier",
                 accessToken = FakeData.adminBearerToken.accessToken,
                 refreshToken = FakeData.adminBearerToken.refreshToken
             )
@@ -176,7 +181,9 @@ class AuthenticationRepositoryTest: TestCase() {
         sessionDao.upsertSession(
             SessionSchema(
                 userUuid = FakeData.adminUser.uuid,
-                hash = "hash",
+                username = FakeData.adminCredentials.username,
+                salt = "salt",
+                verifier = "verifier",
                 accessToken = FakeData.adminBearerToken.accessToken,
                 refreshToken = FakeData.adminBearerToken.refreshToken
             )

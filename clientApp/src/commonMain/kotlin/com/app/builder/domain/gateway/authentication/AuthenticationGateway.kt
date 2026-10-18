@@ -15,6 +15,7 @@ import io.ktor.client.HttpClient
 import app.cash.sqldelight.async.coroutines.awaitAsOneOrNull
 import com.app.builder.core.flow.Dispatcher
 import com.app.builder.core.security.toUuid
+import com.app.builder.core.security.uuid
 import com.app.builder.core.telemetry.Telemetry
 import com.app.builder.data.database.asFlow
 import com.app.builder.data.database.safeTransaction
@@ -282,10 +283,10 @@ class AuthenticationGateway(
 
     /**
      * Enqueues a login on the [Scheduler] and performs a local identity verification lookup using a deterministic credential combination.
-     * Hashes the incoming username and password arguments to query matching local persistent session tokens.
+     * Looks the session up by username and checks the password against the stored verifier.
      * This isolates authentication validation locally, allowing cached user sessions to re-verify during offline connectivity gaps.
      *
-     * @param credentials The user's login credentials to hash and verify against the local database.
+     * @param credentials The user's login credentials to verify against the local database.
      * @return The cached [User] if a match is found, or null otherwise.
      */
     private suspend fun loginOffline(credentials: UserCredentials): User? {
@@ -297,25 +298,28 @@ class AuthenticationGateway(
             payload = encode(value = credentials)
         )
         scheduler.queue(job = job)
-        val hash = credentials.hash() ?: run {
-            Telemetry.error(tag = TAG, message = "Unable to hash credentials")
+        val session = sessionDao.getSessionByUsername(username = credentials.username).awaitAsOneOrNull() ?: return null
+        val verifier = credentials.deriveVerifier(salt = session.salt) ?: run {
+            Telemetry.error(tag = TAG, message = "Unable to derive the credentials verifier")
             return null
         }
-        return getUserBySessionHash(hash = hash)?.also { user -> swapUser(userUuid = user.uuid.toString()) }
+        if (verifier != session.verifier) return null
+        return getUserByUsername(username = credentials.username)?.also { user -> swapUser(userUuid = user.uuid.toString()) }
     }
 
     /**
      * Get a [UserSession], performing cryptographic transformations:
-     * - Generates a non-reversible cryptographic hash combining user criteria inputs.
+     * - Derives a verifier from the password under a fresh random salt.
      * - Encrypts sensitive access and refresh token blocks.
      *
-     * @param credentials The user's login credentials, used to generate a local session hash.
+     * @param credentials The user's login credentials, used to derive the verifier.
      * @param result The successful authentication result containing user details and tokens.
      * @return The [UserSession] instance if successful, or null if encryption fails.
      */
     private suspend fun getUserSession(credentials: UserCredentials, result: Authentication): UserSession? {
-        val hash = credentials.hash() ?: run {
-            Telemetry.error(tag = TAG, message = "Unable to hash credentials")
+        val salt = uuid().toString()
+        val verifier = credentials.deriveVerifier(salt = salt) ?: run {
+            Telemetry.error(tag = TAG, message = "Unable to derive the credentials verifier")
             return null
         }
         val encryptedBearer = result.bearer.encrypt() ?: run {
@@ -324,7 +328,9 @@ class AuthenticationGateway(
         }
         return UserSession(
             user = result.user,
-            hash = hash,
+            username = credentials.username,
+            salt = salt,
+            verifier = verifier,
             accessToken = encryptedBearer.accessToken,
             refreshToken = encryptedBearer.refreshToken
         )
@@ -352,14 +358,13 @@ class AuthenticationGateway(
         sessionDao.getSession(userUuid = userUuid).awaitAsOneOrNull()?.toBearerToken()
 
     /**
-     * Retrieves a user from the local database by matching a generated session hash.
-     * This function calculates a hash from the provided username and password combination, then queries the local database to find a user matching that hash.
+     * Retrieves a user from the local database by the username its session was opened with.
      *
-     * @param hash The username and password hash.
-     * @return The mapped [User] domain object if a matching hash is found in the database; `null` if no match is found.
+     * @param username The username to look up.
+     * @return The mapped [User] domain object, or `null` if no session matches.
      */
-    private suspend fun getUserBySessionHash(hash: String): User? =
-        userDao.getUserBySessionHash(hash = hash).awaitAsOneOrNull()?.toUser()
+    private suspend fun getUserByUsername(username: String): User? =
+        userDao.getUserByUsername(username = username).awaitAsOneOrNull()?.toUser()
 
     /**
      * Deletes a user session from the local database.
