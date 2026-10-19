@@ -10,13 +10,17 @@ import io.ktor.server.plugins.ratelimit.RateLimit
 import io.ktor.server.plugins.ratelimit.RateLimitName
 import com.app.builder.core.config.ServerConfigs
 import com.app.builder.core.platform.Env
+import com.app.builder.core.telemetry.Telemetry
 
 /**
  * Installs and configures the [RateLimit] plugin for the Ktor [Application].
- *
- * @param trustedProxyHops How many reverse proxies sit in front of this server, defaulting to [Env.trustedProxyHops].
  */
-fun Application.installRateLimit(trustedProxyHops: Int = Env.trustedProxyHops) {
+fun Application.installRateLimit() {
+    val trustedProxyHops: Int = Env.trustedProxyHops
+    if (!Env.developmentMode && trustedProxyHops <= 0) {
+        Telemetry.info(tag = TAG, message = "TRUSTED_PROXY_HOPS is not set, every caller shares a single rate limit bucket")
+    }
+
     install(plugin = RateLimit) {
         global {
             rateLimiter(limit = ServerConfigs.configs.rateLimiterLimit, refillPeriod = ServerConfigs.configs.rateLimiterRefillPeriod.milliseconds)
@@ -63,6 +67,8 @@ internal fun resolveRequestKey(forwardedFor: String?, trustedProxyHops: Int, rem
         .orEmpty()
     return forwarded.getOrNull(index = forwarded.size - trustedProxyHops) ?: remoteAddress
 }
+
+private const val TAG = "RateLimit"
 
 /*** Name of the probe rate-limiting. */
 const val RATE_LIMIT_PROBE = "probe"

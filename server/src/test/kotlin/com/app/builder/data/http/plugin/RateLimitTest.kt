@@ -2,6 +2,8 @@ package com.app.builder.data.http.plugin
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.http.HttpHeaders
@@ -12,6 +14,8 @@ import io.ktor.server.response.respondText
 import io.ktor.server.routing.get
 import io.ktor.server.routing.routing
 import com.app.builder.core.config.ServerConfigs
+import com.app.builder.core.telemetry.Telemetry
+import com.app.builder.core.telemetry.TelemetryEngine
 import com.app.builder.test.TestCase
 
 class RateLimitTest: TestCase() {
@@ -68,5 +72,54 @@ class RateLimitTest: TestCase() {
 
         // The second caller arrives over the same proxy connection, and is unaffected by the first exhausting its bucket.
         assertEquals(expected = HttpStatusCode.OK, actual = client.get(urlString = "/test") { header(HttpHeaders.XForwardedFor, "2.2.2.2") }.status)
+    }
+
+    /** Verifies that a server reachable directly outside development mode reports that its rate limiting buckets everyone together. */
+    @Test
+    fun installReportsAnUntrustedProxyChainOutsideDevelopmentMode() = runServerTest {
+        val recorder = ErrorRecorder()
+        Telemetry.engines.add(element = recorder)
+        application { installRateLimit(trustedProxyHops = 0, developmentMode = false) }
+        client.get(urlString = "/")
+
+        assertTrue(actual = recorder.messages.any { it.contains(other = "TRUSTED_PROXY_HOPS") })
+        Telemetry.engines.remove(element = recorder)
+    }
+
+    /** Verifies that a configured proxy chain stays quiet. */
+    @Test
+    fun installStaysQuietWithATrustedProxy() = runServerTest {
+        val recorder = ErrorRecorder()
+        Telemetry.engines.add(element = recorder)
+        application { installRateLimit(trustedProxyHops = 1, developmentMode = false) }
+        client.get(urlString = "/")
+
+        assertFalse(actual = recorder.messages.any { it.contains(other = "TRUSTED_PROXY_HOPS") })
+        Telemetry.engines.remove(element = recorder)
+    }
+
+    /** Verifies that development mode, where the server is reached directly on purpose, stays quiet. */
+    @Test
+    fun installStaysQuietInDevelopmentMode() = runServerTest {
+        val recorder = ErrorRecorder()
+        Telemetry.engines.add(element = recorder)
+        application { installRateLimit(trustedProxyHops = 0, developmentMode = true) }
+        client.get(urlString = "/")
+
+        assertFalse(actual = recorder.messages.any { it.contains(other = "TRUSTED_PROXY_HOPS") })
+        Telemetry.engines.remove(element = recorder)
+    }
+
+    /** A [TelemetryEngine] that keeps every error message it is given. */
+    private class ErrorRecorder: TelemetryEngine {
+        val messages: MutableList<String> = mutableListOf()
+
+        override fun info(tag: String, message: String) = Unit
+
+        override fun error(tag: String, message: String, throwable: Throwable?) {
+            messages.add(element = message)
+        }
+
+        override fun feedback(message: String) = Unit
     }
 }
