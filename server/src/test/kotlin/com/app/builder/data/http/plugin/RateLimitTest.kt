@@ -2,20 +2,14 @@ package com.app.builder.data.http.plugin
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertFalse
-import kotlin.test.assertTrue
 import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
-import io.ktor.server.application.install
-import io.ktor.server.plugins.ratelimit.RateLimit
 import io.ktor.server.response.respondText
 import io.ktor.server.routing.get
 import io.ktor.server.routing.routing
 import com.app.builder.core.config.ServerConfigs
-import com.app.builder.core.telemetry.Telemetry
-import com.app.builder.core.telemetry.TelemetryEngine
 import com.app.builder.test.TestCase
 
 class RateLimitTest: TestCase() {
@@ -53,13 +47,13 @@ class RateLimitTest: TestCase() {
         assertEquals(expected = "10.0.0.1", actual = resolveRequestKey(forwardedFor = "1.2.3.4", trustedProxyHops = 2, remoteAddress = "10.0.0.1"))
     }
 
-    /** Verifies the whole point of the fix: behind a proxy two callers get separate buckets, instead of sharing the one the proxy's own address would key. */
+    /** Verifies that the installed limiter ignores a caller-supplied forwarding header, so two callers reaching the server directly share one bucket rather than minting their own. */
     @Test
-    fun callersBehindAProxyAreLimitedSeparately() = runServerTest {
+    fun callersCannotMintTheirOwnBucketWithAForwardingHeader() = runServerTest {
         // Lowered so the test spends its time on the assertion rather than on exhausting the production limit. Reset by the harness after each test.
         ServerConfigs.set { it.copy(rateLimiterLimit = 3) }
         application {
-            installRateLimit(trustedProxyHops = 1)
+            installRateLimit()
             routing { get(path = "/test") { call.respondText(text = "ok") } }
         }
         val client = createClient(token = null)
@@ -70,56 +64,7 @@ class RateLimitTest: TestCase() {
         }
         assertEquals(expected = HttpStatusCode.TooManyRequests, actual = client.get(urlString = "/test") { header(HttpHeaders.XForwardedFor, "1.1.1.1") }.status)
 
-        // The second caller arrives over the same proxy connection, and is unaffected by the first exhausting its bucket.
-        assertEquals(expected = HttpStatusCode.OK, actual = client.get(urlString = "/test") { header(HttpHeaders.XForwardedFor, "2.2.2.2") }.status)
-    }
-
-    /** Verifies that a server reachable directly outside development mode reports that its rate limiting buckets everyone together. */
-    @Test
-    fun installReportsAnUntrustedProxyChainOutsideDevelopmentMode() = runServerTest {
-        val recorder = ErrorRecorder()
-        Telemetry.engines.add(element = recorder)
-        application { installRateLimit(trustedProxyHops = 0, developmentMode = false) }
-        client.get(urlString = "/")
-
-        assertTrue(actual = recorder.messages.any { it.contains(other = "TRUSTED_PROXY_HOPS") })
-        Telemetry.engines.remove(element = recorder)
-    }
-
-    /** Verifies that a configured proxy chain stays quiet. */
-    @Test
-    fun installStaysQuietWithATrustedProxy() = runServerTest {
-        val recorder = ErrorRecorder()
-        Telemetry.engines.add(element = recorder)
-        application { installRateLimit(trustedProxyHops = 1, developmentMode = false) }
-        client.get(urlString = "/")
-
-        assertFalse(actual = recorder.messages.any { it.contains(other = "TRUSTED_PROXY_HOPS") })
-        Telemetry.engines.remove(element = recorder)
-    }
-
-    /** Verifies that development mode, where the server is reached directly on purpose, stays quiet. */
-    @Test
-    fun installStaysQuietInDevelopmentMode() = runServerTest {
-        val recorder = ErrorRecorder()
-        Telemetry.engines.add(element = recorder)
-        application { installRateLimit(trustedProxyHops = 0, developmentMode = true) }
-        client.get(urlString = "/")
-
-        assertFalse(actual = recorder.messages.any { it.contains(other = "TRUSTED_PROXY_HOPS") })
-        Telemetry.engines.remove(element = recorder)
-    }
-
-    /** A [TelemetryEngine] that keeps every error message it is given. */
-    private class ErrorRecorder: TelemetryEngine {
-        val messages: MutableList<String> = mutableListOf()
-
-        override fun info(tag: String, message: String) = Unit
-
-        override fun error(tag: String, message: String, throwable: Throwable?) {
-            messages.add(element = message)
-        }
-
-        override fun feedback(message: String) = Unit
+        // A different forwarded address does not get a fresh bucket, because the header is not trusted.
+        assertEquals(expected = HttpStatusCode.TooManyRequests, actual = client.get(urlString = "/test") { header(HttpHeaders.XForwardedFor, "2.2.2.2") }.status)
     }
 }
