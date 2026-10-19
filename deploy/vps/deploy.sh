@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-# Builds the server fat jar locally and rolls it out to the Oracle Cloud VM.
+# Builds the server fat jar locally and rolls it out to the VM over ssh.
 # The VM only ever receives the jar and the three compose files; the repository and the JDK stay on this machine.
 #
-#   SSH_HOST=ubuntu@140.238.0.1 ./deploy/oracle/deploy.sh
+#   SSH_HOST=ubuntu@140.238.0.1 ./deploy/vps/deploy.sh
 #
 # Optional:
 #   REMOTE_DIR  target directory on the VM, relative to the login user's home

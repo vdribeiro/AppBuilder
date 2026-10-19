@@ -1,4 +1,4 @@
-# Runtime image for Koyeb's free instance: 512 MB of memory and 0.1 vCPU.
+# Runtime image for a small managed container host: a 512 MB memory limit and a fraction of a vCPU.
 # Build context is the `server` module, matching server/Dockerfile, so the fat jar
 # must already exist at server/build/libs/*-all.jar before this is built.
 FROM eclipse-temurin:21-jre-alpine
@@ -23,7 +23,8 @@ ENV JAVA_TOOL_OPTIONS="\
 -XX:+ExitOnOutOfMemoryError \
 -Dfile.encoding=UTF-8"
 
-# Koyeb injects PORT into the environment and Env.port reads it; 8000 is Koyeb's default.
+# Env.port reads PORT, which is set on the host alongside the other variables. Declared here so
+# hosts that detect ports from the image suggest the right one.
 EXPOSE 8000
 
 ENTRYPOINT ["java", "-Dlogback.configurationFile=logback.xml", "-jar", "/app/server.jar"]

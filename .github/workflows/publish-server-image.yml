@@ -1,16 +1,16 @@
 # Builds the server fat jar and publishes a container image to GitHub Container Registry,
-# which is what Koyeb pulls from. Runs on demand, or whenever the server or its deployment
-# configuration changes on main.
+# which is what the managed container host pulls from. Runs on demand, or whenever the
+# server or its deployment configuration changes.
 name: Publish server image
 
 on:
   workflow_dispatch:
   push:
-    branches: [main, koyeb]
+    branches: [main, deploy]
     paths:
       - 'server/**'
       - 'shared/**'
-      - 'deploy/koyeb/Dockerfile'
+      - 'deploy/container/Dockerfile'
       - '.github/workflows/publish-server-image.yml'
 
 jobs:
@@ -44,7 +44,7 @@ jobs:
       - uses: docker/build-push-action@v6
         with:
           context: server
-          file: deploy/koyeb/Dockerfile
+          file: deploy/container/Dockerfile
           push: true
           tags: |
             ghcr.io/${{ github.repository_owner }}/appbuilder-server:latest

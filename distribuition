@@ -27,6 +27,9 @@
                 --set-secrets="ADMIN_PASSWORD=password:latest,DB_PASSWORD=password:latest,JWT_SECRET=jwt:latest"
     Web:    ./gradlew wasmJsBrowserDistribution
             firebase deploy --only hosting
-    Oracle:
+    VPS:
             fill in ~/appbuilder/.env on the VM once, then
-            SSH_HOST=ubuntu@<public-ip> ./deploy/oracle/deploy.sh
+            SSH_HOST=ubuntu@<public-ip> ./deploy/vps/deploy.sh
+    Container host:
+            push to main to publish ghcr.io/vdribeiro/appbuilder-server:latest,
+            then redeploy the service so it pulls the new image
