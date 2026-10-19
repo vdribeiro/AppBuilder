@@ -6,8 +6,10 @@ import org.jetbrains.exposed.v1.core.vendors.PostgreSQLDialect
 import org.jetbrains.exposed.v1.r2dbc.R2dbcDatabase
 import org.jetbrains.exposed.v1.r2dbc.R2dbcDatabaseConfig
 import com.app.builder.core.platform.Env
+import com.app.builder.toEnumOrNull
 import io.r2dbc.postgresql.PostgresqlConnectionConfiguration
 import io.r2dbc.postgresql.PostgresqlConnectionFactory
+import io.r2dbc.postgresql.client.SSLMode
 import io.r2dbc.spi.ConnectionFactories
 import io.r2dbc.spi.ConnectionFactory
 
@@ -20,7 +22,8 @@ object DatabaseFactory {
      *
      * @return The in-memory [ConnectionFactory].
      */
-    fun getInMemoryConnectionFactory(): ConnectionFactory = ConnectionFactories.get("r2dbc:h2:mem:///test;DB_CLOSE_DELAY=-1")
+    fun getInMemoryConnectionFactory(): ConnectionFactory =
+        ConnectionFactories.get("r2dbc:h2:mem:///test;DB_CLOSE_DELAY=-1")
 
     /**
      * Builds the Postgres connection factory from the environment.
@@ -41,6 +44,7 @@ object DatabaseFactory {
             user.isNullOrBlank() ||
             password.isNullOrBlank()
         ) error(message = "Invalid database parameters for configuration")
+        val sslMode = Env.dbSslMode?.toEnumOrNull<SSLMode>() ?: SSLMode.REQUIRE
 
         return PostgresqlConnectionFactory(
             PostgresqlConnectionConfiguration.builder()
@@ -49,6 +53,7 @@ object DatabaseFactory {
                 .database(name)
                 .username(user)
                 .password(password)
+                .sslMode(sslMode)
                 .build()
         )
     }
@@ -63,7 +68,8 @@ object DatabaseFactory {
     suspend fun create(connectionFactory: ConnectionFactory): R2dbcDatabase {
         val database = R2dbcDatabase.connect(
             connectionFactory = connectionFactory,
-            databaseConfig = R2dbcDatabaseConfig.Builder().apply { explicitDialect = connectionFactory.dialect() }
+            databaseConfig = R2dbcDatabaseConfig.Builder()
+                .apply { explicitDialect = connectionFactory.dialect() }
         )
         database.create()
         return database
