@@ -50,58 +50,70 @@ actual suspend fun decrypt(content: String): String? = withContext(context = Dis
 }
 
 /**
+ * Reads the identifier the operating system assigns to this machine.
+ *
+ * @return The machine id, or null when it cannot be read.
+ */
+private fun machineId(): CharArray? = runCatching {
+    when (platform.os) {
+        OS.Windows -> ProcessBuilder("reg", "query", "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Cryptography", "/v", "MachineGuid")
+            .start()
+            .inputStream
+            .bufferedReader()
+            .readText()
+            .substringAfter(delimiter = "REG_SZ")
+            .trim()
+
+        OS.Mac -> ProcessBuilder("bash", "-c", "ioreg -rd1 -c IOPlatformExpertDevice | grep IOPlatformUUID")
+            .start()
+            .inputStream
+            .bufferedReader()
+            .readText()
+            .split("\"")
+            .getOrNull(index = 3)
+            .orEmpty()
+            .trim()
+
+        OS.Linux -> (File("/var/lib/dbus/machine-id").takeIf { it.exists() } ?: File("/etc/machine-id").takeIf { it.exists() })
+            ?.readText()
+            .orEmpty()
+            .trim()
+
+        else -> ""
+    }.takeIf { it.isNotEmpty() }?.toCharArray()
+}.onFailure {
+    Telemetry.error(tag = TAG, message = "Unable to read the machine id", throwable = it)
+}.getOrNull()
+
+private fun File.load(keyStore: KeyStore, password: CharArray) = runCatching { inputStream().use { keyStore.load(it, password) } }
+
+/**
  * Get the [SecretKeySpec] from [KeyStore] or generate one if it does not exist.
+ * The keystore is unlocked with a random secret held by the operating system's [secretStore], falling back to the machine id where there is none.
+ * A keystore still locked by the machine id is reopened with it and written back under the stored secret.
  *
  * @return the secret key spec or throw on error.
  */
 private suspend fun getSecretKey(): SecretKeySpec = withContext(context = Dispatcher.IO) {
     runCatching {
         val keyStoreFile = File(appDataPath, "security.p12")
-        val password = when (platform.os) {
-            // Reads the unique machine id
-            OS.Linux -> (File("/var/lib/dbus/machine-id").takeIf { it.exists() } ?: File("/etc/machine-id").takeIf { it.exists() })
-                ?.readText()
-                .orEmpty()
-                .trim()
-                .toCharArray()
-            // Reads the MachineGuid from the Windows Registry
-            OS.Windows -> ProcessBuilder("reg", "query", "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Cryptography", "/v", "MachineGuid")
-                .start()
-                .inputStream
-                .bufferedReader()
-                .readText()
-                .substringAfter(delimiter = "REG_SZ")
-                .trim()
-                .toCharArray()
-            // Reads the IOPlatformUUID from the macOS I/O Kit registry
-            OS.Mac -> ProcessBuilder("bash", "-c", "ioreg -rd1 -c IOPlatformExpertDevice | grep IOPlatformUUID")
-                .start()
-                .inputStream
-                .bufferedReader()
-                .readText()
-                .split("\"")
-                .getOrNull(index = 3)
-                .orEmpty()
-                .trim()
-                .toCharArray()
+        val machineId = machineId()
+        val password = secretStore?.let { getOrCreateSecret(store = it) }?.toCharArray() ?: machineId ?: error(message = "Unable to get a keystore password")
 
-            else -> CharArray(size = 0)
-        }.takeIf { it.isNotEmpty() } ?: error(message = "Unable to get password")
-        val keyStore = KeyStore.getInstance("PKCS12").apply {
-            if (keyStoreFile.exists()) {
-                keyStoreFile.inputStream().use { load(it, password) }
-            } else load(null, password)
+        val keyStore = KeyStore.getInstance("PKCS12")
+        val legacyPassword = when {
+            !keyStoreFile.exists() -> null.also { keyStore.load(null, password) }
+            keyStoreFile.load(keyStore = keyStore, password = password).isSuccess -> null
+            machineId != null && keyStoreFile.load(keyStore = keyStore, password = machineId).isSuccess -> machineId
+            else -> error(message = "Unable to open the keystore")
         }
-        val passwordProtection = KeyStore.PasswordProtection(password)
-        val entry = keyStore.getEntry(ALIAS, passwordProtection) as? KeyStore.SecretKeyEntry
-        val secretKey = entry?.secretKey ?: run {
-            val keyGenerator = KeyGenerator.getInstance(ALGORITHM)
-            keyGenerator.init(KEY_SIZE)
-            keyGenerator.generateKey().also {
-                // Save secret key
-                keyStore.setEntry(ALIAS, KeyStore.SecretKeyEntry(it), passwordProtection)
-                keyStoreFile.outputStream().use { stream -> keyStore.store(stream, password) }
-            }
+
+        val protection = KeyStore.PasswordProtection(password)
+        val entry = keyStore.getEntry(ALIAS, KeyStore.PasswordProtection(legacyPassword ?: password)) as? KeyStore.SecretKeyEntry
+        val secretKey = entry?.secretKey ?: KeyGenerator.getInstance(ALGORITHM).apply { init(KEY_SIZE) }.generateKey()
+        if (entry == null || legacyPassword != null) {
+            keyStore.setEntry(ALIAS, KeyStore.SecretKeyEntry(secretKey), protection)
+            keyStoreFile.outputStream().use { stream -> keyStore.store(stream, password) }
         }
         SecretKeySpec(secretKey.encoded, ALGORITHM)
     }.onFailure {
