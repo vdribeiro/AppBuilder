@@ -3,10 +3,15 @@ package com.app.builder
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeoutOrNull
+import org.jetbrains.annotations.VisibleForTesting
 import io.ktor.server.application.Application
 import io.ktor.server.application.ApplicationStopping
+import io.ktor.server.application.serverConfig
+import io.ktor.server.config.MapApplicationConfig
+import io.ktor.server.engine.EmbeddedServer
 import io.ktor.server.engine.addShutdownHook
-import io.ktor.server.engine.embeddedServer
+import io.ktor.server.engine.applicationEnvironment
+import io.ktor.server.engine.connector
 import io.ktor.server.netty.Netty
 import com.app.builder.core.config.ClientConfigs
 import com.app.builder.core.config.ClientFlags
@@ -48,11 +53,12 @@ import io.r2dbc.postgresql.PostgresqlConnectionFactory
  */
 @ExcludeFromTesting
 fun main() {
-    val server = embeddedServer(
-        factory = Netty,
-        port = Env.port ?: DEV_PORT,
-        module = Application::module
-    )
+    val port = Env.port ?: DEV_PORT
+    val environment = applicationEnvironment { config = MapApplicationConfig("ktor.application.startupTimeoutMillis" to STARTUP_TIMEOUT.inWholeMilliseconds.toString()) }
+    val server = EmbeddedServer(
+        rootConfig = serverConfig(environment = environment) { module(body = Application::module) },
+        engineFactory = Netty
+    ) { connector { this.port = port } }
     server.addShutdownHook { server.stop() }
     server.start(wait = true)
 }
@@ -63,6 +69,7 @@ fun main() {
  *
  * @receiver [Application] The application instance to configure.
  */
+@VisibleForTesting
 internal suspend fun Application.module() {
     setTelemetry()
     Telemetry.info(tag = TAG, message = "Server started")
@@ -100,7 +107,6 @@ private suspend fun Dependency.stop() {
     permissionService.stop()
 }
 
-
 /** Starts [Dependency] services. */
 private suspend fun Dependency.start() {
     Telemetry.info(tag = TAG, message = "Loading flags and configs")
@@ -122,9 +128,7 @@ private suspend fun Dependency.start() {
 private fun setTelemetry() {
     Telemetry.engines.apply {
         clear()
-        if (Env.developmentMode) {
-            add(element = ServerLogger)
-        }
+        add(element = ServerLogger)
         if (!Env.developmentMode && !Env.sentryDsn.isNullOrBlank()) {
             val sentryLogger = SentryLogger.init(
                 options = SentryLogger.Options(
@@ -223,4 +227,6 @@ private suspend fun seed(dependency: Dependency) {
 }
 
 private const val TAG = "Server"
+
+private val STARTUP_TIMEOUT = 120.seconds
 private val STOP_TIMEOUT = 15.seconds
