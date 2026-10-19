@@ -1661,7 +1661,9 @@ If the web app is served through Firebase Hosting, also update the `/api/**` rew
 
 ### Do you use AI?
 
-Autonomously in the code? No. As an assistant to write documentation? Sure. As an advanced search engine? Also yes.
+Autonomously in the code? Only on tests.
+As an assistant to write documentation? Sure. 
+As an advanced search engine? Also yes.
 
 To be clear, I am not against AI in code, but a supporter of a strict boundary between human-authored and AI-generated code, especially in the foundational layer.
 This prevents architectural drifts in my experience. Therefore, I strongly advocate for placing AI generated code into completely separate modules, to ensures a clear, undeniable boundary between the human-crafted and AI outputs.
