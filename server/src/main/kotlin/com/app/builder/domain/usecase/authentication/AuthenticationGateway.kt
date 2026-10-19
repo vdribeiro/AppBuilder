@@ -98,7 +98,7 @@ class AuthenticationGateway(
                 .where { UserSecretTable.username eq credentials.username }
                 .firstOrNull()
         }.onFailure {
-            Telemetry.error(tag = TAG, message = "Unable to get user ${credentials.username}", throwable = it)
+            Telemetry.error(tag = TAG, message = "Unable to get user", throwable = it)
         }.getOrNull() ?: return@withContext null
 
         val storedHash = runCatching { row[UserSecretTable.passwordHash] }.getOrNull() ?: return@withContext null
@@ -124,7 +124,7 @@ class AuthenticationGateway(
                 it[UserSessionTable.expiresAt] = now + ServerConfigs.configs.refreshTokenValidity.milliseconds
             }
         }.onFailure {
-            Telemetry.error(tag = TAG, message = "Unable to insert session for user ${credentials.username}", throwable = it)
+            Telemetry.error(tag = TAG, message = "Unable to insert session", throwable = it)
             return@withContext null
         }
 

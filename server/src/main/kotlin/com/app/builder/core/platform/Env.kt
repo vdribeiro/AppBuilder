@@ -24,6 +24,8 @@ object Env {
     val dbUser: String? = getEnv(name = "DB_USER")
     /** The password for the database connection. */
     val dbPassword: String? = getEnv(name = "DB_PASSWORD")
+    /** The TLS mode for the database connection. */
+    val dbSslMode: String? = getEnv(name = "DB_SSL_MODE")
     /** The issuer claim expected in JWT. */
     val jwtIssuer: String? = getEnv(name = "JWT_ISSUER")
     /** The audience claim expected in JWT. */

@@ -39,13 +39,13 @@ fun Route.authenticationRoutes(
             val registrationForm = call.receive<RegistrationForm>() ?: return@post
 
             val result = authenticationUseCases.register(registrationForm = registrationForm) ?: run {
-                Telemetry.error(tag = TAG, message = "Failed to register user ${registrationForm.user.name}")
+                Telemetry.error(tag = TAG, message = "Failed to register user ${registrationForm.user.uuid}")
                 call.respondSafely(status = HttpStatusCode.BadRequest, message = "Invalid registration form")
                 return@post
             }
 
             call.respondSafely(status = HttpStatusCode.OK, message = result)
-            Telemetry.info(tag = TAG, message = "Successful registration for user ${registrationForm.user.name}")
+            Telemetry.info(tag = TAG, message = "Successful registration for user ${registrationForm.user.uuid}")
 
             call.toRegistry(
                 entityType = EntityType.USER,
@@ -59,13 +59,13 @@ fun Route.authenticationRoutes(
         val credentials = call.receive<UserCredentials>() ?: return@post
 
         val result = authenticationUseCases.login(credentials = credentials) ?: run {
-            Telemetry.error(tag = TAG, message = "Failed login attempt for ${credentials.username}")
+            Telemetry.error(tag = TAG, message = "Failed login attempt")
             call.respondSafely(status = HttpStatusCode.Unauthorized, message = "Invalid credentials")
             return@post
         }
 
         call.respondSafely(status = HttpStatusCode.OK, message = result)
-        Telemetry.info(tag = TAG, message = "Successful login for user ${credentials.username}")
+        Telemetry.info(tag = TAG, message = "Successful login for user ${result.user.uuid}")
 
         call.toRegistry(
             entityType = EntityType.SESSION,
