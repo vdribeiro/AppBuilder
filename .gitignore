@@ -24,6 +24,8 @@ captures/
 .idea/
 *.iml
 local.properties
+# Filled-in deployment secrets; the real file lives on the VM
+deploy/**/.env
 .DS_Store
 # Xcode
 *.xcodeproj/project.xcworkspace/

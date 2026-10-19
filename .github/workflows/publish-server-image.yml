@@ -1,0 +1,51 @@
+# Builds the server fat jar and publishes a container image to GitHub Container Registry,
+# which is what the managed container host pulls from. Runs on demand, or whenever the
+# server or its deployment configuration changes.
+name: Publish server image
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main, deploy]
+    paths:
+      - 'server/**'
+      - 'shared/**'
+      - 'deploy/container/Dockerfile'
+      - '.github/workflows/publish-server-image.yml'
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      # The runner image already carries the Android SDK, which the multiplatform
+      # build needs to configure :clientApp even though only :server is being built.
+      - name: Build the fat jar
+        run: ./gradlew :server:buildFatJar --no-daemon
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: docker/build-push-action@v6
+        with:
+          context: server
+          file: deploy/container/Dockerfile
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/appbuilder-server:latest
+            ghcr.io/${{ github.repository_owner }}/appbuilder-server:${{ github.sha }}
