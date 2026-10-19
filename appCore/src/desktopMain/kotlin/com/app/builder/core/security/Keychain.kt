@@ -44,16 +44,15 @@ internal fun getOrCreateSecret(store: SecretStore): String? = runCatching {
 internal val secretStore: SecretStore? by lazy {
     if (App.id.isBlank()) return@lazy null
     when (platform.os) {
-        OS.Windows -> DpapiSecretStore()
-        OS.Mac -> KeychainSecretStore()
-        OS.Linux -> SecretToolSecretStore().takeIf { it.isAvailable() }
+        OS.Windows -> WindowsSecretStore()
+        OS.Mac -> AppleSecretStore()
+        OS.Linux -> LinuxSecretStore().takeIf { it.isAvailable() }
         else -> null
     }
 }
 
 /** A file encrypted by the Windows Data Protection API under the current user account, written and read through PowerShell. */
-private class DpapiSecretStore: SecretStore {
-
+private class WindowsSecretStore: SecretStore {
     private val file: File get() = File(appDataPath, "security.dpapi")
 
     override fun read(): String? {
@@ -78,7 +77,7 @@ private class DpapiSecretStore: SecretStore {
 }
 
 /** The macOS login keychain, reached through the `security` command line tool. */
-private class KeychainSecretStore: SecretStore {
+private class AppleSecretStore: SecretStore {
 
     override fun read(): String? = run(
         command = listOf("security", "find-generic-password", "-w", "-s", App.id, "-a", ACCOUNT)
@@ -90,7 +89,7 @@ private class KeychainSecretStore: SecretStore {
 }
 
 /** The Linux Secret Service, reached through the `secret-tool` command line tool. */
-private class SecretToolSecretStore: SecretStore {
+private class LinuxSecretStore: SecretStore {
 
     /** Whether `secret-tool` is installed and its keyring reachable. */
     fun isAvailable(): Boolean = run(command = listOf("secret-tool", "lookup", "service", App.id, "attribute", "probe")) != null
