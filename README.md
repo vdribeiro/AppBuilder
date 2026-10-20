@@ -18,7 +18,7 @@ If that doesn't suit you, the project still works as a reference architecture. S
 For me, writing code is like writing poetry. It’s about crafting logic for humans, not just making the machine understand, and expressing complex ideas with rhythm, economy, and elegance.
 This project is a labor of love, and I would deeply appreciate any feedback you might have.
 
-Open an issue or start a discussion at [github.com/vdribeiro/AppBuilder](https://github.com/vdribeiro/AppBuilder).
+Feel free to open an issue or start a discussion.
 
 # Getting Started
 
