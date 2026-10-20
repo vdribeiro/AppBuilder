@@ -266,6 +266,8 @@ Also holds the domain models themselves at the root of the package.
 * **navigation**: Routing logic.
 * **permission**: System permissions management.
 * **screen**: UI entry points built with components. Each screen is also a sub-package containing the composable and respective store for state management, all co-located.
+* **store**: The MVI `Store` base class.
+* **showcase**: The design system catalog.
 
 #### test
 
@@ -387,24 +389,25 @@ Neither holds a state or talks to a gateway. A component takes its data and its 
 #### core
 
 * **media**: Media implementations.
-    * `AudioPlayer`: Manages playlist deduplication and shuffling.
+    * `AudioPlayer`: Manages playlist playback, looping and shuffling.
     * `Camera`: Manages photo capture and video recording.
 * **devicelocation**: Device location capture.
-    * `DeviceLocationProvider`: An update loop that keeps the platform's location cache warm, so locations can be fetched by pooling its cache passively. 
+    * `DeviceLocationProvider`: An update loop that keeps the platform's location cache warm, so locations can be fetched by polling its cache passively. 
     * `DeviceLocation`: The captured location fix representation.
 * **nfc**: NFC reading and writing.
     * `NfcController`: NFC reader/writer controller.
     * `NfcTag`: Nfc Tag representation.
     * `TagProvider`: Provider to collect the tags read by the platforms.
 * **locale**: Localization and date/time formatting.
-    * `Language`: App default language and other language listings.
+    * `Language`: Language listings.
     * `Locale`: Methods to get the current system language, locale-aware datetime formatting, and a `Flow` that emits on locale changes.
     * `Clock`: System clock changes observer.
 * **platform**: OS-specific APIs.
     * `Development`: Development mode flag.
     * `AppPath`: Declares `appDataPath` and `appCachePath`, the absolute paths to the application's data and cache directories.
 * **security**: Cryptography and UUID utilities.
-    * `Cryptography`: Cryptography methods like encrypt/decrypt and hashing.
+    * `Cryptography`: Cryptography methods like encrypt/decrypt, hashing and key derivation.
+    * `Keychain`: Access to the OS secret store that holds the keystore password. See [Cryptography](#cryptography).
 * **telemetry**: Logging and crash reporting.
     * `PlatformLogger`: A `TelemetryEngine` implementation for native system console outputs.
 
@@ -446,14 +449,12 @@ Neither holds a state or talks to a gateway. A component takes its data and its 
     * `NoOpSqlDriver`: A no-op implementation of `SqlDriver`.
     * `SqlIO`: Query helpers.
 * **storage**: File system access.
-    * `File`: Declarations for suspending save/load/delete file operations.
+    * `File`: Declarations for suspending file operations: save, load, delete, list, open and cache clearing.
     * `StorageFile`: A file abstraction that allows choosing if it is `encrypted` and has an optional lazily-hydrated cache.
     * `CoreFile`: Index of every file this module persists.
 
 #### ui
 
-* **component**: UI composite components.
-    * `Store`: `ViewModel` with a `StateFlow<State>` as the single source of truth for the UI and reducer override to process actions from the UI.
 * **devicelocation**: Device location composables.
     * `DeviceLocationProvider`: Provides `LocalDeviceLocationProvider` and a lifecycle register which starts/stops capture as the app foregrounds/backgrounds.
 * **lifecycle**: Platform-aware lifecycle observers.
@@ -463,6 +464,7 @@ Neither holds a state or talks to a gateway. A component takes its data and its 
     * `Camera`: Provides a Camera with its registered foreground/background lifecycle, plus the `CameraPreview` composable that renders the platform preview surface.
 * **modifier**: Modifier extensions.
     * `PointerListener`: Modifiers for taps or mouse clicks.
+    * `KeyListener`: Modifiers for key presses and key sequences.
 * **navigation**: Routing logic.
     * **scene**: Scene strategies used to render a list of entries, like `SplitScene` that renders two entries side-by-side when both opt in via metadata.
     * `Router`: Interface declaring the backstack and navigation functions `back()`, `navigate(screen, option)` and the `NavOption` strategy enum.
@@ -477,11 +479,13 @@ Neither holds a state or talks to a gateway. A component takes its data and its 
     * `PermissionManager`: Manager for checking and requesting system permissions declared in `Permission`. The latter also provides `LocalPermissionManager`.
 * **screen**: UI entry points built with components. Each screen is also a sub-package containing the composable and respective store for state management, all co-located.
     * `Screen`: Wrapper composable that provides the foundational UI. Provides `LocalScaffold`.
+* **store**: State management.
+    * `Store`: `ViewModel` with a `StateFlow<State>` as the single source of truth for the UI and reducer override to process actions from the UI.
+* `AppCore`: Composable that wraps content in every provider this module owns, so a consuming app opts into the whole module with one call.
 
 #### root level
 
 * `App`: Holds the app related data like id, name and version of the app consuming this module.
-* `AppCore`: Composable that wraps content in every provider this module owns, so a consuming app opts into the whole module with one call.
 * `KInitializer`: Android-only startup initializer that captures the `applicationContext`, so no other Android code needs a context injected. See [Context Management](#context-management).
 
 ### Client App
@@ -520,7 +524,7 @@ Neither holds a state or talks to a gateway. A component takes its data and its 
 
 #### ui
 
-* `App`: Main composable that assembles the application UI and acts as the top-level container for the user-facing elements. Provides `LocalAppState`, `LocalAudioPlayer`, `LocalCamera` and `LocalNfcController`.
+* `App`: Main composable that assembles the application UI and acts as the top-level container for the user-facing elements. Provides `LocalAppState`, `LocalRouter`, `LocalPermissionManager`, `LocalAudioPlayer`, `LocalCamera` and `LocalNfcController`.
 * **navigation**: Routing logic.
     * **provider**: Definitions of the navigation routes.
     * `Screen`: Sealed interface that enumerates all destinations.
@@ -575,7 +579,8 @@ Each target boots the same `App` composable through its own host.
 
 * **permission**: Permission service.
     * `PermissionService`: Tracks each user's permissions. Implemented by `PermissionManager`. Every authenticated route validates against this map instead of a fixed role.
-    * `AccessToken`: The decoded JWT claims a route reads to identify the caller.
+    * `AccessToken`: Access token creation from a user's access, and reading that access back from a JWT payload.
+    * `UserAccess`: The decoded JWT claims a route reads to authorize the caller.
 * **push**: Broadcast and Push services.
     * `BroadcastService`: Broadcast service to send push notifications. Implemented by `BroadcastManager`.
     * `PushService`: Push service to send user push notifications, including acknowledgement of delivered notifications. Implemented by `PushManager`.
@@ -614,11 +619,13 @@ The server instead reads its configuration from OS environment variables via `En
 
 * **Server**: `DEVELOPMENT`, `PORT`, `SENTRY_DSN`.
 * **Admin**: `ADMIN_UUID`, `ADMIN_USERNAME`, `ADMIN_PASSWORD`
-* **Database**: `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`.
+* **Database**: `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `DB_SSL_MODE`.
 * **JWT**: `JWT_ISSUER`, `JWT_AUDIENCE`, `JWT_SECRET`.
 * **Push**: `GCP_PROJECT_ID`.
+* **Rate limiting**: `TRUSTED_PROXY_HOPS`.
 
-Every one of these is nullable, and nothing supplies a default in code. What makes `./gradlew :server:run` work with none of them set is `server/build.gradle.kts`, which defines a `localEnv` map and injects it into both the `run` task and every `Test` task:
+A few of these have a default in code, while the rest are nullable with no default. 
+What makes `./gradlew :server:run` work with none of them set is `server/build.gradle.kts`, which defines a `localEnv` map and injects it into both the `run` task and every `Test` task:
 
 ```
 DEVELOPMENT=true
@@ -635,27 +642,29 @@ The dev environment is a property of the **Gradle task**, not of the code, so la
 
 ## Development vs Production
 
-| Concern         | Description                                                            | Dev                                   | Production                           |
-|-----------------|------------------------------------------------------------------------|---------------------------------------|--------------------------------------|
-| Database        | Where persistent data is stored                                        | In-memory H2, resets on restart       | Postgres                             |
-| Signal          | Cross-instance pub/sub used to wake up sockets held by other instances | `LocalSignal` (in-process)            | `PostgresSignal` (`LISTEN`/`NOTIFY`) |
-| FCM             | Push delivery when a device has no live WebSocket/SSE connection       | `NoOpFcmService`                      | `FcmManager` (*1)                    |
-| JWT             | How access tokens are signed and verified                              | HMAC512 with the injected secret      | HMAC512 with the real `JWT_SECRET`   |
-| Telemetry       | Where logs are sent                                                    | Console `ServerLogger`                | Sentry, if `SENTRY_DSN` is set       |
-| CORS            | Which origins the server accepts requests from                         | `localhost:8080` and `localhost:8010` | HTTPS-only on `URL.HOST`             |
-| Time validation | Whether mutation requests with a stale/future timestamp are rejected   | Skipped                               | Enforced                             |
-| Seeded account  | The one admin account created on every boot                            | `admin`/`admin`                       | Real `ADMIN_*` values                |
+| Concern         | Description                                                            | Dev                                   | Production                                        |
+|-----------------|------------------------------------------------------------------------|---------------------------------------|---------------------------------------------------|
+| Database        | Where persistent data is stored                                        | In-memory H2, resets on restart       | Postgres                                          |
+| Signal          | Cross-instance pub/sub used to wake up sockets held by other instances | `LocalSignal` (in-process)            | `PostgresSignal` (`LISTEN`/`NOTIFY`)              |
+| FCM             | Push delivery when a device has no live WebSocket/SSE connection       | `NoOpFcmService`                      | `FcmManager` (*1)                                 |
+| JWT             | How access tokens are signed and verified                              | HMAC512 with the injected secret      | HMAC512 with the real `JWT_SECRET`                |
+| Telemetry       | Where logs are sent                                                    | Console `ServerLogger`                | Console, plus Sentry if `SENTRY_DSN` is set       |
+| CORS            | Which origins the server accepts requests from                         | `localhost:8080` and `localhost:8010` | HTTPS-only on `URL.HOST`                          |
+| Time validation | Whether requests timestamped in the future are rejected                | Skipped                               | Enforced                                          |
+| Rate limiting   | How callers are told apart                                             | One shared bucket                     | By caller address, if `TRUSTED_PROXY_HOPS` is set |
+| Seeded account  | The one admin account created on every boot                            | `admin`/`admin`                       | Real `ADMIN_*` values                             |
 
 The switch is `Env.developmentMode`, set from the `DEVELOPMENT` environment variable, which the `:server:run` and test tasks inject as `true`.
 
-(*1) FCM needs three things to activate: production mode, a non-blank `GCP_PROJECT_ID`, and the `firebase` `ServerFlags` flag enabled. 
-If any is missing, the server falls back to `NoOpFcmService` rather than failing to boot. so a misconfigured deployment silently delivers over WebSocket and SSE only.
+(*1) FCM needs three things to activate: production mode, the `firebase` `ServerFlags` flag enabled, and Google Application Default Credentials the Firebase app can initialize with, alongside `GCP_PROJECT_ID`. 
+If any is missing, the server falls back to `NoOpFcmService` rather than failing to boot, so a misconfigured deployment silently delivers over WebSocket and SSE only.
 The signal is chosen by the connection factory rather than by the flag: a Postgres factory yields `PostgresSignal`, anything else yields `LocalSignal`.
 
 ## API Routes
 
 Authorization is per `EntityType`. Each user carries a permission map, checked by `validatePermission` on every protected route. 
 Most route groups are also gated by a `ServerFlags` flag. `Config` and the request-audit `Registry` routes are installed unconditionally. 
+Every route shares a global rate limit, and the routes marked rate-limited below carry a stricter one of their own. 
 Paths come from the shared `URL` registry.
 
 | Method & Path                                                | Purpose                                                        | Auth                                              | Flag             |
@@ -676,7 +685,7 @@ Paths come from the shared `URL` registry.
 | `POST /api/device-tokens` · `/api/tickets`                   | Register FCM token / mint a WebSocket ticket                   | JWT, account not deleted                          | `push`           |
 | `WS /api/push`                                               | Push connection; inbound frames are delivery acknowledgements  | ticket                                            | `push`           |
 | `POST /api/push`                                             | Send a targeted push                                           | JWT, `NOTIFICATION` `WRITE`                       | `push`           |
-| `GET /api/users`                                             | List users                                                     | JWT, `USER` `READ`                                | `users`          |
+| `GET /api/users`                                             | Delta-sync users                                               | JWT, `USER` `READ`                                | `users`          |
 | `GET /api/users/{uuid}`                                      | Fetch a single user by uuid                                    | JWT, `USER` `READ`                                | `users`          |
 | `POST /api/users`                                            | Upsert a user (*1)                                             | JWT, `USER` `WRITE`                               | `users`          |
 | `POST /api/device-location`                                  | Report a captured device location fix                          | JWT, `DEVICE_LOCATION` `WRITE`                    | `deviceLocation` |
@@ -699,7 +708,7 @@ A deleted account:
 * **Cannot log in again.** The password still verifies, so this check is the only thing standing between a deleted user and a brand new session.
 * **Keeps refreshing the session it already had**, for as long as it takes. There is no deadline to miss.
 * **May only write work it created before the deletion**, judged by the request header's UTC.
-* **Cannot read any data its permissions used to reach**, and cannot register a device or open a push stream either.
+* **Cannot read any data its permissions used to reach**, and cannot register a device or open a push stream either. Its existing device tokens are deleted along with it.
 
 The reason the session is not simply revoked is what a refusal costs a queued job.
 A device that was offline when the account was deleted would lose the field work it is holding rather than have it delayed, and a deadline only moves the question to how long a device might plausibly stay offline.
@@ -775,15 +784,15 @@ New features should be gated behind a flag. Below are the steps to create a new 
 
 1. **Components with Store**: Create a new package `ui/component/{component}` with files `{Component}`, `{Component}StateAction`, `{Component}Store`.
 2. **Screen**: Create a new package `ui/screen/{feature}` with files `{Feature}Screen`, `{Feature}ScreenStateAction`, `{Feature}ScreenStore`.
-3. **Gateway**: Create a new package `domain/gateway/{feature}` with the `{Feature}Gateway`, a `{Feature}UseCases` and/or `{Feature}Repository` interface for it to implement, and a `Mappers` file converting between the domain model and the generated SQLDelight schema, plus the needed `.sq` files in the folder `sqldelight`.
+3. **Gateway**: Create a new package `domain/gateway/{feature}` with the `{Feature}Gateway`, a `{Feature}UseCases` and/or `{Feature}Repository` interface for it to implement, and a `Mappers` file converting between the domain model and the generated SQLDelight schema, plus the needed `.sq` files in the folder `sqldelight`. Register the gateway in `Gateways`, and its interfaces in `UseCases` and/or `Repositories`.
 4. **Scheduler**: Handle the new entity in `domain/scheduler/JobProvider`, which switches on `EntityType` and `Job.Type` and delegates to the feature's `Repository`.
-5. **Navigation**: Add to the `ui/navigation` package the new screen in the sealed class `Screen`, the new route in the `provider` package and the link it in the composable navigation in `Navigation`, gated by the feature flag.
+5. **Navigation**: Add to the `ui/navigation` package the new screen in the sealed interface `Screen`, the new route in the `provider` package and link it in the composable navigation in `Navigation`, gated by the feature flag.
 
 #### Server
 
 1. **Database**: Add the feature table to `data/database/table` and to the table list in `Database`.
-2. **UseCase**: Create the use cases in `domain/usecase`.
-3. **Route**: Add the feature routes in `domain/route` in the `provider` package and the link it in the `Routing` file, gated by the feature flag. Validate access and log request telemetry.
+2. **UseCase**: Create the use cases in `domain/usecase`, and register them in `UseCases` and `Gateways`.
+3. **Route**: Add the feature routes in `domain/route` in the `provider` package and link them in the `Routing` file, gated by the feature flag. Validate access and log request telemetry.
 
 #### UseCases VS Repositories
 
@@ -825,7 +834,7 @@ Files persisted on the device are declared as `StorageFile` objects, one per pay
 | Endpoint          | `shared/data/http/URL`                                                                             |
 | Http Header       | `shared/data/http/Header`                                                                          |
 | Query Parameter   | `shared/data/http/Query`                                                                           |
-| Push Payload Type | `shared/domain/PushPayload` - then handle it in `clientApp/domain/push/PayloadManager              |
+| Push Payload Type | `shared/domain/PushPayload` - then handle it in `clientApp/domain/push/PayloadManager`             |
 | Feature Toggle    | `ClientFlags` and `ServerFlags`                                                                    |
 | Tunable Value     | `ClientConfigs` and `ServerConfigs`                                                                |
 | Translation       | `main/resources/static/translations.json` - mirrored in `composeResources/files/translations.json` |
@@ -933,8 +942,8 @@ So a multi-language translation file would look like:
 
 ### Usage
 
-In the composables, call `getTranslation(key, args)` to get the localized string.
-The language ISO is handled automatically, only the `key` is needed; `args` is used to populate positional placeholders defined in the translation. Example:
+In the composables, call `getTranslation(key, default, args)` to get the localized string.
+The language ISO is handled automatically, only the `key` is needed; `args` is used to populate positional placeholders defined in the translation. Since `args` follows `default`, pass it by name. Example:
 
 ```
 {
@@ -947,7 +956,7 @@ The language ISO is handled automatically, only the `key` is needed; `args` is u
 Calling:
 
 ```
-getTranslation("translation_with_arguments", "one", "two")
+getTranslation(key = "translation_with_arguments", args = *arrayOf("one", "two"))
 ```
 
 Returns:
@@ -964,7 +973,7 @@ On Android, use the `applicationContext` provided via `KInitializer` to avoid ex
 ## Testing
 
 The testing structure mirrors the source code to ensure 1:1 coverage.
-Code coverage is measured using `Kover`, configured independently per module but with the same exclusion rules everywhere: generated code, `@Serializable` classes, `@Preview` composables and anything annotated with `@ExcludeFromTesting`.
+Code coverage is measured using `Kover`, configured independently per tested module, with exclusions drawn from the same set: generated code, `@Serializable` classes, `@Preview` composables and anything annotated with `@ExcludeFromTesting`.
 This last annotation is preferred instead of explicit, less scalable declarations in `Gradle`.
 `Kover` is configured to verify a minimum of **90% code coverage**.
 
@@ -998,12 +1007,12 @@ These are the declarations that resolve to a distinct implementation per source 
 * **File**: IO operations on the local filesystem.
 * **AppPath**: Resolves the absolute paths to the application's data and cache directories.
 * **Development**: A boolean flag indicating debug mode.
-* **Cryptography**: Encrypt, decrypt, and hash string content.
+* **Cryptography**: Encrypt, decrypt, and hash string content, and derive keys from a password.
 * **PlatformLogger**: A `TelemetryEngine` that writes to the native system console.
 * **AudioPlayer**: Creates a platform audio player for playlist control.
 * **Camera**: Creates a platform camera controller.
 * **CameraPreview**: Composable rendering the platform camera preview surface.
-* **NfcController**: Creates a platform NFC reader/writer.
+* **NfcController**: Creates a platform NFC reader/writer, and registers its lifecycle.
 * **DeviceLocationProvider**: Creates a platform device location capture controller.
 * **Locale**: Reads the system language, formats UTC dates for the local timezone, and emits a `Flow` on locale changes.
 * **Clock**: Emits when the OS reports the system clock changed, which is one of the signals feeding clock trust.
@@ -1091,8 +1100,10 @@ The set of chains currently executing is held in memory as `activeChains`, guard
 
 There are two job categories with distinct execution rules:
 
-* **Targeted jobs** (`POST`, `DELETE`, `entityUuid != null`) — Mutations on a specific entity. Jobs for Entity A execute sequentially while jobs for Entity B run in parallel on a separate chain.
-* **Global jobs** (`GET`, `entityUuid == null`) — Full collection syncs, which read and write across the whole table for that entity type.
+* **Targeted jobs** (`entityUuid != null`) — Work on a specific entity, typically a `POST` or `DELETE`, or the `GET` of a push-triggered sync. Jobs for Entity A execute sequentially while jobs for Entity B run in parallel on a separate chain.
+* **Global jobs** (`entityUuid == null`) — Typically full collection syncs, which read and write across the whole table for that entity type.
+
+The split is made on `entityUuid` alone, not on `type`.
 
 The two categories are **mutually exclusive per entity type**, and the exclusion is enforced in both directions:
 
@@ -1123,6 +1134,7 @@ A transient storage error therefore costs one idle emission rather than killing 
 
 To run the client in a fully disconnected mode, swap out `HttpClientEngine` with `NoOpHttpClientEngine` (which returns `204` for every request)
 or set the feature flag `http = false` to make all outbound requests throw immediately without touching the network.
+Neither keeps the engine running: the no-op engine's responses carry no server time, so clock trust is never established and nothing dispatches, while the disabled flag fails each job terminally.
 
 ## Disabling the Scheduler
 
@@ -1133,7 +1145,7 @@ That makes the flag a useful escape hatch for debugging a misbehaving queue or f
 
 ## Clock Trust
 
-On every network communication it is estimated the offset between the device clock and the server clock using an NTP-style round-trip calculation.
+On every successful network response, the offset between the device clock and the server clock is estimated using an NTP-style round-trip calculation.
 If the measured offset exceeds `clockDriftTolerance`, the scheduler pauses all dispatch, since a device with an unsynchronized clock cannot be allowed to arbitrate `modifiedAt` based conflict resolution against other devices.
 Trust is restored automatically once a subsequent request reports an offset back within tolerance.
 The offline engine is still a trust based system, as this does not fully protect against malicious users trying to actively hack the engine.
@@ -1252,7 +1264,7 @@ The result is that the entire push stack — WebSocket, SSE and their reconnecti
 `appCore/src/commonMain/kotlin/com/app/builder/core/media/AudioPlayer.kt` · `ui/media/AudioPlayer.kt`
 
 An `open class` holding an `Idle`/`Playing`/`Paused` state machine in common code, driven by four plain methods: `setPlaylist(playlist, loop, shuffle)`, `play()`, `pause()` and `stop()`, plus `dispose()` for teardown. `state` is exposed as a `StateFlow` so the UI observes playback rather than polling it.
-Handing it the playlist that is already loaded is a no-op, so recomposition cannot restart the music. Every entry point first checks the `music` feature flag and an `available` hardware flag, falling back to `stop()` when either is off, and wraps its platform call so a failure is reported to `Telemetry` and leaves the player in a valid state rather than throwing.
+Setting a playlist always stops and reloads, so callers set it once rather than on every recomposition. Every entry point first checks the `music` feature flag and an `available` hardware flag, falling back to `stop()` when either is off, and wraps its platform call so a failure is reported to `Telemetry` and leaves the player in a valid state rather than throwing.
 
 Platforms override only the protected primitives, never the state machine: ExoPlayer on Android, `AVPlayer` on Apple, JavaFX `MediaPlayer` on Desktop, and an `HTMLAudioElement` on Web.
 `rememberAudioPlayer()` is the only entry point a composable needs; it constructs the player and registers a foreground/background lifecycle in the same call, pausing on background and resuming on foreground. 
@@ -1264,7 +1276,7 @@ Construction goes through `AudioPlayer.create()`, which logs and falls back to t
 
 An `open class` holding an `Idle`/`Previewing`/`Recording` state machine in common code, exposed as an observable `state: StateFlow`.
 Its surface is a set of plain methods covering the full camera workflow: `startPreview()`, `stopPreview()`, `capturePhoto(onResult)`, `startRecording(onResult)`, `stopRecording()`, `toggleFacing()` and `dispose()`.
-Captures come back through the `onResult` callback passed at the call site, each carrying the path of the file just written, so a caller receives exactly the capture it asked for.
+Captures come back through the `onResult` callback passed at the call site, each carrying the location of the capture (a file path, or a data URL on Web), or `null` if the photo failed, so a caller receives exactly the capture it asked for.
 Every entry point first checks the `camera` feature flag, an `available` hardware flag and a runtime permission check, falling back to `stopPreview()` when any of the three fails, and wraps its platform call so a failure reports to `Telemetry` instead of propagating. 
 Illegal transitions are dropped by the base class, so no platform implementation has to re-derive what is valid from where.
 
@@ -1301,14 +1313,15 @@ The design decision worth noting is that the update loop exists only to keep the
 
 `appCore/src/commonMain/kotlin/com/app/builder/core/security/Cryptography.kt`
 
-Functions to `encrypt`, `decrypt` and `hash`, backed by real platform keystores rather than a bundled key:
+Functions to `encrypt`, `decrypt` and `hash`, backed by real platform keystores rather than a bundled key, plus `deriveKey`, a PBKDF2-HMAC-SHA256 key derivation from a password and salt:
 AES-GCM with an Android Keystore key, `CCCrypt` with the key held in the iOS Keychain, an AES-GCM key in a PKCS12 `KeyStore` file under the app data directory on Desktop, and WebCrypto with a non-extractable key in IndexedDB on Web.
-Everything is Base64 in and Base64 out, so the caller never handles bytes.
-Desktop is the interesting one, because a JVM app has no OS-managed keystore to lean on. Rather than ship a hardcoded password for the `security.p12` file, it derives one from the machine's own identity:
-`/var/lib/dbus/machine-id` or `/etc/machine-id` on Linux, `MachineGuid` from the registry on Windows, `IOPlatformUUID` from the I/O Kit registry on macOS. The keystore is therefore bound to the machine that created it. 
-Copying the file to another computer yields a keystore that cannot be opened, which is roughly the property the mobile keystores give for free.
+Everything is a string in and a string out, Base64 for ciphertext and hex for hashes and derived keys, so the caller never handles bytes.
+Desktop is the interesting one, because a JVM app has no keystore of its own to lean on. Rather than ship a hardcoded password for the `security.p12` file, it unlocks it with a random secret held by the operating system on behalf of the current user:
+a DPAPI-encrypted blob on Windows, the login keychain on macOS, and the Secret Service through `secret-tool` on Linux. The keystore is therefore bound to the user account that created it, which is roughly the property the mobile keystores give for free.
+Where there is no secret store, the password falls back to the machine's own identity: `/var/lib/dbus/machine-id` or `/etc/machine-id` on Linux, `MachineGuid` from the registry on Windows, `IOPlatformUUID` from the I/O Kit registry on macOS. 
+A keystore still locked with the machine id is reopened with it and written back under the stored secret.
 
-In development mode a failure returns the plaintext instead of `null`, which keeps a machine without a usable keystore from bricking the app, while production correctly reports the failure.
+In development mode an `encrypt`, `decrypt` or `hash` failure returns the input instead of `null`, which keeps a machine without a usable keystore from bricking the app, while production correctly reports the failure.
 This is the layer `StorageFile` sits on to make encryption at rest a per-file boolean.
 
 ## Persisted Storage
@@ -1318,8 +1331,8 @@ This is the layer `StorageFile` sits on to make encryption at rest a per-file bo
 A small persistence layer with a set of guarantees, all inside one class:
 
 - **`StorageFile<T>`** declares a file as a typed object: path, serializer, whether it is encrypted, and whether it is `cache`d. `save`/`load` serialize, encrypt and hit the file system in one step.
-- Caching is optional and internal, not a separate class: when `cache = true`, `StorageFile` lazily hydrates a mutex-guarded `StateFlow` on first access and every `save` commits to disk before updating it, 
-rolling the in-memory value back if the disk write fails, so the cache never advertises a payload the file system rejected. Files read rarely, or written from outside the app can opt out with `cache = false`.
+- Caching is optional and internal, not a separate class: when `cache = true`, `StorageFile` lazily hydrates a mutex-guarded `StateFlow` on first access and every `save` updates it and then commits to disk, 
+rolling the in-memory value back if the disk write fails, so the cache never keeps a payload the file system rejected. Files read rarely, or written from outside the app can opt out with `cache = false`.
 
 The design decision that ties it together: saving a `null` payload deletes the file.
 Absence therefore has a single representation on disk, a cleared file leaves nothing behind, and `reset()` and "save null" converge on the same state.
@@ -1329,7 +1342,7 @@ Absence therefore has a single representation on disk, a cleared file leaves not
 `appCore/src/commonMain/kotlin/com/app/builder/domain/clock/`
 
 A service answering one question as a `StateFlow<Boolean>`: can the device clock be trusted? Three signals feed it: 
-- An NTP-style offset that the HTTP layer recalibrates on every response and compares against a configured drift tolerance 
+- An NTP-style offset that the HTTP layer recalibrates on every successful response and compares against a configured drift tolerance 
 - OS-level clock-change notifications that revoke trust the moment the clock is tampered with
 - A probe loop that runs only while trust is lost, re-measuring the offset until it comes back within tolerance
 
@@ -1407,7 +1420,7 @@ It is why any component can report a failure without knowing where logs go, and 
 
 ## MVI Store
 
-`appCore/src/commonMain/kotlin/com/app/builder/ui/component/Store.kt`
+`appCore/src/commonMain/kotlin/com/app/builder/ui/store/Store.kt`
 
 A `ViewModel` backed `Store<State, Action>` implementing MVI in a single file: actions flow in through `send(action)`, which hands them to a `reducer(state, action)` subclasses override; state flows out through `stateFlow`, with `state` as a non-reactive snapshot; and mutations happen only inside `updateState { }`, which applies them atomically.
 
@@ -1421,14 +1434,14 @@ See [UI Specifics](#ui-specifics).
 
 `appCore/src/commonMain/kotlin/com/app/builder/ui/navigation/`
 
-A thin `Router` interface, exposing `back()` and `navigate(screen, option)`. Its value is the `NavOption` vocabulary, which turns backstack surgery that is normally open-coded per call site into one named strategy: 
+A thin `Router` interface, exposing the `backStack`, `back()` and `navigate(screen, option)`. Its value is the `NavOption` vocabulary, which turns backstack surgery that is normally open-coded per call site into one named strategy: 
 `ADD` pushes, `CLEAR` wipes the stack first, `REPLACE_FIRST`/`REPLACE_LAST` remove an existing instance and everything above it before pushing, `SWAP` lifts an existing instance to the top with its state intact, `POP` returns to an existing instance and discards the one passed in, and `IGNORE` pushes only when that screen isn't already on top.
 Matching is by screen class rather than equality, so "go back to the task list" works without reconstructing the exact arguments the original destination was created with. 
 `Routing` hosts the display, wires the system back gesture and mouse-back button, provides `LocalRouter`, and falls back to a recovery destination when a serialized backstack names a screen that no longer exists, so a stale stack recovers instead of crashing.
 
 The `scene` package supplies scene strategies, which decide how a list of backstack entries becomes what is actually on screen. 
-`SplitSceneStrategy` inspects the top two entries and, when both carry the split metadata key, renders them side-by-side in a single two-pane `SplitScene` instead of stacking them. 
-The result is that the same navigation code produces a stacked flow on a phone and a list-detail layout on a tablet or desktop window, with the decision made by the strategy rather than by branching inside each screen.
+`SplitSceneStrategy` inspects the top two entries and, when both carry the split metadata key, groups them into a single two-pane `SplitScene` instead of stacking them, which renders them side-by-side whenever `LocalSplitScreen` says the window is wide enough. 
+The result is that the same navigation code produces a stacked flow on a phone and a list-detail layout on a tablet or desktop window, with the decision made by the scene rather than by branching inside each screen.
 
 ## Translation Pipeline
 
@@ -1494,7 +1507,8 @@ On the client it is split in two: `Dependency.AppGraph` holds everything that ex
 ### Can I use the client without the bundled server?
 
 Yes. Implement your own if you like. This is a starter kit. Or run the client fully disconnected in one of two ways: swap `HttpClientEngine` for `NoOpHttpClientEngine`, which answers every request with a `204`, or disable the `ClientFlags.http` flag, which makes outbound requests fail immediately without touching the network.
-The difference matters: the no-op engine lets calling code take its success path against empty responses, while the disabled flag exercises the failure path. The offline engine keeps queueing jobs either way, since it pauses on connectivity rather than discarding work.
+The difference matters: the no-op engine lets calling code take its success path against empty responses, while the disabled flag exercises the failure path. 
+Neither keeps the offline engine useful: with the no-op engine the clock is never trusted, so queued jobs wait indefinitely, and with the flag disabled each job fails terminally. See [Network Awareness](#network-awareness).
 The client test harness uses the same seam for isolation, substituting `createMockHttpEngine()` so tests get scripted responses instead of a real socket.
 
 ---
@@ -1637,7 +1651,7 @@ If you ever widen the client lifecycle policy (e.g. keeping sockets alive longer
 
 ### Why are WebSocket connection tickets and connection presence stored in the database instead of an in-memory map?
 
-An in-memory map only exists on the instance that created it. On Cloud Run (or any horizontally-scaled deployment), a client's ticket request and its WebSocket upgrade can land on different instances, and a notification can be sent from an instance that holds none of the recipient's sockets.
+An in-memory map only exists on the instance that created it. On any horizontally-scaled deployment, a client's ticket request and its WebSocket upgrade can land on different instances, and a notification can be sent from an instance that holds none of the recipient's sockets.
 Persisting tickets (`TicketTable`) and presence (`ConnectionTable`) makes both instance-agnostic: any instance can redeem a ticket or correctly decide whether to skip FCM for a connected device, regardless of which instance actually holds the socket.
 
 See [Multi-Instance Scaling](#multi-instance-scaling).
