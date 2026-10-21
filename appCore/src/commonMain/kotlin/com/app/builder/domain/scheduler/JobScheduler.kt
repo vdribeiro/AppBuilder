@@ -8,6 +8,7 @@ import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -50,6 +51,7 @@ import kotlinx.coroutines.Job as CoroutinesJob
  * - **State Machine:** Jobs transition from `PENDING` -> `RUNNING` -> `COMPLETE` / `FAILED`.
  * - **Defensive Failures:** If a catastrophic runtime exception occurs during execution, the job safely falls back to a `FAILED` state to prevent infinite loops.
  * - **Zombie Cleanup:** If the OS kills the app while a job is `RUNNING`, that job would otherwise remain stuck forever. To fix this, on every startup all orphaned `RUNNING` jobs are reset back to `PENDING` before the scheduler loop begins.
+ * - **Teardown:** A job still executing when the scheduler is stopped is left `RUNNING`, so the zombie cleanup requeues it on the next start instead of discarding the pending write.
  *
  * @property jobStore The persistence coordinator used to observe and manipulate queued jobs.
  * @property jobFactory The factory mapping raw metadata rows to executable domain layer workloads.
@@ -218,6 +220,8 @@ class JobScheduler(
                 Telemetry.error(tag = TAG, message = "Unhandled error during job execution", throwable = throwable)
                 jobToSave = if (throwable is InternetDisabledException) applyRetry(job = runningJob) else runningJob.copy(state = Job.State.FAILED)
             } finally {
+                // A canceled scope means the scheduler is being torn down rather than the job having failed, so the job stays RUNNING for the zombie cleanup to requeue
+                if (!this@launch.isActive) jobToSave = runningJob
                 // Non-cancellable: this must persist the terminal state and release the chain even if the loop was canceled mid-execution
                 withContext(context = NonCancellable) {
                     // Release the lock before writing the final terminal state to prevent deadlocks

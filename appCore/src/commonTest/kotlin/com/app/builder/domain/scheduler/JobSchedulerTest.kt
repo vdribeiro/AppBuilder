@@ -3,6 +3,9 @@ package com.app.builder.domain.scheduler
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.uuid.Uuid
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flow
@@ -44,6 +47,30 @@ class JobSchedulerTest: TestCase() {
             val result = results.getOrElse(index = index) { results.last() }
             index++
             result
+        }
+    }
+
+    /** [JobFactory] fixture whose jobs signal that they started and then suspend until canceled. */
+    private class SuspendingJobFactory: JobFactory {
+        /** Completes once a job has begun executing. */
+        val started = CompletableDeferred<Unit>()
+        override fun resolve(job: Job): suspend () -> JobResult = {
+            started.complete(value = Unit)
+            awaitCancellation()
+        }
+    }
+
+    /** [JobFactory] fixture that reports its own cancellation as a result instead of throwing, mirroring a canceled HTTP call surfacing through [JobResult.Error]. */
+    private class CancellationReportingJobFactory: JobFactory {
+        /** Completes once a job has begun executing. */
+        val started = CompletableDeferred<Unit>()
+        override fun resolve(job: Job): suspend () -> JobResult = {
+            started.complete(value = Unit)
+            try {
+                awaitCancellation()
+            } catch (throwable: CancellationException) {
+                JobResult.Error(error = throwable)
+            }
         }
     }
 
@@ -294,5 +321,59 @@ class JobSchedulerTest: TestCase() {
 
         assertEquals(expected = listOf(job.uuid), actual = jobFactory.resolvedJobs.map { it.uuid })
         assertEquals(expected = Job.State.COMPLETE, actual = jobStore.jobs.value.first { it.uuid == job.uuid }.state)
+    }
+
+    /** Verifies that a job still executing when the scheduler stops is left running rather than marked failed. */
+    @Test
+    fun stoppingMidJobLeavesTheJobRunning() = runUnitTest {
+        val jobStore = LocalJobStore()
+        val jobFactory = SuspendingJobFactory()
+        val scheduler = JobScheduler(jobStore = jobStore, jobFactory = jobFactory, clockService = FakeClockService())
+        val job = Job(userUuid = Uuid.NIL, entityType = EntityType.CLIENT_FLAG, type = Job.Type.GET)
+
+        scheduler.queue(job = job)
+        scheduler.start()
+        jobFactory.started.await()
+        scheduler.stop()
+
+        assertEquals(expected = Job.State.RUNNING, actual = jobStore.jobs.value.first { it.uuid == job.uuid }.state)
+    }
+
+    /** Verifies that a job interrupted by stop is requeued by the zombie cleanup and completed on the next start. */
+    @Test
+    fun aJobInterruptedByStopIsRecoveredOnTheNextStart() = runUnitTest {
+        val jobStore = LocalJobStore()
+        val job = Job(userUuid = Uuid.NIL, entityType = EntityType.CLIENT_FLAG, type = Job.Type.GET)
+        val suspendingJobFactory = SuspendingJobFactory()
+        val interruptedScheduler = JobScheduler(jobStore = jobStore, jobFactory = suspendingJobFactory, clockService = FakeClockService())
+
+        interruptedScheduler.queue(job = job)
+        interruptedScheduler.start()
+        suspendingJobFactory.started.await()
+        interruptedScheduler.stop()
+
+        val jobFactory = FakeJobFactory()
+        val restartedScheduler = JobScheduler(jobStore = jobStore, jobFactory = jobFactory, clockService = FakeClockService())
+        restartedScheduler.start()
+        restartedScheduler.stop()
+
+        assertEquals(expected = listOf(job.uuid), actual = jobFactory.resolvedJobs.map { it.uuid })
+        assertEquals(expected = Job.State.COMPLETE, actual = jobStore.jobs.value.first { it.uuid == job.uuid }.state)
+    }
+
+    /** Verifies that a job reporting its cancellation as an error result, rather than throwing, is still left running. */
+    @Test
+    fun stoppingMidJobLeavesTheJobRunningWhenCancellationIsReportedAsAResult() = runUnitTest {
+        val jobStore = LocalJobStore()
+        val jobFactory = CancellationReportingJobFactory()
+        val scheduler = JobScheduler(jobStore = jobStore, jobFactory = jobFactory, clockService = FakeClockService())
+        val job = Job(userUuid = Uuid.NIL, entityType = EntityType.CLIENT_FLAG, type = Job.Type.GET)
+
+        scheduler.queue(job = job)
+        scheduler.start()
+        jobFactory.started.await()
+        scheduler.stop()
+
+        assertEquals(expected = Job.State.RUNNING, actual = jobStore.jobs.value.first { it.uuid == job.uuid }.state)
     }
 }
