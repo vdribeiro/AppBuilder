@@ -1,6 +1,9 @@
 package com.app.builder.domain.scheduler
 
+import kotlinx.io.IOException
+import io.ktor.http.HttpStatusCode
 import com.app.builder.data.http.plugin.InternetDisabledException
+import com.app.builder.data.http.plugin.UnsuccessfulStatusException
 
 /** Represents the final outcome of a persistent background execution unit handled by the scheduling subsystem. */
 sealed interface JobResult {
@@ -19,11 +22,25 @@ sealed interface JobResult {
 
     /**
      * Converts a [Throwable] into an appropriate [JobResult].
-     * Transient network issues are mapped to [Retry] to allow the scheduler to execute the job once connectivity is restored.
+     * Transient failures are mapped to [Retry] so the scheduler can retry the job again.
      * All other exceptions are considered terminal.
      *
-     * @return [Retry] if the exception is an [InternetDisabledException], otherwise an [Error].
+     * @return [Retry] if the exception is transient, otherwise an [Error].
      */
-    fun Throwable.toJobResult(): JobResult =
-        if (this is InternetDisabledException) Retry else Error(error = this)
+    fun Throwable.toJobResult(): JobResult = when (this) {
+        is InternetDisabledException,
+        is IOException -> Retry
+
+        is UnsuccessfulStatusException if status.isRetryable -> Retry
+        else -> Error(error = this)
+    }
+
+    /** Determines whether an HTTP status code indicates a transient error that should be retried. */
+    private val HttpStatusCode.isRetryable: Boolean
+        get() = when (this) {
+            HttpStatusCode.RequestTimeout,
+            HttpStatusCode.TooManyRequests -> true
+
+            else -> value in 500..599
+        }
 }
