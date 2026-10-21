@@ -18,14 +18,14 @@ class LoggingTest: TestCase() {
     @Test
     fun logsRequestHeadersThroughTelemetry() = runUnitTest {
         val messages = mutableListOf<String>()
-        Telemetry.engines.add(element = object: TelemetryEngine {
+        Telemetry.engines += object: TelemetryEngine {
             override fun info(tag: String, message: String) {
                 if (tag == "HttpLogging") messages.add(message)
             }
 
             override fun error(tag: String, message: String, throwable: Throwable?) {}
             override fun feedback(message: String) {}
-        })
+        }
 
         val client = HttpClient(engine = TestEngine(config = MockEngineConfig().apply {
             requestHandlers.add { respondMock() }

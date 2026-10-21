@@ -126,8 +126,7 @@ private suspend fun Dependency.start() {
 
 /** Sets the telemetry engines. */
 private fun setTelemetry() {
-    Telemetry.engines.apply {
-        clear()
+    Telemetry.engines = buildList {
         add(element = ServerLogger)
         if (!Env.developmentMode && !Env.sentryDsn.isNullOrBlank()) {
             val sentryLogger = SentryLogger.init(

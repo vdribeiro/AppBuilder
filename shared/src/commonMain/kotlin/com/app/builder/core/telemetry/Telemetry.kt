@@ -1,10 +1,13 @@
 package com.app.builder.core.telemetry
 
+import kotlin.concurrent.Volatile
+
 /** Global hub for dispatching telemetry data, including logs, error reports, and user feedback. */
 object Telemetry {
 
     /** The backing telemetry engines. */
-    val engines: MutableList<TelemetryEngine> = mutableListOf()
+    @Volatile
+    var engines: List<TelemetryEngine> = emptyList()
 
     /**
      * Dispatches an informational log message.

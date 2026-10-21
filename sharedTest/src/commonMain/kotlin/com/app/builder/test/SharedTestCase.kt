@@ -69,8 +69,7 @@ abstract class SharedTestCase {
     private suspend fun setup(dispatcher: CoroutineDispatcher) {
         setDispatcher(dispatcher = dispatcher)
         Dispatchers.setMain(dispatcher = dispatcher)
-        Telemetry.engines.clear()
-        Telemetry.engines.add(element = MockLogger())
+        Telemetry.engines = listOf(MockLogger())
         resetConfigs()
         beforeTest()
     }
@@ -83,7 +82,7 @@ abstract class SharedTestCase {
     protected suspend fun reset(scope: CoroutineScope) {
         afterTest()
         resetConfigs()
-        Telemetry.engines.clear()
+        Telemetry.engines = emptyList()
         scope.cancel()
         setDispatcher(dispatcher = Dispatchers.Unconfined)
     }

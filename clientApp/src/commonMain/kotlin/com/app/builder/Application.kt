@@ -87,8 +87,7 @@ object Application {
 
     /** Lazily initializes the telemetry engines. */
     private val telemetry by lazy {
-        Telemetry.engines.apply {
-            clear()
+        Telemetry.engines = buildList {
             if (developmentMode) add(element = PlatformLogger)
             if (!developmentMode && SentryConfig.dsn.isNotEmpty()) {
                 val sentryLogger = SentryLogger.init(
