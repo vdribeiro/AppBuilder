@@ -106,8 +106,8 @@ class UnauthorizedException: Throwable(message = "Unauthorized response")
 /**
  * Thrown when the server responds with a status code outside the acceptable success range.
  *
- * @param status The unsuccessful HTTP status code returned by the server.
+ * @property status The unsuccessful HTTP status code returned by the server.
  */
-class UnsuccessfulStatusException(status: HttpStatusCode): Throwable(message = "Unsuccessful response: ${status.value} ${status.description}")
+class UnsuccessfulStatusException(val status: HttpStatusCode): Throwable(message = "Unsuccessful response: ${status.value} ${status.description}")
 
 private const val TAG = "Interceptor"

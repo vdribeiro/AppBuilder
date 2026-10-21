@@ -171,14 +171,14 @@ class InterceptorTest: TestCase() {
     @Test
     fun reportsFailureWhenClockHeadersAreMissing() = runUnitTest {
         val messages = mutableListOf<String>()
-        Telemetry.engines.add(element = object: TelemetryEngine {
+        Telemetry.engines += object: TelemetryEngine {
             override fun info(tag: String, message: String) {}
             override fun error(tag: String, message: String, throwable: Throwable?) {
                 if (tag == "Interceptor") messages.add(message)
             }
 
             override fun feedback(message: String) {}
-        })
+        }
 
         val client = HttpClient(engine = TestEngine(config = MockEngineConfig().apply {
             requestHandlers.add { respondMock() }
