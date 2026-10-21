@@ -275,6 +275,9 @@ Testing suites, fake data and annotations.
 
 ## Modules Structure
 
+<details>
+<summary>Expand to see the folder-by-folder breakdown of each module.</summary>
+
 ### Shared
 
 #### core
@@ -601,6 +604,8 @@ Each target boots the same `App` composable through its own host.
 
 * `Dependency`: Manual dependency injection. Receives an already-built `R2dbcDatabase` and wires `UseCases` via `Gateways`.
 * `Application`: Entry point of the server application. It builds the `R2dbcDatabase`, initializes the `Dependency` graph and other app services, and seeds one super-user account on every boot.
+
+</details>
 
 # Development Workflow
 
