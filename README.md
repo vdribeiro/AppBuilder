@@ -1163,15 +1163,18 @@ The offline engine is still a trust based system, as this does not fully protect
 * **`Retry`** → attempt counter incremented; job reverts to `PENDING` if the new count is below `schedulerMaxAttempts`, otherwise transitions to `FAILED`
 * **`Error`** → terminal failure, job transitions to `FAILED`
 
-The split between retryable and terminal is made by one helper, `Throwable.toJobResult()`, which maps `InternetDisabledException` to `Retry` and everything else to `Error`.
-The reasoning is that connectivity loss is the one failure the engine knows is transient by construction: the job was refused before reaching the network, nothing happened server-side, and the same job will succeed unchanged once the device is back online. 
+The split between retryable and terminal is made by one helper, `Throwable.toJobResult()`, which maps transient failures to `Retry` and everything else to `Error`.
+Transient means the same job can succeed unchanged on a later attempt: `InternetDisabledException` (refused before reaching the network), any `IOException` (timeouts, dropped connections), and `408`, `429` or `5xx` responses.
+Retrying a request that may already have reached the server is safe because upserts are idempotent.
 A validation rejection, a missing permission or a serialization failure will fail identically on every attempt, so retrying them only burns the attempt budget and delays the queue behind them.
-Retries carry no backoff of their own, because they don't need one. A failed job returns to `PENDING`, and the dispatch loop is already gated on connectivity and clock trust, so it will not be picked up again until the condition that is most likely to have caused the failure has cleared.
+Retries carry no backoff of their own. A job that returns `Retry` goes straight back to `PENDING` and is eligible for the very next dispatch.
+For a connectivity loss that costs nothing, because the dispatch loop is already gated on connectivity and clock trust and will not pick the job up again until the condition that caused the failure has cleared.
+The other transient failures have no such gate, so a job failing against a struggling server spends its attempts in quick succession. `schedulerMaxAttempts` is deliberately small for that reason.
 
 Two safety properties are worth calling out:
 
 * **Failure is the default, not the success case.** Before running, the job is staged as `FAILED`, and only an explicit result overwrites that. An exception severe enough to escape the result mapping therefore lands on `FAILED` rather than leaving the job `RUNNING`, which is what would otherwise turn one bad job into a queue that never drains.
-* **Terminal writes are non-cancellable.** Releasing the chain and persisting the final state happen in a `finally` wrapped in `NonCancellable`, so cancelling the scheduler mid-execution cannot leave a chain permanently claimed or a job permanently `RUNNING`.
+* **Terminal writes are non-cancellable.** Releasing the chain and persisting the final state happen in a `finally` wrapped in `NonCancellable`, so cancelling the scheduler mid-execution cannot leave a chain permanently claimed. A job still executing at that point is deliberately left `RUNNING`, so the zombie cleanup requeues it on the next start rather than recording a failure for a write that was never attempted to completion.
 
 ## Zombie Recovery
 
