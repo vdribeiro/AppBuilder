@@ -8,6 +8,7 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import com.app.builder.core.config.ClientConfigs
 import com.app.builder.core.config.ClientFlags
@@ -204,6 +205,7 @@ class JobSchedulerTest: TestCase() {
 
         scheduler.queue(job = job)
         scheduler.start()
+        jobStore.jobs.first { jobs -> jobs.any { it.uuid == job.uuid && it.state == Job.State.COMPLETE } }
         scheduler.stop()
 
         val saved = jobStore.jobs.value.first { it.uuid == job.uuid }
@@ -250,6 +252,7 @@ class JobSchedulerTest: TestCase() {
 
         scheduler.queue(job = job)
         scheduler.start()
+        jobStore.jobs.first { jobs -> jobs.any { it.uuid == job.uuid && it.state == Job.State.COMPLETE } }
         scheduler.stop()
 
         val saved = jobStore.jobs.value.first { it.uuid == job.uuid }

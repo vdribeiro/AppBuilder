@@ -46,7 +46,7 @@ class PushScreenTest: TestCase() {
         pushScreenStore.send(action = PushScreenAction.UpdateTitle(value = "Title"))
         pushScreenStore.send(action = PushScreenAction.UpdateDescription(value = "Description"))
         pushScreenStore.send(action = PushScreenAction.Send)
-        waitForIdle()
+        waitUntil { pushScreenStore.state.sent != null }
 
         onNodeWithText(text = "push_sent").assertIsDisplayed()
         assertFalse(actual = pushScreenStore.state.sending)
@@ -62,23 +62,23 @@ class PushScreenTest: TestCase() {
         assertEquals(expected = listOf(user), actual = pushScreenStore.state.selectedUsers)
 
         pushScreenStore.send(action = PushScreenAction.Send)
-        waitForIdle()
+        waitUntil { pushScreenStore.state.sent != null }
         assertEquals(expected = 1, actual = pushScreenStore.state.sent)
 
         pushScreenStore.send(action = PushScreenAction.SelectType(type = PushPayloadType.FLAGS))
         pushScreenStore.send(action = PushScreenAction.ToggleBroadcast(value = true))
         pushScreenStore.send(action = PushScreenAction.Send)
-        waitForIdle()
+        waitUntil { pushScreenStore.state.sent != null }
         assertEquals(expected = 1, actual = pushScreenStore.state.sent)
 
         pushScreenStore.send(action = PushScreenAction.SelectType(type = PushPayloadType.CONFIGS))
         pushScreenStore.send(action = PushScreenAction.Send)
-        waitForIdle()
+        waitUntil { pushScreenStore.state.sent != null }
         assertEquals(expected = 1, actual = pushScreenStore.state.sent)
 
         pushScreenStore.send(action = PushScreenAction.SelectType(type = PushPayloadType.RESET))
         pushScreenStore.send(action = PushScreenAction.Send)
-        waitForIdle()
+        waitUntil { pushScreenStore.state.sent != null }
         assertEquals(expected = 1, actual = pushScreenStore.state.sent)
     }
 }

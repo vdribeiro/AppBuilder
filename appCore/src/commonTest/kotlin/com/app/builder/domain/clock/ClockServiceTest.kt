@@ -5,6 +5,9 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 import kotlin.time.Duration.Companion.milliseconds
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.update
 import io.ktor.client.engine.mock.MockEngineConfig
 import com.app.builder.core.config.ClientConfigs
 import com.app.builder.data.http.HttpClientFactory
@@ -68,16 +71,16 @@ class ClockServiceTest: TestCase() {
     /** Verifies the probe loop issues no further requests once the service is stopped. */
     @Test
     fun probingStopsAfterStop() = runUnitTest {
-        var probes = 0
-        val clockService = clockService(onProbe = { probes++ })
+        val probes = MutableStateFlow(value = 0)
+        val clockService = clockService(onProbe = { probes.update { it + 1 } })
 
         clockService.start()
-        testScheduler.advanceTimeBy(delayTimeMillis = ClientConfigs.configs.clockProbeInterval * 3)
-        assertTrue(actual = probes > 0)
+        // The mock engine answers off the test scheduler, so wait for the first probe rather than advancing virtual time
+        probes.first { it > 0 }
 
         clockService.stop()
-        val probesAtStop = probes
+        val probesAtStop = probes.value
         testScheduler.advanceTimeBy(delayTimeMillis = ClientConfigs.configs.clockProbeInterval * 5)
-        assertEquals(expected = probesAtStop, actual = probes)
+        assertEquals(expected = probesAtStop, actual = probes.value)
     }
 }
