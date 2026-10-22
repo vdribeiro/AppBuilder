@@ -2,7 +2,6 @@ package com.app.builder.data.http
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
 import kotlin.test.assertIs
 import kotlin.test.assertTrue
 import kotlin.uuid.Uuid
