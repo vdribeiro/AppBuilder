@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -122,7 +123,7 @@ class ClockManager(
         if (probeJob?.isActive != true) probeJob = scope.launch(context = Dispatcher.IO) {
             _trusted.collect { isTrusted ->
                 if (isTrusted) return@collect
-                while (!_trusted.value) {
+                while (this@launch.isActive && !_trusted.value) {
                     httpClient.head(request = HttpRequest(url = URL.Probe))
                     if (_trusted.value) return@collect
                     delay(timeMillis = ClientConfigs.configs.clockProbeInterval)

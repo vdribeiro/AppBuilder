@@ -747,6 +747,7 @@ Both services are built to run correctly behind multiple server instances, with 
 
 * **Connection tickets** (`TicketTable` / `TicketUseCases`): the short-lived, single-use ticket a client exchanges for a WebSocket connection is persisted rather than held in memory, so a ticket minted by one instance is redeemable on any other. Consumption is atomic, so a ticket can never be redeemed twice even by concurrent requests hitting different instances.
 * **Connection presence** (`ConnectionTable` / `ConnectionUseCases`): which devices are connected, and to which instance, lives in the database instead of a local map. Each instance heartbeats its own rows and sweeps rows left behind by crashed instances, so the FCM-exclusion decision above is correct globally, not just for sockets held by the instance handling sending pushes.
+* **Device ownership**: `deviceUuid` arrives in a request header, so a client picks its own. Every per-device table is therefore keyed on `(userUuid, deviceUuid)`, never on `deviceUuid` alone, and `DeviceTokenTable` and `ConnectionTable` both follow that rule. Keyed on the device alone, one account could claim a row belonging to another and silently take over, or kill, its push delivery. A new per-device table inherits the same requirement. The one place a token is matched on its own is the handover that moves an FCM token between users on a shared device: the token is the only value in that exchange an attacker cannot guess.
 * **Cross-instance signaling** (`InstanceSignal`): a notification saved, or a broadcast sent, on one instance must still reach a WebSocket/SSE connection held by a different instance. `PostgresSignal` uses Postgres `LISTEN`/`NOTIFY`, backing every channel with a single shared, self-healing connection regardless of how many observers subscribe to it. The signal only carries deliveries to *other* instances: an instance sends to its own SSE sessions directly and tags each relayed payload with its instance id, so it skips its own echo and a signal failure can never black out the sessions it holds itself.
 
 ### Client Connection Lifecycle
@@ -1332,6 +1333,10 @@ A keystore still locked with the machine id is reopened with it and written back
 In development mode an `encrypt`, `decrypt` or `hash` failure returns the input instead of `null`, which keeps a machine without a usable keystore from bricking the app, while production correctly reports the failure.
 This is the layer `StorageFile` sits on to make encryption at rest a per-file boolean.
 
+`deriveKey` exists for offline login. The local `Session` table stores a `username`, a random per-session `salt` and a `verifier`, which is `deriveKey(password, salt)`; logging in offline looks the session up by username and derives the candidate password against that row's salt.
+Each part earns its place: without the username a verifier match cannot be tied to a user, so two accounts sharing a password could log each other in; without a per-session salt the stored values become a plain password hash, so identical passwords look identical on disk and one precomputed table breaks every install at once.
+The verifier only authenticates the offline login, and is never a key for anything.
+
 ## Persisted Storage
 
 `appCore/src/commonMain/kotlin/com/app/builder/data/storage/`
@@ -1408,6 +1413,10 @@ See [Offline Engine](#offline-engine) for the full mechanics.
 A Ktor client assembled from small plugins where the interesting behaviour lives in the interceptor: it fails fast when networking is flag-disabled or the device is offline, 
 stamps every request with correlation, device and app metadata, converts non-2xx responses into typed exceptions, and performs the round-trip time measurement that feeds the clock trust service.
 Around it sit token refresh, content negotiation, encoding, caching, SSE and WebSocket configuration, a typed `URL`/`Header`/`Query` registry shared with the server, and an `HttpResult` sealed type so callers pattern-match instead of catching.
+
+The interceptor is installed **before** `Auth`, and validates responses on the send pipeline rather than on the response pipeline.
+Both halves are load-bearing. On the send pipeline the first plugin installed is the outermost, so the interceptor wraps the retry `Auth` performs after refreshing a token, and sees only its final outcome.
+Installed after `Auth`, or validating on the response pipeline, it instead runs inside that retry and raises on the first 401, before a refresh is ever attempted: the token is never renewed, and every request after an access token expires fails terminally.
 
 ## Feature Flags & Remote Configs
 
