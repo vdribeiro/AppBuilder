@@ -1,44 +1,44 @@
 [versions]
 
 # Kotlin
-kover = "0.9.9"
-kotlin = "2.4.10"
+kover = "0.9.11"
+kotlin = "2.4.21"
 kotlinx-coroutines = "1.11.0"
-kotlinx-serialization = "1.11.0"
+kotlinx-serialization = "1.12.0"
 kotlinx-datetime = "0.8.0"
-kotlinx-collections = "0.5.1"
+kotlinx-collections = "0.5.2"
 
 # Ktor
-ktor = "3.5.2"
+ktor = "3.6.0"
 
 # SQLDelight
-sqldelight = "2.3.2"
-sqldelight-jdbc = "3.53.2.1"
+sqldelight = "2.4.1"
+sqldelight-jdbc = "3.53.4.0"
 
 # UI & Lifecycle
-compose-multiplatform = "1.11.1"
+compose-multiplatform = "1.12.2"
 compose-hotreload = "1.2.0"
 compose-material3 = "1.9.0"
 compose-icons = "1.7.3"
 lifecycle = "2.11.0"
-navigation3-ui = "1.1.1"
-coil = "3.5.0"
+navigation3-ui = "1.1.2"
+coil = "3.6.3"
 
 # Android
-android-plugin = "9.3.1"
+android-plugin = "9.4.1"
 android-startup = "1.2.0"
 androidx-activity = "1.13.0"
-androidx-exoplayer = "1.11.0"
-androidx-camera = "1.6.1"
-play-services-location = "21.3.0"
+androidx-exoplayer = "1.11.1"
+androidx-camera = "1.6.2"
+play-services-location = "21.4.0"
 android-test-core = "1.7.0"
-android-test-manifest = "1.12.0"
-roboelectric = "4.16.1"
+android-test-manifest = "1.12.1"
+roboelectric = "4.17"
 google-services-plugin = "4.5.0"
-firebase-bom = "34.18.0"
+firebase-bom = "35.1.0"
 
 # Desktop
-logging = "2.0.18"
+logging = "2.0.20"
 javafx = "21.0.9"
 
 # Web
@@ -47,8 +47,8 @@ webpack = "9.1.0"
 firebase-web = "11.6.1"
 
 # Server
-logback = "1.6.3"
-exposed = "1.4.0"
+logback = "1.6.5"
+exposed = "1.6.0"
 h2 = "1.0.0.RELEASE"
 postgresql = "1.1.1.RELEASE"
 firebase-admin = "9.10.0"
