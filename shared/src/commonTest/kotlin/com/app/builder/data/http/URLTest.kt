@@ -9,7 +9,7 @@ class URLTest: TestCase() {
     /** Verifies the URL host, dev port, and dev host constants have their expected values. */
     @Test
     fun hostConstants() = runUnitTest {
-        assertEquals(expected = "server-670810444998.europe-west1.run.app", actual = URL.HOST)
+        assertEquals(expected = "p01--app-builder--r9rdqjhkvs6y.code.run", actual = URL.HOST)
         assertEquals(expected = 8080, actual = URL.DEV_PORT)
         assertEquals(expected = "localhost:8080", actual = URL.DEV_HOST)
     }

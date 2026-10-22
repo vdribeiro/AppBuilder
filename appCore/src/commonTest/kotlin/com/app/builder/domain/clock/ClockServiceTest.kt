@@ -1,10 +1,12 @@
 package com.app.builder.domain.clock
 
 import kotlin.test.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 import kotlin.time.Duration.Companion.milliseconds
 import io.ktor.client.engine.mock.MockEngineConfig
+import com.app.builder.core.config.ClientConfigs
 import com.app.builder.data.http.HttpClientFactory
 import com.app.builder.data.http.TestEngine
 import com.app.builder.data.http.respondMock
@@ -18,9 +20,12 @@ class ClockServiceTest: TestCase() {
      *
      * @return The fixture [ClockService] instance.
      */
-    private fun clockService(): ClockService = ClockManager(
+    private fun clockService(onProbe: () -> Unit = {}): ClockService = ClockManager(
         httpClient = HttpClientFactory(engine = TestEngine(config = MockEngineConfig().apply {
-            requestHandlers.add { respondMock() }
+            requestHandlers.add {
+                onProbe()
+                respondMock()
+            }
         })).httpClient
     )
 
@@ -58,5 +63,21 @@ class ClockServiceTest: TestCase() {
         CoreFile.Device.save { it.orEmpty().plus(pair = (CoreFile.Device.Key.CLOCK_OFFSET to 1_000.milliseconds.toString())) }
         assertTrue(actual = clockService.trusted.value)
         clockService.stop()
+    }
+
+    /** Verifies the probe loop issues no further requests once the service is stopped. */
+    @Test
+    fun probingStopsAfterStop() = runUnitTest {
+        var probes = 0
+        val clockService = clockService(onProbe = { probes++ })
+
+        clockService.start()
+        testScheduler.advanceTimeBy(delayTimeMillis = ClientConfigs.configs.clockProbeInterval * 3)
+        assertTrue(actual = probes > 0)
+
+        clockService.stop()
+        val probesAtStop = probes
+        testScheduler.advanceTimeBy(delayTimeMillis = ClientConfigs.configs.clockProbeInterval * 5)
+        assertEquals(expected = probesAtStop, actual = probes)
     }
 }

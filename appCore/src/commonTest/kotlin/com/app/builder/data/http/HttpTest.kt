@@ -129,22 +129,23 @@ class HttpTest: TestCase() {
         assertEquals(expected = FakeData.notification, actual = decode(value = received.orEmpty()))
     }
 
-    /** Verifies SSE rethrows a CancellationException thrown in the block. */
+    /** Verifies SSE reports a CancellationException thrown in the block as an error result carrying the cancellation. */
     @Test
-    fun sseRethrowsCancellationException() = runUnitTest {
+    fun sseReportsCancellationAsAnErrorResult() = runUnitTest {
         val client = HttpClient(engine = TestEngine(config = MockEngineConfig().apply {
             requestHandlers.add { respondSse(pushPayload = FakeData.notification) }
         })) {
             installSse()
         }
 
-        assertFailsWith<CancellationException> {
-            client.sse(
-                request = HttpRequest(url = URL.Push),
-                onConnected = {},
-                block = { throw CancellationException("Crash") }
-            )
-        }
+        val result = client.sse(
+            request = HttpRequest(url = URL.Push),
+            onConnected = {},
+            block = { throw CancellationException("Crash") }
+        )
+
+        assertIs<HttpResult.Error<Unit>>(value = result)
+        assertIs<CancellationException>(value = result.error)
     }
 
     /** Verifies the WebSocket invokes onConnected then receives decoded frames. */
@@ -215,6 +216,28 @@ class HttpTest: TestCase() {
         }))
 
         client.head(request = HttpRequest(url = URL.Probe))
+    }
+
+    /** Verifies that every request wrapper reports a cancellation as an error result carrying the cancellation, leaving the caller to decide how to react. */
+    @Test
+    fun requestsReportCancellationAsAnErrorResult() = runUnitTest {
+        val client = HttpClient(engine = TestEngine(config = MockEngineConfig().apply {
+            requestHandlers.add { throw CancellationException("Crash") }
+        })) {
+            installContentNegotiation()
+        }
+
+        val results = listOf(
+            client.head(request = HttpRequest(url = URL.Probe)),
+            client.get<Translation>(request = HttpRequest(url = URL.Translations)),
+            client.get<Translation>(request = HttpRequest(url = URL.Translations), uuid = Uuid.NIL),
+            client.post<Translation, Translation>(request = HttpRequest(url = URL.Translations), body = translation),
+        )
+
+        results.forEach {
+            assertIs<HttpResult.Error<*>>(value = it)
+            assertIs<CancellationException>(value = it.error)
+        }
     }
 
     /** A fixture item used to exercise [HttpClient.getPaginated]'s cursor advance and terminal condition. */
