@@ -207,7 +207,7 @@ class HttpTest: TestCase() {
         assertEquals(expected = "HEAD", actual = capturedMethod)
     }
 
-    /** Verifies that [HttpClient.head] swallows any failure instead of throwing. */
+    /** Verifies that [HttpClient.head] swallows an ordinary failure instead of throwing. */
     @Test
     fun headSwallowsFailures() = runUnitTest {
         val client = HttpClient(engine = TestEngine(config = MockEngineConfig().apply {

@@ -93,7 +93,7 @@ class BroadcastManager(
                 if (!online) return@collectLatest
 
                 var retryDelay = ClientConfigs.configs.broadcastRetryDelay
-                while (isActive) {
+                while (this@launch.isActive) {
                     listen(
                         onConnected = { retryDelay = ClientConfigs.configs.broadcastRetryDelay }
                     ) { pushPayload ->

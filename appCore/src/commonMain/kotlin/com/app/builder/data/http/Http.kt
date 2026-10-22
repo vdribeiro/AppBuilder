@@ -32,16 +32,18 @@ import com.app.builder.data.http.URL.Companion.HOST
  * Executes a type-safe HTTP HEAD request.
  *
  * @param request The request data.
+ * @return A [HttpResult.Success] on success, or a [HttpResult.Error] encapsulating the caught exception.
  */
 suspend fun HttpClient.head(
     request: HttpRequest
-) = withContext(context = Dispatcher.IO) {
+): HttpResult<Unit> = withContext(context = Dispatcher.IO) {
     runCatching {
         head(urlString = "$baseUrl${request.url.path.encodeURLPath()}") {
             request.headerMap.forEach { header(key = it.key.header, value = it.value) }
             request.queryMap.forEach { url.parameters.append(name = it.key.parameter, value = it.value) }
         }
-    }.let {}
+        HttpResult.Success(data = Unit)
+    }.getOrElse { HttpResult.Error(error = it) }
 }
 
 /**
@@ -154,41 +156,42 @@ suspend inline fun <reified B, reified T> HttpClient.post(
 
 /**
  * Establishes an SSE connection to the specified endpoint and listens for incoming events.
- * This function suspends until the connection is closed. Any network failures or exceptions thrown during event collection will propagate to the caller.
+ * This function suspends until the connection is closed.
  *
  * @param request The request data.
  * @param onConnected A callback function invoked after a successful connection.
  * @param block A callback function invoked for every incoming event.
+ * @return A [HttpResult.Success] on success, or a [HttpResult.Error] encapsulating the caught exception.
  */
 suspend fun HttpClient.sse(
     request: HttpRequest,
     onConnected: suspend ClientSSESession.() -> Unit,
     block: suspend ClientSSESession.(ServerSentEvent) -> Unit,
-) = withContext(context = Dispatcher.IO) {
+): HttpResult<Unit> = withContext(context = Dispatcher.IO) {
     runCatching {
         serverSentEvents(urlString = "$baseUrl${request.url.path.encodeURLPath()}") {
             onConnected()
             incoming.collect { event -> block(event) }
         }
-    }.onFailure {
-        if (it is CancellationException) throw it
-    }
+        HttpResult.Success(data = Unit)
+    }.getOrElse { HttpResult.Error(error = it) }
 }
 
 /**
  * Establishes a WebSocket connection to the specified endpoint and listens for incoming frames.
- * This function suspends until the connection is closed. Any network failures or exceptions thrown during frame collection will propagate to the caller.
+ * This function suspends until the connection is closed.
  *
  * @param T The specific subtype of WebSocket [Frame] to filter and collect.
  * @param request The request data.
  * @param onConnected A callback function invoked after a successful connection.
  * @param block A callback function invoked for every incoming frame that matches the defined type [T].
+ * @return A [HttpResult.Success] on success, or a [HttpResult.Error] encapsulating the caught exception.
  */
 suspend inline fun <reified T: Frame> HttpClient.webSocket(
     request: HttpRequest,
     crossinline onConnected: suspend DefaultClientWebSocketSession.() -> Unit,
     crossinline block: suspend DefaultClientWebSocketSession.(T) -> Unit,
-) = withContext(context = Dispatcher.IO) {
+): HttpResult<Unit> = withContext(context = Dispatcher.IO) {
     runCatching {
         val query = request.queryMap.entries.joinToString(separator = "&") { (key, value) ->
             "${key.parameter.encodeURLQueryComponent()}=${value.encodeURLQueryComponent()}"
@@ -199,9 +202,8 @@ suspend inline fun <reified T: Frame> HttpClient.webSocket(
                 .filterIsInstance<T>()
                 .collect { frame -> block(frame) }
         }
-    }.onFailure {
-        if (it is CancellationException) throw it
-    }
+        HttpResult.Success(data = Unit)
+    }.getOrElse { HttpResult.Error(error = it) }
 }
 
 /** The active base URL evaluated at runtime. */

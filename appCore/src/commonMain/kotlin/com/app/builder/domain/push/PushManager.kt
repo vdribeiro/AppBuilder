@@ -101,7 +101,7 @@ class PushManager(
                 if (!online) return@collectLatest
 
                 var retryDelay = ClientConfigs.configs.pushRetryDelay
-                while (isActive) {
+                while (this@launch.isActive) {
                     val ticketUuid = requestTicket()
                     if (ticketUuid != null) {
                         listen(
