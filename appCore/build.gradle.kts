@@ -177,5 +177,5 @@ tasks.register("testAppCoreAndReport") {
     description = "Runs all appCore tests and generates a Kover coverage report."
 
     dependsOn("test")
-    finalizedBy("koverHtmlReport")
+    finalizedBy("koverHtmlReport", "koverVerify")
 }

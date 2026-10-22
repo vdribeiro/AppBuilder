@@ -84,5 +84,5 @@ tasks.register("testSharedAndReport") {
     description = "Runs all shared tests and generates a Kover coverage report."
 
     dependsOn("test")
-    finalizedBy("koverHtmlReport")
+    finalizedBy("koverHtmlReport", "koverVerify")
 }

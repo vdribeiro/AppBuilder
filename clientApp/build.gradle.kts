@@ -384,5 +384,5 @@ tasks.register("testClientAndReport") {
     description = "Runs all platform tests and generates a unified Kover coverage report."
 
     dependsOn("test")
-    finalizedBy("koverHtmlReport")
+    finalizedBy("koverHtmlReport", "koverVerify")
 }

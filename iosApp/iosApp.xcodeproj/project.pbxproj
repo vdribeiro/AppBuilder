@@ -22,7 +22,7 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		F30399232EA1B73A007F2DA7 /* Exceptions for "iosApp" folder in "iosApp" target */ = {
+		F30399232EA1B73A007F2DA7 /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
@@ -35,7 +35,11 @@
 		B9DA97B32DC1472C00A4DA20 /* iosApp */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				F30399232EA1B73A007F2DA7 /* Exceptions for "iosApp" folder in "iosApp" target */,
+				F30399232EA1B73A007F2DA7 /* PBXFileSystemSynchronizedBuildFileExceptionSet */,
+			);
+			explicitFileTypes = {
+			};
+			explicitFolders = (
 			);
 			path = iosApp;
 			sourceTree = "<group>";
@@ -197,9 +201,13 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-iosApp/Pods-iosApp-resources-${CONFIGURATION}-input-files.xcfilelist",
 			);
+			inputPaths = (
+			);
 			name = "[CP] Copy Pods Resources";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-iosApp/Pods-iosApp-resources-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -214,9 +222,13 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-iosApp/Pods-iosApp-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
+			inputPaths = (
+			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-iosApp/Pods-iosApp-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
