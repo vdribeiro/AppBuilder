@@ -47,6 +47,7 @@ val webFirebaseConfigJson: String = localProperties.getProperty("web.firebaseCon
 val generateFirebaseMessagingServiceWorker = tasks.register<Copy>(name = "generateFirebaseMessagingServiceWorker") {
     description = "Generate firebase-messaging-sw.js with the configured Firebase Web config."
     val configJson = webFirebaseConfigJson
+    inputs.property("firebaseConfig", configJson)
     from("src/webMain/resourceTemplates") {
         include("firebase-messaging-sw.js.template")
         rename { "firebase-messaging-sw.js" }
