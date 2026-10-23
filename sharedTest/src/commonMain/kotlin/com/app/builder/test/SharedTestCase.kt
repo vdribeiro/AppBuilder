@@ -86,7 +86,7 @@ abstract class SharedTestCase {
         Dispatcher.Main = Dispatchers.Main
         Dispatcher.Default = Dispatchers.Default
         Dispatcher.IO = io
-        Dispatchers.setMain(dispatcher = Dispatchers.Main)
+        Dispatchers.resetMain()
     }
 
     /**
@@ -108,7 +108,6 @@ abstract class SharedTestCase {
                 reset(scope = scope)
             }
         }
-        Dispatchers.resetMain()
     }
 
     /**
@@ -130,7 +129,6 @@ abstract class SharedTestCase {
                 reset(scope = scope)
             }
         }
-        Dispatchers.resetMain()
     }
 
     /**
@@ -151,6 +149,5 @@ abstract class SharedTestCase {
                 reset(scope = scope)
             }
         }
-        Dispatchers.resetMain()
     }
 }

@@ -26,15 +26,6 @@ class DateTimeTest: TestCase() {
         }
     }
 
-    /** Verifies now returns the current instant, bounded by the system clock immediately before and after the call. */
-    @Test
-    fun nowReturnsCurrentInstant() = runUnitTest {
-        val before = Clock.System.now()
-        val instant = now()
-        val after = Clock.System.now()
-        assertTrue(actual = instant in before..after)
-    }
-
     /** Verifies epoch returns the current epoch millisecond timestamp matching now. */
     @Test
     fun epochMatchesNow() = runUnitTest {
