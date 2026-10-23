@@ -1,7 +1,9 @@
 package com.app.builder.test
 
+import kotlin.time.Clock
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
+import kotlin.time.TimeSource
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -22,10 +24,12 @@ import com.app.builder.core.config.ClientFlags
 import com.app.builder.core.config.ServerConfigs
 import com.app.builder.core.config.ServerFlags
 import com.app.builder.core.flow.Dispatcher
+import com.app.builder.core.locale.DateTime
+import com.app.builder.core.locale.MockClock
 import com.app.builder.core.telemetry.MockLogger
 import com.app.builder.core.telemetry.Telemetry
 
-/** Class for defining test cases. It provides the shared hermetic testing environment by handling feature flags, configs, telemetry and coroutine dispatchers. */
+/** Class for defining test cases. It provides the shared hermetic testing environment by handling feature flags, configs, telemetry, the clock and coroutine dispatchers. */
 abstract class SharedTestCase {
 
     init {
@@ -66,9 +70,11 @@ abstract class SharedTestCase {
      *
      * @param dispatcher The dispatcher to set.
      */
-    private suspend fun setup(dispatcher: CoroutineDispatcher) {
+    private suspend fun setup(dispatcher: TestDispatcher) {
         setDispatcher(dispatcher = dispatcher)
         Dispatchers.setMain(dispatcher = dispatcher)
+        DateTime.clock = MockClock(scheduler = dispatcher.scheduler)
+        DateTime.timeSource = dispatcher.scheduler.timeSource
         Telemetry.engines = listOf(MockLogger())
         resetConfigs()
         beforeTest()
@@ -84,7 +90,10 @@ abstract class SharedTestCase {
         resetConfigs()
         Telemetry.engines = emptyList()
         scope.cancel()
+        DateTime.clock = Clock.System
+        DateTime.timeSource = TimeSource.Monotonic
         setDispatcher(dispatcher = Dispatchers.Unconfined)
+        Dispatchers.setMain(dispatcher = Dispatchers.Unconfined)
     }
 
     /**
