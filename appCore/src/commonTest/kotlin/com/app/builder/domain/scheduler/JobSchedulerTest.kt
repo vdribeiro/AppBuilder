@@ -2,6 +2,10 @@ package com.app.builder.domain.scheduler
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
+import kotlin.test.assertTrue
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Instant
 import kotlin.uuid.Uuid
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
@@ -10,6 +14,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.test.TestScope
 import com.app.builder.core.config.ClientConfigs
 import com.app.builder.core.config.ClientFlags
 import com.app.builder.core.security.uuid
@@ -91,6 +96,15 @@ class JobSchedulerTest: TestCase() {
         override fun start() {}
         override suspend fun stop() {}
     }
+
+    /**
+     * Reads the test scheduler's virtual clock, so the retry deadlines the scheduler persists advance in step with the delays it waits on.
+     * Against the real clock a deferred job stays not due while virtual delays return instantly, which spins the loop until wall time catches up.
+     *
+     * @receiver The scope owning the virtual clock.
+     * @return A time source over virtual time.
+     */
+    private fun TestScope.virtualTimeSource(): () -> Instant = { Instant.fromEpochMilliseconds(epochMilliseconds = testScheduler.currentTime) }
 
     /** Verifies queuing a job with the append conflict policy keeps both jobs pending. */
     @Test
@@ -200,7 +214,7 @@ class JobSchedulerTest: TestCase() {
     fun retryResultReschedulesJobUntilItSucceeds() = runUnitTest {
         val jobStore = LocalJobStore()
         val jobFactory = SequencedJobFactory(results = listOf(JobResult.Retry, JobResult.Success))
-        val scheduler = JobScheduler(jobStore = jobStore, jobFactory = jobFactory, clockService = FakeClockService())
+        val scheduler = JobScheduler(jobStore = jobStore, jobFactory = jobFactory, clockService = FakeClockService(), timeSource = virtualTimeSource())
         val job = Job(userUuid = Uuid.NIL, entityType = EntityType.CLIENT_FLAG, type = Job.Type.GET)
 
         scheduler.queue(job = job)
@@ -247,7 +261,7 @@ class JobSchedulerTest: TestCase() {
     fun jobFactoryThrowingInternetDisabledExceptionReschedulesJobUntilItSucceeds() = runUnitTest {
         val jobStore = LocalJobStore()
         val jobFactory = ThrowingJobFactory(throwable = InternetDisabledException(), failuresBeforeSuccess = 1)
-        val scheduler = JobScheduler(jobStore = jobStore, jobFactory = jobFactory, clockService = FakeClockService())
+        val scheduler = JobScheduler(jobStore = jobStore, jobFactory = jobFactory, clockService = FakeClockService(), timeSource = virtualTimeSource())
         val job = Job(userUuid = Uuid.NIL, entityType = EntityType.CLIENT_FLAG, type = Job.Type.GET)
 
         scheduler.queue(job = job)
@@ -378,5 +392,62 @@ class JobSchedulerTest: TestCase() {
         scheduler.stop()
 
         assertEquals(expected = Job.State.RUNNING, actual = jobStore.jobs.value.first { it.uuid == job.uuid }.state)
+    }
+
+    /** Verifies a retried job is deferred behind a backoff deadline rather than being queued for immediate re-execution. */
+    @Test
+    fun retryDefersJobBehindBackoffDeadline() = runUnitTest {
+        val jobStore = LocalJobStore()
+        val jobFactory = SequencedJobFactory(results = listOf(JobResult.Retry, JobResult.Success))
+        val timeSource = virtualTimeSource()
+        val scheduler = JobScheduler(jobStore = jobStore, jobFactory = jobFactory, clockService = FakeClockService(), timeSource = timeSource)
+        val job = Job(userUuid = Uuid.NIL, entityType = EntityType.CLIENT_FLAG, type = Job.Type.GET)
+
+        scheduler.queue(job = job)
+        scheduler.start()
+        val deferred = jobStore.jobs.first { jobs -> jobs.any { it.uuid == job.uuid && it.state == Job.State.PENDING && it.attempt == 1 } }.first { it.uuid == job.uuid }
+        val deadline = assertNotNull(actual = deferred.nextAttemptAt)
+        assertEquals(expected = timeSource() + ClientConfigs.configs.schedulerRetryDelay.milliseconds, actual = deadline)
+
+        jobStore.jobs.first { jobs -> jobs.any { it.uuid == job.uuid && it.state == Job.State.COMPLETE } }
+        scheduler.stop()
+        assertTrue(actual = timeSource() >= deadline, message = "the job ran before its deadline")
+    }
+
+    /** Verifies the backoff doubles between attempts. */
+    @Test
+    fun retryBackoffDoublesBetweenAttempts() = runUnitTest {
+        val jobStore = LocalJobStore()
+        val jobFactory = SequencedJobFactory(results = listOf(JobResult.Retry, JobResult.Retry, JobResult.Success))
+        val timeSource = virtualTimeSource()
+        val scheduler = JobScheduler(jobStore = jobStore, jobFactory = jobFactory, clockService = FakeClockService(), timeSource = timeSource)
+        val job = Job(userUuid = Uuid.NIL, entityType = EntityType.CLIENT_FLAG, type = Job.Type.GET)
+        val delay = ClientConfigs.configs.schedulerRetryDelay
+
+        scheduler.queue(job = job)
+        scheduler.start()
+        val first = jobStore.jobs.first { jobs -> jobs.any { it.uuid == job.uuid && it.attempt == 1 && it.nextAttemptAt != null } }.first { it.uuid == job.uuid }
+        assertEquals(expected = delay.milliseconds, actual = assertNotNull(actual = first.nextAttemptAt) - Instant.fromEpochMilliseconds(epochMilliseconds = 0))
+
+        val second = jobStore.jobs.first { jobs -> jobs.any { it.uuid == job.uuid && it.attempt == 2 && it.nextAttemptAt != null } }.first { it.uuid == job.uuid }
+        assertEquals(expected = (delay * 2).milliseconds, actual = assertNotNull(actual = second.nextAttemptAt) - Instant.fromEpochMilliseconds(epochMilliseconds = delay))
+        scheduler.stop()
+    }
+
+    /** Verifies a deadline beyond the backoff ceiling, which only a device clock change can produce, does not strand the job. */
+    @Test
+    fun deadlineBeyondTheCeilingIsTreatedAsDue() = runUnitTest {
+        val jobStore = LocalJobStore()
+        val timeSource = virtualTimeSource()
+        val scheduler = JobScheduler(jobStore = jobStore, jobFactory = FakeJobFactory(), clockService = FakeClockService(), timeSource = timeSource)
+        val stranded = timeSource() + (ClientConfigs.configs.schedulerMaxRetryDelay * 10).milliseconds
+        val job = Job(userUuid = Uuid.NIL, entityType = EntityType.CLIENT_FLAG, type = Job.Type.GET, attempt = 1, nextAttemptAt = stranded)
+
+        jobStore.upsertJob(job = job)
+        scheduler.start()
+        jobStore.jobs.first { jobs -> jobs.any { it.uuid == job.uuid && it.state == Job.State.COMPLETE } }
+        scheduler.stop()
+
+        assertTrue(actual = timeSource() < stranded, message = "the job waited out a deadline it should have ignored")
     }
 }
