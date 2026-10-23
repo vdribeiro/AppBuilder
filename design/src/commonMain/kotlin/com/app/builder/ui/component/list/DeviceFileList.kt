@@ -6,7 +6,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.InsertDriveFile
+import androidx.compose.material.icons.automirrored.filled.InsertDriveFile
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.ui.Alignment
@@ -44,7 +44,7 @@ fun DeviceFileList(
                     .clickable { onClick(item) },
                 headlineText = item.name,
                 supportingText = item.description,
-                leadingContent = { Icon(imageVector = Icons.Filled.InsertDriveFile) }
+                leadingContent = { Icon(imageVector = Icons.AutoMirrored.Filled.InsertDriveFile) }
             )
         }
     }

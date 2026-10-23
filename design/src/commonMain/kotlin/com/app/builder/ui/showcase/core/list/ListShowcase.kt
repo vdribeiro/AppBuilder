@@ -11,10 +11,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.app.builder.ui.core.card.Card
 import com.app.builder.ui.core.image.Icon
-import com.app.builder.ui.core.list.LazyColumn as ScrollableLazyColumn
 import com.app.builder.ui.core.list.ListItem
 import com.app.builder.ui.core.text.Text
 import com.app.builder.ui.showcase.ShowcaseSection
+import com.app.builder.ui.core.list.LazyColumn as ScrollableLazyColumn
 
 /** Displays a scrollable list mixing list items and cards. */
 @Composable
