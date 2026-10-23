@@ -44,5 +44,5 @@ class JobSchedulerStore(database: AppDatabase): JobStore {
         jobDao.resetJobsState(oldState = Job.State.RUNNING, newState = Job.State.PENDING)
 
     override suspend fun updateJobStateAndAttempt(job: Job): Boolean =
-        jobDao.updateJobStateAndAttempt(uuid = job.uuid, state = job.state, attempt = job.attempt) > 0
+        jobDao.updateJobStateAndAttempt(uuid = job.uuid, state = job.state, attempt = job.attempt, nextAttemptAt = job.nextAttemptAt) > 0
 }

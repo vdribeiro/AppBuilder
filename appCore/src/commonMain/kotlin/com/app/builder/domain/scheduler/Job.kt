@@ -20,6 +20,7 @@ import com.app.builder.domain.EntityType
  * @property payload A JSON string representing the execution parameters required by the task.
  * @property state The current lifecycle status of the execution request.
  * @property attempt A zero-indexed counter tracking retry iterations in failure-recovery scenarios.
+ * @property nextAttemptAt The earliest moment a retried job may run again. `null` means the job has never been retried and is due immediately.
  */
 data class Job(
     val uuid: Uuid = uuid(),
@@ -35,6 +36,7 @@ data class Job(
     val payload: String? = null,
     val state: State = State.PENDING,
     val attempt: Int = 0,
+    val nextAttemptAt: Instant? = null,
 ) {
     /** Defines the high-level operational intent of a background job. */
     enum class Type {

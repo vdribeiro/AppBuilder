@@ -23,6 +23,10 @@ data class ClientConfigs(
     val clockProbeInterval: Long,
     /** Maximum number of attempts before a job is marked permanently as failed instead of retried. */
     val schedulerMaxAttempts: Int,
+    /** Initial delay in milliseconds before a retried job becomes eligible to run again, doubling on each subsequent attempt up to [schedulerMaxRetryDelay]. */
+    val schedulerRetryDelay: Long = 5_000L,
+    /** Ceiling in milliseconds for the job retry backoff described in [schedulerRetryDelay]. */
+    val schedulerMaxRetryDelay: Long = 30_000L,
     /** The maximum number of push payloads to remember. */
     val maxHandledPayloads: Int,
     /** Initial delay in milliseconds before the first broadcast reconnect attempt, and the value the backoff resets to after a successful reconnect. Doubles on each subsequent failure up to [broadcastMaxRetryDelay]. */
@@ -55,7 +59,9 @@ data class ClientConfigs(
             httpRequestTimeoutMillis = 120_000L,
             clockDriftTolerance = 60_000L,
             clockProbeInterval = 30_000L,
-            schedulerMaxAttempts = 3,
+            schedulerMaxAttempts = 5,
+            schedulerRetryDelay = 5_000L,
+            schedulerMaxRetryDelay = 30_000L,
             maxHandledPayloads = 500,
             broadcastRetryDelay = 2_000L,
             broadcastMaxRetryDelay = 30_000L,

@@ -19,6 +19,7 @@ fun JobSchema.toJob(): Job = Job(
     payload = payload,
     state = state,
     attempt = attempt,
+    nextAttemptAt = nextAttemptAt,
 )
 
 /**
@@ -37,6 +38,7 @@ fun Job.toJobSchema(): JobSchema = JobSchema(
     payload = payload,
     state = state,
     attempt = attempt,
+    nextAttemptAt = nextAttemptAt,
 )
 
 /**

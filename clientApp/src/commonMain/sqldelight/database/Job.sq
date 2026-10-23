@@ -16,7 +16,8 @@ CREATE TABLE IF NOT EXISTS Job (
     conflictPolicy TEXT AS ConflictPolicy NOT NULL,
     payload TEXT,
     state TEXT AS State NOT NULL,
-    attempt INTEGER AS Int NOT NULL
+    attempt INTEGER AS Int NOT NULL,
+    nextAttemptAt TEXT AS Instant
 );
 
 truncateJob:
@@ -37,7 +38,8 @@ WHERE userUuid = :userUuid
 updateJobStateAndAttempt:
 UPDATE Job
 SET state = :state,
-    attempt = :attempt
+    attempt = :attempt,
+    nextAttemptAt = :nextAttemptAt
 WHERE uuid = :uuid;
 
 resetJobsState:

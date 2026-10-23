@@ -40,7 +40,7 @@ class LocalJobStore: JobStore {
     }
 
     override suspend fun updateJobStateAndAttempt(job: Job): Boolean {
-        _jobs.value = _jobs.value.map { if (it.uuid == job.uuid) it.copy(state = job.state, attempt = job.attempt) else it }
+        _jobs.value = _jobs.value.map { if (it.uuid == job.uuid) it.copy(state = job.state, attempt = job.attempt, nextAttemptAt = job.nextAttemptAt) else it }
         return true
     }
 }

@@ -33,7 +33,8 @@ class DatabaseFactory(driver: SqlDriver) {
             typeAdapter = EnumColumnAdapter(),
             conflictPolicyAdapter = EnumColumnAdapter(),
             stateAdapter = EnumColumnAdapter(),
-            attemptAdapter = IntColumnAdapter
+            attemptAdapter = IntColumnAdapter,
+            nextAttemptAtAdapter = InstantColumnAdapter
         ),
         RegistryAdapter = Registry.Adapter(
             requestUuidAdapter = UuidColumnAdapter,
