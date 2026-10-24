@@ -6,17 +6,24 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlin.time.Clock
 import kotlin.time.Duration
+import kotlin.time.Instant
 import com.app.builder.test.TestCase
 
 class DateTimeTest: TestCase() {
 
-    /** Verifies now returns the current instant, bounded by the system clock immediately before and after the call. */
+    /** Verifies now reads whichever clock is installed rather than the system clock directly. */
     @Test
-    fun nowReturnsCurrentInstant() = runUnitTest {
-        val before = Clock.System.now()
-        val instant = now()
-        val after = Clock.System.now()
-        assertTrue(actual = instant in before..after)
+    fun nowReadsTheInstalledClock() = runUnitTest {
+        val previous = DateTime.clock
+        val fixed = Instant.parse(input = "2030-05-05T10:15:00Z")
+        DateTime.clock = object: Clock {
+            override fun now(): Instant = fixed
+        }
+        try {
+            assertEquals(expected = fixed, actual = now())
+        } finally {
+            DateTime.clock = previous
+        }
     }
 
     /** Verifies epoch returns the current epoch millisecond timestamp matching now. */

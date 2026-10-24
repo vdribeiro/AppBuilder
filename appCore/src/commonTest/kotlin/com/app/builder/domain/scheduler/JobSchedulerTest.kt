@@ -2,6 +2,9 @@ package com.app.builder.domain.scheduler
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
+import kotlin.test.assertTrue
+import kotlin.time.Duration.Companion.milliseconds
 import kotlin.uuid.Uuid
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
@@ -12,6 +15,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import com.app.builder.core.config.ClientConfigs
 import com.app.builder.core.config.ClientFlags
+import com.app.builder.core.locale.now
 import com.app.builder.core.security.uuid
 import com.app.builder.data.http.plugin.InternetDisabledException
 import com.app.builder.domain.EntityType
@@ -91,6 +95,7 @@ class JobSchedulerTest: TestCase() {
         override fun start() {}
         override suspend fun stop() {}
     }
+
 
     /** Verifies queuing a job with the append conflict policy keeps both jobs pending. */
     @Test
@@ -378,5 +383,62 @@ class JobSchedulerTest: TestCase() {
         scheduler.stop()
 
         assertEquals(expected = Job.State.RUNNING, actual = jobStore.jobs.value.first { it.uuid == job.uuid }.state)
+    }
+
+    /** Verifies a retried job is deferred behind a backoff deadline rather than being queued for immediate re-execution. */
+    @Test
+    fun retryDefersJobBehindBackoffDeadline() = runUnitTest {
+        val jobStore = LocalJobStore()
+        val jobFactory = SequencedJobFactory(results = listOf(JobResult.Retry, JobResult.Success))
+        val scheduler = JobScheduler(jobStore = jobStore, jobFactory = jobFactory, clockService = FakeClockService())
+        val job = Job(userUuid = Uuid.NIL, entityType = EntityType.CLIENT_FLAG, type = Job.Type.GET)
+
+        scheduler.queue(job = job)
+        scheduler.start()
+        val deferred = jobStore.jobs.first { jobs -> jobs.any { it.uuid == job.uuid && it.state == Job.State.PENDING && it.attempt == 1 } }.first { it.uuid == job.uuid }
+        val deadline = assertNotNull(actual = deferred.nextAttemptAt)
+        assertEquals(expected = now() + ClientConfigs.configs.schedulerRetryDelay.milliseconds, actual = deadline)
+
+        jobStore.jobs.first { jobs -> jobs.any { it.uuid == job.uuid && it.state == Job.State.COMPLETE } }
+        scheduler.stop()
+        assertTrue(actual = now() >= deadline, message = "the job ran before its deadline")
+    }
+
+    /** Verifies the backoff doubles between attempts. */
+    @Test
+    fun retryBackoffDoublesBetweenAttempts() = runUnitTest {
+        val jobStore = LocalJobStore()
+        val jobFactory = SequencedJobFactory(results = listOf(JobResult.Retry, JobResult.Retry, JobResult.Success))
+        val scheduler = JobScheduler(jobStore = jobStore, jobFactory = jobFactory, clockService = FakeClockService())
+        val job = Job(userUuid = Uuid.NIL, entityType = EntityType.CLIENT_FLAG, type = Job.Type.GET)
+        val delay = ClientConfigs.configs.schedulerRetryDelay
+
+        val queuedAt = now()
+
+        scheduler.queue(job = job)
+        scheduler.start()
+        val first = jobStore.jobs.first { jobs -> jobs.any { it.uuid == job.uuid && it.attempt == 1 && it.nextAttemptAt != null } }.first { it.uuid == job.uuid }
+        val firstDeadline = assertNotNull(actual = first.nextAttemptAt)
+        assertEquals(expected = delay.milliseconds, actual = firstDeadline - queuedAt)
+
+        val second = jobStore.jobs.first { jobs -> jobs.any { it.uuid == job.uuid && it.attempt == 2 && it.nextAttemptAt != null } }.first { it.uuid == job.uuid }
+        assertEquals(expected = (delay * 2).milliseconds, actual = assertNotNull(actual = second.nextAttemptAt) - firstDeadline)
+        scheduler.stop()
+    }
+
+    /** Verifies a deadline beyond the backoff ceiling, which only a device clock change can produce, does not strand the job. */
+    @Test
+    fun deadlineBeyondTheCeilingIsTreatedAsDue() = runUnitTest {
+        val jobStore = LocalJobStore()
+        val scheduler = JobScheduler(jobStore = jobStore, jobFactory = FakeJobFactory(), clockService = FakeClockService())
+        val stranded = now() + (ClientConfigs.configs.schedulerMaxRetryDelay * 10).milliseconds
+        val job = Job(userUuid = Uuid.NIL, entityType = EntityType.CLIENT_FLAG, type = Job.Type.GET, attempt = 1, nextAttemptAt = stranded)
+
+        jobStore.upsertJob(job = job)
+        scheduler.start()
+        jobStore.jobs.first { jobs -> jobs.any { it.uuid == job.uuid && it.state == Job.State.COMPLETE } }
+        scheduler.stop()
+
+        assertTrue(actual = now() < stranded, message = "the job waited out a deadline it should have ignored")
     }
 }

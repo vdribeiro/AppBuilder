@@ -1,15 +1,30 @@
 package com.app.builder.core.locale
 
+import kotlin.concurrent.Volatile
 import kotlin.time.Clock
 import kotlin.time.Instant
+import kotlin.time.TimeMark
 import kotlin.time.TimeSource
+import com.app.builder.core.locale.DateTime.clock
+import com.app.builder.core.locale.DateTime.timeSource
+
+/** Date and time sources. */
+object DateTime {
+    /** The source of [Instant] values. */
+    @Volatile
+    var clock: Clock = Clock.System
+
+    /** The source of time for measuring time intervals. */
+    @Volatile
+    var timeSource: TimeSource = TimeSource.Monotonic
+}
 
 /**
  * Returns the current time [Instant].
  *
  * @return The current [Instant].
  */
-fun now(): Instant = Clock.System.now()
+fun now(): Instant = clock.now()
 
 /**
  * Returns the current number of milliseconds since the Unix epoch.
@@ -19,11 +34,11 @@ fun now(): Instant = Clock.System.now()
 fun epoch(): Long = now().toEpochMilliseconds()
 
 /**
- * Marks a point in time on the [TimeSource.Monotonic] time source.
+ * Marks a point in time on the [timeSource].
  *
- * @return The [TimeSource.Monotonic.ValueTimeMark] representing the marked point in time.
+ * @return The [TimeMark] representing the marked point in time.
  */
-fun markNow(): TimeSource.Monotonic.ValueTimeMark = TimeSource.Monotonic.markNow()
+fun markNow(): TimeMark = timeSource.markNow()
 
 /**
  * Parses a string representation of an [Instant] into an [Instant] object.

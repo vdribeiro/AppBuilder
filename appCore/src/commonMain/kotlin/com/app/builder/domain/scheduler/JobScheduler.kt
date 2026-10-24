@@ -1,11 +1,16 @@
 package com.app.builder.domain.scheduler
 
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Instant
 import kotlin.uuid.Uuid
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.isActive
@@ -16,6 +21,7 @@ import kotlinx.coroutines.withContext
 import com.app.builder.core.config.ClientConfigs
 import com.app.builder.core.config.ClientFlags
 import com.app.builder.core.flow.Dispatcher
+import com.app.builder.core.locale.now
 import com.app.builder.core.telemetry.Telemetry
 import com.app.builder.data.http.getInternetAvailabilityFlow
 import com.app.builder.data.http.plugin.InternetDisabledException
@@ -77,6 +83,12 @@ class JobScheduler(
 
     /** In-memory registry of currently executing job chains across different loop emissions. */
     private val activeChains = mutableSetOf<Chain>()
+
+    /** Re-evaluates the queue once a deferred job's backoff has elapsed. */
+    private val wake = MutableStateFlow(value = 0L)
+
+    /** Tracks the timer currently waiting on the earliest deferred job. */
+    private var wakeJob: CoroutinesJob? = null
 
     /**
      * Identifies a sequential execution queue for background jobs, preventing overlapping operations on identical targets.
@@ -145,9 +157,13 @@ class JobScheduler(
             combine(
                 flow = observePendingJobs(),
                 flow2 = getInternetAvailabilityFlow(),
-                flow3 = clockService.trusted
-            ) { jobs, online, trusted -> if (online && trusted) jobs else emptyList() }.collect { jobs ->
+                flow3 = clockService.trusted,
+                flow4 = wake
+            ) { jobs, online, trusted, _ -> if (online && trusted) jobs else emptyList() }.collect { jobs ->
                 if (jobs.isEmpty()) return@collect
+                val now = now()
+                // Deferred jobs stay in the grouping below so that a mutation awaiting its retry still holds back a full sync of the same entity type.
+                scheduleWake(loopScope = this@launch, jobs = jobs, now = now)
 
                 activeChainsMutex.withLock {
                     val userEntityGroups = jobs.groupBy { Pair(first = it.userUuid, second = it.entityType) }
@@ -165,7 +181,7 @@ class JobScheduler(
                             val targetedChains = targetedJobs.groupBy { Chain(userUuid = userUuid, entityType = entityType, entityUuid = it.entityUuid) }
                             for ((chain, chainJobs) in targetedChains) {
                                 if (chain !in activeChains) {
-                                    val oldestJob = chainJobs.minByOrNull { it.utc } ?: continue
+                                    val oldestJob = chainJobs.filter { it.isDue(now = now) }.minByOrNull { it.utc } ?: continue
                                     activeChains.add(element = chain)
                                     executeJobAsync(loopScope = this@launch, job = oldestJob, chain = chain)
                                 }
@@ -179,7 +195,7 @@ class JobScheduler(
 
                         if (!hasPendingTargeted && !hasActiveTargeted && globalJobs.isNotEmpty()) {
                             if (globalChain !in activeChains) {
-                                val oldestGlobalJob = globalJobs.minByOrNull { it.utc } ?: continue
+                                val oldestGlobalJob = globalJobs.filter { it.isDue(now = now) }.minByOrNull { it.utc } ?: continue
                                 activeChains.add(element = globalChain)
                                 executeJobAsync(loopScope = this@launch, job = oldestGlobalJob, chain = globalChain)
                             }
@@ -234,16 +250,64 @@ class JobScheduler(
 
     /**
      * Determines the next state for a job that returned [JobResult.Retry] or encountered a network error.
-     * Increments the attempt counter and transitions to `FAILED` once the attempts reach [ClientConfigs.schedulerMaxAttempts], otherwise back to `PENDING`.
+     * Increments the attempt counter and transitions to `FAILED` once the attempts reach [ClientConfigs.schedulerMaxAttempts], otherwise back to `PENDING` behind a backoff deadline.
      *
      * @param job The job to process.
-     * @return A mutated copy of the job reflecting the new state and attempt count.
+     * @return A mutated copy of the job reflecting the new state, attempt count and retry deadline.
      */
     private fun applyRetry(job: Job): Job {
         val nextAttempt = job.attempt + 1
         return if (nextAttempt >= ClientConfigs.configs.schedulerMaxAttempts) {
             job.copy(state = Job.State.FAILED, attempt = nextAttempt)
-        } else job.copy(state = Job.State.PENDING, attempt = nextAttempt)
+        } else job.copy(state = Job.State.PENDING, attempt = nextAttempt, nextAttemptAt = now() + backoff(attempt = nextAttempt))
+    }
+
+    /**
+     * The delay a job waits before its given attempt, doubling from [ClientConfigs.schedulerRetryDelay] and settling at [ClientConfigs.schedulerMaxRetryDelay].
+     * Each doubling is clamped as it is taken, so the delay never grows past the ceiling and cannot overflow however many attempts are configured.
+     *
+     * @param attempt The one-indexed attempt the job is about to wait for.
+     * @return The delay to wait.
+     */
+    private fun backoff(attempt: Int): Duration {
+        val configs = ClientConfigs.configs
+        val ceiling = configs.schedulerMaxRetryDelay
+        var delay = configs.schedulerRetryDelay.coerceAtMost(maximumValue = ceiling)
+        var newAttempt = (attempt - 1).coerceAtLeast(minimumValue = 0)
+        while (newAttempt > 0 && delay < ceiling) {
+            delay = (delay * 2).coerceAtMost(maximumValue = ceiling)
+            newAttempt--
+        }
+        return delay.milliseconds
+    }
+
+    /**
+     * Whether this job may run at [now].
+     * A deadline further ahead than [ClientConfigs.schedulerMaxRetryDelay] is unreachable through the backoff, so it was written against a since-changed device clock and would otherwise strand the job for as long as the clock moved.
+     *
+     * @receiver The job to test.
+     * @param now The current time.
+     * @return `true` when the job is eligible to run.
+     */
+    private fun Job.isDue(now: Instant): Boolean {
+        val deadline = nextAttemptAt ?: return true
+        return deadline <= now || deadline - now > ClientConfigs.configs.schedulerMaxRetryDelay.milliseconds
+    }
+
+    /**
+     * Arms a single timer on the earliest deferred job so the loop re-evaluates once that job comes due.
+     *
+     * @param loopScope The scope backing the scheduler loop.
+     * @param jobs The jobs in the current emission.
+     * @param now The current time.
+     */
+    private fun scheduleWake(loopScope: CoroutineScope, jobs: List<Job>, now: Instant) {
+        wakeJob?.cancel()
+        val earliest = jobs.filterNot { it.isDue(now = now) }.mapNotNull { it.nextAttemptAt }.minOrNull() ?: return
+        wakeJob = loopScope.launch(context = Dispatcher.IO) {
+            delay(duration = earliest - now)
+            wake.value += 1
+        }
     }
 
     /**

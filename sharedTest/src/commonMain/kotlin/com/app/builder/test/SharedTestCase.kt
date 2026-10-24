@@ -1,8 +1,9 @@
 package com.app.builder.test
 
+import kotlin.time.Clock
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
-import kotlinx.coroutines.CoroutineDispatcher
+import kotlin.time.TimeSource
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
@@ -22,10 +23,13 @@ import com.app.builder.core.config.ClientFlags
 import com.app.builder.core.config.ServerConfigs
 import com.app.builder.core.config.ServerFlags
 import com.app.builder.core.flow.Dispatcher
+import com.app.builder.core.flow.io
+import com.app.builder.core.locale.DateTime
+import com.app.builder.core.locale.MockClock
 import com.app.builder.core.telemetry.MockLogger
 import com.app.builder.core.telemetry.Telemetry
 
-/** Class for defining test cases. It provides the shared hermetic testing environment by handling feature flags, configs, telemetry and coroutine dispatchers. */
+/** Class for defining test cases. It provides the shared hermetic testing environment by handling feature flags, configs, telemetry, the clock and coroutine dispatchers. */
 abstract class SharedTestCase {
 
     init {
@@ -42,17 +46,6 @@ abstract class SharedTestCase {
     /** Invoked after each test. */
     protected abstract suspend fun afterTest()
 
-    /**
-     * Sets the dispatcher for coroutines.
-     *
-     * @param dispatcher The dispatcher to set.
-     */
-    private fun setDispatcher(dispatcher: CoroutineDispatcher) {
-        Dispatcher.Main = dispatcher
-        Dispatcher.Default = dispatcher
-        Dispatcher.IO = dispatcher
-    }
-
     /** Reset feature flags and configs. */
     private fun resetConfigs() {
         ServerFlags.reset()
@@ -66,9 +59,13 @@ abstract class SharedTestCase {
      *
      * @param dispatcher The dispatcher to set.
      */
-    private suspend fun setup(dispatcher: CoroutineDispatcher) {
-        setDispatcher(dispatcher = dispatcher)
+    private suspend fun setup(dispatcher: TestDispatcher) {
+        Dispatcher.Main = dispatcher
+        Dispatcher.Default = dispatcher
+        Dispatcher.IO = dispatcher
         Dispatchers.setMain(dispatcher = dispatcher)
+        DateTime.clock = MockClock(scheduler = dispatcher.scheduler)
+        DateTime.timeSource = dispatcher.scheduler.timeSource
         Telemetry.engines = listOf(MockLogger())
         resetConfigs()
         beforeTest()
@@ -84,7 +81,12 @@ abstract class SharedTestCase {
         resetConfigs()
         Telemetry.engines = emptyList()
         scope.cancel()
-        setDispatcher(dispatcher = Dispatchers.Unconfined)
+        DateTime.clock = Clock.System
+        DateTime.timeSource = TimeSource.Monotonic
+        Dispatcher.Main = Dispatchers.Main
+        Dispatcher.Default = Dispatchers.Default
+        Dispatcher.IO = io
+        Dispatchers.resetMain()
     }
 
     /**
@@ -106,7 +108,6 @@ abstract class SharedTestCase {
                 reset(scope = scope)
             }
         }
-        Dispatchers.resetMain()
     }
 
     /**
@@ -128,7 +129,6 @@ abstract class SharedTestCase {
                 reset(scope = scope)
             }
         }
-        Dispatchers.resetMain()
     }
 
     /**
@@ -149,6 +149,5 @@ abstract class SharedTestCase {
                 reset(scope = scope)
             }
         }
-        Dispatchers.resetMain()
     }
 }
