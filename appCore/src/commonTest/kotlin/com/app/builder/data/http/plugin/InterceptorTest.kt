@@ -32,9 +32,7 @@ class InterceptorTest: TestCase() {
     fun throwsWhenNetworkDisabled() = runUnitTest {
         ClientFlags.set { it.copy(http = false) }
 
-        val client = HttpClient(engine = TestEngine {
-            requestHandlers.add { respondMock() }
-        }) {
+        val client = HttpClient(engine = TestEngine { respondMock() }) {
             installInterceptor()
         }
 
@@ -46,9 +44,7 @@ class InterceptorTest: TestCase() {
     /** Verifies requests throw when the internet is unavailable. */
     @Test
     fun throwsWhenInternetUnavailable() = runUnitTest {
-        val client = HttpClient(engine = TestEngine {
-            requestHandlers.add { respondMock() }
-        }) {
+        val client = HttpClient(engine = TestEngine { respondMock() }) {
             installInterceptor(isInternetAvailable = { false })
         }
 
@@ -61,11 +57,9 @@ class InterceptorTest: TestCase() {
     @Test
     fun injectsDefaultHeadersAndRespectsExisting() = runUnitTest {
         var headers: Headers? = null
-        val client = HttpClient(engine = TestEngine {
-            requestHandlers.add { request ->
-                headers = request.headers
-                respondMock()
-            }
+        val client = HttpClient(engine = TestEngine { request ->
+            headers = request.headers
+            respondMock()
         }) {
             installInterceptor()
         }
@@ -86,9 +80,7 @@ class InterceptorTest: TestCase() {
     /** Verifies an unauthorized response causes an unauthorized exception to be thrown. */
     @Test
     fun throwsUnauthorizedOnUnauthorizedResponse() = runUnitTest {
-        val client = HttpClient(engine = TestEngine {
-            requestHandlers.add { respondMock(status = HttpStatusCode.Unauthorized) }
-        }) {
+        val client = HttpClient(engine = TestEngine { respondMock(status = HttpStatusCode.Unauthorized) }) {
             installInterceptor()
         }
 
@@ -100,9 +92,7 @@ class InterceptorTest: TestCase() {
     /** Verifies an error response status causes an unsuccessful status exception to be thrown. */
     @Test
     fun throwsUnsuccessfulStatusOnErrorResponse() = runUnitTest {
-        val client = HttpClient(engine = TestEngine {
-            requestHandlers.add { respondMock(status = HttpStatusCode.InternalServerError) }
-        }) {
+        val client = HttpClient(engine = TestEngine { respondMock(status = HttpStatusCode.InternalServerError) }) {
             installInterceptor()
         }
 
@@ -114,9 +104,7 @@ class InterceptorTest: TestCase() {
     /** Verifies a not-modified response does not throw. */
     @Test
     fun doesNotThrowOnNotModifiedResponse() = runUnitTest {
-        val client = HttpClient(engine = TestEngine {
-            requestHandlers.add { respondMock(status = HttpStatusCode.NotModified) }
-        }) {
+        val client = HttpClient(engine = TestEngine { respondMock(status = HttpStatusCode.NotModified) }) {
             installInterceptor()
         }
 
@@ -128,9 +116,7 @@ class InterceptorTest: TestCase() {
     /** Verifies a switching-protocols response does not throw. */
     @Test
     fun doesNotThrowOnSwitchingProtocolsResponse() = runUnitTest {
-        val client = HttpClient(engine = TestEngine {
-            requestHandlers.add { respondMock(status = HttpStatusCode.SwitchingProtocols) }
-        }) {
+        val client = HttpClient(engine = TestEngine { respondMock(status = HttpStatusCode.SwitchingProtocols) }) {
             installInterceptor()
         }
 
@@ -144,19 +130,17 @@ class InterceptorTest: TestCase() {
     fun synchronizesClockFromServerHeaders() = runUnitTest {
         assertNull(actual = CoreFile.Device.cache().value.orEmpty()[CoreFile.Device.Key.CLOCK_OFFSET])
 
-        val client = HttpClient(engine = TestEngine {
-            requestHandlers.add { request ->
-                val sentUtc = request.headers[Header.RequestSentUtc.header].orEmpty()
-                respond(
-                    content = "",
-                    status = HttpStatusCode.OK,
-                    headers = headersOf(
-                        HttpHeaders.ContentType to listOf(ContentType.Application.Json.toString()),
-                        Header.ServerArriveUtc.header to listOf(sentUtc),
-                        Header.ServerSentUtc.header to listOf(sentUtc),
-                    )
+        val client = HttpClient(engine = TestEngine { request ->
+            val sentUtc = request.headers[Header.RequestSentUtc.header].orEmpty()
+            respond(
+                content = "",
+                status = HttpStatusCode.OK,
+                headers = headersOf(
+                    HttpHeaders.ContentType to listOf(ContentType.Application.Json.toString()),
+                    Header.ServerArriveUtc.header to listOf(sentUtc),
+                    Header.ServerSentUtc.header to listOf(sentUtc),
                 )
-            }
+            )
         }) {
             installInterceptor()
         }
@@ -179,9 +163,7 @@ class InterceptorTest: TestCase() {
             override fun feedback(message: String) {}
         }
 
-        val client = HttpClient(engine = TestEngine {
-            requestHandlers.add { respondMock() }
-        }) {
+        val client = HttpClient(engine = TestEngine { respondMock() }) {
             installInterceptor()
         }
 

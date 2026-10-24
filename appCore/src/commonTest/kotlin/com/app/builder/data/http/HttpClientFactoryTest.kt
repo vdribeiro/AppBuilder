@@ -21,12 +21,10 @@ class HttpClientFactoryTest: TestCase() {
     fun buildsHttpClientWithAllPluginsInstalled() = runUnitTest {
         var requestUuid: String? = null
         var acceptEncoding: String? = null
-        val factory = HttpClientFactory(engine = TestEngine {
-            requestHandlers.add { request ->
-                requestUuid = request.headers[Header.RequestUuid.header]
-                acceptEncoding = request.headers[HttpHeaders.AcceptEncoding]
-                respondMock()
-            }
+        val factory = HttpClientFactory(engine = TestEngine { request ->
+            requestUuid = request.headers[Header.RequestUuid.header]
+            acceptEncoding = request.headers[HttpHeaders.AcceptEncoding]
+            respondMock()
         })
 
         val response = factory.httpClient.get(urlString = baseUrl)
@@ -48,10 +46,8 @@ class HttpClientFactoryTest: TestCase() {
         var refreshInvoked = false
         val factory = HttpClientFactory(
             engine = TestEngine {
-                requestHandlers.add {
-                    attempt++
-                    if (attempt == 1) respondMock(status = HttpStatusCode.Unauthorized) else respondMock()
-                }
+                attempt++
+                if (attempt == 1) respondMock(status = HttpStatusCode.Unauthorized) else respondMock()
             },
             configurations = Configurations(
                 loadTokens = { BearerTokens(accessToken = "expired-token", refreshToken = "refresh-token") },
@@ -73,9 +69,7 @@ class HttpClientFactoryTest: TestCase() {
     @Test
     fun unrenewableSessionStillSurfacesUnauthorized() = runUnitTest {
         val factory = HttpClientFactory(
-            engine = TestEngine {
-                requestHandlers.add { respondMock(status = HttpStatusCode.Unauthorized) }
-            },
+            engine = TestEngine { respondMock(status = HttpStatusCode.Unauthorized) },
             configurations = Configurations(
                 loadTokens = { BearerTokens(accessToken = "expired-token", refreshToken = "refresh-token") },
                 refreshTokens = { null }

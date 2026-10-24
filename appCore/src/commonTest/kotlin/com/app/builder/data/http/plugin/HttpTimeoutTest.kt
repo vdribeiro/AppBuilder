@@ -20,10 +20,8 @@ class HttpTimeoutTest: TestCase() {
         ClientConfigs.set { it.copy(httpRequestTimeoutMillis = 50L) }
         try {
             val client = HttpClient(engine = TestEngine {
-                requestHandlers.add {
-                    delay(timeMillis = 200L)
-                    respondMock()
-                }
+                delay(timeMillis = 200L)
+                respondMock()
             }) {
                 installHttpTimeout()
             }

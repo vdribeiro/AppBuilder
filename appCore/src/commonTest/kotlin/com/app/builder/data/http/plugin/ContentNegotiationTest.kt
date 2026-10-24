@@ -24,12 +24,10 @@ class ContentNegotiationTest: TestCase() {
     @Test
     fun decodesJsonResponses() = runUnitTest {
         val client = HttpClient(engine = TestEngine {
-            requestHandlers.add {
-                respond(
-                    content = encode(value = translation).orEmpty(),
-                    headers = headersOf(HttpHeaders.ContentType to listOf(ContentType.Application.Json.toString()))
-                )
-            }
+            respond(
+                content = encode(value = translation).orEmpty(),
+                headers = headersOf(HttpHeaders.ContentType to listOf(ContentType.Application.Json.toString()))
+            )
         }) {
             installContentNegotiation()
         }
@@ -41,12 +39,10 @@ class ContentNegotiationTest: TestCase() {
     @Test
     fun decodesPlainTextFallbackResponses() = runUnitTest {
         val client = HttpClient(engine = TestEngine {
-            requestHandlers.add {
-                respond(
-                    content = encode(value = translation).orEmpty(),
-                    headers = headersOf(HttpHeaders.ContentType to listOf(ContentType.Text.Plain.toString()))
-                )
-            }
+            respond(
+                content = encode(value = translation).orEmpty(),
+                headers = headersOf(HttpHeaders.ContentType to listOf(ContentType.Text.Plain.toString()))
+            )
         }) {
             installContentNegotiation()
         }

@@ -32,15 +32,13 @@ class HttpTest: TestCase() {
     fun getReturnsSuccessAndAttachesHeadersAndQuery() = runUnitTest {
         var capturedHeader: String? = null
         var capturedQuery: String? = null
-        val client = HttpClient(engine = TestEngine {
-            requestHandlers.add { request ->
-                capturedHeader = request.headers[Header.AppName.header]
-                capturedQuery = request.url.parameters[Query.DeviceUuid.parameter]
-                respond(
-                    content = encode(value = translation).orEmpty(),
-                    headers = headersOf(HttpHeaders.ContentType to listOf(ContentType.Application.Json.toString()))
-                )
-            }
+        val client = HttpClient(engine = TestEngine { request ->
+            capturedHeader = request.headers[Header.AppName.header]
+            capturedQuery = request.url.parameters[Query.DeviceUuid.parameter]
+            respond(
+                content = encode(value = translation).orEmpty(),
+                headers = headersOf(HttpHeaders.ContentType to listOf(ContentType.Application.Json.toString()))
+            )
         }) {
             installContentNegotiation()
         }
@@ -62,9 +60,7 @@ class HttpTest: TestCase() {
     /** Verifies GET returns an error result when the request fails. */
     @Test
     fun getReturnsErrorOnFailure() = runUnitTest {
-        val client = HttpClient(engine = TestEngine {
-            requestHandlers.add { throw IllegalStateException("Crash") }
-        })
+        val client = HttpClient(engine = TestEngine { throw IllegalStateException("Crash") })
 
         val result = client.get<Translation>(request = HttpRequest(url = URL.Translations))
 
@@ -75,14 +71,12 @@ class HttpTest: TestCase() {
     @Test
     fun postSendsJsonContentTypeAndReturnsSuccess() = runUnitTest {
         var capturedContentType: String? = null
-        val client = HttpClient(engine = TestEngine {
-            requestHandlers.add { request ->
-                capturedContentType = request.body.contentType?.toString()
-                respond(
-                    content = encode(value = translation).orEmpty(),
-                    headers = headersOf(HttpHeaders.ContentType to listOf(ContentType.Application.Json.toString()))
-                )
-            }
+        val client = HttpClient(engine = TestEngine { request ->
+            capturedContentType = request.body.contentType?.toString()
+            respond(
+                content = encode(value = translation).orEmpty(),
+                headers = headersOf(HttpHeaders.ContentType to listOf(ContentType.Application.Json.toString()))
+            )
         }) {
             installContentNegotiation()
         }
@@ -97,9 +91,7 @@ class HttpTest: TestCase() {
     /** Verifies POST returns an error result when the request fails. */
     @Test
     fun postReturnsErrorOnFailure() = runUnitTest {
-        val client = HttpClient(engine = TestEngine {
-            requestHandlers.add { throw IllegalStateException("Crash") }
-        })
+        val client = HttpClient(engine = TestEngine { throw IllegalStateException("Crash") })
 
         val result = client.post<Translation, Translation>(request = HttpRequest(url = URL.Translations), body = translation)
 
@@ -109,9 +101,7 @@ class HttpTest: TestCase() {
     /** Verifies SSE invokes onConnected then receives decoded events. */
     @Test
     fun sseInvokesOnConnectedThenReceivesDecodedEvents() = runUnitTest {
-        val client = HttpClient(engine = TestEngine {
-            requestHandlers.add { respondSse(pushPayload = FakeData.notification) }
-        }) {
+        val client = HttpClient(engine = TestEngine { respondSse(pushPayload = FakeData.notification) }) {
             installSse()
         }
 
@@ -130,9 +120,7 @@ class HttpTest: TestCase() {
     /** Verifies SSE reports a CancellationException thrown in the block as an error result carrying the cancellation. */
     @Test
     fun sseReportsCancellationAsAnErrorResult() = runUnitTest {
-        val client = HttpClient(engine = TestEngine {
-            requestHandlers.add { respondSse(pushPayload = FakeData.notification) }
-        }) {
+        val client = HttpClient(engine = TestEngine { respondSse(pushPayload = FakeData.notification) }) {
             installSse()
         }
 
@@ -149,9 +137,7 @@ class HttpTest: TestCase() {
     /** Verifies the WebSocket invokes onConnected then receives decoded frames. */
     @Test
     fun webSocketInvokesOnConnectedThenReceivesDecodedFrames() = runUnitTest {
-        val client = HttpClient(engine = TestEngine {
-            requestHandlers.add { respondWebSocket(pushPayload = FakeData.notification) }
-        }) {
+        val client = HttpClient(engine = TestEngine { respondWebSocket(pushPayload = FakeData.notification) }) {
             installWebSocket()
         }
 
@@ -171,14 +157,12 @@ class HttpTest: TestCase() {
     @Test
     fun getWithUuidAppendsUuidAsPathSegment() = runUnitTest {
         var capturedPath: String? = null
-        val client = HttpClient(engine = TestEngine {
-            requestHandlers.add { request ->
-                capturedPath = request.url.encodedPath
-                respond(
-                    content = encode(value = translation).orEmpty(),
-                    headers = headersOf(HttpHeaders.ContentType to listOf(ContentType.Application.Json.toString()))
-                )
-            }
+        val client = HttpClient(engine = TestEngine { request ->
+            capturedPath = request.url.encodedPath
+            respond(
+                content = encode(value = translation).orEmpty(),
+                headers = headersOf(HttpHeaders.ContentType to listOf(ContentType.Application.Json.toString()))
+            )
         }) {
             installContentNegotiation()
         }
@@ -194,11 +178,9 @@ class HttpTest: TestCase() {
     @Test
     fun headIssuesAHeadRequest() = runUnitTest {
         var capturedMethod: String? = null
-        val client = HttpClient(engine = TestEngine {
-            requestHandlers.add { request ->
-                capturedMethod = request.method.value
-                respond(content = "")
-            }
+        val client = HttpClient(engine = TestEngine { request ->
+            capturedMethod = request.method.value
+            respond(content = "")
         })
 
         client.head(request = HttpRequest(url = URL.Probe))
@@ -209,9 +191,7 @@ class HttpTest: TestCase() {
     /** Verifies that [HttpClient.head] swallows an ordinary failure instead of throwing. */
     @Test
     fun headSwallowsFailures() = runUnitTest {
-        val client = HttpClient(engine = TestEngine {
-            requestHandlers.add { throw IllegalStateException("Crash") }
-        })
+        val client = HttpClient(engine = TestEngine { throw IllegalStateException("Crash") })
 
         client.head(request = HttpRequest(url = URL.Probe))
     }
@@ -219,9 +199,7 @@ class HttpTest: TestCase() {
     /** Verifies that every request wrapper reports a cancellation as an error result carrying the cancellation, leaving the caller to decide how to react. */
     @Test
     fun requestsReportCancellationAsAnErrorResult() = runUnitTest {
-        val client = HttpClient(engine = TestEngine {
-            requestHandlers.add { throw CancellationException("Crash") }
-        }) {
+        val client = HttpClient(engine = TestEngine { throw CancellationException("Crash") }) {
             installContentNegotiation()
         }
 
@@ -249,18 +227,16 @@ class HttpTest: TestCase() {
         val secondPage = listOf(PageItem(utc = "1", uuid = "a"))
         var callCount = 0
         val capturedCursors = mutableListOf<Pair<String?, String?>>()
-        val client = HttpClient(engine = TestEngine {
-            requestHandlers.add { request ->
-                callCount++
-                capturedCursors.add(
-                    element = request.url.parameters[Query.CursorUtc.parameter] to request.url.parameters[Query.CursorUuid.parameter]
-                )
-                val items = if (callCount == 1) firstPage else secondPage
-                respond(
-                    content = encode(value = items).orEmpty(),
-                    headers = headersOf(HttpHeaders.ContentType to listOf(ContentType.Application.Json.toString()))
-                )
-            }
+        val client = HttpClient(engine = TestEngine { request ->
+            callCount++
+            capturedCursors.add(
+                element = request.url.parameters[Query.CursorUtc.parameter] to request.url.parameters[Query.CursorUuid.parameter]
+            )
+            val items = if (callCount == 1) firstPage else secondPage
+            respond(
+                content = encode(value = items).orEmpty(),
+                headers = headersOf(HttpHeaders.ContentType to listOf(ContentType.Application.Json.toString()))
+            )
         }) {
             installContentNegotiation()
         }
@@ -285,13 +261,11 @@ class HttpTest: TestCase() {
         val firstPage = listOf(PageItem(utc = "2", uuid = "b"), PageItem(utc = "1", uuid = "a"))
         var callCount = 0
         val client = HttpClient(engine = TestEngine {
-            requestHandlers.add {
-                callCount++
-                respond(
-                    content = encode(value = firstPage).orEmpty(),
-                    headers = headersOf(HttpHeaders.ContentType to listOf(ContentType.Application.Json.toString()))
-                )
-            }
+            callCount++
+            respond(
+                content = encode(value = firstPage).orEmpty(),
+                headers = headersOf(HttpHeaders.ContentType to listOf(ContentType.Application.Json.toString()))
+            )
         }) {
             installContentNegotiation()
         }
@@ -312,9 +286,7 @@ class HttpTest: TestCase() {
     /** Verifies that [HttpClient.getPaginated] surfaces a network failure as an error without invoking [onPage]. */
     @Test
     fun getPaginatedReturnsErrorOnNetworkFailure() = runUnitTest {
-        val client = HttpClient(engine = TestEngine {
-            requestHandlers.add { throw IllegalStateException("Crash") }
-        })
+        val client = HttpClient(engine = TestEngine { throw IllegalStateException("Crash") })
 
         var onPageInvoked = false
         val result = client.getPaginated<PageItem>(

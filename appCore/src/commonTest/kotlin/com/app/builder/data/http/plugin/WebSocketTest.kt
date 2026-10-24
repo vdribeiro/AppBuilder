@@ -17,9 +17,7 @@ class WebSocketTest: TestCase() {
     /** Verifies the WebSockets plugin is installed and connects successfully. */
     @Test
     fun installsWebSocketsPlugin() = runUnitTest {
-        val client = HttpClient(engine = TestEngine {
-            requestHandlers.add { respondWebSocket(pushPayload = FakeData.notification) }
-        }) {
+        val client = HttpClient(engine = TestEngine { respondWebSocket(pushPayload = FakeData.notification) }) {
             installWebSocket()
         }
 

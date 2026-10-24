@@ -24,11 +24,9 @@ class ContentEncodingTest: TestCase() {
     @Test
     fun advertisesGzipEncoding() = runUnitTest {
         var acceptEncoding: String? = null
-        val client = HttpClient(engine = TestEngine {
-            requestHandlers.add { request ->
-                acceptEncoding = request.headers[HttpHeaders.AcceptEncoding]
-                respondMock()
-            }
+        val client = HttpClient(engine = TestEngine { request ->
+            acceptEncoding = request.headers[HttpHeaders.AcceptEncoding]
+            respondMock()
         }) {
             installContentEncoding()
         }
@@ -45,12 +43,10 @@ class ContentEncodingTest: TestCase() {
         val compressed = GZipEncoder.encode(source = ByteReadChannel(content = original.encodeToByteArray()), coroutineContext = currentCoroutineContext()).toByteArray()
 
         val client = HttpClient(engine = TestEngine {
-            requestHandlers.add {
-                respond(
-                    content = compressed,
-                    headers = headersOf(HttpHeaders.ContentEncoding to listOf("gzip"))
-                )
-            }
+            respond(
+                content = compressed,
+                headers = headersOf(HttpHeaders.ContentEncoding to listOf("gzip"))
+            )
         }) {
             installContentEncoding()
         }

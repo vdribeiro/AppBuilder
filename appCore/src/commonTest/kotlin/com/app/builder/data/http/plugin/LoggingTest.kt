@@ -26,9 +26,7 @@ class LoggingTest: TestCase() {
             override fun feedback(message: String) {}
         }
 
-        val client = HttpClient(engine = TestEngine {
-            requestHandlers.add { respondMock() }
-        }) {
+        val client = HttpClient(engine = TestEngine { respondMock() }) {
             installLogging()
         }
 

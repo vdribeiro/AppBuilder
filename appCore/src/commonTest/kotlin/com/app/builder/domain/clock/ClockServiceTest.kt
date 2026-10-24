@@ -24,10 +24,8 @@ class ClockServiceTest: TestCase() {
      */
     private fun clockService(onProbe: () -> Unit = {}): ClockService = ClockManager(
         httpClient = HttpClientFactory(engine = TestEngine {
-            requestHandlers.add {
-                onProbe()
-                respondMock()
-            }
+            onProbe()
+            respondMock()
         }).httpClient
     )
 

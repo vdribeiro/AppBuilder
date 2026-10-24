@@ -10,6 +10,7 @@ import io.ktor.client.engine.HttpClientEngineCapability
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.MockEngineConfig
 import io.ktor.client.engine.mock.MockRequestHandleScope
+import io.ktor.client.engine.mock.MockRequestHandler
 import io.ktor.client.engine.mock.respond
 import io.ktor.client.plugins.HttpTimeoutCapability
 import io.ktor.client.plugins.sse.SSECapability
@@ -35,9 +36,9 @@ import com.app.builder.domain.PushPayload
 /**
  * A [MockEngine] with the required capabilities for test cases.
  *
- * @param block Configures the [MockEngineConfig] with the routes to handle.
+ * @param handler The [MockRequestHandler] that handles every request sent through the engine.
  */
-class TestEngine(block: MockEngineConfig.() -> Unit): MockEngine(config = MockEngineConfig().apply(block = block)) {
+class TestEngine(handler: MockRequestHandler): MockEngine(config = MockEngineConfig().apply { addHandler(handler = handler) }) {
     override val supportedCapabilities: Set<HttpClientEngineCapability<out Any>> = setOf(
         HttpTimeoutCapability,
         WebSocketCapability,

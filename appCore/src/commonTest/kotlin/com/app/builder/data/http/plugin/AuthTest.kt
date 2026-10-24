@@ -20,11 +20,9 @@ class AuthTest: TestCase() {
     @Test
     fun attachesBearerTokenPreemptively() = runUnitTest {
         var authorization: String? = null
-        val client = HttpClient(engine = TestEngine {
-            requestHandlers.add { request ->
-                authorization = request.headers[HttpHeaders.Authorization]
-                respondMock()
-            }
+        val client = HttpClient(engine = TestEngine { request ->
+            authorization = request.headers[HttpHeaders.Authorization]
+            respondMock()
         }) {
             installAuth(loadTokens = { BearerTokens(accessToken = "access-token", refreshToken = null) })
         }
@@ -39,19 +37,17 @@ class AuthTest: TestCase() {
     fun refreshesTokenAfterUnauthorizedAndRetries() = runUnitTest {
         var attempt = 0
         var refreshInvoked = false
-        val client = HttpClient(engine = TestEngine {
-            requestHandlers.add { request ->
-                attempt++
-                when (attempt) {
-                    1 -> {
-                        assertEquals(expected = "Bearer old-token", actual = request.headers[HttpHeaders.Authorization])
-                        respondMock(status = HttpStatusCode.Unauthorized)
-                    }
+        val client = HttpClient(engine = TestEngine { request ->
+            attempt++
+            when (attempt) {
+                1 -> {
+                    assertEquals(expected = "Bearer old-token", actual = request.headers[HttpHeaders.Authorization])
+                    respondMock(status = HttpStatusCode.Unauthorized)
+                }
 
-                    else -> {
-                        assertEquals(expected = "Bearer new-token", actual = request.headers[HttpHeaders.Authorization])
-                        respondMock()
-                    }
+                else -> {
+                    assertEquals(expected = "Bearer new-token", actual = request.headers[HttpHeaders.Authorization])
+                    respondMock()
                 }
             }
         }) {
@@ -75,11 +71,9 @@ class AuthTest: TestCase() {
     @Test
     fun noStoredTokensMeansNoAuthorizationHeader() = runUnitTest {
         var authorization: String? = "not-checked-yet"
-        val client = HttpClient(engine = TestEngine {
-            requestHandlers.add { request ->
-                authorization = request.headers[HttpHeaders.Authorization]
-                respondMock()
-            }
+        val client = HttpClient(engine = TestEngine { request ->
+            authorization = request.headers[HttpHeaders.Authorization]
+            respondMock()
         }) {
             installAuth(loadTokens = { null })
         }
@@ -94,10 +88,8 @@ class AuthTest: TestCase() {
     fun unrenewableSessionLeavesUnauthorizedResponseUnretried() = runUnitTest {
         var attempt = 0
         val client = HttpClient(engine = TestEngine {
-            requestHandlers.add {
-                attempt++
-                respondMock(status = HttpStatusCode.Unauthorized)
-            }
+            attempt++
+            respondMock(status = HttpStatusCode.Unauthorized)
         }) {
             installAuth(
                 loadTokens = { BearerTokens(accessToken = "old-token", refreshToken = null) },

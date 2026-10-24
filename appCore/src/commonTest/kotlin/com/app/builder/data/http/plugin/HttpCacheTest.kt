@@ -18,13 +18,11 @@ class HttpCacheTest: TestCase() {
     fun servesSecondRequestFromCache() = runUnitTest {
         var callCount = 0
         val client = HttpClient(engine = TestEngine {
-            requestHandlers.add {
-                callCount++
-                respond(
-                    content = "cached",
-                    headers = headersOf(HttpHeaders.CacheControl to listOf("max-age=60"))
-                )
-            }
+            callCount++
+            respond(
+                content = "cached",
+                headers = headersOf(HttpHeaders.CacheControl to listOf("max-age=60"))
+            )
         }) {
             installHttpCache()
         }
@@ -40,10 +38,8 @@ class HttpCacheTest: TestCase() {
     fun doesNotCacheResponseWithoutCacheControlHeader() = runUnitTest {
         var callCount = 0
         val client = HttpClient(engine = TestEngine {
-            requestHandlers.add {
-                callCount++
-                respond(content = "not-cached")
-            }
+            callCount++
+            respond(content = "not-cached")
         }) {
             installHttpCache()
         }
@@ -59,13 +55,11 @@ class HttpCacheTest: TestCase() {
     fun doesNotCacheResponseWithNoStoreDirective() = runUnitTest {
         var callCount = 0
         val client = HttpClient(engine = TestEngine {
-            requestHandlers.add {
-                callCount++
-                respond(
-                    content = "not-cached",
-                    headers = headersOf(HttpHeaders.CacheControl to listOf("no-store"))
-                )
-            }
+            callCount++
+            respond(
+                content = "not-cached",
+                headers = headersOf(HttpHeaders.CacheControl to listOf("no-store"))
+            )
         }) {
             installHttpCache()
         }

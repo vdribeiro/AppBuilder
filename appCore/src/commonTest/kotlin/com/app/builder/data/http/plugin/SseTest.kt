@@ -17,9 +17,7 @@ class SseTest: TestCase() {
     /** Verifies a server-sent event is received and decoded. */
     @Test
     fun receivesServerSentEvent() = runUnitTest {
-        val client = HttpClient(engine = TestEngine {
-            requestHandlers.add { respondSse(pushPayload = FakeData.notification) }
-        }) {
+        val client = HttpClient(engine = TestEngine { respondSse(pushPayload = FakeData.notification) }) {
             installSse()
         }
 
