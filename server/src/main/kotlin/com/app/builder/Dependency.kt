@@ -9,6 +9,7 @@ import com.app.builder.domain.push.BroadcastService
 import com.app.builder.domain.push.FcmService
 import com.app.builder.domain.push.PushManager
 import com.app.builder.domain.push.PushService
+import com.app.builder.domain.storage.ObjectStorageService
 import com.app.builder.domain.usecase.Gateways
 import com.app.builder.domain.usecase.UseCases
 
@@ -18,11 +19,13 @@ import com.app.builder.domain.usecase.UseCases
  * @property database The reactive database instance.
  * @property instanceSignal The pub/sub bus.
  * @property fcmService The Firebase Cloud Messaging service.
+ * @property objectStorageService The object storage holding uploaded files.
  */
 class Dependency(
     val database: R2dbcDatabase,
     val instanceSignal: InstanceSignal,
     val fcmService: FcmService,
+    val objectStorageService: ObjectStorageService,
 ) {
 
     /** The application use cases. */

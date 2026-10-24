@@ -36,4 +36,14 @@ object Env {
     val gcpProjectId: String? = getEnv(name = "GCP_PROJECT_ID")
     /** The number of trusted reverse proxies sitting in front of the server, used to resolve the caller's address for rate limiting. Zero, the default, means the server is reached directly and `X-Forwarded-For` is not trusted at all. */
     val trustedProxyHops: Int = getEnv(name = "TRUSTED_PROXY_HOPS")?.toIntOrNull() ?: 0
+    /** The base address of the S3 compatible object storage, without a bucket or trailing slash. */
+    val s3Endpoint: String? = getEnv(name = "S3_ENDPOINT")
+    /** The object storage bucket holding uploaded files. */
+    val s3Bucket: String? = getEnv(name = "S3_BUCKET")
+    /** The region the object storage bucket lives in, used to scope request signatures. */
+    val s3Region: String? = getEnv(name = "S3_REGION")
+    /** The object storage access key id. Travels in every signed request and is not a secret. */
+    val s3AccessKeyId: String? = getEnv(name = "S3_ACCESS_KEY_ID")
+    /** The object storage secret used to sign requests. */
+    val s3SecretAccessKey: String? = getEnv(name = "S3_SECRET_ACCESS_KEY")
 }

@@ -25,16 +25,18 @@ import com.app.builder.domain.push.NoOpFcmService
 import com.app.builder.domain.Authentication
 import com.app.builder.domain.BearerToken
 import com.app.builder.domain.route.installRouting
+import com.app.builder.domain.storage.NoOpObjectStorage
 
 /** Abstract class for defining test cases. It provides a hermetic testing environment. */
 abstract class TestCase: SharedTestCase() {
 
-    /** Dependency index for test cases with in memory Database and NoOp FCM Service. */
+    /** Dependency index for test cases with in memory Database, NoOp FCM Service and NoOp object storage. */
     protected val dependency: LazyData<Dependency> = LazyData {
         Dependency(
             database = DatabaseFactory.create(connectionFactory = DatabaseFactory.getInMemoryConnectionFactory()),
             instanceSignal = LocalSignal(),
-            fcmService = NoOpFcmService
+            fcmService = NoOpFcmService,
+            objectStorageService = NoOpObjectStorage
         )
     }
 

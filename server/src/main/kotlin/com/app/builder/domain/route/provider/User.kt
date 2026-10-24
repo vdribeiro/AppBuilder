@@ -18,6 +18,8 @@ import com.app.builder.domain.EntityType
 import com.app.builder.domain.Permission
 import com.app.builder.domain.User
 import com.app.builder.domain.permission.PermissionService
+import com.app.builder.domain.storage.AvatarKey
+import com.app.builder.domain.storage.ObjectStorageService
 import com.app.builder.domain.permission.UserAccess
 import com.app.builder.domain.route.getParameters
 import com.app.builder.domain.route.getAccess
@@ -41,7 +43,8 @@ import com.app.builder.domain.usecase.user.UserUseCases
 fun Route.userRoutes(
     permissionService: PermissionService,
     userUseCases: UserUseCases,
-    registryUseCases: RegistryUseCases
+    registryUseCases: RegistryUseCases,
+    objectStorageService: ObjectStorageService
 ) {
     authenticate {
         route(path = URL.Users.path) {
@@ -94,14 +97,30 @@ fun Route.userRoutes(
                     call.respondSafely(status = HttpStatusCode.Forbidden, message = "Not authorized to modify user ${user.uuid}")
                     return@post
                 }
+                val storedUser = userUseCases.getUser(uuid = user.uuid)
                 // Also, only a user with session write permission can change user permissions or the deleted state.
                 val validatedUser = if (hasPermission) user else {
-                    val dbUser = userUseCases.getUser(uuid = user.uuid) ?: run {
+                    val dbUser = storedUser ?: run {
                         Telemetry.error(tag = TAG, message = "Unable to get user ${user.uuid}")
                         call.respondSafely(status = HttpStatusCode.InternalServerError, message = "Error getting user ${user.uuid}")
                         return@post
                     }
                     user.copy(permissions = dbUser.permissions, deletedAt = dbUser.deletedAt)
+                }
+
+                // A claimed avatar is only accepted once the image is actually in the bucket and sits in this user's own folder,
+                // so the column cannot come to point at a missing object or at somebody else's image.
+                val previousAvatar = storedUser?.avatar
+                val avatar = validatedUser.avatar
+                if (avatar != null && avatar != previousAvatar) {
+                    if (!AvatarKey.belongsTo(key = avatar, userUuid = validatedUser.uuid)) {
+                        call.respondSafely(status = HttpStatusCode.Forbidden, message = "Not authorized to claim avatar $avatar")
+                        return@post
+                    }
+                    if (!objectStorageService.exists(key = avatar)) {
+                        call.respondSafely(status = HttpStatusCode.BadRequest, message = "Avatar $avatar was not uploaded")
+                        return@post
+                    }
                 }
 
                 val success = userUseCases.upsertUser(user = validatedUser)
@@ -111,6 +130,9 @@ fun Route.userRoutes(
                     return@post
                 }
                 if (hasPermission) permissionService.set(userUuid = validatedUser.uuid, access = UserAccess(permissions = validatedUser.permissions, deletedAt = validatedUser.deletedAt))
+
+                // The replaced image is no longer reachable through any user, so it is removed rather than left to accumulate in the bucket.
+                if (previousAvatar != null && previousAvatar != validatedUser.avatar) objectStorageService.delete(key = previousAvatar)
 
                 call.respondSafely(status = HttpStatusCode.OK, message = validatedUser)
                 Telemetry.info(tag = TAG, message = "Upserted user ${validatedUser.uuid}")

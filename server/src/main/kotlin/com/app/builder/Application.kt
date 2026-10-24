@@ -40,6 +40,8 @@ import com.app.builder.domain.UserCredentials
 import com.app.builder.domain.push.FcmManager
 import com.app.builder.domain.push.NoOpFcmService
 import com.app.builder.domain.route.installRouting
+import com.app.builder.domain.storage.NoOpObjectStorage
+import com.app.builder.domain.storage.S3ObjectStorage
 import com.app.builder.test.ExcludeFromTesting
 import com.google.auth.oauth2.GoogleCredentials
 import com.google.firebase.FirebaseApp
@@ -187,6 +189,30 @@ private suspend fun createDependency(): Dependency {
         Telemetry.error(tag = TAG, message = "Unable to initialize Firebase Manager, FCM push will be a no-op", throwable = it)
     }.getOrDefault(defaultValue = NoOpFcmService)
 
+    val objectStorageService = runCatching {
+        val endpoint = Env.s3Endpoint
+        val bucket = Env.s3Bucket
+        val region = Env.s3Region
+        val accessKeyId = Env.s3AccessKeyId
+        val secretAccessKey = Env.s3SecretAccessKey
+        if (!Env.developmentMode && ServerFlags.flags.objectStorage &&
+            !endpoint.isNullOrBlank() && !bucket.isNullOrBlank() && !region.isNullOrBlank() &&
+            !accessKeyId.isNullOrBlank() && !secretAccessKey.isNullOrBlank()
+        ) {
+            S3ObjectStorage(
+                endpoint = endpoint,
+                bucket = bucket,
+                region = region,
+                accessKeyId = accessKeyId,
+                secretAccessKey = secretAccessKey
+            ).also { Telemetry.info(tag = TAG, message = "Object storage created for bucket $bucket") }
+        } else NoOpObjectStorage.also {
+            Telemetry.info(tag = TAG, message = "NoOp object storage created")
+        }
+    }.onFailure {
+        Telemetry.error(tag = TAG, message = "Unable to create the object storage, uploads will be refused", throwable = it)
+    }.getOrDefault(defaultValue = NoOpObjectStorage)
+
     val instanceSignal = when (connectionFactory) {
         is PostgresqlConnectionFactory -> PostgresSignal(connectionFactory = connectionFactory)
         else -> LocalSignal()
@@ -196,6 +222,7 @@ private suspend fun createDependency(): Dependency {
         database = database,
         instanceSignal = instanceSignal,
         fcmService = fcmService,
+        objectStorageService = objectStorageService,
     ).also { Telemetry.info(tag = TAG, message = "Dependency Index complete") }
 }
 

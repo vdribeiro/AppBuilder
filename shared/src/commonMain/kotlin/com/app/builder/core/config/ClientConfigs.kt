@@ -47,6 +47,10 @@ data class ClientConfigs(
     val locationIntervalMillis: Long,
     /** Maximum time in milliseconds to wait for the cached last known location before giving up and answering from the last fix the update loop captured. */
     val locationQueryTimeoutMillis: Long,
+    /** Base address stored object keys are resolved against, without a trailing slash. Served rather than compiled in so the bucket can move without a client release. Blank while no bucket is configured. */
+    val objectStorageUrl: String = "",
+    /** Longest edge in pixels an uploaded avatar is resized to before it leaves the device. */
+    val avatarMaxPixels: Int = 512,
 ) {
     companion object {
 
@@ -72,6 +76,8 @@ data class ClientConfigs(
             locationDisplacementMeters = 10f,
             locationIntervalMillis = 60_000L,
             locationQueryTimeoutMillis = 2_000L,
+            objectStorageUrl = "",
+            avatarMaxPixels = 512,
         )
 
         /** Backing state flow tracking config changes. */

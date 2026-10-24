@@ -8,6 +8,7 @@ import io.ktor.server.routing.routing
 import com.app.builder.Dependency
 import com.app.builder.core.config.ServerFlags
 import com.app.builder.domain.route.provider.authenticationRoutes
+import com.app.builder.domain.route.provider.avatarRoutes
 import com.app.builder.domain.route.provider.broadcastRoutes
 import com.app.builder.domain.route.provider.configRoutes
 import com.app.builder.domain.route.provider.deviceLocationRoutes
@@ -34,7 +35,8 @@ fun Application.installRouting(dependency: Dependency) {
         if (ServerFlags.flags.authentication) authenticationRoutes(permissionService = permissionService, authenticationUseCases = useCases.authenticationUseCases, registryUseCases = useCases.registryUseCases)
         if (ServerFlags.flags.broadcast) broadcastRoutes(permissionService = permissionService, broadcastService = dependency.broadcastService, fcmService = dependency.fcmService, registryUseCases = useCases.registryUseCases)
         if (ServerFlags.flags.push) pushRoutes(permissionService = permissionService, deviceTokenUseCases = useCases.deviceTokenUseCases, pushService = dependency.pushService, registryUseCases = useCases.registryUseCases)
-        if (ServerFlags.flags.users) userRoutes(permissionService = permissionService, userUseCases = useCases.userUseCases, registryUseCases = useCases.registryUseCases)
+        if (ServerFlags.flags.users) userRoutes(permissionService = permissionService, userUseCases = useCases.userUseCases, registryUseCases = useCases.registryUseCases, objectStorageService = dependency.objectStorageService)
+        if (ServerFlags.flags.objectStorage) avatarRoutes(permissionService = permissionService, objectStorageService = dependency.objectStorageService)
         if (ServerFlags.flags.deviceLocation) deviceLocationRoutes(permissionService = permissionService, deviceLocationUseCases = useCases.deviceLocationUseCases, registryUseCases = useCases.registryUseCases)
         if (ServerFlags.flags.tasks) taskRoutes(permissionService = permissionService, taskUseCases = useCases.taskUseCases, registryUseCases = useCases.registryUseCases)
     }

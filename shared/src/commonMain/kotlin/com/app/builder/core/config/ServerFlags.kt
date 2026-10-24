@@ -24,7 +24,9 @@ data class ServerFlags(
     /** Toggles the device location ingestion route. When false, it returns 404. */
     val deviceLocation: Boolean,
     /** Toggles task CRUD routes. When false, they return 404. */
-    val tasks: Boolean
+    val tasks: Boolean,
+    /** Toggles the object storage upload route. When false, it returns 404 and no upload URL is ever signed. */
+    val objectStorage: Boolean = true
 ) {
     companion object {
 
@@ -38,7 +40,8 @@ data class ServerFlags(
             firebase = true,
             users = true,
             deviceLocation = true,
-            tasks = true
+            tasks = true,
+            objectStorage = true
         )
 
         /** Backing state flow tracking feature flag changes. */

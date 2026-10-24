@@ -56,4 +56,6 @@ sealed class URL(val path: String) {
     data object DeviceLocations: URL(path = "/api/device-location")
     /** Endpoint for tasks. */
     data object Tasks: URL(path = "/api/tasks")
+    /** Endpoint to obtain a short-lived URL for uploading an avatar straight to object storage. */
+    data object AvatarUpload: URL(path = "/api/avatar/upload-url")
 }
