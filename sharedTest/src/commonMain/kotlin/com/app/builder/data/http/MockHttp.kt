@@ -35,9 +35,9 @@ import com.app.builder.domain.PushPayload
 /**
  * A [MockEngine] with the required capabilities for test cases.
  *
- * @param config The [MockEngineConfig] with the routes to handle.
+ * @param block Configures the [MockEngineConfig] with the routes to handle.
  */
-class TestEngine(config: MockEngineConfig): MockEngine(config = config) {
+class TestEngine(block: MockEngineConfig.() -> Unit): MockEngine(config = MockEngineConfig().apply(block)) {
     override val supportedCapabilities: Set<HttpClientEngineCapability<out Any>> = setOf(
         HttpTimeoutCapability,
         WebSocketCapability,

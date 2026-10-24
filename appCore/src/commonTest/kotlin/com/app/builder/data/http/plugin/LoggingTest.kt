@@ -3,7 +3,6 @@ package com.app.builder.data.http.plugin
 import kotlin.test.Test
 import kotlin.test.assertTrue
 import io.ktor.client.HttpClient
-import io.ktor.client.engine.mock.MockEngineConfig
 import io.ktor.client.request.get
 import com.app.builder.core.telemetry.Telemetry
 import com.app.builder.core.telemetry.TelemetryEngine
@@ -27,9 +26,9 @@ class LoggingTest: TestCase() {
             override fun feedback(message: String) {}
         }
 
-        val client = HttpClient(engine = TestEngine(config = MockEngineConfig().apply {
+        val client = HttpClient(engine = TestEngine {
             requestHandlers.add { respondMock() }
-        })) {
+        }) {
             installLogging()
         }
 

@@ -2,7 +2,6 @@ package com.app.builder.data.http
 
 import kotlin.uuid.Uuid
 import io.ktor.client.engine.HttpClientEngine
-import io.ktor.client.engine.mock.MockEngineConfig
 import io.ktor.client.request.HttpRequestData
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
@@ -20,7 +19,7 @@ import com.app.builder.test.FakeData
  *
  * @return An [HttpClientEngine] configured for the current target platform.
  */
-fun createMockHttpEngine(): HttpClientEngine = TestEngine(config = MockEngineConfig().apply {
+fun createMockHttpEngine(): HttpClientEngine = TestEngine {
     requestHandlers.add { request ->
         val path = request.url.encodedPath
         when (request.url.protocol) {
@@ -101,7 +100,7 @@ fun createMockHttpEngine(): HttpClientEngine = TestEngine(config = MockEngineCon
             else -> notFound(request = request)
         }
     }
-})
+}
 
 /**
  * Decodes the JSON-serialized request body into [T].

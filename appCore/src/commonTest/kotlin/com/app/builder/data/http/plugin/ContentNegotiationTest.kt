@@ -4,7 +4,6 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
-import io.ktor.client.engine.mock.MockEngineConfig
 import io.ktor.client.engine.mock.respond
 import io.ktor.client.request.get
 import io.ktor.http.ContentType
@@ -24,14 +23,14 @@ class ContentNegotiationTest: TestCase() {
     /** Verifies JSON responses are decoded into the expected body. */
     @Test
     fun decodesJsonResponses() = runUnitTest {
-        val client = HttpClient(engine = TestEngine(config = MockEngineConfig().apply {
+        val client = HttpClient(engine = TestEngine {
             requestHandlers.add {
                 respond(
                     content = encode(value = translation).orEmpty(),
                     headers = headersOf(HttpHeaders.ContentType to listOf(ContentType.Application.Json.toString()))
                 )
             }
-        })) {
+        }) {
             installContentNegotiation()
         }
 
@@ -41,14 +40,14 @@ class ContentNegotiationTest: TestCase() {
     /** Verifies plain-text responses fall back to decoding into the expected body. */
     @Test
     fun decodesPlainTextFallbackResponses() = runUnitTest {
-        val client = HttpClient(engine = TestEngine(config = MockEngineConfig().apply {
+        val client = HttpClient(engine = TestEngine {
             requestHandlers.add {
                 respond(
                     content = encode(value = translation).orEmpty(),
                     headers = headersOf(HttpHeaders.ContentType to listOf(ContentType.Text.Plain.toString()))
                 )
             }
-        })) {
+        }) {
             installContentNegotiation()
         }
 

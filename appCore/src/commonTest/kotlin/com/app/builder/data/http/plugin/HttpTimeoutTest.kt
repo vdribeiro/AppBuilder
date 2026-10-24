@@ -4,7 +4,6 @@ import kotlin.test.Test
 import kotlin.test.assertFailsWith
 import kotlinx.coroutines.delay
 import io.ktor.client.HttpClient
-import io.ktor.client.engine.mock.MockEngineConfig
 import io.ktor.client.plugins.HttpRequestTimeoutException
 import io.ktor.client.request.get
 import com.app.builder.core.config.ClientConfigs
@@ -20,12 +19,12 @@ class HttpTimeoutTest: TestCase() {
     fun throwsOnSlowResponse() = runUnitTest {
         ClientConfigs.set { it.copy(httpRequestTimeoutMillis = 50L) }
         try {
-            val client = HttpClient(engine = TestEngine(config = MockEngineConfig().apply {
+            val client = HttpClient(engine = TestEngine {
                 requestHandlers.add {
                     delay(timeMillis = 200L)
                     respondMock()
                 }
-            })) {
+            }) {
                 installHttpTimeout()
             }
 

@@ -3,7 +3,6 @@ package com.app.builder.data.http.plugin
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import io.ktor.client.HttpClient
-import io.ktor.client.engine.mock.MockEngineConfig
 import io.ktor.client.plugins.sse.serverSentEvents
 import com.app.builder.data.http.TestEngine
 import com.app.builder.data.http.baseUrl
@@ -18,9 +17,9 @@ class SseTest: TestCase() {
     /** Verifies a server-sent event is received and decoded. */
     @Test
     fun receivesServerSentEvent() = runUnitTest {
-        val client = HttpClient(engine = TestEngine(config = MockEngineConfig().apply {
+        val client = HttpClient(engine = TestEngine {
             requestHandlers.add { respondSse(pushPayload = FakeData.notification) }
-        })) {
+        }) {
             installSse()
         }
 

@@ -3,7 +3,6 @@ package com.app.builder.data.http.plugin
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import io.ktor.client.HttpClient
-import io.ktor.client.engine.mock.MockEngineConfig
 import io.ktor.client.engine.mock.respond
 import io.ktor.client.request.get
 import io.ktor.http.HttpHeaders
@@ -18,7 +17,7 @@ class HttpCacheTest: TestCase() {
     @Test
     fun servesSecondRequestFromCache() = runUnitTest {
         var callCount = 0
-        val client = HttpClient(engine = TestEngine(config = MockEngineConfig().apply {
+        val client = HttpClient(engine = TestEngine {
             requestHandlers.add {
                 callCount++
                 respond(
@@ -26,7 +25,7 @@ class HttpCacheTest: TestCase() {
                     headers = headersOf(HttpHeaders.CacheControl to listOf("max-age=60"))
                 )
             }
-        })) {
+        }) {
             installHttpCache()
         }
 
@@ -40,12 +39,12 @@ class HttpCacheTest: TestCase() {
     @Test
     fun doesNotCacheResponseWithoutCacheControlHeader() = runUnitTest {
         var callCount = 0
-        val client = HttpClient(engine = TestEngine(config = MockEngineConfig().apply {
+        val client = HttpClient(engine = TestEngine {
             requestHandlers.add {
                 callCount++
                 respond(content = "not-cached")
             }
-        })) {
+        }) {
             installHttpCache()
         }
 
@@ -59,7 +58,7 @@ class HttpCacheTest: TestCase() {
     @Test
     fun doesNotCacheResponseWithNoStoreDirective() = runUnitTest {
         var callCount = 0
-        val client = HttpClient(engine = TestEngine(config = MockEngineConfig().apply {
+        val client = HttpClient(engine = TestEngine {
             requestHandlers.add {
                 callCount++
                 respond(
@@ -67,7 +66,7 @@ class HttpCacheTest: TestCase() {
                     headers = headersOf(HttpHeaders.CacheControl to listOf("no-store"))
                 )
             }
-        })) {
+        }) {
             installHttpCache()
         }
 

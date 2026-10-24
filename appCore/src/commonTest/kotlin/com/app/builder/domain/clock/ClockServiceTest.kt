@@ -8,7 +8,6 @@ import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
-import io.ktor.client.engine.mock.MockEngineConfig
 import com.app.builder.core.config.ClientConfigs
 import com.app.builder.data.http.HttpClientFactory
 import com.app.builder.data.http.TestEngine
@@ -24,12 +23,12 @@ class ClockServiceTest: TestCase() {
      * @return The fixture [ClockService] instance.
      */
     private fun clockService(onProbe: () -> Unit = {}): ClockService = ClockManager(
-        httpClient = HttpClientFactory(engine = TestEngine(config = MockEngineConfig().apply {
+        httpClient = HttpClientFactory(engine = TestEngine {
             requestHandlers.add {
                 onProbe()
                 respondMock()
             }
-        })).httpClient
+        }).httpClient
     )
 
     /** Verifies the clock is trusted when the offset is within tolerance. */

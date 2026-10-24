@@ -3,7 +3,6 @@ package com.app.builder.data.http.plugin
 import kotlin.test.Test
 import kotlin.test.assertTrue
 import io.ktor.client.HttpClient
-import io.ktor.client.engine.mock.MockEngineConfig
 import io.ktor.websocket.Frame
 import com.app.builder.data.http.HttpRequest
 import com.app.builder.data.http.TestEngine
@@ -18,9 +17,9 @@ class WebSocketTest: TestCase() {
     /** Verifies the WebSockets plugin is installed and connects successfully. */
     @Test
     fun installsWebSocketsPlugin() = runUnitTest {
-        val client = HttpClient(engine = TestEngine(config = MockEngineConfig().apply {
+        val client = HttpClient(engine = TestEngine {
             requestHandlers.add { respondWebSocket(pushPayload = FakeData.notification) }
-        })) {
+        }) {
             installWebSocket()
         }
 

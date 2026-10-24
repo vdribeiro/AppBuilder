@@ -6,7 +6,6 @@ import kotlin.test.assertTrue
 import kotlinx.coroutines.currentCoroutineContext
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
-import io.ktor.client.engine.mock.MockEngineConfig
 import io.ktor.client.engine.mock.respond
 import io.ktor.client.request.get
 import io.ktor.http.HttpHeaders
@@ -25,12 +24,12 @@ class ContentEncodingTest: TestCase() {
     @Test
     fun advertisesGzipEncoding() = runUnitTest {
         var acceptEncoding: String? = null
-        val client = HttpClient(engine = TestEngine(config = MockEngineConfig().apply {
+        val client = HttpClient(engine = TestEngine {
             requestHandlers.add { request ->
                 acceptEncoding = request.headers[HttpHeaders.AcceptEncoding]
                 respondMock()
             }
-        })) {
+        }) {
             installContentEncoding()
         }
 
@@ -45,14 +44,14 @@ class ContentEncodingTest: TestCase() {
         val original = "gzip-body-content"
         val compressed = GZipEncoder.encode(source = ByteReadChannel(content = original.encodeToByteArray()), coroutineContext = currentCoroutineContext()).toByteArray()
 
-        val client = HttpClient(engine = TestEngine(config = MockEngineConfig().apply {
+        val client = HttpClient(engine = TestEngine {
             requestHandlers.add {
                 respond(
                     content = compressed,
                     headers = headersOf(HttpHeaders.ContentEncoding to listOf("gzip"))
                 )
             }
-        })) {
+        }) {
             installContentEncoding()
         }
 

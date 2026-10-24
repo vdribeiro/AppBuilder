@@ -4,7 +4,6 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
-import io.ktor.client.engine.mock.MockEngineConfig
 import io.ktor.client.plugins.auth.providers.BearerTokens
 import io.ktor.client.request.get
 import io.ktor.http.HttpHeaders
@@ -22,13 +21,13 @@ class HttpClientFactoryTest: TestCase() {
     fun buildsHttpClientWithAllPluginsInstalled() = runUnitTest {
         var requestUuid: String? = null
         var acceptEncoding: String? = null
-        val factory = HttpClientFactory(engine = TestEngine(config = MockEngineConfig().apply {
+        val factory = HttpClientFactory(engine = TestEngine {
             requestHandlers.add { request ->
                 requestUuid = request.headers[Header.RequestUuid.header]
                 acceptEncoding = request.headers[HttpHeaders.AcceptEncoding]
                 respondMock()
             }
-        }))
+        })
 
         val response = factory.httpClient.get(urlString = baseUrl)
 
@@ -48,12 +47,12 @@ class HttpClientFactoryTest: TestCase() {
         var attempt = 0
         var refreshInvoked = false
         val factory = HttpClientFactory(
-            engine = TestEngine(config = MockEngineConfig().apply {
+            engine = TestEngine {
                 requestHandlers.add {
                     attempt++
                     if (attempt == 1) respondMock(status = HttpStatusCode.Unauthorized) else respondMock()
                 }
-            }),
+            },
             configurations = Configurations(
                 loadTokens = { BearerTokens(accessToken = "expired-token", refreshToken = "refresh-token") },
                 refreshTokens = {
@@ -74,9 +73,9 @@ class HttpClientFactoryTest: TestCase() {
     @Test
     fun unrenewableSessionStillSurfacesUnauthorized() = runUnitTest {
         val factory = HttpClientFactory(
-            engine = TestEngine(config = MockEngineConfig().apply {
+            engine = TestEngine {
                 requestHandlers.add { respondMock(status = HttpStatusCode.Unauthorized) }
-            }),
+            },
             configurations = Configurations(
                 loadTokens = { BearerTokens(accessToken = "expired-token", refreshToken = "refresh-token") },
                 refreshTokens = { null }
