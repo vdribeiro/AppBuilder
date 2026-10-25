@@ -10,8 +10,6 @@ import com.app.builder.domain.EntityType
 import com.app.builder.domain.Permission
 import com.app.builder.domain.gateway.authentication.AuthenticationUseCases
 import com.app.builder.plusOrMinus
-import com.app.builder.toEnumOrNull
-import com.app.builder.ui.component.bar.ActionBarMode
 import com.app.builder.ui.component.image.toImage
 import com.app.builder.ui.core.image.Image
 import com.app.builder.ui.navigation.Router
@@ -27,8 +25,8 @@ import com.app.builder.ui.store.Store
  * @property storageFile File the action bar data is persisted to, or `null` to keep it in memory only.
  * @property defaults Action bar data used when [storageFile] holds nothing yet.
  * @property entityType Entity the write permission is checked against, or `null` when the screen has no entity.
- * @property onOkClick Called with the current mode when the confirmation button is clicked.
- * @property onCancelClick Called with the current mode when the cancellation button is clicked.
+ * @property onAddClick Called when the add button is clicked.
+ * @property onDeleteClick Called when the delete button is clicked.
  */
 class ActionBarStore(
     state: ActionBarState,
@@ -37,8 +35,8 @@ class ActionBarStore(
     private val storageFile: StorageFile<AppFile.ActionBarData>? = null,
     private val defaults: AppFile.ActionBarData = AppFile.ActionBarData(),
     private val entityType: EntityType? = null,
-    private val onOkClick: (ActionBarMode) -> Unit = {},
-    private val onCancelClick: (ActionBarMode) -> Unit = {},
+    private val onAddClick: () -> Unit = {},
+    private val onDeleteClick: () -> Unit = {},
 ): Store<ActionBarState, ActionBarAction>(initialState = state) {
     init {
         setup()
@@ -48,15 +46,14 @@ class ActionBarStore(
         super.reducer(state, action)
         when (action) {
             ActionBarAction.OpenUser -> router.navigate(screen = Screen.UserProfile)
+            ActionBarAction.Add -> onAddClick()
+            ActionBarAction.Delete -> onDeleteClick()
             ActionBarAction.Login -> router.navigate(screen = Screen.Login)
-            is ActionBarAction.ModeChange -> changeMode(action = action)
             is ActionBarAction.Search -> search(action = action)
-            is ActionBarAction.SelectSortProperty -> selectSortProperty(action = action)
-            is ActionBarAction.SelectSortOrder -> selectSortOrder(action = action)
-            is ActionBarAction.ToggleVisibleProperty -> toggleVisibleProperty(state = state, action = action)
             is ActionBarAction.ToggleSearchableProperty -> toggleSearchableProperty(state = state, action = action)
-            is ActionBarAction.Ok -> onOkClick(action.mode)
-            is ActionBarAction.Cancel -> onCancelClick(action.mode)
+            is ActionBarAction.SelectSortOrder -> selectSortOrder(action = action)
+            is ActionBarAction.SelectSortProperty -> selectSortProperty(action = action)
+            is ActionBarAction.ToggleVisibleProperty -> toggleVisibleProperty(state = state, action = action)
         }
     }
 
@@ -68,7 +65,7 @@ class ActionBarStore(
     private fun setup(): Job = launch(id = "setup") {
         Telemetry.info(tag = TAG, message = "Setup")
 
-        // Assert the file exists and holds every value, then adopt it
+        // Assert the file exists and holds every value
         storageFile?.run {
             val persisted = load()
             val data = persisted.withDefaults()
@@ -76,11 +73,10 @@ class ActionBarStore(
 
             updateState {
                 it.copy(
-                    mode = data.mode.toEnumOrNull<ActionBarMode>() ?: ActionBarMode.DEFAULT,
-                    sortProperty = data.sortProperty,
+                    searchableProperties = data.searchableProperties.toPersistentList(),
                     sortAscending = data.sortAscending,
-                    visibleProperties = data.visibleProperties.toPersistentList(),
-                    searchableProperties = data.searchableProperties.toPersistentList()
+                    sortProperty = data.sortProperty,
+                    visibleProperties = data.visibleProperties.toPersistentList()
                 )
             }
         }
@@ -95,9 +91,9 @@ class ActionBarStore(
             updateState {
                 it.copy(
                     guest = user == null,
+                    write = write,
                     avatarName = user?.name,
-                    avatarImage = userImage,
-                    write = write
+                    avatarImage = userImage
                 )
             }
         }
@@ -113,22 +109,10 @@ class ActionBarStore(
     private fun AppFile.ActionBarData?.withDefaults(): AppFile.ActionBarData = when (this) {
         null -> defaults
         else -> copy(
-            mode = mode.ifBlank { defaults.mode },
+            searchableProperties = searchableProperties.ifEmpty { defaults.searchableProperties },
             sortProperty = sortProperty.ifBlank { defaults.sortProperty },
-            visibleProperties = visibleProperties.ifEmpty { defaults.visibleProperties },
-            searchableProperties = searchableProperties.ifEmpty { defaults.searchableProperties }
+            visibleProperties = visibleProperties.ifEmpty { defaults.visibleProperties }
         )
-    }
-
-    /**
-     * Persists the mode the action bar switched to.
-     *
-     * @param action Action carrying the new mode.
-     * @return The [Job] representing this execution.
-     */
-    private fun changeMode(action: ActionBarAction.ModeChange): Job = launch(id = "changeMode") {
-        updateState { it.copy(mode = action.mode) }
-        storageFile?.save { (it ?: defaults).copy(mode = action.mode.name) }
     }
 
     /**
@@ -142,14 +126,16 @@ class ActionBarStore(
     }
 
     /**
-     * Applies and persists the property the list is sorted by.
+     * Adds or removes a property from the searchable ones, then persists the result.
      *
-     * @param action Action carrying the key of the property to sort by.
+     * @param state Current action bar state.
+     * @param action Action carrying the key of the property to toggle.
      * @return The [Job] representing this execution.
      */
-    private fun selectSortProperty(action: ActionBarAction.SelectSortProperty): Job = launch(id = "selectSortProperty") {
-        updateState { it.copy(sortProperty = action.property) }
-        storageFile?.save { (it ?: defaults).copy(sortProperty = action.property) }
+    private fun toggleSearchableProperty(state: ActionBarState, action: ActionBarAction.ToggleSearchableProperty): Job = launch(id = "toggleSearchableProperty") {
+        val searchableProperties = state.searchableProperties.plusOrMinus(element = action.property).toPersistentList()
+        updateState { it.copy(searchableProperties = searchableProperties) }
+        storageFile?.save { (it ?: defaults).copy(searchableProperties = searchableProperties) }
     }
 
     /**
@@ -164,6 +150,17 @@ class ActionBarStore(
     }
 
     /**
+     * Applies and persists the property the list is sorted by.
+     *
+     * @param action Action carrying the key of the property to sort by.
+     * @return The [Job] representing this execution.
+     */
+    private fun selectSortProperty(action: ActionBarAction.SelectSortProperty): Job = launch(id = "selectSortProperty") {
+        updateState { it.copy(sortProperty = action.property) }
+        storageFile?.save { (it ?: defaults).copy(sortProperty = action.property) }
+    }
+
+    /**
      * Adds or removes a property from the visible ones, then persists the result.
      *
      * @param state Current action bar state.
@@ -174,19 +171,6 @@ class ActionBarStore(
         val visibilityProperties = state.visibleProperties.plusOrMinus(element = action.property).toPersistentList()
         updateState { it.copy(visibleProperties = visibilityProperties) }
         storageFile?.save { (it ?: defaults).copy(visibleProperties = visibilityProperties) }
-    }
-
-    /**
-     * Adds or removes a property from the searchable ones, then persists the result.
-     *
-     * @param state Current action bar state.
-     * @param action Action carrying the key of the property to toggle.
-     * @return The [Job] representing this execution.
-     */
-    private fun toggleSearchableProperty(state: ActionBarState, action: ActionBarAction.ToggleSearchableProperty): Job = launch(id = "toggleSearchableProperty") {
-        val searchableProperties = state.searchableProperties.plusOrMinus(element = action.property).toPersistentList()
-        updateState { it.copy(searchableProperties = searchableProperties) }
-        storageFile?.save { (it ?: defaults).copy(searchableProperties = searchableProperties) }
     }
 
     companion object {

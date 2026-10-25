@@ -3,6 +3,8 @@ package com.app.builder.domain
 import kotlin.time.Instant
 import kotlin.uuid.Uuid
 import kotlinx.serialization.Serializable
+import com.app.builder.core.locale.now
+import com.app.builder.core.security.uuid
 
 /**
  * Task entity.
@@ -16,12 +18,12 @@ import kotlinx.serialization.Serializable
  */
 @Serializable
 data class Task(
-    val uuid: Uuid,
-    val modifiedAt: Instant,
-    val deletedAt: Instant?,
-    val title: String,
-    val description: String,
-    val state: State
+    val uuid: Uuid = uuid(),
+    val modifiedAt: Instant = now(),
+    val deletedAt: Instant? = null,
+    val title: String = "",
+    val description: String = "",
+    val state: State = State.TODO
 ) {
     /**
      * Task state.

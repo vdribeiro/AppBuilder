@@ -24,28 +24,24 @@ fun ActionBar(store: Store<ActionBarState, ActionBarAction>) {
             .testTag(tag = "action_bar")
             .fillMaxWidth(),
         title = state.title,
+        properties = state.properties,
         avatarName = state.avatarName,
         avatarImage = state.avatarImage,
         onAvatarClick = { store.send(action = ActionBarAction.OpenUser) },
+        onAddClick = { store.send(action = ActionBarAction.Add) },
+        onDeleteClick = { store.send(action = ActionBarAction.Delete) },
         onLoginClick = if (state.guest) {
             { store.send(action = ActionBarAction.Login) }
         } else null,
-        mode = state.mode,
-        layout = state.layout,
-        write = state.write,
-        onModeChange = { store.send(action = ActionBarAction.ModeChange(mode = it)) },
-        onOkClick = { store.send(action = ActionBarAction.Ok(mode = it)) },
-        onCancelClick = { store.send(action = ActionBarAction.Cancel(mode = it)) },
         onSearch = { store.send(action = ActionBarAction.Search(search = it)) },
-        sortAscending = state.sortAscending,
-        sortProperty = state.sortProperty,
-        onSelectSortProperty = { store.send(action = ActionBarAction.SelectSortProperty(property = it)) },
-        onSortAscendingClick = { store.send(action = ActionBarAction.SelectSortOrder(ascending = it)) },
-        properties = state.properties,
-        visibleProperties = state.visibleProperties,
-        onVisiblePropertiesChange = { store.send(action = ActionBarAction.ToggleVisibleProperty(property = it)) },
         searchableProperties = state.searchableProperties,
         onSearchablePropertiesChange = { store.send(action = ActionBarAction.ToggleSearchableProperty(property = it)) },
+        sortAscending = state.sortAscending,
+        onSortAscendingClick = { store.send(action = ActionBarAction.SelectSortOrder(ascending = it)) },
+        sortProperty = state.sortProperty,
+        onSelectSortProperty = { store.send(action = ActionBarAction.SelectSortProperty(property = it)) },
+        visibleProperties = state.visibleProperties,
+        onVisiblePropertiesChange = { store.send(action = ActionBarAction.ToggleVisibleProperty(property = it)) },
     )
 }
 

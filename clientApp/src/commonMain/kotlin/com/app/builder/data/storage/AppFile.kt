@@ -65,7 +65,6 @@ object AppFile {
     /**
      * Action bar data mainly used to filter, sort, and shape a list-detail view.
      *
-     * @property mode Current display mode, controlling which actions/inputs are shown.
      * @property search Search query text.
      * @property sortProperty Name of the property used to sort the list.
      * @property sortAscending Whether the list is sorted in ascending order.
@@ -74,7 +73,6 @@ object AppFile {
      */
     @Serializable
     data class ActionBarData(
-        val mode: String = "",
         val search: String = "",
         val sortProperty: String = "",
         val sortAscending: Boolean = false,
