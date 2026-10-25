@@ -45,7 +45,7 @@ fun TaskDetailScreen(
         bottomBar = { Navigation(store = navigationStore) },
     ) {
         TaskCard(
-            enabled = task != null && state.editMode,
+            enabled = task != null,
             modifiedAt = task?.modifiedAt?.toString(),
             deletedAt = task?.deletedAt?.toString(),
             title = task?.title,

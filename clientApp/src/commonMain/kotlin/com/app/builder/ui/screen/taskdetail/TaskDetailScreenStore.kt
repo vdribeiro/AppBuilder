@@ -1,16 +1,10 @@
 package com.app.builder.ui.screen.taskdetail
 
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.mapNotNull
 import com.app.builder.core.locale.now
 import com.app.builder.core.security.toUuid
 import com.app.builder.core.telemetry.Telemetry
-import com.app.builder.data.storage.AppFile
-import com.app.builder.domain.Task
 import com.app.builder.domain.gateway.task.TaskUseCases
-import com.app.builder.toEnumOrNull
-import com.app.builder.ui.component.bar.ActionBarMode
 import com.app.builder.ui.navigation.Router
 import com.app.builder.ui.store.Store
 
@@ -33,7 +27,7 @@ class TaskDetailScreenStore(
     }
 
     /**
-     * Observes the task with [taskUuid], creating a placeholder if it doesn't exist yet, and observes the cached action bar state to keep edit mode in sync.
+     * Observes the task with [taskUuid].
      *
      * @return The [Job] representing this execution.
      */
@@ -46,38 +40,8 @@ class TaskDetailScreenStore(
         }
 
         taskUseCases.observeTask(uuid = uuid).observe(id = "task") { task ->
-            val editMode = task == null
-            val task = task ?: Task(
-                uuid = uuid,
-                modifiedAt = now(),
-                deletedAt = null,
-                title = "",
-                description = "",
-                state = Task.State.TODO
-            )
-            updateState {
-                it.copy(
-                    task = task,
-                    editMode = editMode
-                )
-            }
+            updateState { it.copy(task = task) }
         }
-
-        AppFile.TaskPreferences.cache()
-            .mapNotNull { it?.mode }
-            .distinctUntilChanged()
-            .observe(id = "syncMode") { newMode ->
-                val mode = newMode.toEnumOrNull<ActionBarMode>() ?: return@observe
-                when (mode) {
-                    ActionBarMode.DEFAULT,
-                    ActionBarMode.SEARCH,
-                    ActionBarMode.DELETE,
-                    ActionBarMode.BATCH_DELETE -> updateState { it.copy(editMode = false) }
-
-                    ActionBarMode.ADD,
-                    ActionBarMode.EDIT -> updateState { it.copy(editMode = true) }
-                }
-            }
 
         Telemetry.info(tag = TAG, message = "Setup complete")
     }
@@ -87,42 +51,13 @@ class TaskDetailScreenStore(
         when (action) {
             is TaskDetailScreenAction.ChangeTitle -> updateState { it.copy(task = it.task?.copy(title = action.title)) }
             is TaskDetailScreenAction.ChangeDescription -> updateState { it.copy(task = it.task?.copy(description = action.description)) }
-            is TaskDetailScreenAction.Ok -> ok(state = state, action = action)
-            is TaskDetailScreenAction.Cancel -> cancel(action = action)
+            TaskDetailScreenAction.Delete -> delete(state = state)
         }
     }
 
-    /**
-     * Saves the edited task when the confirmed mode is one that edits it, and does nothing for the modes that do not.
-     *
-     * @param state Current task detail state, holding the task being edited.
-     * @param action Action carrying the mode being confirmed.
-     * @return The [Job] representing this execution.
-     */
-    private fun ok(state: TaskDetailScreenState, action: TaskDetailScreenAction.Ok): Job = launch(id = "ok") {
-        when (action.mode) {
-            ActionBarMode.DEFAULT,
-            ActionBarMode.SEARCH,
-            ActionBarMode.DELETE,
-            ActionBarMode.BATCH_DELETE -> Unit
-
-            ActionBarMode.ADD,
-            ActionBarMode.EDIT -> state.task?.let { taskUseCases.upsertTask(task = it) }
-        }
-    }
-
-    private fun cancel(action: TaskDetailScreenAction.Cancel): Job = launch(id = "cancel") {
-        when (action.mode) {
-            ActionBarMode.DEFAULT,
-            ActionBarMode.SEARCH,
-            ActionBarMode.EDIT,
-            ActionBarMode.DELETE,
-            ActionBarMode.BATCH_DELETE -> Unit
-
-            ActionBarMode.ADD -> router.back()
-        }
-
-        updateState { it.copy(editMode = false) }
+    private fun delete(state: TaskDetailScreenState): Job = launch(id = "delete") {
+        state.task?.copy(deletedAt = now())?.let { taskUseCases.upsertTask(task = it) }
+        router.back()
     }
 
     companion object {

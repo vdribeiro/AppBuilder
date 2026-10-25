@@ -1,29 +1,18 @@
 package com.app.builder.ui.screen.tasklist
 
-import kotlin.time.Instant
-import kotlin.uuid.Uuid
-import kotlinx.collections.immutable.ImmutableList
-import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.mapNotNull
 import com.app.builder.core.flow.Dispatcher
-import com.app.builder.core.locale.now
-import com.app.builder.core.security.toUuid
-import com.app.builder.core.security.uuid
 import com.app.builder.core.telemetry.Telemetry
 import com.app.builder.data.storage.AppFile
 import com.app.builder.domain.Task
 import com.app.builder.domain.Task.Property
 import com.app.builder.domain.gateway.task.TaskUseCases
-import com.app.builder.plusOrMinus
-import com.app.builder.toEnumOrNull
-import com.app.builder.ui.component.bar.ActionBarMode
 import com.app.builder.ui.component.list.TaskItem
 import com.app.builder.ui.navigation.Router
 import com.app.builder.ui.navigation.Screen
@@ -48,8 +37,7 @@ class TaskListScreenStore(
     override fun reducer(state: TaskListScreenState, action: TaskListScreenAction) {
         super.reducer(state = state, action = action)
         when (action) {
-            is TaskListScreenAction.SelectTask -> selectTask(state = state, action = action)
-            is TaskListScreenAction.Ok -> ok(state = state, action = action)
+            is TaskListScreenAction.SelectTask -> selectTask(action = action)
         }
     }
 
@@ -65,28 +53,6 @@ class TaskListScreenStore(
         val actionBarDataFlow = AppFile.TaskPreferences.cache()
             .mapNotNull { it }
             .distinctUntilChanged()
-        val criteriaFlow = stateFlow
-            .map { it.toTaskListFilterCriteria() }
-            .distinctUntilChanged()
-
-        actionBarDataFlow
-            .map { it.mode }
-            .distinctUntilChanged()
-            .observe(id = "syncMode") { newMode ->
-                val mode = newMode.toEnumOrNull<ActionBarMode>() ?: return@observe
-
-                if (mode == ActionBarMode.ADD) router.navigate(screen = Screen.TaskDetail(uuid = uuid().toString()), option = Router.NavOption.REPLACE_LAST)
-
-                updateState { state ->
-                    state.copy(
-                        mode = mode,
-                        selectedUuids = when {
-                            state.mode != mode -> persistentListOf()
-                            else -> state.selectedUuids
-                        }
-                    )
-                }
-            }
 
         val tasksActionBarFlow = combine(
             flow = tasksFlow,
@@ -102,10 +68,10 @@ class TaskListScreenStore(
 
         combine(
             flow = tasksActionBarFlow,
-            flow2 = criteriaFlow
-        ) { (tasks, actionBar), criteria ->
+            flow2 = stateFlow
+        ) { (tasks, actionBar), state ->
             tasks
-                .map { it.toTaskItem(visibilityProperties = actionBar.visibleProperties, selectedUuids = criteria.selectedUuids) }
+                .map { it.toTaskItem(visibilityProperties = actionBar.visibleProperties, selectedUuid = state.selectedTaskUuid) }
                 .toPersistentList()
         }
             .flowOn(context = Dispatcher.Default)
@@ -119,61 +85,13 @@ class TaskListScreenStore(
     /**
      * Toggles the selection of the tapped task when in delete mode, otherwise navigates to its detail screen.
      *
-     * @param state Current task list state.
      * @param action Action carrying the UUID of the selected task.
      * @return The [Job] representing this execution.
      */
-    private fun selectTask(state: TaskListScreenState, action: TaskListScreenAction.SelectTask): Job = launch(id = "selectTask") {
-        when (state.mode) {
-            ActionBarMode.DEFAULT,
-            ActionBarMode.SEARCH,
-            ActionBarMode.ADD,
-            ActionBarMode.EDIT,
-            ActionBarMode.DELETE -> router.navigate(screen = Screen.TaskDetail(uuid = action.taskUuid), option = Router.NavOption.REPLACE_LAST)
-
-            ActionBarMode.BATCH_DELETE -> {
-                val selectedUuid = action.taskUuid.toUuid()
-                if (selectedUuid != null) {
-                    val selectedUuids = state.selectedUuids.plusOrMinus(element = selectedUuid).toPersistentList()
-                    updateState { it.copy(selectedUuids = selectedUuids) }
-                }
-            }
-        }
+    private fun selectTask(action: TaskListScreenAction.SelectTask): Job = launch(id = "selectTask") {
+        updateState { it.copy(selectedTaskUuid = action.taskUuid) }
+        router.navigate(screen = Screen.TaskDetail(uuid = action.taskUuid), option = Router.NavOption.REPLACE_LAST)
     }
-
-    /**
-     * Commits the pending mode once the user confirms it.
-     *
-     * @param state Current task list state.
-     * @param action Action carrying the mode being confirmed.
-     * @return The [Job] representing this execution.
-     */
-    private fun ok(state: TaskListScreenState, action: TaskListScreenAction.Ok): Job = launch(id = "ok") {
-        when (action.mode) {
-            ActionBarMode.DEFAULT,
-            ActionBarMode.SEARCH,
-            ActionBarMode.ADD,
-            ActionBarMode.EDIT,
-            ActionBarMode.DELETE -> Unit
-
-            ActionBarMode.BATCH_DELETE -> {
-                val now = now()
-                state.tasks.filter { it.uuid.toUuid() in state.selectedUuids }.forEach {
-                    it.toTask(deletedAt = now)?.let { task -> taskUseCases.upsertTask(task = task) }
-                }
-            }
-
-        }
-    }
-
-    /**
-     * Extracts the [TaskListFilterCriteria] this state contributes to the displayed task list.
-     *
-     * @return The criteria derived from this state.
-     */
-    private fun TaskListScreenState.toTaskListFilterCriteria(): TaskListFilterCriteria = TaskListFilterCriteria(
-        selectedUuids = selectedUuids
-    )
 
     /**
      * Checks whether this task's searchable properties contain the given [search] text.
@@ -217,32 +135,17 @@ class TaskListScreenStore(
      * Converts this task into a [TaskItem], including only the properties named in [visibilityProperties].
      *
      * @param visibilityProperties Names of the [Property] values that should be visible on the item.
-     * @param selectedUuids UUIDs of the tasks the user has picked.
+     * @param selectedUuid UUID of the selected task.
      * @return Task item with hidden properties set to `null`.
      */
-    private fun Task.toTaskItem(visibilityProperties: List<String>, selectedUuids: ImmutableList<Uuid>): TaskItem = TaskItem(
+    private fun Task.toTaskItem(visibilityProperties: List<String>, selectedUuid: String?): TaskItem = TaskItem(
         uuid = uuid.toString(),
-        selected = uuid in selectedUuids,
+        selected = uuid.toString() == selectedUuid,
         modifiedAt = modifiedAt.takeIf { Property.MODIFIED_AT.name in visibilityProperties }?.toString(),
         deletedAt = deletedAt.takeIf { Property.DELETED_AT.name in visibilityProperties }?.toString(),
         title = title.takeIf { Property.TITLE.name in visibilityProperties },
         description = description.takeIf { Property.DESCRIPTION.name in visibilityProperties },
         state = state.name
-    )
-
-    /**
-     * Converts this item back into a [Task].
-     *
-     * @param deletedAt Timestamp recorded as the task's modification and deletion time.
-     * @return The reconstructed [Task], or `null` if this item is missing its uuid or state.
-     */
-    private fun TaskItem.toTask(deletedAt: Instant): Task? = Task(
-        uuid = uuid.toUuid() ?: return null,
-        modifiedAt = deletedAt,
-        deletedAt = deletedAt,
-        title = title.orEmpty(),
-        description = description.orEmpty(),
-        state = state?.toEnumOrNull() ?: return null
     )
 
     companion object {
