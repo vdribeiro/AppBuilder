@@ -66,18 +66,18 @@ object AppFile {
      * Action bar data mainly used to filter, sort, and shape a list-detail view.
      *
      * @property search Search query text.
-     * @property sortProperty Name of the property used to sort the list.
-     * @property sortAscending Whether the list is sorted in ascending order.
-     * @property visibleProperties Names of the property values shown as visible columns.
      * @property searchableProperties Names of the property values included when searching.
+     * @property sortAscending Whether the list is sorted in ascending order.
+     * @property sortProperty Name of the property used to sort the list.
+     * @property visibleProperties Names of the property values shown as visible columns.
      */
     @Serializable
     data class ActionBarData(
         val search: String = "",
-        val sortProperty: String = "",
-        val sortAscending: Boolean = false,
-        val visibleProperties: List<String> = emptyList(),
         val searchableProperties: List<String> = emptyList(),
+        val sortAscending: Boolean = false,
+        val sortProperty: String = "",
+        val visibleProperties: List<String> = emptyList(),
     )
 
     /** Task preferences. */

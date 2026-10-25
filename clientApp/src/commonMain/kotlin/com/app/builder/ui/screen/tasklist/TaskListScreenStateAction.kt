@@ -14,12 +14,8 @@ sealed interface TaskListScreenAction {
      * @param taskUuid UUID of the task that was selected.
      */
     data class SelectTask(val taskUuid: String): TaskListScreenAction
-    /**
-     * Confirms and commits the current pending mode.
-     *
-     * @param mode The pending mode.
-     */
-    data class Ok(val mode: ActionBarMode): TaskListScreenAction
+    /** Confirms and commits the current pending mode. */
+    data object Add: TaskListScreenAction
 }
 
 /**

@@ -28,9 +28,13 @@ fun ActionBar(store: Store<ActionBarState, ActionBarAction>) {
         avatarName = state.avatarName,
         avatarImage = state.avatarImage,
         onAvatarClick = { store.send(action = ActionBarAction.OpenUser) },
-        onAddClick = { store.send(action = ActionBarAction.Add) },
-        onDeleteClick = { store.send(action = ActionBarAction.Delete) },
-        onLoginClick = if (state.guest) {
+        onAddClick = if (state.showAdd) {
+            { store.send(action = ActionBarAction.Add) }
+        } else null,
+        onDeleteClick = if (state.showDelete) {
+            { store.send(action = ActionBarAction.Delete) }
+        } else null,
+        onLoginClick = if (state.showLogin) {
             { store.send(action = ActionBarAction.Login) }
         } else null,
         onSearch = { store.send(action = ActionBarAction.Search(search = it)) },
@@ -50,7 +54,7 @@ fun ActionBar(store: Store<ActionBarState, ActionBarAction>) {
 private fun ActionBarPreview() = Preview {
     ActionBar(
         store = Store(
-            initialState = ActionBarState()
+            initialState = ActionBarState(),
         )
     )
 }

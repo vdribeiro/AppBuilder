@@ -35,8 +35,8 @@ class ActionBarStore(
     private val storageFile: StorageFile<AppFile.ActionBarData>? = null,
     private val defaults: AppFile.ActionBarData = AppFile.ActionBarData(),
     private val entityType: EntityType? = null,
-    private val onAddClick: () -> Unit = {},
-    private val onDeleteClick: () -> Unit = {},
+    private val onAddClick: (suspend () -> Unit)? = null,
+    private val onDeleteClick: (suspend () -> Unit)? = null,
 ): Store<ActionBarState, ActionBarAction>(initialState = state) {
     init {
         setup()
@@ -46,8 +46,8 @@ class ActionBarStore(
         super.reducer(state, action)
         when (action) {
             ActionBarAction.OpenUser -> router.navigate(screen = Screen.UserProfile)
-            ActionBarAction.Add -> onAddClick()
-            ActionBarAction.Delete -> onDeleteClick()
+            ActionBarAction.Add -> add()
+            ActionBarAction.Delete -> delete()
             ActionBarAction.Login -> router.navigate(screen = Screen.Login)
             is ActionBarAction.Search -> search(action = action)
             is ActionBarAction.ToggleSearchableProperty -> toggleSearchableProperty(state = state, action = action)
@@ -90,10 +90,11 @@ class ActionBarStore(
 
             updateState {
                 it.copy(
-                    guest = user == null,
-                    write = write,
                     avatarName = user?.name,
-                    avatarImage = userImage
+                    avatarImage = userImage,
+                    showAdd = onAddClick != null && write,
+                    showDelete = onDeleteClick != null && write,
+                    showLogin = user == null,
                 )
             }
         }
@@ -113,6 +114,24 @@ class ActionBarStore(
             sortProperty = sortProperty.ifBlank { defaults.sortProperty },
             visibleProperties = visibleProperties.ifEmpty { defaults.visibleProperties }
         )
+    }
+
+    /**
+     * Call add callback.
+     *
+     * @return The [Job] representing this execution.
+     */
+    private fun add(): Job = launch(id = "add") {
+        onAddClick?.invoke()
+    }
+
+    /**
+     * Call delete callback.
+     *
+     * @return The [Job] representing this execution.
+     */
+    private fun delete(): Job = launch(id = "delete") {
+        onDeleteClick?.invoke()
     }
 
     /**

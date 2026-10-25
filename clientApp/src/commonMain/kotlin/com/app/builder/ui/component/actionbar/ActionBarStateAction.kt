@@ -52,12 +52,12 @@ sealed interface ActionBarAction {
  * State of an action bar, holding what it displays and the sorting and property filters it applies to the screen below it.
  *
  * @property title Text shown as the action bar's title.
- * @property guest true if there is no authenticated user, false otherwise.
- * @property write Whether buttons that allow "write" operations should be shown.
  * @property properties Map of property keys to their display labels, used to populate the sort, visibility and search menus.
- * @property guest true if there is no authenticated user, false otherwise.
  * @property avatarName The name to fit in the avatar. Only the first letter of the first and last name will show capitalized if no image is provided.
  * @property avatarImage The image resource.
+ * @property showAdd Whether the add button should be shown.
+ * @property showDelete Whether the delete button should be shown.
+ * @property showLogin Whether the login button should be shown.
  * @property searchableProperties Property keys currently included when searching.
  * @property sortAscending Whether the list is currently sorted in ascending order.
  * @property sortProperty Key of the property currently used to sort the list.
@@ -65,11 +65,12 @@ sealed interface ActionBarAction {
  */
 data class ActionBarState(
     val title: String = "",
-    val guest: Boolean = true,
-    val write: Boolean = false,
     val properties: ImmutableMap<String, String> = persistentMapOf(),
     val avatarName: String? = null,
     val avatarImage: Image? = null,
+    val showAdd: Boolean = false,
+    val showDelete: Boolean = false,
+    val showLogin: Boolean = true,
     val searchableProperties: ImmutableList<String> = persistentListOf(),
     val sortAscending: Boolean = true,
     val sortProperty: String = "",

@@ -12,12 +12,11 @@ import com.app.builder.domain.gateway.UseCases
 import com.app.builder.ui.LocalSplitScreen
 import com.app.builder.ui.component.actionbar.ActionBarState
 import com.app.builder.ui.component.actionbar.ActionBarStore
-import com.app.builder.ui.component.bar.ActionBarLayout
-import com.app.builder.ui.component.bar.ActionBarMode
 import com.app.builder.ui.component.navigation.NavigationRoute
 import com.app.builder.ui.component.navigation.NavigationState
 import com.app.builder.ui.component.navigation.NavigationStore
 import com.app.builder.ui.navigation.LocalRouter
+import com.app.builder.ui.navigation.Router
 import com.app.builder.ui.navigation.Screen
 import com.app.builder.ui.navigation.scene.SplitSceneStrategy.Companion.split
 import com.app.builder.ui.screen.taskdetail.TaskDetailScreen
@@ -25,7 +24,6 @@ import com.app.builder.ui.screen.taskdetail.TaskDetailScreenAction
 import com.app.builder.ui.screen.taskdetail.TaskDetailScreenState
 import com.app.builder.ui.screen.taskdetail.TaskDetailScreenStore
 import com.app.builder.ui.screen.tasklist.TaskListScreen
-import com.app.builder.ui.screen.tasklist.TaskListScreenAction
 import com.app.builder.ui.screen.tasklist.TaskListScreenState
 import com.app.builder.ui.screen.tasklist.TaskListScreenStore
 
@@ -35,37 +33,17 @@ import com.app.builder.ui.screen.tasklist.TaskListScreenStore
  * @param useCases The use cases.
  */
 fun EntryProviderScope<NavKey>.taskProvider(useCases: UseCases) {
-    val properties = Task.Property.entries.map { it.name }.toPersistentList()
-    val propertyMap = Task.Property.entries.associate { entry -> entry.name to entry.translationKey }.toImmutableMap()
-    val defaultFilterCriteria = AppFile.ActionBarData(
-        mode = ActionBarMode.DEFAULT.name,
-        search = "",
-        sortProperty = Task.Property.MODIFIED_AT.name,
-        sortAscending = false,
-        visibleProperties = properties,
-        searchableProperties = properties,
-    )
-    val actionBarState = ActionBarState(
-        sortProperty = defaultFilterCriteria.sortProperty,
-        sortAscending = defaultFilterCriteria.sortAscending,
-        properties = propertyMap,
-        visibleProperties = properties,
-        searchableProperties = properties
-    )
-
     entry<Screen.TaskList>(metadata = split()) {
         val router = LocalRouter.current
         val store = viewModel { TaskListScreenStore(router = router, state = TaskListScreenState(), taskUseCases = useCases.taskUseCases) }
         TaskListScreen(
             actionBarStore = viewModel {
-                ActionBarStore(
-                    state = actionBarState.copy(title = "tasks", layout = ActionBarLayout.LIST),
+                getActionBarStore(
                     router = router,
-                    authenticationUseCases = useCases.authenticationUseCases,
-                    storageFile = AppFile.TaskPreferences,
-                    defaults = defaultFilterCriteria,
-                    entityType = EntityType.TASK,
-                    onAddClick = { mode -> store.send(action = TaskListScreenAction.Ok(mode = mode)) }
+                    useCases = useCases,
+                    title = "tasks",
+                    showAdd = true,
+                    onDeleteClick = null
                 )
             },
             navigationStore = viewModel { NavigationStore(state = NavigationState(selected = NavigationRoute.TASK), router = router, authenticationUseCases = useCases.authenticationUseCases) },
@@ -78,15 +56,12 @@ fun EntryProviderScope<NavKey>.taskProvider(useCases: UseCases) {
         val store = viewModel { TaskDetailScreenStore(state = TaskDetailScreenState(), router = router, taskUseCases = useCases.taskUseCases, taskUuid = it.uuid) }
         TaskDetailScreen(
             actionBarStore = viewModel {
-                ActionBarStore(
-                    state = actionBarState.copy(title = "task", layout = if (splitScreen) ActionBarLayout.ALL else ActionBarLayout.DETAIL),
+                getActionBarStore(
                     router = router,
-                    authenticationUseCases = useCases.authenticationUseCases,
-                    storageFile = AppFile.TaskPreferences,
-                    defaults = defaultFilterCriteria,
-                    entityType = EntityType.TASK,
-                    onAddClick = { mode -> store.send(action = TaskDetailScreenAction.Ok(mode = mode)) },
-                    onDeleteClick = { mode -> store.send(action = TaskDetailScreenAction.Cancel(mode = mode)) }
+                    useCases = useCases,
+                    title = "task",
+                    showAdd = splitScreen,
+                    onDeleteClick = { store.send(action = TaskDetailScreenAction.Delete) }
                 )
             },
             navigationStore = viewModel { NavigationStore(state = NavigationState(selected = NavigationRoute.TASK), router = router, authenticationUseCases = useCases.authenticationUseCases) },
@@ -94,3 +69,57 @@ fun EntryProviderScope<NavKey>.taskProvider(useCases: UseCases) {
         )
     }
 }
+
+/** The task properties by name. */
+private val properties = Task.Property.entries.map { it.name }.toPersistentList()
+/** The task property map of name and translation key. */
+private val propertyMap = Task.Property.entries.associate { entry -> entry.name to entry.translationKey }.toImmutableMap()
+/** The default action bar data. */
+private val defaults = AppFile.ActionBarData(
+    search = "",
+    searchableProperties = properties,
+    sortAscending = false,
+    sortProperty = Task.Property.MODIFIED_AT.name,
+    visibleProperties = properties,
+)
+/** The default action bar state. */
+private val actionBarState = ActionBarState(
+    properties = propertyMap,
+    searchableProperties = properties,
+    sortAscending = defaults.sortAscending,
+    sortProperty = defaults.sortProperty,
+    visibleProperties = properties
+)
+
+/**
+ * Get the task action bar store.
+ *
+ * @param router The router.
+ * @param useCases The use cases.
+ * @param title The action bar title.
+ * @param showAdd true to show add button, false otherwise.
+ * @param onDeleteClick The delete click callback, or null to hide the delete action.
+ * @return The action bar store.
+ */
+private fun getActionBarStore(
+    router: Router,
+    useCases: UseCases,
+    title: String,
+    showAdd: Boolean,
+    onDeleteClick: (suspend () -> Unit)?
+): ActionBarStore = ActionBarStore(
+    state = actionBarState.copy(title = title),
+    router = router,
+    authenticationUseCases = useCases.authenticationUseCases,
+    storageFile = AppFile.TaskPreferences,
+    defaults = defaults,
+    entityType = EntityType.TASK,
+    onAddClick = if (showAdd) {
+        {
+            val task = Task()
+            useCases.taskUseCases.upsertTask(task = task)
+            router.navigate(screen = Screen.TaskDetail(uuid = task.uuid.toString()), option = Router.NavOption.REPLACE_LAST)
+        }
+    } else null,
+    onDeleteClick = onDeleteClick
+)
