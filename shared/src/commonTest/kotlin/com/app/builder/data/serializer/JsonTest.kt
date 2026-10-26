@@ -5,6 +5,8 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlinx.serialization.builtins.ListSerializer
+import kotlinx.serialization.builtins.MapSerializer
+import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.json.JsonPrimitive
 import com.app.builder.domain.Translation
 import com.app.builder.test.FakeData
@@ -63,6 +65,27 @@ class JsonTest: TestCase() {
             expected = emptyList(),
             actual = decode(serializer = ListSerializer(Translation.serializer()), value = " ")
         )
+    }
+
+    /** Verifies decode with an explicit non-list serializer falls back to an empty object for a blank string. */
+    @Test
+    fun decodeSerializerBlankObjectFallback() = runUnitTest {
+        assertEquals(
+            expected = emptyMap(),
+            actual = decode(serializer = MapSerializer(String.serializer(), String.serializer()), value = " ")
+        )
+    }
+
+    /** Verifies decode with an explicit serializer returns null when given malformed JSON. */
+    @Test
+    fun decodeSerializerInvalidReturnsNull() = runUnitTest {
+        assertNull(actual = decode(serializer = Translation.serializer(), value = "{ not json }"))
+    }
+
+    /** Verifies encode with an explicit serializer returns null when serialization fails. */
+    @Test
+    fun encodeSerializerReturnsNullOnSerializationFailure() = runUnitTest {
+        assertNull(actual = encode(serializer = Double.serializer(), value = Double.NaN))
     }
 
     /** Verifies encode and encodeToJson return null when serialization genuinely fails, such as encoding an unsupported special floating point value. */

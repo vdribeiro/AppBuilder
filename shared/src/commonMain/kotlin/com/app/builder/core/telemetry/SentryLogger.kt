@@ -5,8 +5,10 @@ import io.sentry.kotlin.multiplatform.Sentry
 import io.sentry.kotlin.multiplatform.SentryLevel
 import io.sentry.kotlin.multiplatform.protocol.Breadcrumb
 import io.sentry.kotlin.multiplatform.protocol.UserFeedback
+import com.app.builder.test.ExcludeFromTesting
 
 /** Sentry integration for remote crash reporting and telemetry. */
+@ExcludeFromTesting
 object SentryLogger: TelemetryEngine {
 
     /** Whether the underlying Sentry SDK has already been initialized. */

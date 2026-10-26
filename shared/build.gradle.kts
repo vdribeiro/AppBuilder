@@ -62,7 +62,10 @@ kover {
     reports {
         filters {
             excludes {
-                annotatedBy("kotlinx.serialization.Serializable")
+                annotatedBy(
+                    "kotlinx.serialization.Serializable",
+                    "$appId.test.ExcludeFromTesting",
+                )
                 classes("**$**")
             }
         }

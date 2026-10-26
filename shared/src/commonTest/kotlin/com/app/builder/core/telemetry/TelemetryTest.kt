@@ -53,6 +53,15 @@ class TelemetryTest: TestCase() {
         assertEquals(expected = listOf("error:TAG:error message:null"), actual = engine.calls)
     }
 
+    /** Verifies an engine's error defaults to a null throwable when called without one. */
+    @Test
+    fun engineErrorDefaultsToNullThrowable() = runUnitTest {
+        val engine = RecordingEngine()
+        engine.error(tag = "TAG", message = "error message")
+
+        assertEquals(expected = listOf("error:TAG:error message:null"), actual = engine.calls)
+    }
+
     /** Verifies dispatching with no installed engines is a no-op. */
     @Test
     fun noEnginesIsNoOp() = runUnitTest {
