@@ -5,6 +5,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.HttpClientEngine
+import app.cash.sqldelight.async.coroutines.awaitAsOneOrNull
 import app.cash.sqldelight.db.SqlDriver
 import com.app.builder.Dependency.getUserDependency
 import com.app.builder.core.locale.now
@@ -18,6 +19,7 @@ import com.app.builder.domain.gateway.Gateways
 import com.app.builder.domain.gateway.Repositories
 import com.app.builder.domain.gateway.UseCases
 import com.app.builder.domain.gateway.authentication.toBearerTokens
+import com.app.builder.domain.gateway.authentication.toUser
 import com.app.builder.domain.nfc.TagManager
 import com.app.builder.domain.nfc.TagService
 import com.app.builder.domain.push.BroadcastManager
@@ -168,6 +170,18 @@ object Dependency {
      */
     suspend fun AppGraph.getUserDependency(user: User): UserGraph = instanceMutex.withLock {
         instanceMap[user.uuid] ?: UserGraph(user = user, dependency = this).also { instanceMap[user.uuid] = it }
+    }
+
+    /**
+     * Resolves the [UserGraph] of the user with [userUuid].
+     *
+     * @param userUuid The uuid of the user, or `null` for the guest.
+     * @return The guest [AppGraph.userGraph] for a `null` or guest uuid, the user's [UserGraph] if the user is stored, or `null` otherwise.
+     */
+    suspend fun AppGraph.getUserGraph(userUuid: Uuid?): UserGraph? {
+        if (userUuid == null || userUuid == guestUser.uuid) return userGraph
+        val user = database.userQueries.getUser(userUuid = userUuid).awaitAsOneOrNull()?.toUser() ?: return null
+        return getUserDependency(user = user)
     }
 
     /**

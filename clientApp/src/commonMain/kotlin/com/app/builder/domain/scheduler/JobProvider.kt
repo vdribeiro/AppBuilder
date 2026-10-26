@@ -1,11 +1,9 @@
 package com.app.builder.domain.scheduler
 
-import app.cash.sqldelight.async.coroutines.awaitAsOneOrNull
 import com.app.builder.Dependency
-import com.app.builder.Dependency.getUserDependency
+import com.app.builder.Dependency.getUserGraph
 import com.app.builder.domain.EntityType
 import com.app.builder.domain.gateway.Repositories
-import com.app.builder.domain.gateway.authentication.toUser
 
 /**
  * Factory responsible for mapping background jobs to their corresponding executable domain logic.
@@ -37,12 +35,8 @@ class JobProvider(
      * @param job to use.
      * @return A [Repositories] instance, or null if the user is not recognized.
      */
-    private suspend fun Dependency.AppGraph.getRepositories(job: Job): Repositories? {
-        val userUuid = job.userUuid
-        if (userUuid == Dependency.guestUser.uuid) return userGraph.repositories
-        val user = database.userQueries.getUser(userUuid = userUuid).awaitAsOneOrNull()?.toUser() ?: return null
-        return getUserDependency(user = user).repositories
-    }
+    private suspend fun Dependency.AppGraph.getRepositories(job: Job): Repositories? =
+        getUserGraph(userUuid = job.userUuid)?.repositories
 
     /**
      * Dispatches a full-sync [job] to the use case responsible for syncing all entities of its [Job.entityType].

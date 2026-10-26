@@ -9,17 +9,15 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import androidx.annotation.VisibleForTesting
-import app.cash.sqldelight.async.coroutines.awaitAsOneOrNull
 import com.app.builder.Application
 import com.app.builder.Dependency
-import com.app.builder.Dependency.getUserDependency
+import com.app.builder.Dependency.getUserGraph
 import com.app.builder.core.config.ClientFlags
 import com.app.builder.core.flow.Dispatcher
 import com.app.builder.core.telemetry.Telemetry
 import com.app.builder.domain.EntityType
 import com.app.builder.domain.PushPayload
 import com.app.builder.domain.gateway.Repositories
-import com.app.builder.domain.gateway.authentication.toUser
 
 /**
  * Manager implementation for push payloads collections.
@@ -106,12 +104,8 @@ class PayloadManager(
      * @param payload The push payload to use.
      * @return A [Repositories] instance.
      */
-    private suspend fun Dependency.AppGraph.getRepositories(payload: PushPayload): Repositories {
-        val userUuid = payload.userUuid
-        if (userUuid == null || userUuid == Dependency.guestUser.uuid) return userGraph.repositories
-        val user = database.userQueries.getUser(userUuid = userUuid).awaitAsOneOrNull()?.toUser() ?: return userGraph.repositories
-        return getUserDependency(user = user).repositories
-    }
+    private suspend fun Dependency.AppGraph.getRepositories(payload: PushPayload): Repositories =
+        (getUserGraph(userUuid = payload.userUuid) ?: userGraph).repositories
 
     companion object {
         private const val TAG = "PayloadManager"

@@ -4,11 +4,13 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import com.app.builder.Dependency
+import com.app.builder.Dependency.getUserGraph
 import com.app.builder.core.flow.Dispatcher
 import com.app.builder.core.locale.now
 import com.app.builder.core.nfc.NfcRecord
@@ -20,6 +22,7 @@ import com.app.builder.domain.EntityType
 import com.app.builder.domain.Task
 import com.app.builder.domain.User
 import com.app.builder.domain.deeplink.DeepLink
+import com.app.builder.domain.gateway.UseCases
 
 /**
  * Manager implementation for NFC tags processing.
@@ -90,7 +93,7 @@ class TagManager(
      * @param record The record to upsert.
      */
     private suspend fun upsert(record: NfcRecord.Upsert) {
-        val useCases = appGraph.userGraph.useCases
+        val useCases = appGraph.getUseCases()
         when (record.entityType) {
             EntityType.USER -> useCases.userUseCases.upsertUser(
                 user = User(
@@ -125,6 +128,16 @@ class TagManager(
             EntityType.DEVICE_LOCATION,
             EntityType.FILE -> Unit
         }
+    }
+
+    /**
+     * Get the use cases of the current user.
+     *
+     * @return A [UseCases] instance.
+     */
+    private suspend fun Dependency.AppGraph.getUseCases(): UseCases {
+        val user = userGraph.useCases.authenticationUseCases.observeCurrentUser().first()
+        return (getUserGraph(userUuid = user?.uuid) ?: userGraph).useCases
     }
 
     companion object {
