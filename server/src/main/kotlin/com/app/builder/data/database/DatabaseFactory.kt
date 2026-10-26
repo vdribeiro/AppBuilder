@@ -6,6 +6,7 @@ import org.jetbrains.exposed.v1.core.vendors.PostgreSQLDialect
 import org.jetbrains.exposed.v1.r2dbc.R2dbcDatabase
 import org.jetbrains.exposed.v1.r2dbc.R2dbcDatabaseConfig
 import com.app.builder.core.platform.Env
+import com.app.builder.test.ExcludeFromTesting
 import com.app.builder.toEnumOrNull
 import io.r2dbc.postgresql.PostgresqlConnectionConfiguration
 import io.r2dbc.postgresql.PostgresqlConnectionFactory
@@ -31,6 +32,7 @@ object DatabaseFactory {
      * @throws Throwable If any required database environment variable is missing.
      * @return The configured [PostgresqlConnectionFactory].
      */
+    @ExcludeFromTesting
     @Throws(Throwable::class)
     fun getPostgresConnectionFactory(): PostgresqlConnectionFactory {
         val host = Env.dbHost

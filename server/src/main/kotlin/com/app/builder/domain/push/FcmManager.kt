@@ -5,6 +5,7 @@ import com.app.builder.core.flow.Dispatcher
 import com.app.builder.core.telemetry.Telemetry
 import com.app.builder.data.serializer.encode
 import com.app.builder.domain.PushPayload
+import com.app.builder.test.ExcludeFromTesting
 import com.google.firebase.messaging.ApnsConfig
 import com.google.firebase.messaging.Aps
 import com.google.firebase.messaging.FirebaseMessaging
@@ -18,6 +19,7 @@ import com.google.firebase.messaging.Notification
  *
  * @property firebaseMessaging The Firebase Cloud Messaging client.
  */
+@ExcludeFromTesting
 class FcmManager(
     private val firebaseMessaging: FirebaseMessaging
 ): FcmService {

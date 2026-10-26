@@ -3,6 +3,7 @@ package com.app.builder.domain.route
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.minutes
 import kotlin.time.toJavaInstant
 import kotlin.uuid.Uuid
 import io.ktor.client.call.body
@@ -205,6 +206,56 @@ class ExtensionsTest: TestCase() {
         )
         // Without a creation time there is nothing to show the work predates the deletion, so it is refused rather than assumed.
         assertEquals(expected = HttpStatusCode.Forbidden, actual = client.get(urlString = "/test/deleted-write").status)
+    }
+
+    /** Verifies that validateTime() rejects missing or future timestamps with 400, accepts current ones, and is skipped in development mode. */
+    @Test
+    fun validateTime() = runServerTest {
+        installRouting()
+        application {
+            routing {
+                get("/test/time") {
+                    if (!call.validateTime(skip = false)) return@get
+                    call.respondSafely(status = HttpStatusCode.OK, message = "ok")
+                }
+                get("/test/time-development") {
+                    if (!call.validateTime(skip = true)) return@get
+                    call.respondSafely(status = HttpStatusCode.OK, message = "ok")
+                }
+            }
+        }
+
+        val client = createClient(token = null)
+        val current = now().toString()
+        val future = (now() + 10.minutes).toString()
+
+        assertEquals(expected = HttpStatusCode.BadRequest, actual = client.get(urlString = "/test/time").status)
+        assertEquals(
+            expected = HttpStatusCode.BadRequest,
+            actual = client.get(urlString = "/test/time") { header(key = Header.RequestUtc.header, value = current) }.status
+        )
+        assertEquals(
+            expected = HttpStatusCode.BadRequest,
+            actual = client.get(urlString = "/test/time") {
+                header(key = Header.RequestUtc.header, value = future)
+                header(key = Header.RequestSentUtc.header, value = current)
+            }.status
+        )
+        assertEquals(
+            expected = HttpStatusCode.BadRequest,
+            actual = client.get(urlString = "/test/time") {
+                header(key = Header.RequestUtc.header, value = current)
+                header(key = Header.RequestSentUtc.header, value = future)
+            }.status
+        )
+        assertEquals(
+            expected = HttpStatusCode.OK,
+            actual = client.get(urlString = "/test/time") {
+                header(key = Header.RequestUtc.header, value = current)
+                header(key = Header.RequestSentUtc.header, value = current)
+            }.status
+        )
+        assertEquals(expected = HttpStatusCode.OK, actual = client.get(urlString = "/test/time-development").status)
     }
 
     /** Verifies that toRegistry() returns null when the registry headers are missing, and correctly assembles a [Registry] when they are present. */

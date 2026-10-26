@@ -21,6 +21,7 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import com.app.builder.core.flow.Dispatcher
 import com.app.builder.core.telemetry.Telemetry
+import com.app.builder.test.ExcludeFromTesting
 import io.r2dbc.postgresql.PostgresqlConnectionFactory
 import io.r2dbc.postgresql.api.PostgresqlConnection
 
@@ -31,6 +32,7 @@ import io.r2dbc.postgresql.api.PostgresqlConnection
  *
  * @property connectionFactory The factory for the dedicated signaling connections.
  */
+@ExcludeFromTesting
 class PostgresSignal(
     private val connectionFactory: PostgresqlConnectionFactory
 ): InstanceSignal {

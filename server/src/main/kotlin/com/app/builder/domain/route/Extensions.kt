@@ -102,10 +102,11 @@ fun ApplicationCall.getHeaderMap(): Map<String, String> = runCatching {
  * Rejects the request with 400 if the timestamp is further in the future than [ServerConfigs.timestampFutureTolerance].
  *
  * @receiver [ApplicationCall] The context of the call.
+ * @param skip Whether validation is skipped.
  * @return `true` if the time is valid, `false` otherwise.
  */
-suspend fun ApplicationCall.validateTime(): Boolean = runCatching {
-    if (Env.developmentMode) return@runCatching true
+suspend fun ApplicationCall.validateTime(skip: Boolean = Env.developmentMode): Boolean = runCatching {
+    if (skip) return@runCatching true
     val headerMap = getHeaderMap()
     val requestUtc = headerMap[Header.RequestUtc.header]?.toInstant() ?: error("Request time is missing")
     val requestSentUtc = headerMap[Header.RequestSentUtc.header]?.toInstant() ?: error("Request sent time is missing")
