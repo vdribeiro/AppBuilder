@@ -64,7 +64,7 @@ class PermissionManager(
             Telemetry.error(tag = TAG, message = "Unable to encode user access")
             return
         }
-        instanceSignal.notify(channel = CHANNEL, payload = payload)
+        instanceSignal.notify(channel = CHANNEL, payload = "$instanceId$ENVELOPE_SEPARATOR$payload")
     }
 
     override fun get(userUuid: Uuid): UserAccess? = cache[userUuid]

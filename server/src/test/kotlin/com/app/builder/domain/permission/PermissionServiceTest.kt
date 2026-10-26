@@ -2,8 +2,12 @@ package com.app.builder.domain.permission
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 import kotlin.test.assertNull
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import com.app.builder.core.security.toUuid
 import com.app.builder.data.signal.LocalSignal
 import com.app.builder.test.FakeData
 import com.app.builder.test.TestCase
@@ -72,5 +76,23 @@ class PermissionServiceTest: TestCase() {
 
         permissionService.set(userUuid = userUuid, access = null)
         assertNull(actual = permissionService.get(userUuid = userUuid))
+    }
+
+    /** Verifies that permission updates are relayed with the sending instance id, so the sender can skip its own echo. */
+    @Test
+    fun setTagsPayloadWithInstanceId() = runServerTest {
+        val permissionService = dependency.get().permissionService
+        val instanceSignal = dependency.get().instanceSignal as LocalSignal
+        val envelopes = mutableListOf<String>()
+        coroutineScope {
+            val job = launch { instanceSignal.observe(channel = "permissions").collect { envelopes.add(element = it) } }
+            awaitUntil { instanceSignal.subscriptions.value > 0 }
+
+            permissionService.set(userUuid = FakeData.user.uuid, access = UserAccess(permissions = FakeData.user.permissions, deletedAt = null))
+            awaitUntil { envelopes.isNotEmpty() }
+
+            assertNotNull(actual = envelopes.single().substringBefore(delimiter = '|').toUuid())
+            job.cancel()
+        }
     }
 }
