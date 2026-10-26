@@ -84,22 +84,22 @@ fun Button(
         null if content != null && checked != null -> {
             val content: @Composable () -> Unit = { if (showLoading(loading = loading)) CircularProgressIndicator(modifier = Modifier.size(size = 24.dp)) else content() }
             when (style) {
-                ButtonStyle.FILLED -> FilledIconToggleButton(modifier = modifier, checked = checked, onCheckedChange = onClick, enabled = enabled, content = content)
-                ButtonStyle.FILLED_TONAL -> FilledTonalIconToggleButton(modifier = modifier, checked = checked, onCheckedChange = onClick, enabled = enabled, content = content)
-                ButtonStyle.ELEVATED -> MaterialIconToggleButton(modifier = modifier, checked = checked, onCheckedChange = onClick, enabled = enabled, content = content)
-                ButtonStyle.OUTLINED -> OutlinedIconToggleButton(modifier = modifier, checked = checked, onCheckedChange = onClick, enabled = enabled, content = content)
-                ButtonStyle.TEXT -> MaterialIconToggleButton(modifier = modifier, checked = checked, onCheckedChange = onClick, enabled = enabled, content = content)
+                ButtonStyle.FILLED -> FilledIconToggleButton(modifier = modifier, checked = checked, onCheckedChange = onClick, enabled = isEnabled, content = content)
+                ButtonStyle.FILLED_TONAL -> FilledTonalIconToggleButton(modifier = modifier, checked = checked, onCheckedChange = onClick, enabled = isEnabled, content = content)
+                ButtonStyle.ELEVATED -> MaterialIconToggleButton(modifier = modifier, checked = checked, onCheckedChange = onClick, enabled = isEnabled, content = content)
+                ButtonStyle.OUTLINED -> OutlinedIconToggleButton(modifier = modifier, checked = checked, onCheckedChange = onClick, enabled = isEnabled, content = content)
+                ButtonStyle.TEXT -> MaterialIconToggleButton(modifier = modifier, checked = checked, onCheckedChange = onClick, enabled = isEnabled, content = content)
             }
         }
 
         null if content != null -> {
             val content: @Composable () -> Unit = { if (showLoading(loading = loading)) CircularProgressIndicator(modifier = Modifier.size(size = 24.dp)) else content() }
             when (style) {
-                ButtonStyle.FILLED -> FilledIconButton(modifier = modifier, onClick = { onClick(true) }, enabled = enabled, content = content)
-                ButtonStyle.FILLED_TONAL -> FilledTonalIconButton(modifier = modifier, onClick = { onClick(true) }, enabled = enabled, content = content)
-                ButtonStyle.ELEVATED -> IconButton(modifier = modifier, onClick = { onClick(true) }, enabled = enabled, content = content)
-                ButtonStyle.OUTLINED -> OutlinedIconButton(modifier = modifier, onClick = { onClick(true) }, enabled = enabled, content = content)
-                ButtonStyle.TEXT -> IconButton(modifier = modifier, onClick = { onClick(true) }, enabled = enabled, content = content)
+                ButtonStyle.FILLED -> FilledIconButton(modifier = modifier, onClick = { onClick(true) }, enabled = isEnabled, content = content)
+                ButtonStyle.FILLED_TONAL -> FilledTonalIconButton(modifier = modifier, onClick = { onClick(true) }, enabled = isEnabled, content = content)
+                ButtonStyle.ELEVATED -> IconButton(modifier = modifier, onClick = { onClick(true) }, enabled = isEnabled, content = content)
+                ButtonStyle.OUTLINED -> OutlinedIconButton(modifier = modifier, onClick = { onClick(true) }, enabled = isEnabled, content = content)
+                ButtonStyle.TEXT -> IconButton(modifier = modifier, onClick = { onClick(true) }, enabled = isEnabled, content = content)
             }
         }
 
