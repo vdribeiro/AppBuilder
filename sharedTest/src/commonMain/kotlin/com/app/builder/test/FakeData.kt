@@ -1,6 +1,5 @@
 package com.app.builder.test
 
-import kotlin.uuid.Uuid
 import com.app.builder.core.config.ClientConfigs
 import com.app.builder.core.config.ClientFlags
 import com.app.builder.core.config.ServerConfigs
@@ -52,7 +51,7 @@ object FakeData {
     )
 
     val adminUser: User = User(
-        uuid = Uuid.NIL,
+        uuid = uuid(),
         modifiedAt = now(),
         deletedAt = null,
         permissions = EntityType.entries.associateWith { Permission.WRITE },
