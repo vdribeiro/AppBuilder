@@ -36,7 +36,7 @@ fun getTranslationState(): Map<String, String> {
 @Composable
 fun getTranslation(key: String, default: String = key, vararg args: String): String {
     val cacheState = LocalTranslationState.current
-    return remember(cacheState, key, *args) { TranslationCache.get(key = key, args = args) }
+    return remember(cacheState, key, default, *args) { TranslationCache.get(key = key, default = default, args = args) }
 }
 
 /**
