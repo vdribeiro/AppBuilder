@@ -23,7 +23,7 @@ class LocaleDesktopTest: TestCase() {
             testScheduler.advanceTimeBy(delayTimeMillis = INTERVAL_MILLIS)
             testScheduler.runCurrent()
 
-            assertEquals(expected = listOf("en-US", "pt-PT"), actual = emissions)
+            assertEquals(expected = listOf("en", "pt"), actual = emissions)
             job.cancel()
         } finally {
             Locale.setDefault(originalLocale)
