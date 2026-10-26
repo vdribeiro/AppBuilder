@@ -3,7 +3,10 @@
     rm -rf Pods
     pod install
 # Run Tests
-    ./gradlew clean testSharedAndReport testServerAndReport testAppCoreAndReport testClientAndReport
+    ./gradlew clean testSharedAndReport
+    ./gradlew clean testServerAndReport
+    ./gradlew clean testAppCoreAndReport
+    ./gradlew clean testClientAndReport
 # Run Server
     ./gradlew :server:run
 # Git
@@ -17,19 +20,5 @@
     Web:     ./gradlew clean :clientApp:wasmJsBrowserDistribution
     Server:  ../gradlew :server:buildFatJar
 # Publish
-    Server:
-            cd server
-            gcloud run deploy server \
-                --source . \
-                --region=europe-west1 \
-                --allow-unauthenticated \
-                --set-env-vars="^@^DEVELOPMENT=false@SENTRY_DSN=dsn@PORT=port@ADMIN_UUID=uuid@ADMIN_USERNAME=username@DB_HOST=dhost@DB_PORT=port@DB_NAME=name@DB_USER=user@JWT_ISSUER=issuer@JWT_AUDIENCE=audience@GCP_PROJECT_ID=id" \
-                --set-secrets="ADMIN_PASSWORD=password:latest,DB_PASSWORD=password:latest,JWT_SECRET=jwt:latest"
     Web:    ./gradlew wasmJsBrowserDistribution
             firebase deploy --only hosting
-    VPS:
-            fill in ~/appbuilder/.env on the VM once, then
-            SSH_HOST=ubuntu@<public-ip> ./deploy/vps/deploy.sh
-    Container host:
-            push to main to publish ghcr.io/vdribeiro/appbuilder-server:latest,
-            then redeploy the service so it pulls the new image
