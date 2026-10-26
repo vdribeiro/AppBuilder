@@ -55,7 +55,7 @@ fun UserMultiSelector(
         verticalArrangement = Arrangement.spacedBy(space = 8.dp)
     ) {
         Text(
-            text = getTranslation(key = "users", selectedUsers.size.toString()),
+            text = getTranslation(key = "users", args = arrayOf(selectedUsers.size.toString())),
             translate = false,
             style = typography.titleMedium,
         )

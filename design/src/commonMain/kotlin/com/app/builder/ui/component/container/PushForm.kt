@@ -138,7 +138,7 @@ fun PushForm(
             onClick = { onSendClick() },
         )
 
-        sent?.let { Text(text = getTranslation(key = "push_sent", it.toString()), translate = false, style = typography.bodyMedium) }
+        sent?.let { Text(text = getTranslation(key = "push_sent", args = arrayOf(it.toString())), translate = false, style = typography.bodyMedium) }
     }
 }
 
