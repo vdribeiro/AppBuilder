@@ -6,8 +6,10 @@ import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.withTimeout
 import com.app.builder.core.config.ServerConfigs
+import com.app.builder.core.config.ServerFlags
 import com.app.builder.core.security.uuid
 import com.app.builder.data.http.FakeWebSocketSession
 import com.app.builder.data.signal.LocalSignal
@@ -177,6 +179,61 @@ class PushServiceTest: TestCase() {
         assertTrue(actual = notificationsUseCases.saveNotification(notification = notification))
         assertTrue(actual = pushService.acknowledgePush(pushUuid = notification.uuid))
         assertFalse(actual = pushService.acknowledgePush(pushUuid = notification.uuid))
+    }
+
+    /** Verifies that tokens FCM reports as no longer registered are removed, while the rest are kept. */
+    @Test
+    fun unregisteredFcmTokensAreRemoved() = runServerTest {
+        val useCases = dependency.get().useCases
+        val fakeFcmService = FakeFcmService(unregisteredTokens = setOf("stale-token"))
+        val pushService = createOtherInstance(fcmService = fakeFcmService)
+
+        assertTrue(actual = useCases.deviceTokenUseCases.registerToken(userUuid = FakeData.adminUser.uuid, registration = DeviceToken(deviceUuid = uuid(), token = "stale-token")))
+        assertTrue(actual = useCases.deviceTokenUseCases.registerToken(userUuid = FakeData.adminUser.uuid, registration = DeviceToken(deviceUuid = uuid(), token = "live-token")))
+
+        pushService.sendNotification(pushPayload = FakeData.notification)
+        assertEquals(expected = setOf("stale-token", "live-token"), actual = withTimeout(timeMillis = 5_000L) { fakeFcmService.multicasts.receive() }.toSet())
+
+        awaitUntil { useCases.deviceTokenUseCases.getTokens(userUuid = FakeData.adminUser.uuid).none { it.token == "stale-token" } }
+        assertEquals(expected = listOf("live-token"), actual = useCases.deviceTokenUseCases.getTokens(userUuid = FakeData.adminUser.uuid).map { it.token })
+    }
+
+    /** Verifies that a WebSocket session failing every delivery attempt is dropped, along with its connection presence. */
+    @Test
+    fun failingSessionIsDropped() = runServerTest {
+        ServerConfigs.set { it.copy(pushMaxAttempts = 1, pushRetryDelay = 1L) }
+        val useCases = dependency.get().useCases
+        val pushService = dependency.get().pushService
+        val deviceUuid = uuid()
+        val deadSession = FakeWebSocketSession(fail = true)
+
+        val ticket = pushService.generateTicket(userUuid = FakeData.adminUser.uuid)
+        assertNotNull(actual = ticket)
+        assertEquals(expected = FakeData.adminUser.uuid, actual = pushService.addConnection(ticketUuid = ticket, deviceUuid = deviceUuid, session = deadSession))
+        assertEquals(expected = listOf(deviceUuid), actual = useCases.connectionUseCases.getConnectedDeviceUuids(userUuid = FakeData.adminUser.uuid))
+
+        pushService.sendNotification(pushPayload = FakeData.notification)
+
+        awaitUntil { useCases.connectionUseCases.getConnectedDeviceUuids(userUuid = FakeData.adminUser.uuid).isEmpty() }
+        assertFalse(actual = pushService.removeConnection(userUuid = FakeData.adminUser.uuid, deviceUuid = deviceUuid, session = deadSession))
+    }
+
+    /** Verifies that starting the service is a no-op while the push flag is off, so saved notifications are not dispatched to connected sessions. */
+    @Test
+    fun startIsNoOpWhenPushIsDisabled() = runServerTest {
+        ServerFlags.set { it.copy(push = false) }
+        val pushService = dependency.get().pushService
+        val session = FakeWebSocketSession()
+        pushService.start()
+
+        val ticket = pushService.generateTicket(userUuid = FakeData.adminUser.uuid)
+        assertNotNull(actual = ticket)
+        assertEquals(expected = FakeData.adminUser.uuid, actual = pushService.addConnection(ticketUuid = ticket, deviceUuid = uuid(), session = session))
+        assertTrue(actual = dependency.get().useCases.notificationsUseCases.saveNotification(notification = FakeData.entityNotification))
+
+        delay(timeMillis = 200)
+        assertFalse(actual = session.sent)
+        pushService.stop()
     }
 
     /**

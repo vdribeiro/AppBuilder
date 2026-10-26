@@ -66,4 +66,11 @@ class DateTimeTest: TestCase() {
     fun toInstantReturnsNullWhenMissingOffset() = runUnitTest {
         assertNull(actual = "2024-01-01T00:00:00".toInstant())
     }
+
+    /** Verifies toInstant converts epoch milliseconds into the matching instant. */
+    @Test
+    fun toInstantParsesEpochMilliseconds() = runUnitTest {
+        assertEquals(expected = Instant.parse(input = "2030-05-05T10:15:00Z"), actual = 1_904_206_500_000L.toInstant())
+        assertEquals(expected = Instant.parse(input = "1970-01-01T00:00:00Z"), actual = 0L.toInstant())
+    }
 }

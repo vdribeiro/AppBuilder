@@ -32,6 +32,11 @@ object TestFile {
         override val serializer: KSerializer<Document?> = Document.serializer().nullable
     }
 
+    /** An unencrypted document fixture without a cache layer. */
+    data object Plain: StorageFile<Document?>(path = "test-plain", cache = false, encrypted = false) {
+        override val serializer: KSerializer<Document?> = Document.serializer().nullable
+    }
+
     /** Every file registered by the test suite. */
-    val all: List<StorageFile<*>> = listOf(Keys, Secret)
+    val all: List<StorageFile<*>> = listOf(Keys, Secret, Plain)
 }

@@ -105,4 +105,14 @@ class ConfigTest: TestCase() {
         assertEquals(expected = HttpStatusCode.Unauthorized, actual = client.post(request = HttpRequest(url = URL.ServerFlags), body = FakeData.serverFlags).status)
         assertEquals(expected = HttpStatusCode.Unauthorized, actual = client.post(request = HttpRequest(url = URL.ServerConfigs), body = FakeData.serverConfigs).status)
     }
+
+    /** Verifies that unauthenticated requests to update client flags and configs are rejected. */
+    @Test
+    fun unauthenticatedClientConfigUpdatesAreRejected() = runServerTest {
+        installRouting()
+        val client = createClient(token = null)
+
+        assertEquals(expected = HttpStatusCode.Unauthorized, actual = client.post(request = HttpRequest(url = URL.ClientFlags), body = FakeData.clientFlags).status)
+        assertEquals(expected = HttpStatusCode.Unauthorized, actual = client.post(request = HttpRequest(url = URL.ClientConfigs), body = FakeData.clientConfigs).status)
+    }
 }

@@ -15,6 +15,8 @@ class TranslationServiceTest: TestCase() {
 
     /** In-memory [TranslationStore] fixture for feeding translations to the service under test. */
     private class FakeTranslationStore: TranslationStore {
+        /** The store calls made so far, in order. */
+        val calls = mutableListOf<String>()
         /** Backing flow of translations exposed by [observeTranslations]. */
         private val languageFlow = MutableStateFlow<List<Translation>>(value = emptyList())
 
@@ -27,10 +29,14 @@ class TranslationServiceTest: TestCase() {
             languageFlow.value = translations
         }
 
-        override fun observeTranslations(languageIso: String): Flow<List<Translation>> =
-            languageFlow.map { list -> list.filter { it.languageIso == languageIso } }
+        override fun observeTranslations(languageIso: String): Flow<List<Translation>> {
+            calls.add(element = "observe")
+            return languageFlow.map { list -> list.filter { it.languageIso == languageIso } }
+        }
 
-        override suspend fun syncTranslations() {}
+        override suspend fun syncTranslations() {
+            calls.add(element = "sync")
+        }
     }
 
     /** Verifies starting the service populates the translation cache from the store. */
@@ -88,5 +94,18 @@ class TranslationServiceTest: TestCase() {
         translationService.stop()
 
         assertEquals(expected = "Hello", actual = TranslationCache.get(key = "hello"))
+    }
+
+    /** Verifies that starting the service syncs translations before observing them. */
+    @Test
+    fun startSyncsBeforeObserving() = runUnitTest {
+        val store = FakeTranslationStore()
+        val translationService: TranslationService = TranslationManager(translationStore = store)
+
+        translationService.start()
+        translationService.stop()
+
+        assertEquals(expected = "sync", actual = store.calls.first())
+        assertTrue(actual = "observe" in store.calls)
     }
 }

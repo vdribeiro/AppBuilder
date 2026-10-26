@@ -10,6 +10,7 @@ import io.ktor.http.content.TextContent
 import com.app.builder.core.locale.now
 import com.app.builder.data.serializer.decode
 import com.app.builder.data.serializer.encode
+import com.app.builder.domain.Authentication
 import com.app.builder.domain.RegistrationForm
 import com.app.builder.domain.UserCredentials
 import com.app.builder.test.FakeData
@@ -37,6 +38,7 @@ fun createMockHttpEngine(): HttpClientEngine = TestEngine { request ->
                 path.startsWith(prefix = URL.ServerFlags.path) -> respondMock(content = encode(value = FakeData.serverFlags))
                 path.startsWith(prefix = URL.ServerConfigs.path) -> respondMock(content = encode(value = FakeData.serverConfigs))
                 path.startsWith(prefix = URL.Translations.path) -> respondMock(content = encode(value = FakeData.translations))
+                path.startsWith(prefix = URL.Registries.path) -> respondMock(content = encode(value = listOf(FakeData.registry)))
                 path.startsWith(prefix = "${URL.Users.path}/") -> respondMock(content = encode(value = FakeData.adminUser))
                 path.startsWith(prefix = URL.Users.path) -> respondMock(content = encode(value = listOf(FakeData.adminUser, FakeData.user)))
                 path.startsWith(prefix = "${URL.Tasks.path}/") -> respondMock(content = encode(value = FakeData.task))
@@ -51,7 +53,7 @@ fun createMockHttpEngine(): HttpClientEngine = TestEngine { request ->
                     when (registrationForm.user) {
                         FakeData.adminUser -> respondMock(content = encode(value = FakeData.adminAuthentication))
                         FakeData.user -> respondMock(content = encode(value = FakeData.authentication))
-                        else -> badRequest(request = request)
+                        else -> respondMock(content = encode(value = Authentication(user = registrationForm.user, bearer = FakeData.bearerToken)))
                     }
                 }
 

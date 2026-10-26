@@ -2,8 +2,10 @@ package com.app.builder.data.storage
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNotEquals
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import com.app.builder.data.serializer.encode
 import com.app.builder.test.TestCase
 
 class StorageFileTest: TestCase() {
@@ -75,5 +77,49 @@ class StorageFileTest: TestCase() {
         val loaded = TestFile.Keys.load()
         assertEquals(expected = "1", actual = loaded?.get(TestFile.Keys.Key.ALPHA))
         assertEquals(expected = "2", actual = loaded?.get(TestFile.Keys.Key.BETA))
+    }
+
+    /** Verifies that [StorageFile.reset] deletes the file and clears the cache. */
+    @Test
+    fun resetDeletesTheFileAndClearsTheCache() = runUnitTest {
+        TestFile.Secret.save { TestFile.Document(name = "temp", count = 1) }
+
+        assertTrue(actual = TestFile.Secret.reset())
+
+        assertNull(actual = TestFile.Secret.cache().value)
+        assertNull(actual = TestFile.Secret.load())
+    }
+
+    /** Verifies that an unencrypted file is written as plain JSON, while an encrypted file never stores the plain JSON. */
+    @Test
+    fun encryptionFlagControlsTheStoredContent() = runUnitTest {
+        val document = TestFile.Document(name = "doc", count = 2)
+        val plainJson = encode(serializer = TestFile.Document.serializer(), value = document)
+
+        TestFile.Plain.save { document }
+        TestFile.Secret.save { document }
+
+        assertEquals(expected = plainJson, actual = loadFile(path = TestFile.Plain.path))
+        assertNotEquals(illegal = plainJson, actual = loadFile(path = TestFile.Secret.path))
+    }
+
+    /** Verifies that a file without a cache layer hands the value currently on disk to [StorageFile.save] and reads it back through [StorageFile.load]. */
+    @Test
+    fun uncachedFileReadsThePreviousValueFromDisk() = runUnitTest {
+        TestFile.Plain.save { TestFile.Document(name = "doc", count = 1) }
+
+        TestFile.Plain.save { previous -> previous?.copy(count = previous.count + 1) }
+
+        assertEquals(expected = TestFile.Document(name = "doc", count = 2), actual = TestFile.Plain.load())
+    }
+
+    /** Verifies that [CoreFile.Device] round trips every one of its keys through disk. */
+    @Test
+    fun coreDeviceFileRoundTripsItsKeys() = runUnitTest {
+        val values = mapOf(CoreFile.Device.Key.UUID to "uuid", CoreFile.Device.Key.CLOCK_OFFSET to "1s")
+
+        assertTrue(actual = CoreFile.Device.save { values })
+
+        assertEquals(expected = values, actual = CoreFile.Device.load())
     }
 }

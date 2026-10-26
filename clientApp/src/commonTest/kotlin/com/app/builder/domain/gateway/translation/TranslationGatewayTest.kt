@@ -1,7 +1,9 @@
 package com.app.builder.domain.gateway.translation
 
 import kotlin.test.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 import kotlin.uuid.Uuid
 import kotlinx.coroutines.flow.firstOrNull
@@ -9,8 +11,10 @@ import app.cash.sqldelight.async.coroutines.awaitAsList
 import com.app.builder.core.config.ClientFlags
 import com.app.builder.core.locale.DEFAULT_LANGUAGE
 import com.app.builder.domain.EntityType
+import com.app.builder.domain.Translation
 import com.app.builder.domain.scheduler.Job
 import com.app.builder.domain.scheduler.JobResult
+import com.app.builder.test.FakeData
 import com.app.builder.test.TestCase
 
 class TranslationGatewayTest: TestCase() {
@@ -58,5 +62,55 @@ class TranslationGatewayTest: TestCase() {
 
         val jobResult = translationUseCases.executeSyncTranslations(job = Job(userUuid = Uuid.NIL, entityType = EntityType.TRANSLATION, type = Job.Type.GET))
         assertTrue(actual = jobResult is JobResult.Error)
+    }
+
+    /** Verifies that a translations sync job replaces every stored translation with the fetched ones, filtered by language when observed. */
+    @Test
+    fun executeSyncTranslationsRewrites() = runUnitTest {
+        val translationRepository = dependency.get()
+            .userGraph
+            .repositories
+            .translationRepository
+        val translationDao = dependency.get()
+            .database
+            .translationQueries
+
+        val stale = Translation(languageIso = "en", key = "stale", value = "Stale")
+        translationDao.upsertTranslation(Translation = stale.toTranslationSchema())
+
+        val jobResult = translationRepository.executeSyncTranslations(job = Job(userUuid = Uuid.NIL, entityType = EntityType.TRANSLATION, type = Job.Type.GET))
+        assertTrue(actual = jobResult is JobResult.Success)
+
+        assertEquals(
+            expected = FakeData.translations.filter { it.languageIso == "en" }.toSet(),
+            actual = translationRepository.observeTranslations(languageIso = "en").firstOrNull().orEmpty().toSet()
+        )
+        assertEquals(
+            expected = FakeData.translations.filter { it.languageIso == "pt" }.toSet(),
+            actual = translationRepository.observeTranslations(languageIso = "pt").firstOrNull().orEmpty().toSet()
+        )
+    }
+
+    /** Verifies that syncing translations keeps already stored translations instead of prepopulating over them, and queues a remote sync. */
+    @Test
+    fun syncTranslationsKeepsStored() = runUnitTest {
+        val translationRepository = dependency.get()
+            .userGraph
+            .repositories
+            .translationRepository
+        val translationDao = dependency.get()
+            .database
+            .translationQueries
+        val jobDao = dependency.get()
+            .database
+            .jobQueries
+
+        val stored = Translation(languageIso = DEFAULT_LANGUAGE, key = "stored", value = "Stored")
+        translationDao.upsertTranslation(Translation = stored.toTranslationSchema())
+
+        translationRepository.syncTranslations()
+
+        assertEquals(expected = listOf(element = stored), actual = translationRepository.observeTranslations(languageIso = DEFAULT_LANGUAGE).firstOrNull())
+        assertNotNull(actual = jobDao.getJobsByState(states = Job.State.entries).awaitAsList().find { it.entityType == EntityType.TRANSLATION && it.type == Job.Type.GET })
     }
 }

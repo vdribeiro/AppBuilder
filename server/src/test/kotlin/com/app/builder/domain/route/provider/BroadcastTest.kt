@@ -69,4 +69,14 @@ class BroadcastTest: TestCase() {
         val response = client.post(request = HttpRequest(url = URL.BroadcastSubscribe), body = DeviceToken(deviceUuid = null, token = "fcmToken"))
         assertEquals(expected = HttpStatusCode.OK, actual = response.status)
     }
+
+    /** Verifies that publishing a broadcast is forbidden for a user without notification write permission. */
+    @Test
+    fun broadcastRequiresWritePermission() = runServerTest {
+        installRouting()
+
+        // FakeData.user has no permission at all for the notification entity type.
+        val client = createClient(token = bearerToken.accessToken)
+        assertEquals(expected = HttpStatusCode.Forbidden, actual = client.post(request = HttpRequest(url = URL.Broadcast), body = PushPayload.Flags() as PushPayload).status)
+    }
 }

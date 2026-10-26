@@ -2,11 +2,13 @@ package com.app.builder.ui.screen.configs
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.onNodeWithTag
 import com.app.builder.Dependency.getUserDependency
+import com.app.builder.core.config.ClientConfigs
 import com.app.builder.test.FakeData
 import com.app.builder.test.TestCase
 import com.app.builder.ui.component.list.ConfigItem
@@ -122,5 +124,40 @@ class ConfigsScreenTest: TestCase() {
         waitForIdle()
 
         assertEquals(expected = ConfigValue.Form(value = "123"), actual = configScreenStore.item(configType = ConfigType.SERVER_CONFIG, name = "accessTokenValidity").value)
+    }
+
+    /** Verifies that a non numeric form value is displayed but neither marked pending nor persisted. */
+    @Test
+    fun nonNumericFormValue() = runUITest {
+        val configScreenStore = setUpScreen()
+
+        val item = configScreenStore.item(configType = ConfigType.CLIENT_CONFIG, name = "httpConnectTimeoutMillis")
+
+        configScreenStore.send(action = ConfigScreenAction.UpdateValue(configType = ConfigType.CLIENT_CONFIG, item = item, value = ConfigValue.Form(value = "12a")))
+        waitForIdle()
+
+        val updated = configScreenStore.item(configType = ConfigType.CLIENT_CONFIG, name = "httpConnectTimeoutMillis")
+        assertEquals(expected = ConfigValue.Form(value = "12a"), actual = updated.value)
+        assertFalse(actual = updated.pending)
+        assertEquals(expected = FakeData.clientConfigs, actual = ClientConfigs.configs)
+    }
+
+    /** Verifies that a user only gets the sections of the config types they hold a permission on. */
+    @Test
+    fun configSectionsByPermission() = runUITest {
+        val authenticatedUseCases = dependency.get()
+            .getUserDependency(user = FakeData.user)
+            .useCases
+        authenticatedUseCases.authenticationUseCases.login(credentials = FakeData.credentials)
+
+        val navigationStore = NavigationStore(state = NavigationState(selected = NavigationRoute.CONFIG), router = router, authenticationUseCases = authenticatedUseCases.authenticationUseCases)
+        val configScreenStore = ConfigScreenStore(state = ConfigScreenState(), configUseCases = authenticatedUseCases.configUseCases, authenticationUseCases = authenticatedUseCases.authenticationUseCases)
+        val actionBarStore = ActionBarStore(state = ActionBarState(title = "config"), router = router, authenticationUseCases = authenticatedUseCases.authenticationUseCases)
+
+        setUI { ConfigsScreen(actionBarStore = actionBarStore, navigationStore = navigationStore, store = configScreenStore) }
+
+        waitUntil { configScreenStore.state.sections.isNotEmpty() }
+
+        assertEquals(expected = listOf(ConfigType.CLIENT_FLAG, ConfigType.CLIENT_CONFIG), actual = configScreenStore.state.sections.map { it.configType })
     }
 }

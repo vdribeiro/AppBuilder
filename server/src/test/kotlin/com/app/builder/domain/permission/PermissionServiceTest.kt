@@ -3,6 +3,7 @@ package com.app.builder.domain.permission
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
+import kotlinx.coroutines.delay
 import com.app.builder.data.signal.LocalSignal
 import com.app.builder.test.FakeData
 import com.app.builder.test.TestCase
@@ -38,5 +39,38 @@ class PermissionServiceTest: TestCase() {
 
         assertNull(actual = permissionService.get(userUuid = userUuid))
         assertNull(actual = otherInstance.get(userUuid = userUuid))
+    }
+
+    /** Verifies that starting an already started service does not open a second observation of the instance signal. */
+    @Test
+    fun startIsIdempotent() = runServerTest {
+        val permissionService = dependency.get().permissionService
+        val instanceSignal = dependency.get().instanceSignal as LocalSignal
+
+        permissionService.start()
+        permissionService.start()
+        awaitUntil { instanceSignal.subscriptions.value > 0 }
+
+        assertEquals(expected = 1, actual = instanceSignal.subscriptions.value)
+        permissionService.stop()
+        awaitUntil { instanceSignal.subscriptions.value == 0 }
+    }
+
+    /** Verifies that an instance that was never started keeps its own cache, but does not pick up updates set on other instances. */
+    @Test
+    fun unstartedInstanceIgnoresOtherInstances() = runServerTest {
+        val permissionService = dependency.get().permissionService
+        val otherInstance = PermissionManager(instanceSignal = dependency.get().instanceSignal)
+        val userUuid = FakeData.user.uuid
+        val access = UserAccess(permissions = FakeData.user.permissions, deletedAt = null)
+
+        permissionService.set(userUuid = userUuid, access = access)
+        assertEquals(expected = access, actual = permissionService.get(userUuid = userUuid))
+
+        delay(timeMillis = 200)
+        assertNull(actual = otherInstance.get(userUuid = userUuid))
+
+        permissionService.set(userUuid = userUuid, access = null)
+        assertNull(actual = permissionService.get(userUuid = userUuid))
     }
 }

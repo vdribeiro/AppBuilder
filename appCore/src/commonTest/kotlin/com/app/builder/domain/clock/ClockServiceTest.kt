@@ -22,7 +22,7 @@ class ClockServiceTest: TestCase() {
      *
      * @return The fixture [ClockService] instance.
      */
-    private fun clockService(onProbe: () -> Unit = {}): ClockService = ClockManager(
+    private fun clockService(onProbe: suspend () -> Unit = {}): ClockService = ClockManager(
         httpClient = HttpClientFactory(engine = TestEngine {
             onProbe()
             respondMock()
@@ -79,5 +79,46 @@ class ClockServiceTest: TestCase() {
         val probesAtStop = probes.value
         testScheduler.advanceTimeBy(delayTimeMillis = ClientConfigs.configs.clockProbeInterval * 5)
         assertEquals(expected = probesAtStop, actual = probes.value)
+    }
+
+    /** Verifies the clock is untrusted until an offset has been recorded. */
+    @Test
+    fun untrustedWithoutRecordedOffset() = runUnitTest {
+        val clockService = clockService()
+
+        clockService.start()
+        assertFalse(actual = clockService.trusted.value)
+        clockService.stop()
+    }
+
+    /** Verifies the clock loses its trust when the recorded offset becomes unparseable. */
+    @Test
+    fun untrustedWhenOffsetIsCorrupted() = runUnitTest {
+        val clockService = clockService()
+
+        clockService.start()
+        CoreFile.Device.save { it.orEmpty().plus(pair = (CoreFile.Device.Key.CLOCK_OFFSET to 1_000.milliseconds.toString())) }
+        assertTrue(actual = clockService.trusted.value)
+
+        CoreFile.Device.save { it.orEmpty().plus(pair = (CoreFile.Device.Key.CLOCK_OFFSET to "corrupted")) }
+        assertFalse(actual = clockService.trusted.value)
+        clockService.stop()
+    }
+
+    /** Verifies the probe loop stops issuing requests once a probe's recalibration makes the clock trusted. */
+    @Test
+    fun probingStopsOnceTheClockIsTrusted() = runUnitTest {
+        val probes = MutableStateFlow(value = 0)
+        val clockService = clockService(onProbe = {
+            probes.update { it + 1 }
+            CoreFile.Device.save { it.orEmpty().plus(pair = (CoreFile.Device.Key.CLOCK_OFFSET to 0.milliseconds.toString())) }
+        })
+
+        clockService.start()
+        clockService.trusted.first { it }
+
+        testScheduler.advanceTimeBy(delayTimeMillis = ClientConfigs.configs.clockProbeInterval * 5)
+        assertEquals(expected = 1, actual = probes.value)
+        clockService.stop()
     }
 }

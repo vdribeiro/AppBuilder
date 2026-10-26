@@ -2,8 +2,11 @@ package com.app.builder.domain.deeplink
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 import kotlin.uuid.Uuid
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
+import com.app.builder.core.flow.Dispatcher
 import com.app.builder.domain.EntityType
 import com.app.builder.test.TestCase
 
@@ -38,8 +41,9 @@ class DeepLinkTest: TestCase() {
 
         DeepLink.reset()
 
-        val next = DeepLink.Entity(entityUuid = Uuid.random(), entityType = EntityType.USER)
-        DeepLink.send(deepLink = next)
-        assertEquals(expected = next, actual = DeepLink.deepLinks.first())
+        val received = mutableListOf<DeepLink>()
+        backgroundScope.launch(context = Dispatcher.Default) { DeepLink.deepLinks.collect { received.add(element = it) } }
+        testScheduler.advanceUntilIdle()
+        assertTrue(actual = received.isEmpty())
     }
 }

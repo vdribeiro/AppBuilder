@@ -150,4 +150,13 @@ class PushTest: TestCase() {
         ) {}
         assertTrue(actual = connectionEstablished)
     }
+
+    /** Verifies that sending a push notification rejects an invalid body. */
+    @Test
+    fun sendPushNotificationInvalidBody() = runServerTest {
+        installRouting()
+
+        val client = createClient(token = adminBearerToken.accessToken)
+        assertEquals(expected = HttpStatusCode.BadRequest, actual = client.post(request = HttpRequest(url = URL.Push), body = "invalid body").status)
+    }
 }

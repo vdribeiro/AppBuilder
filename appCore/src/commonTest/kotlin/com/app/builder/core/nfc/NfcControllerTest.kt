@@ -1,12 +1,9 @@
-package com.app.builder.domain.nfc
+package com.app.builder.core.nfc
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import com.app.builder.core.config.ClientFlags
-import com.app.builder.core.nfc.NfcController
-import com.app.builder.core.nfc.NfcRecord
-import com.app.builder.core.nfc.createNfcController
 import com.app.builder.domain.EntityType
 import com.app.builder.test.TestCase
 

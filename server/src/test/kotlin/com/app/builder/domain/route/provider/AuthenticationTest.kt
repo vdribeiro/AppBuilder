@@ -102,4 +102,29 @@ class AuthenticationTest: TestCase() {
         assertEquals(expected = HttpStatusCode.OK, actual = client.post(request = HttpRequest(url = URL.Logout), body = refreshToken).status)
         assertEquals(expected = HttpStatusCode.Unauthorized, actual = client.post(request = HttpRequest(url = URL.RefreshTokens), body = refreshToken).status)
     }
+
+    /** Verifies that registering requires authentication. */
+    @Test
+    fun registerUnauthenticated() = runServerTest {
+        installRouting()
+        val client = createClient(token = null)
+
+        assertEquals(expected = HttpStatusCode.Unauthorized, actual = client.post(request = HttpRequest(url = URL.Register), body = FakeData.registrationForm).status)
+    }
+
+    /** Verifies that logging in with a wrong password or an unknown username is rejected. */
+    @Test
+    fun loginWithInvalidCredentials() = runServerTest {
+        installRouting()
+        val client = createClient(token = null)
+
+        assertEquals(
+            expected = HttpStatusCode.Unauthorized,
+            actual = client.post(request = HttpRequest(url = URL.Login), body = UserCredentials(username = FakeData.adminCredentials.username, password = "wrong_password")).status
+        )
+        assertEquals(
+            expected = HttpStatusCode.Unauthorized,
+            actual = client.post(request = HttpRequest(url = URL.Login), body = UserCredentials(username = "unknown", password = "pass123")).status
+        )
+    }
 }

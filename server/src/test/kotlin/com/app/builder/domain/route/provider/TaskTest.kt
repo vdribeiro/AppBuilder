@@ -125,4 +125,36 @@ class TaskTest: TestCase() {
         val response = otherClient.post(request = HttpRequest(url = URL.Tasks), body = FakeData.task.copy(title = "Hijacked"))
         assertEquals(expected = HttpStatusCode.Forbidden, actual = response.status)
     }
+
+    /** Verifies that fetching a single task requires authentication, and that upserting requires task write permission. */
+    @Test
+    fun taskRoutesRequireAuthenticationAndPermission() = runServerTest {
+        installRouting()
+
+        val client = createClient(token = null)
+        assertEquals(expected = HttpStatusCode.Unauthorized, actual = client.ktorGet(urlString = "${URL.Tasks.path}/${FakeData.task.uuid}").status)
+
+        // FakeData.user only has TASK -> READ.
+        val userClient = createClient(token = bearerToken.accessToken)
+        assertEquals(expected = HttpStatusCode.OK, actual = userClient.get(request = HttpRequest(url = URL.Tasks)).status)
+        assertEquals(expected = HttpStatusCode.Forbidden, actual = userClient.post(request = HttpRequest(url = URL.Tasks), body = FakeData.task).status)
+    }
+
+    /** Verifies that reading tasks is forbidden for a user without any task permission. */
+    @Test
+    fun getTasksRequiresReadPermission() = runServerTest {
+        installRouting()
+
+        val noTaskUser = FakeData.user.copy(uuid = uuid(), permissions = mapOf(EntityType.USER to Permission.READ))
+        val noTaskAuth = seedUser(
+            registrationForm = RegistrationForm(
+                user = noTaskUser,
+                credentials = UserCredentials(username = "no_task_user", password = "pass123")
+            )
+        )
+        val client = createClient(token = noTaskAuth.bearer.accessToken)
+
+        assertEquals(expected = HttpStatusCode.Forbidden, actual = client.get(request = HttpRequest(url = URL.Tasks)).status)
+        assertEquals(expected = HttpStatusCode.Forbidden, actual = client.ktorGet(urlString = "${URL.Tasks.path}/${FakeData.task.uuid}").status)
+    }
 }

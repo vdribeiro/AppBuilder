@@ -2,6 +2,7 @@ package com.app.builder.ui.screen.tasklist
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertIs
 import kotlin.test.assertTrue
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsSelected
@@ -18,11 +19,10 @@ import com.app.builder.test.TestCase
 import com.app.builder.test.count
 import com.app.builder.ui.component.actionbar.ActionBarState
 import com.app.builder.ui.component.actionbar.ActionBarStore
-import com.app.builder.ui.component.bar.ActionBarLayout
-import com.app.builder.ui.component.bar.ActionBarMode
 import com.app.builder.ui.component.navigation.NavigationRoute
 import com.app.builder.ui.component.navigation.NavigationState
 import com.app.builder.ui.component.navigation.NavigationStore
+import com.app.builder.ui.navigation.Router
 import com.app.builder.ui.navigation.Screen
 
 class TaskListScreenTest: TestCase() {
@@ -40,7 +40,6 @@ class TaskListScreenTest: TestCase() {
         // The list store only emits once TaskPreferences holds data, and it is the action bar store that seeds that file, so it has to be wired up as the provider does.
         val properties = Task.Property.entries.map { it.name }.toPersistentList()
         val defaults = AppFile.ActionBarData(
-            mode = ActionBarMode.DEFAULT.name,
             search = "",
             sortProperty = Task.Property.MODIFIED_AT.name,
             sortAscending = false,
@@ -48,7 +47,7 @@ class TaskListScreenTest: TestCase() {
             searchableProperties = properties,
         )
         val actionBarStore = ActionBarStore(
-            state = ActionBarState(title = "tasks", layout = ActionBarLayout.LIST, visibleProperties = properties, searchableProperties = properties),
+            state = ActionBarState(title = "tasks", visibleProperties = properties, searchableProperties = properties),
             router = router,
             authenticationUseCases = authenticatedUseCases.authenticationUseCases,
             storageFile = AppFile.TaskPreferences,
@@ -79,5 +78,52 @@ class TaskListScreenTest: TestCase() {
         onNodeWithTag(testTag = "task_card_0").assertIsDisplayed().performClick()
         val taskDetailScreen = Screen.TaskDetail(uuid = taskListScreenStore.state.tasks.first().uuid)
         assertEquals(expected = listOf(taskDetailScreen), actual = router.backStack.toList())
+    }
+
+    /** Verifies that the add action creates a new task and navigates to its detail screen. */
+    @Test
+    fun addTask() = runUITest {
+        val authenticatedUseCases = dependency.get()
+            .getUserDependency(user = FakeData.adminUser)
+            .useCases
+        authenticatedUseCases.authenticationUseCases.login(credentials = FakeData.adminCredentials)
+
+        val navigationStore = NavigationStore(state = NavigationState(selected = NavigationRoute.TASK), router = router, authenticationUseCases = authenticatedUseCases.authenticationUseCases)
+        val properties = Task.Property.entries.map { it.name }.toPersistentList()
+        val defaults = AppFile.ActionBarData(
+            search = "",
+            sortProperty = Task.Property.MODIFIED_AT.name,
+            sortAscending = false,
+            visibleProperties = properties,
+            searchableProperties = properties,
+        )
+        val actionBarStore = ActionBarStore(
+            state = ActionBarState(title = "tasks", visibleProperties = properties, searchableProperties = properties),
+            router = router,
+            authenticationUseCases = authenticatedUseCases.authenticationUseCases,
+            storageFile = AppFile.TaskPreferences,
+            defaults = defaults,
+            entityType = EntityType.TASK,
+            onAddClick = {
+                val task = Task()
+                authenticatedUseCases.taskUseCases.upsertTask(task = task)
+                router.navigate(screen = Screen.TaskDetail(uuid = task.uuid.toString()), option = Router.NavOption.REPLACE_LAST)
+            }
+        )
+        val taskListScreenStore = TaskListScreenStore(state = TaskListScreenState(), router = router, taskUseCases = authenticatedUseCases.taskUseCases)
+
+        setUI {
+            TaskListScreen(
+                actionBarStore = actionBarStore,
+                navigationStore = navigationStore,
+                store = taskListScreenStore
+            )
+        }
+
+        onNodeWithTag(testTag = "action_add").assertIsDisplayed().performClick()
+        waitUntil { taskListScreenStore.state.tasks.size == 1 }
+
+        val screen = assertIs<Screen.TaskDetail>(value = router.backStack.single())
+        assertEquals(expected = taskListScreenStore.state.tasks.first().uuid, actual = screen.uuid)
     }
 }

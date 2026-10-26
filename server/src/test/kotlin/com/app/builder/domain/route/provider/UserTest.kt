@@ -17,7 +17,9 @@ import com.app.builder.data.http.get
 import com.app.builder.data.http.post
 import com.app.builder.domain.EntityType
 import com.app.builder.domain.Permission
+import com.app.builder.domain.RegistrationForm
 import com.app.builder.domain.User
+import com.app.builder.domain.UserCredentials
 import com.app.builder.test.FakeData
 import com.app.builder.test.TestCase
 
@@ -134,5 +136,51 @@ class UserTest: TestCase() {
         val fetched = adminClient.ktorGet(urlString = "${URL.Users.path}/${FakeData.user.uuid}")
         assertEquals(expected = HttpStatusCode.OK, actual = fetched.status)
         assertNotNull(actual = fetched.body<User>().deletedAt)
+    }
+
+    /** Verifies that fetching a single user requires authentication, and that reading or writing users requires the matching user permission. */
+    @Test
+    fun userRoutesRequireAuthenticationAndPermission() = runServerTest {
+        installRouting()
+
+        val client = createClient(token = null)
+        assertEquals(expected = HttpStatusCode.Unauthorized, actual = client.ktorGet(urlString = "${URL.Users.path}/${FakeData.user.uuid}").status)
+
+        val noUserPermission = FakeData.user.copy(uuid = uuid(), permissions = mapOf(EntityType.TASK to Permission.READ))
+        val noUserPermissionAuth = seedUser(
+            registrationForm = RegistrationForm(
+                user = noUserPermission,
+                credentials = UserCredentials(username = "no_user_permission", password = "pass123")
+            )
+        )
+        val noUserPermissionClient = createClient(token = noUserPermissionAuth.bearer.accessToken)
+        assertEquals(expected = HttpStatusCode.Forbidden, actual = noUserPermissionClient.get(request = HttpRequest(url = URL.Users)).status)
+        assertEquals(expected = HttpStatusCode.Forbidden, actual = noUserPermissionClient.ktorGet(urlString = "${URL.Users.path}/${FakeData.user.uuid}").status)
+
+        val readOnly = FakeData.user.copy(uuid = uuid(), permissions = mapOf(EntityType.USER to Permission.READ))
+        val readOnlyAuth = seedUser(
+            registrationForm = RegistrationForm(
+                user = readOnly,
+                credentials = UserCredentials(username = "read_only_user", password = "pass123")
+            )
+        )
+        val readOnlyClient = createClient(token = readOnlyAuth.bearer.accessToken)
+        assertEquals(expected = HttpStatusCode.OK, actual = readOnlyClient.get(request = HttpRequest(url = URL.Users)).status)
+        assertEquals(expected = HttpStatusCode.Forbidden, actual = readOnlyClient.post(request = HttpRequest(url = URL.Users), body = readOnly.copy(name = "Renamed")).status)
+    }
+
+    /** Verifies that a user without session write permission cannot grant itself extra permissions, as the stored permissions are carried over. */
+    @Test
+    fun upsertUserCannotEscalateOwnPermissions() = runServerTest {
+        installRouting()
+
+        val client = createClient(token = bearerToken.accessToken)
+        val escalated = FakeData.user.copy(name = "Escalated", permissions = FakeData.adminUser.permissions)
+        val response = client.post(request = HttpRequest(url = URL.Users), body = escalated)
+        assertEquals(expected = HttpStatusCode.OK, actual = response.status)
+        assertEquals(expected = FakeData.user.copy(name = "Escalated"), actual = response.body<User>())
+
+        val adminClient = createClient(token = adminBearerToken.accessToken)
+        assertEquals(expected = FakeData.user.permissions, actual = adminClient.ktorGet(urlString = "${URL.Users.path}/${FakeData.user.uuid}").body<User>().permissions)
     }
 }

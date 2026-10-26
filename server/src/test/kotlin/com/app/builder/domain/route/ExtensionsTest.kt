@@ -92,7 +92,7 @@ class ExtensionsTest: TestCase() {
         assertEquals(expected = HttpStatusCode.Unauthorized, actual = malformedClient.get(urlString = "/test/user-uuid").status)
     }
 
-    /** Verifies that getPermissions() falls back to the JWT claim when the permission service has no cached entry, and prefers the cache once one is set. */
+    /** Verifies that getAccess() falls back to the JWT claim when the permission service has no cached entry, and prefers the cache once one is set. */
     @Test
     fun getAccess() = runServerTest {
         installRouting()
