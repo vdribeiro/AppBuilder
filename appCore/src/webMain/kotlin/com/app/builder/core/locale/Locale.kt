@@ -9,7 +9,7 @@ import com.app.builder.core.telemetry.Telemetry
 import org.w3c.dom.events.Event
 
 actual fun getLanguage(): String = runCatching {
-    window.navigator.language.ifBlank { DEFAULT_LANGUAGE }
+    window.navigator.language.substringBefore(delimiter = "-").ifBlank { DEFAULT_LANGUAGE }
 }.onFailure {
     Telemetry.error(tag = TAG, message = "Unable to get language", throwable = it)
 }.getOrDefault(defaultValue = DEFAULT_LANGUAGE)

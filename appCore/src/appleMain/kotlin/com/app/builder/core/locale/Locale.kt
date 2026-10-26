@@ -20,7 +20,7 @@ import com.app.builder.core.platform.observe
 import com.app.builder.core.telemetry.Telemetry
 
 actual fun getLanguage(): String = runCatching {
-    (NSLocale.preferredLanguages.first() as String).replace(oldValue = "_", newValue = "-")
+    (NSLocale.preferredLanguages.first() as String).substringBefore(delimiter = "-").substringBefore(delimiter = "_")
 }.onFailure {
     Telemetry.error(tag = TAG, message = "Unable to get language", throwable = it)
 }.getOrDefault(defaultValue = DEFAULT_LANGUAGE)

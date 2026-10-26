@@ -14,7 +14,7 @@ import com.app.builder.core.platform.loop
 import com.app.builder.core.telemetry.Telemetry
 
 actual fun getLanguage(): String = runCatching {
-    Locale.getDefault().toLanguageTag()
+    Locale.getDefault().language.ifBlank { DEFAULT_LANGUAGE }
 }.onFailure {
     Telemetry.error(tag = TAG, message = "Unable to get language", throwable = it)
 }.getOrDefault(defaultValue = DEFAULT_LANGUAGE)

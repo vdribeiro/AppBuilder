@@ -18,7 +18,7 @@ import com.app.builder.applicationContext
 import com.app.builder.core.telemetry.Telemetry
 
 actual fun getLanguage(): String = runCatching {
-    applicationContext.resources.configuration.locales[0].toLanguageTag()
+    applicationContext.resources.configuration.locales[0].language.ifBlank { DEFAULT_LANGUAGE }
 }.onFailure {
     Telemetry.error(tag = TAG, message = "Unable to get language", throwable = it)
 }.getOrDefault(defaultValue = DEFAULT_LANGUAGE)
