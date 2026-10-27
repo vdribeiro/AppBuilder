@@ -48,7 +48,7 @@ private fun getSecretStore(): SecretStore? =
     when (platform.os) {
         OS.Windows -> appDataPath.takeIf { it.isNotBlank() }?.let { WindowsSecretStore(directory = it) }
         OS.Mac -> App.id.takeIf { it.isNotBlank() }?.let { AppleSecretStore(appId = it) }
-        OS.Linux -> App.id.takeIf { it.isNotBlank() }?.let { LinuxSecretStore(appId = it) }?.takeIf { it.isAvailable() }
+        OS.Linux -> App.id.takeIf { it.isNotBlank() }?.let { LinuxSecretStore(appId = it) }
         else -> null
     }
 
@@ -76,7 +76,7 @@ private class WindowsSecretStore(private val directory: String): SecretStore {
 
     override fun read(): String? {
         val blob = runCatching { file.takeIf { it.exists() }?.readText()?.trim() }.getOrNull()?.takeIf { it.isNotEmpty() } ?: return null
-        return run(
+        return runCommand(
             command = listOf(
                 "powershell", "-NoProfile", "-NonInteractive", "-Command",
                 "[Runtime.InteropServices.Marshal]::PtrToStringAuto([Runtime.InteropServices.Marshal]::SecureStringToBSTR((ConvertTo-SecureString -String '$blob')))"
@@ -84,14 +84,16 @@ private class WindowsSecretStore(private val directory: String): SecretStore {
         )?.trim()?.takeIf { it.isNotEmpty() }
     }
 
+    /** Reads the secret from standard input, so it never appears in the command line or in PowerShell script logging. */
     override fun write(secret: String): Boolean {
-        val blob = run(
+        val blob = runCommand(
             command = listOf(
                 "powershell", "-NoProfile", "-NonInteractive", "-Command",
-                "ConvertFrom-SecureString -SecureString (ConvertTo-SecureString -String '$secret' -AsPlainText -Force)"
-            )
+                "ConvertFrom-SecureString -SecureString (ConvertTo-SecureString -String ([Console]::In.ReadToEnd().Trim()) -AsPlainText -Force)"
+            ),
+            input = secret
         )?.trim()?.takeIf { it.isNotEmpty() } ?: return false
-        return runCatching { file.writeText(text = blob) }.isSuccess
+        return runCatching { file.writeAtomically { stream -> stream.write(blob.encodeToByteArray()) } }.isSuccess
     }
 }
 
@@ -103,12 +105,14 @@ private class WindowsSecretStore(private val directory: String): SecretStore {
 @ExcludeFromTesting
 private class AppleSecretStore(private val appId: String): SecretStore {
 
-    override fun read(): String? = run(
+    override fun read(): String? = runCommand(
         command = listOf("security", "find-generic-password", "-w", "-s", appId, "-a", ACCOUNT)
     )?.trim()?.takeIf { it.isNotEmpty() }
 
-    override fun write(secret: String): Boolean = run(
-        command = listOf("security", "add-generic-password", "-U", "-s", appId, "-a", ACCOUNT, "-w", secret)
+    /** Sends the command through `security -i` on standard input, so the secret never appears in the process arguments. Its outcome is confirmed by reading the secret back. */
+    override fun write(secret: String): Boolean = runCommand(
+        command = listOf("security", "-i"),
+        input = "add-generic-password -U -s $appId -a $ACCOUNT -w $secret\n"
     ) != null
 }
 
@@ -120,14 +124,11 @@ private class AppleSecretStore(private val appId: String): SecretStore {
 @ExcludeFromTesting
 private class LinuxSecretStore(private val appId: String): SecretStore {
 
-    /** Whether `secret-tool` is installed and its keyring reachable. */
-    fun isAvailable(): Boolean = run(command = listOf("secret-tool", "lookup", "service", appId, "attribute", "probe")) != null
-
-    override fun read(): String? = run(
+    override fun read(): String? = runCommand(
         command = listOf("secret-tool", "lookup", "service", appId, "account", ACCOUNT)
     )?.trim()?.takeIf { it.isNotEmpty() }
 
-    override fun write(secret: String): Boolean = run(
+    override fun write(secret: String): Boolean = runCommand(
         command = listOf("secret-tool", "store", "--label=$appId", "service", appId, "account", ACCOUNT),
         input = secret
     ) != null
@@ -135,20 +136,21 @@ private class LinuxSecretStore(private val appId: String): SecretStore {
 
 /**
  * Runs [command] and collects its output.
+ * Standard error is discarded and the process is awaited before its output is read, so a process that stalls is stopped after [PROCESS_TIMEOUT_SECONDS] instead of blocking the caller.
+ * The output must fit in the pipe buffer, which holds for the short single values these commands print.
  *
  * @param command The command and its arguments.
  * @param input The text to write to the process standard input, if any.
  * @return The standard output of the command, or null when it fails, times out, or exits with a non-zero status.
  */
-private fun run(command: List<String>, input: String? = null): String? = runCatching {
-    val process = ProcessBuilder(command).redirectErrorStream(false).start()
-    input?.let { process.outputStream.bufferedWriter().use { writer -> writer.write(it) } } ?: process.outputStream.close()
-    val output = process.inputStream.bufferedReader().use { it.readText() }
+internal fun runCommand(command: List<String>, input: String? = null): String? = runCatching {
+    val process = ProcessBuilder(command).redirectError(ProcessBuilder.Redirect.DISCARD).start()
+    process.outputStream.bufferedWriter().use { writer -> input?.let { writer.write(it) } }
     if (!process.waitFor(PROCESS_TIMEOUT_SECONDS, TimeUnit.SECONDS)) {
         process.destroyForcibly()
         return null
     }
-    output.takeIf { process.exitValue() == 0 }
+    process.inputStream.bufferedReader().use { it.readText() }.takeIf { process.exitValue() == 0 }
 }.getOrNull()
 
 private const val TAG = "Keychain"

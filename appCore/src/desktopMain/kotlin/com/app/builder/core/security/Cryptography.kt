@@ -1,6 +1,11 @@
 package com.app.builder.core.security
 
 import java.io.File
+import java.io.OutputStream
+import java.nio.channels.FileChannel
+import java.nio.file.Files
+import java.nio.file.StandardCopyOption
+import java.nio.file.StandardOpenOption
 import java.security.KeyStore
 import java.security.MessageDigest
 import java.security.SecureRandom
@@ -58,21 +63,14 @@ actual suspend fun decrypt(content: String): String? = withContext(context = Dis
  */
 private fun machineId(): CharArray? = runCatching {
     when (platform.os) {
-        OS.Windows -> ProcessBuilder("reg", "query", "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Cryptography", "/v", "MachineGuid")
-            .start()
-            .inputStream
-            .bufferedReader()
-            .readText()
-            .substringAfter(delimiter = "REG_SZ")
+        OS.Windows -> runCommand(command = listOf("reg", "query", "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Cryptography", "/v", "MachineGuid"))
+            ?.substringAfter(delimiter = "REG_SZ")
+            .orEmpty()
             .trim()
 
-        OS.Mac -> ProcessBuilder("bash", "-c", "ioreg -rd1 -c IOPlatformExpertDevice | grep IOPlatformUUID")
-            .start()
-            .inputStream
-            .bufferedReader()
-            .readText()
-            .split("\"")
-            .getOrNull(index = 3)
+        OS.Mac -> runCommand(command = listOf("bash", "-c", "ioreg -rd1 -c IOPlatformExpertDevice | grep IOPlatformUUID"))
+            ?.split("\"")
+            ?.getOrNull(index = 3)
             .orEmpty()
             .trim()
 
@@ -89,55 +87,100 @@ private fun machineId(): CharArray? = runCatching {
 
 private fun File.load(keyStore: KeyStore, password: CharArray) = runCatching { inputStream().use { keyStore.load(it, password) } }
 
-/** The secret key, kept once loaded so the keystore is only opened again after a failure. */
-@Volatile
-private var cachedSecretKey: SecretKeySpec? = null
+/**
+ * Replaces this file with the bytes written by [write], so the file holds either its previous or its new content, never a partial one.
+ * The content goes to a temporary file in the same directory, is flushed to disk, and is then moved over this file in one step.
+ *
+ * @param write Writes the new content to the given stream.
+ */
+internal fun File.writeAtomically(write: (OutputStream) -> Unit) {
+    val temporary = File.createTempFile(name, ".tmp", parentFile)
+    try {
+        temporary.outputStream().use { stream ->
+            write(stream)
+            stream.fd.sync()
+        }
+        Files.move(temporary.toPath(), toPath(), StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING)
+    } finally {
+        temporary.delete()
+    }
+}
 
-/** Serializes keystore access, so concurrent first calls never each generate and store a different key. */
+/**
+ * Runs [block] while holding an exclusive lock on [file], shared with every other process of the app.
+ *
+ * @param file The lock file, created if missing.
+ * @param block The work to run under the lock.
+ * @return The result of [block].
+ */
+private inline fun <T> withFileLock(file: File, block: () -> T): T =
+    FileChannel.open(file.toPath(), StandardOpenOption.CREATE, StandardOpenOption.WRITE).use { channel ->
+        channel.lock().use { block() }
+    }
+
+/** The secret key and the alias it was loaded under, kept once loaded so the keystore is only opened again after a failure or an alias change. */
+@Volatile
+private var cachedSecretKey: Pair<String, SecretKeySpec>? = null
+
+/** Serializes keystore access within this process; the lock file in [loadSecretKey] does the same across processes. */
 private val secretKeyMutex = Mutex()
 
 /**
  * Returns the [SecretKeySpec], loading it from the [KeyStore] on first use.
  * A successful load is cached for the lifetime of the process, while a failed one is retried on the next call.
+ * The cache only serves the alias it was loaded under, so a change of [App.id] loads the key again.
  *
  * @return the secret key spec or throw on error.
  */
-private suspend fun getSecretKey(): SecretKeySpec = cachedSecretKey ?: secretKeyMutex.withLock {
-    cachedSecretKey ?: loadSecretKey().also { cachedSecretKey = it }
+private suspend fun getSecretKey(): SecretKeySpec {
+    val alias = ALIAS
+    cachedSecretKey?.takeIf { it.first == alias }?.let { return it.second }
+    return secretKeyMutex.withLock {
+        cachedSecretKey?.takeIf { it.first == alias }?.second ?: loadSecretKey(alias = alias).also { cachedSecretKey = alias to it }
+    }
 }
 
 /**
- * Get the [SecretKeySpec] from [KeyStore] or generate one if it does not exist.
+ * Get the [SecretKeySpec] from [KeyStore], generating the key only when the keystore does not exist yet.
  * The keystore is unlocked with a random secret held by the operating system's secret store, falling back to the machine id where there is none.
  * A new secret is only generated while no keystore is locked by another one: when the keystore does not exist yet, or is still locked by the machine id.
  * A keystore still locked by the machine id is reopened with it and written back under the stored secret.
+ * An existing keystore without a key under [alias] fails rather than getting a new key, which would leave everything encrypted before unreadable.
+ * The whole load runs under a lock file, so two processes never create or rewrite the keystore at the same time, and the keystore is only ever replaced atomically.
  *
+ * @param alias The alias the key is stored under.
  * @return the secret key spec or throw on error.
  */
-private suspend fun loadSecretKey(): SecretKeySpec = withContext(context = Dispatcher.IO) {
+private suspend fun loadSecretKey(alias: String): SecretKeySpec = withContext(context = Dispatcher.IO) {
     runCatching {
-        val keyStoreFile = File(appDataPath, "security.p12")
-        val machineId = machineId()
-        val canCreateSecret = !keyStoreFile.exists() || (machineId != null && keyStoreFile.load(keyStore = KeyStore.getInstance("PKCS12"), password = machineId).isSuccess)
-        val secret = readKeystoreSecret() ?: if (canCreateSecret) createKeystoreSecret() else null
-        val password = secret?.toCharArray() ?: machineId ?: error(message = "Unable to get a keystore password")
+        withFileLock(file = File(appDataPath, "security.lock")) {
+            val keyStoreFile = File(appDataPath, "security.p12")
+            val keyStoreExists = keyStoreFile.exists()
+            val machineId = machineId()
+            val canCreateSecret = !keyStoreExists || (machineId != null && keyStoreFile.load(keyStore = KeyStore.getInstance("PKCS12"), password = machineId).isSuccess)
+            val secret = readKeystoreSecret() ?: if (canCreateSecret) createKeystoreSecret() else null
+            val password = secret?.toCharArray() ?: machineId ?: error(message = "Unable to get a keystore password")
 
-        val keyStore = KeyStore.getInstance("PKCS12")
-        val legacyPassword = when {
-            !keyStoreFile.exists() -> null.also { keyStore.load(null, password) }
-            keyStoreFile.load(keyStore = keyStore, password = password).isSuccess -> null
-            machineId != null && keyStoreFile.load(keyStore = keyStore, password = machineId).isSuccess -> machineId
-            else -> error(message = "Unable to open the keystore")
-        }
+            val keyStore = KeyStore.getInstance("PKCS12")
+            val legacyPassword = when {
+                !keyStoreExists -> null.also { keyStore.load(null, password) }
+                keyStoreFile.load(keyStore = keyStore, password = password).isSuccess -> null
+                machineId != null && keyStoreFile.load(keyStore = keyStore, password = machineId).isSuccess -> machineId
+                else -> error(message = "Unable to open the keystore")
+            }
 
-        val protection = KeyStore.PasswordProtection(password)
-        val entry = keyStore.getEntry(ALIAS, KeyStore.PasswordProtection(legacyPassword ?: password)) as? KeyStore.SecretKeyEntry
-        val secretKey = entry?.secretKey ?: KeyGenerator.getInstance(ALGORITHM).apply { init(KEY_SIZE) }.generateKey()
-        if (entry == null || legacyPassword != null) {
-            keyStore.setEntry(ALIAS, KeyStore.SecretKeyEntry(secretKey), protection)
-            keyStoreFile.outputStream().use { stream -> keyStore.store(stream, password) }
+            val entry = keyStore.getEntry(alias, KeyStore.PasswordProtection(legacyPassword ?: password)) as? KeyStore.SecretKeyEntry
+            val secretKey = when {
+                entry != null -> entry.secretKey
+                !keyStoreExists -> KeyGenerator.getInstance(ALGORITHM).apply { init(KEY_SIZE) }.generateKey()
+                else -> error(message = "The keystore holds no key under $alias")
+            }
+            if (!keyStoreExists || legacyPassword != null) {
+                keyStore.setEntry(alias, KeyStore.SecretKeyEntry(secretKey), KeyStore.PasswordProtection(password))
+                keyStoreFile.writeAtomically { stream -> keyStore.store(stream, password) }
+            }
+            SecretKeySpec(secretKey.encoded, ALGORITHM)
         }
-        SecretKeySpec(secretKey.encoded, ALGORITHM)
     }.onFailure {
         Telemetry.error(tag = TAG, message = "Unable to get secret key", throwable = it)
     }.getOrThrow()
