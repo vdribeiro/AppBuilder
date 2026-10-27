@@ -10,6 +10,7 @@ import androidx.navigation3.runtime.NavBackStack
 import com.app.builder.App
 import com.app.builder.core.nfc.TagProvider
 import com.app.builder.data.storage.CoreFile
+import com.app.builder.data.storage.TestFile
 import com.app.builder.data.translation.TranslationCache
 import com.app.builder.domain.deeplink.DeepLink
 import com.app.builder.domain.push.PushProvider
@@ -39,6 +40,7 @@ abstract class TestCase: PlatformTestCase() {
         TagProvider.reset()
         DeepLink.reset()
         CoreFile.all.forEach { it.reset() }
+        TestFile.all.forEach { it.reset() }
         TranslationCache.set(translations = emptyMap())
         router.backStack.clear()
     }

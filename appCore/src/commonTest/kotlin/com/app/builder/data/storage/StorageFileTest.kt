@@ -2,6 +2,7 @@ package com.app.builder.data.storage
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
@@ -12,16 +13,6 @@ import com.app.builder.data.serializer.encode
 import com.app.builder.test.TestCase
 
 class StorageFileTest: TestCase() {
-
-    override suspend fun beforeTest() {
-        super.beforeTest()
-        TestFile.all.forEach { it.reset() }
-    }
-
-    override suspend fun afterTest() {
-        super.afterTest()
-        TestFile.all.forEach { it.reset() }
-    }
 
     /** Verifies that [CoreFile] entries expose their expected paths. */
     @Test
@@ -130,6 +121,25 @@ class StorageFileTest: TestCase() {
         TestFile.Plain.save { previous -> previous?.copy(count = previous.count + 1) }
 
         assertEquals(expected = TestFile.Document(name = "doc", count = 2), actual = TestFile.Plain.load())
+    }
+
+    /** Verifies that a file without a cache layer never hydrates its cache flow, so [StorageFile.cache] holds null even with a value on disk. */
+    @Test
+    fun uncachedFileDoesNotHydrateItsCacheFlow() = runUnitTest {
+        TestFile.Plain.save { TestFile.Document(name = "doc", count = 1) }
+
+        assertNull(actual = TestFile.Plain.cache().value)
+    }
+
+    /** Verifies that a value that cannot be encoded is not saved and the cache rolls back to the previous value. */
+    @Test
+    fun unencodableValueIsRejectedAndRollsBackTheCache() = runUnitTest {
+        assertTrue(actual = TestFile.Number.save { 1.0 })
+
+        assertFalse(actual = TestFile.Number.save { Double.NaN })
+
+        assertEquals(expected = 1.0, actual = TestFile.Number.cache().value)
+        assertEquals(expected = 1.0, actual = TestFile.Number.load())
     }
 
     /** Verifies that [CoreFile.Device] round trips every one of its keys through disk. */
