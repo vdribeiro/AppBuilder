@@ -2,6 +2,8 @@ package com.app.builder
 
 import kotlinx.cinterop.addressOf
 import kotlinx.cinterop.usePinned
+import platform.CoreFoundation.CFStringCreateWithCString
+import platform.CoreFoundation.kCFStringEncodingUTF8
 import platform.Foundation.NSData
 import platform.Foundation.create
 import platform.posix.memcpy
@@ -31,3 +33,11 @@ fun ByteArray.toNSData(): NSData =
 fun ByteArray.toHex(): String = joinToString(separator = "") { byte ->
     (byte.toInt() and 0xFF).toString(radix = 16).padStart(length = 2, padChar = '0')
 }.uppercase()
+
+/**
+ * Converts this string to a Core Foundation string.
+ *
+ * @receiver The string to convert.
+ * @return The Core Foundation string.
+ */
+fun String.toCFString() = CFStringCreateWithCString(alloc = null, cStr = this, encoding = kCFStringEncodingUTF8)
