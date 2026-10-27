@@ -14,10 +14,11 @@ import org.robolectric.shadows.ShadowNetworkCapabilities
 @RunWith(RobolectricTestRunner::class)
 actual abstract class PlatformTestCase actual constructor(): SharedTestCase() {
 
-    /** Initializes the application context and stubs an active, validated network connection. */
+    /** Initializes the application context, installs an empty [FakeAndroidKeyStore], and stubs an active, validated network connection. */
     @Before
     fun setup() {
         applicationContext = ApplicationProvider.getApplicationContext()
+        FakeAndroidKeyStore.install()
 
         val connectivityManager = applicationContext.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         val shadowConnectivityManager = shadowOf(connectivityManager)
