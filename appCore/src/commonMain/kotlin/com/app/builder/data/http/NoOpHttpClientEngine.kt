@@ -2,9 +2,11 @@ package com.app.builder.data.http
 
 import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import io.ktor.client.engine.HttpClientEngine
 import io.ktor.client.engine.HttpClientEngineConfig
+import io.ktor.client.engine.callContext
 import io.ktor.client.request.HttpRequestData
 import io.ktor.client.request.HttpResponseData
 import io.ktor.http.Headers
@@ -23,12 +25,12 @@ object NoOpHttpClientEngine: HttpClientEngine {
             headers = Headers.Empty,
             version = HttpProtocolVersion.HTTP_2_0,
             body = ByteReadChannel.Empty,
-            callContext = coroutineContext
+            callContext = callContext()
         )
 
     override val config: HttpClientEngineConfig = HttpClientEngineConfig()
     override val dispatcher: CoroutineDispatcher = Dispatcher.IO
-    override val coroutineContext: CoroutineContext = dispatcher
+    override val coroutineContext: CoroutineContext = dispatcher + SupervisorJob()
 
     override fun close() {
         coroutineContext.cancel()
