@@ -10,8 +10,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.core.content.ContextCompat
 import com.app.builder.applicationContext
+import com.app.builder.test.ExcludeFromTesting
 
 /** Android [PermissionManager] implementation backed by [ContextCompat] permission checks and an activity result launcher for runtime permission requests. */
+@ExcludeFromTesting
 private class AndroidPermissionManager: PermissionManager() {
 
     /** Launches the runtime permission request for the given manifest permission string. Assigned once the launcher is available in [rememberPermissionManager]. */

@@ -22,8 +22,10 @@ import platform.UserNotifications.UNUserNotificationCenter
 import platform.darwin.NSObject
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import com.app.builder.test.ExcludeFromTesting
 
 /** Apple [PermissionManager] implementation. */
+@ExcludeFromTesting
 private class ApplePermissionManager: PermissionManager() {
 
     /** The active [CLLocationManager] instance while a location permission request is in flight. */
@@ -100,6 +102,7 @@ private class ApplePermissionManager: PermissionManager() {
  *
  * @property onResult Invoked with `true` if location access was granted, `false` otherwise.
  */
+@ExcludeFromTesting
 private class LocationPermissionDelegate(
     private val onResult: (Boolean) -> Unit
 ): NSObject(), CLLocationManagerDelegateProtocol {

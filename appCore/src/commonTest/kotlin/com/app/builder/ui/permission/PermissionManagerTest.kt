@@ -49,6 +49,28 @@ class PermissionManagerTest: TestCase() {
         assertNotNull(actual = manager)
     }
 
+    /** Verifies that [rememberPermissionManager] provides the platform's permission manager. */
+    @Test
+    fun rememberPermissionManagerProvidesAManager() = runUITest {
+        var manager: PermissionManager? = null
+        setUI {
+            manager = rememberPermissionManager()
+        }
+        assertNotNull(actual = manager)
+    }
+
+    /** Verifies that the base [PermissionManager] reports every permission as missing and refuses to grant it, since its default request is refused. */
+    @Test
+    fun basePermissionManagerRefusesEveryPermission() = runUnitTest {
+        ClientFlags.set { it.copy(locationCapture = true) }
+        val manager = PermissionManager()
+
+        Permission.entries.forEach {
+            assertFalse(actual = manager.hasPermission(permission = it))
+            assertFalse(actual = manager.grantPermission(permission = it))
+        }
+    }
+
     /** Verifies that a permission whose feature flag is disabled is refused without checking or requesting it. */
     @Test
     fun grantPermissionRefusesPermissionsWhoseFeatureIsDisabled() = runUnitTest {
