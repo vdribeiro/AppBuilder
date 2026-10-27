@@ -2,6 +2,7 @@ package com.app.builder.core.media
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
@@ -278,6 +279,188 @@ class CameraTest: TestCase() {
         camera.startPreview()
 
         assertEquals(expected = Camera.State.Idle, actual = camera.state.value)
+    }
+
+    /** Verifies that [Camera.hasPermission] defaults to false. */
+    @Test
+    fun hasPermissionDefaultsToFalse() = runUnitTest {
+        assertFalse(actual = Camera().hasPermission())
+    }
+
+    /** Verifies that disabling the camera feature flag during a session makes recording and facing actions stop the session instead of running. */
+    @Test
+    fun disabledFlagStopsRecordingAndFacingActions() = runUnitTest {
+        val camera = testCamera()
+        val actions: List<() -> Unit> = listOf(
+            { camera.startRecording(onResult = {}) },
+            { camera.stopRecording() },
+            { camera.toggleFacing() },
+        )
+
+        actions.forEach { action ->
+            ClientFlags.set { it.copy(camera = true) }
+            camera.startPreview()
+            assertEquals(expected = Camera.State.Previewing, actual = camera.state.value)
+
+            ClientFlags.set { it.copy(camera = false) }
+            action()
+
+            assertEquals(expected = Camera.State.Idle, actual = camera.state.value)
+        }
+        assertEquals(expected = Camera.Facing.BACK, actual = camera.facing.value)
+    }
+
+    /** Verifies that an unavailable camera ignores every action, answering a photo capture with null and keeping the default lens. */
+    @Test
+    fun unavailableCameraIgnoresEveryAction() = runUnitTest {
+        val camera = Camera()
+
+        var photo: String? = "not yet invoked"
+        camera.capturePhoto { photo = it }
+        camera.startRecording(onResult = {})
+        camera.stopRecording()
+        camera.toggleFacing()
+
+        assertNull(actual = photo)
+        assertEquals(expected = Camera.State.Idle, actual = camera.state.value)
+        assertEquals(expected = Camera.Facing.BACK, actual = camera.facing.value)
+    }
+
+    /** Verifies that revoking the camera permission during a session makes every action stop the session instead of running. */
+    @Test
+    fun revokedPermissionStopsTheSession() = runUnitTest {
+        var permitted = true
+        val camera = object: Camera() {
+            override val available: Boolean = true
+            override fun hasPermission(): Boolean = permitted
+        }
+        val actions: List<() -> Unit> = listOf(
+            { camera.capturePhoto {} },
+            { camera.startRecording(onResult = {}) },
+            { camera.stopRecording() },
+            { camera.toggleFacing() },
+        )
+
+        actions.forEach { action ->
+            permitted = true
+            camera.startPreview()
+            assertEquals(expected = Camera.State.Previewing, actual = camera.state.value)
+
+            permitted = false
+            action()
+
+            assertEquals(expected = Camera.State.Idle, actual = camera.state.value)
+        }
+        assertEquals(expected = Camera.Facing.BACK, actual = camera.facing.value)
+    }
+
+    /** Verifies that an exception thrown by the platform's dispose call is caught after the session has been stopped. */
+    @Test
+    fun exceptionFromPlatformDisposeIsCaught() = runUnitTest {
+        val camera = object: Camera() {
+            override val available: Boolean = true
+            override fun hasPermission(): Boolean = true
+            override fun platformDispose() {
+                throw IllegalStateException("boom")
+            }
+        }
+        camera.startPreview()
+
+        camera.dispose()
+
+        assertEquals(expected = Camera.State.Idle, actual = camera.state.value)
+    }
+
+    /** Verifies that an exception thrown by the platform's stop preview call is caught and the camera still transitions to idle. */
+    @Test
+    fun exceptionFromPlatformStopPreviewIsCaught() = runUnitTest {
+        var failStop = false
+        val camera = object: Camera() {
+            override val available: Boolean = true
+            override fun hasPermission(): Boolean = true
+            override fun platformStopPreview() {
+                if (failStop) throw IllegalStateException("boom")
+            }
+        }
+        camera.startPreview()
+        failStop = true
+
+        camera.stopPreview()
+
+        assertEquals(expected = Camera.State.Idle, actual = camera.state.value)
+    }
+
+    /** Verifies that an exception thrown by the platform's photo capture is caught and answered with null. */
+    @Test
+    fun exceptionFromPlatformCapturePhotoAnswersNull() = runUnitTest {
+        val camera = object: Camera() {
+            override val available: Boolean = true
+            override fun hasPermission(): Boolean = true
+            override fun platformCapturePhoto(onResult: (String?) -> Unit) {
+                throw IllegalStateException("boom")
+            }
+        }
+        camera.startPreview()
+
+        var photo: String? = "not yet invoked"
+        camera.capturePhoto { photo = it }
+
+        assertNull(actual = photo)
+    }
+
+    /** Verifies that an exception thrown by the platform's start recording call is caught and the camera keeps previewing. */
+    @Test
+    fun exceptionFromPlatformStartRecordingKeepsPreviewing() = runUnitTest {
+        val camera = object: Camera() {
+            override val available: Boolean = true
+            override fun hasPermission(): Boolean = true
+            override fun platformStartRecording(onResult: (String) -> Unit) {
+                throw IllegalStateException("boom")
+            }
+        }
+        camera.startPreview()
+
+        camera.startRecording(onResult = {})
+
+        assertEquals(expected = Camera.State.Previewing, actual = camera.state.value)
+    }
+
+    /** Verifies that an exception thrown by the platform's stop recording call is caught and the camera stays recording, since the recording did not stop. */
+    @Test
+    fun exceptionFromPlatformStopRecordingKeepsRecording() = runUnitTest {
+        var failStop = false
+        val camera = object: Camera() {
+            override val available: Boolean = true
+            override fun hasPermission(): Boolean = true
+            override fun platformStopRecording() {
+                if (failStop) throw IllegalStateException("boom")
+            }
+        }
+        camera.startPreview()
+        camera.startRecording(onResult = {})
+        failStop = true
+
+        camera.stopRecording()
+
+        assertEquals(expected = Camera.State.Recording, actual = camera.state.value)
+    }
+
+    /** Verifies that an exception thrown by the platform's facing toggle is caught, restores the previous lens, and keeps the camera previewing. */
+    @Test
+    fun exceptionFromPlatformToggleFacingRestoresTheLens() = runUnitTest {
+        val camera = object: Camera() {
+            override val available: Boolean = true
+            override fun hasPermission(): Boolean = true
+            override fun platformToggleFacing() {
+                throw IllegalStateException("boom")
+            }
+        }
+        camera.startPreview()
+
+        camera.toggleFacing()
+
+        assertEquals(expected = Camera.State.Previewing, actual = camera.state.value)
+        assertEquals(expected = Camera.Facing.BACK, actual = camera.facing.value)
     }
 
     /** Verifies that [Camera.create] produces a usable camera instance without throwing. */

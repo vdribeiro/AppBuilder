@@ -231,6 +231,110 @@ class AudioPlayerTest: TestCase() {
         assertEquals(expected = AudioPlayer.State.Idle, actual = audioPlayer.state.value)
     }
 
+    /** Verifies that [AudioPlayer.setPlaylist] stores the loop setting and, when shuffling, keeps every resource of the playlist. */
+    @Test
+    fun setPlaylistStoresTheShuffledPlaylistAndLoop() = runUnitTest {
+        val audioPlayer = object: AudioPlayer() {
+            override val available: Boolean = true
+            val storedPlaylist: List<String> get() = playlist
+            val storedLoop: Boolean get() = loop
+        }
+        val playlist = listOf("a", "b", "c", "d")
+
+        audioPlayer.setPlaylist(playlist = playlist, loop = true, shuffle = true)
+
+        assertEquals(expected = playlist.sorted(), actual = audioPlayer.storedPlaylist.sorted())
+        assertTrue(actual = audioPlayer.storedLoop)
+    }
+
+    /** Verifies that disabling the music feature flag makes setting a playlist and pausing stop playback instead. */
+    @Test
+    fun disabledByFeatureFlagIgnoresSetPlaylistAndPause() = runUnitTest {
+        val audioPlayer = RecordingAudioPlayer()
+        ClientFlags.set { it.copy(music = false) }
+
+        audioPlayer.setPlaylist(playlist = listOf("a"))
+        audioPlayer.pause()
+
+        assertEquals(expected = listOf("stop", "stop"), actual = audioPlayer.events)
+        assertEquals(expected = AudioPlayer.State.Idle, actual = audioPlayer.state.value)
+    }
+
+    /** Verifies that pausing is ignored while the player reports itself as unavailable. */
+    @Test
+    fun unavailablePlayerIgnoresPause() = runUnitTest {
+        val audioPlayer = AudioPlayer()
+
+        audioPlayer.pause()
+
+        assertEquals(expected = AudioPlayer.State.Idle, actual = audioPlayer.state.value)
+    }
+
+    /** Verifies that a player overriding only [AudioPlayer.available] can play and pause through the default platform hooks. */
+    @Test
+    fun defaultPlatformHooksAllowPlayAndPause() = runUnitTest {
+        val audioPlayer = object: AudioPlayer() {
+            override val available: Boolean = true
+        }
+        audioPlayer.setPlaylist(playlist = listOf("a"))
+        audioPlayer.play()
+
+        audioPlayer.pause()
+
+        assertEquals(expected = AudioPlayer.State.Paused, actual = audioPlayer.state.value)
+    }
+
+    /** Verifies that an exception thrown by the platform's set playlist call is caught and leaves the player idle. */
+    @Test
+    fun exceptionFromPlatformSetPlaylistIsCaught() = runUnitTest {
+        val audioPlayer = object: AudioPlayer() {
+            override val available: Boolean = true
+            override fun platformSetPlaylist() {
+                throw IllegalStateException("boom")
+            }
+        }
+
+        audioPlayer.setPlaylist(playlist = listOf("a"))
+
+        assertEquals(expected = AudioPlayer.State.Idle, actual = audioPlayer.state.value)
+    }
+
+    /** Verifies that an exception thrown by the platform's stop call is caught and the player still transitions to idle. */
+    @Test
+    fun exceptionFromPlatformStopIsCaught() = runUnitTest {
+        var failStop = false
+        val audioPlayer = object: AudioPlayer() {
+            override val available: Boolean = true
+            override fun platformStop() {
+                if (failStop) throw IllegalStateException("boom")
+            }
+        }
+        audioPlayer.setPlaylist(playlist = listOf("a"))
+        audioPlayer.play()
+        failStop = true
+
+        audioPlayer.stop()
+
+        assertEquals(expected = AudioPlayer.State.Idle, actual = audioPlayer.state.value)
+    }
+
+    /** Verifies that an exception thrown by the platform's dispose call is caught after playback has been stopped. */
+    @Test
+    fun exceptionFromPlatformDisposeIsCaught() = runUnitTest {
+        val audioPlayer = object: AudioPlayer() {
+            override val available: Boolean = true
+            override fun platformDispose() {
+                throw IllegalStateException("boom")
+            }
+        }
+        audioPlayer.setPlaylist(playlist = listOf("a"))
+        audioPlayer.play()
+
+        audioPlayer.dispose()
+
+        assertEquals(expected = AudioPlayer.State.Idle, actual = audioPlayer.state.value)
+    }
+
     /** Verifies that [AudioPlayer.create] produces a usable player instance without throwing. */
     @Test
     fun createProducesAUsablePlayer() = runUnitTest {

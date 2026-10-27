@@ -131,18 +131,27 @@ open class Camera {
         }
     }
 
-    /** Called after [facing] has been updated so the platform can rebind the capture session to the new lens. The current [State] is preserved across the switch. */
+    /**
+     * Flips [facing] and lets the platform rebind the capture session to the new lens, which it reads from [facing]. The current [State] is preserved across the switch.
+     * If the platform fails to rebind, [facing] is restored to the previous lens.
+     */
     fun toggleFacing() {
         runCatching {
             if (!ClientFlags.flags.camera || !available || !hasPermission()) return@runCatching stopPreview()
             if (state.value != State.Previewing) return@runCatching
+            val previous = _facing.value
             _facing.update {
                 when (it) {
                     Facing.FRONT -> Facing.BACK
                     Facing.BACK -> Facing.FRONT
                 }
             }
-            platformToggleFacing()
+            try {
+                platformToggleFacing()
+            } catch (throwable: Throwable) {
+                _facing.update { previous }
+                throw throwable
+            }
         }.onFailure {
             Telemetry.error(tag = TAG, message = "Error toggling facing", throwable = it)
         }
