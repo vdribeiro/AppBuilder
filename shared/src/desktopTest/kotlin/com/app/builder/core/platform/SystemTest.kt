@@ -2,7 +2,9 @@ package com.app.builder.core.platform
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 import kotlin.time.Duration.Companion.milliseconds
 import com.app.builder.test.TestCase
 
@@ -75,5 +77,14 @@ class SystemTest: TestCase() {
     private fun isWindows(): Boolean = when (platform.os) {
         OS.Windows -> true
         OS.Android, OS.Ios, OS.Mac, OS.Linux, OS.Web, OS.Unknown -> false
+    }
+
+    /** Verifies that [machineId] reads a non-blank identifier and returns the same one on every call. */
+    @Test
+    fun machineIdIsReadAndStable() = runUnitTest {
+        val first = assertNotNull(actual = machineId())
+
+        assertTrue(actual = first.concatToString().isNotBlank())
+        assertEquals(expected = first.concatToString(), actual = machineId()?.concatToString())
     }
 }

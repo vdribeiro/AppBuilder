@@ -1,8 +1,10 @@
 package com.app.builder.core.platform
 
+import java.io.File
 import java.util.concurrent.TimeUnit
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
+import com.app.builder.core.telemetry.Telemetry
 
 /**
  * Retrieves the value of the specified environment variable.
@@ -43,3 +45,34 @@ fun runCommand(command: List<String>, input: String? = null, timeout: Duration =
     }
     process.inputStream.bufferedReader().use { it.readText() }.takeIf { process.exitValue() == 0 }
 }.getOrNull()
+
+/**
+ * Reads the identifier the operating system assigns to this machine.
+ *
+ * @return The machine id, or null when it cannot be read.
+ */
+fun machineId(): CharArray? = runCatching {
+    when (platform.os) {
+        OS.Windows -> runCommand(command = listOf("reg", "query", "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Cryptography", "/v", "MachineGuid"))
+            ?.substringAfter(delimiter = "REG_SZ")
+            .orEmpty()
+            .trim()
+
+        OS.Mac -> runCommand(command = listOf("bash", "-c", "ioreg -rd1 -c IOPlatformExpertDevice | grep IOPlatformUUID"))
+            ?.split("\"")
+            ?.getOrNull(index = 3)
+            .orEmpty()
+            .trim()
+
+        OS.Linux -> (File("/var/lib/dbus/machine-id").takeIf { it.exists() } ?: File("/etc/machine-id").takeIf { it.exists() })
+            ?.readText()
+            .orEmpty()
+            .trim()
+
+        else -> ""
+    }.takeIf { it.isNotEmpty() }?.toCharArray()
+}.onFailure {
+    Telemetry.error(tag = TAG, message = "Unable to read the machine id", throwable = it)
+}.getOrNull()
+
+private const val TAG = "System"
