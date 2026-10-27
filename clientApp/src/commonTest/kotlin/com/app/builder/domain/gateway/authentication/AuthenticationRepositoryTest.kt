@@ -2,6 +2,7 @@ package com.app.builder.domain.gateway.authentication
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlin.uuid.Uuid
@@ -86,14 +87,15 @@ class AuthenticationRepositoryTest: TestCase() {
             .sessionQueries
 
         assertNull(actual = sessionDao.getSession(userUuid = FakeData.adminUser.uuid).awaitAsOneOrNull())
+        val encryptedBearer = assertNotNull(actual = FakeData.adminBearerToken.encrypt())
         sessionDao.upsertSession(
             SessionSchema(
                 userUuid = FakeData.adminUser.uuid,
                 username = FakeData.adminCredentials.username,
                 salt = "salt",
                 verifier = "verifier",
-                accessToken = FakeData.adminBearerToken.accessToken,
-                refreshToken = FakeData.adminBearerToken.refreshToken
+                accessToken = encryptedBearer.accessToken,
+                refreshToken = encryptedBearer.refreshToken
             )
         )
         assertEquals(expected = FakeData.adminUser.uuid, actual = sessionDao.getSession(userUuid = FakeData.adminUser.uuid).awaitAsOneOrNull()?.userUuid)
@@ -119,14 +121,15 @@ class AuthenticationRepositoryTest: TestCase() {
             .database
             .sessionQueries
 
+        val encryptedBearer = assertNotNull(actual = FakeData.adminBearerToken.encrypt())
         sessionDao.upsertSession(
             SessionSchema(
                 userUuid = FakeData.adminUser.uuid,
                 username = FakeData.adminCredentials.username,
                 salt = "salt",
                 verifier = "verifier",
-                accessToken = FakeData.adminBearerToken.accessToken,
-                refreshToken = FakeData.adminBearerToken.refreshToken
+                accessToken = encryptedBearer.accessToken,
+                refreshToken = encryptedBearer.refreshToken
             )
         )
 
@@ -152,14 +155,15 @@ class AuthenticationRepositoryTest: TestCase() {
             .sessionQueries
 
         assertNull(actual = authenticationRepository.getBearerToken(userUuid = FakeData.adminUser.uuid))
+        val encryptedBearer = assertNotNull(actual = FakeData.adminBearerToken.encrypt())
         sessionDao.upsertSession(
             SessionSchema(
                 userUuid = FakeData.adminUser.uuid,
                 username = FakeData.adminCredentials.username,
                 salt = "salt",
                 verifier = "verifier",
-                accessToken = FakeData.adminBearerToken.accessToken,
-                refreshToken = FakeData.adminBearerToken.refreshToken
+                accessToken = encryptedBearer.accessToken,
+                refreshToken = encryptedBearer.refreshToken
             )
         )
         assertEquals(expected = FakeData.adminBearerToken, actual = authenticationRepository.getBearerToken(userUuid = FakeData.adminUser.uuid))
@@ -178,14 +182,15 @@ class AuthenticationRepositoryTest: TestCase() {
 
         assertNull(actual = authenticationRepository.refreshBearerToken(userUuid = FakeData.adminUser.uuid, refreshToken = FakeData.adminBearerToken.refreshToken))
 
+        val encryptedBearer = assertNotNull(actual = FakeData.adminBearerToken.encrypt())
         sessionDao.upsertSession(
             SessionSchema(
                 userUuid = FakeData.adminUser.uuid,
                 username = FakeData.adminCredentials.username,
                 salt = "salt",
                 verifier = "verifier",
-                accessToken = FakeData.adminBearerToken.accessToken,
-                refreshToken = FakeData.adminBearerToken.refreshToken
+                accessToken = encryptedBearer.accessToken,
+                refreshToken = encryptedBearer.refreshToken
             )
         )
 

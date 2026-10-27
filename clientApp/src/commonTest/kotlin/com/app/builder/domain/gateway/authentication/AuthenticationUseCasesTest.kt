@@ -112,14 +112,15 @@ class AuthenticationUseCasesTest: TestCase() {
 
         val salt = uuid().toString()
         userDao.upsertUser(User = FakeData.adminUser.toUserSchema())
+        val encryptedBearer = assertNotNull(actual = FakeData.adminBearerToken.encrypt())
         sessionDao.upsertSession(
             SessionSchema(
                 userUuid = FakeData.adminUser.uuid,
                 username = username,
                 salt = salt,
                 verifier = deriveKey(password = FakeData.adminCredentials.password, salt = salt)!!,
-                accessToken = FakeData.adminBearerToken.accessToken,
-                refreshToken = FakeData.adminBearerToken.refreshToken
+                accessToken = encryptedBearer.accessToken,
+                refreshToken = encryptedBearer.refreshToken
             )
         )
 
