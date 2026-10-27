@@ -49,6 +49,7 @@ val generateWebPushValues = tasks.register<GenerateWebPushValuesTask>(name = "ge
 
 kotlin {
     val (iosTargets, webTargets) = configureMultiplatformTargets(binary = false)
+    wasmJs { binaries.executable() }
 
     cocoapods {
         version = appVersion

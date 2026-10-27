@@ -37,6 +37,11 @@ object TestFile {
         override val serializer: KSerializer<Document?> = Document.serializer().nullable
     }
 
+    /** An encrypted number fixture, able to hold values such as NaN that JSON cannot encode. */
+    data object Number: StorageFile<Double?>(path = "test-number") {
+        override val serializer: KSerializer<Double?> = Double.serializer().nullable
+    }
+
     /** Every file registered by the test suite. */
-    val all: List<StorageFile<*>> = listOf(Keys, Secret, Plain)
+    val all: List<StorageFile<*>> = listOf(Keys, Secret, Plain, Number)
 }
