@@ -55,6 +55,7 @@ internal val secretStore: SecretStore? by lazy {
 }
 
 /** A file encrypted by the Windows Data Protection API under the current user account, written and read through PowerShell. */
+@ExcludeFromTesting
 private class WindowsSecretStore: SecretStore {
     private val file: File get() = File(appDataPath, "security.dpapi")
 
@@ -80,6 +81,7 @@ private class WindowsSecretStore: SecretStore {
 }
 
 /** The macOS login keychain, reached through the `security` command line tool. */
+@ExcludeFromTesting
 private class AppleSecretStore: SecretStore {
 
     override fun read(): String? = run(
@@ -92,6 +94,7 @@ private class AppleSecretStore: SecretStore {
 }
 
 /** The Linux Secret Service, reached through the `secret-tool` command line tool. */
+@ExcludeFromTesting
 private class LinuxSecretStore: SecretStore {
 
     /** Whether `secret-tool` is installed and its keyring reachable. */
