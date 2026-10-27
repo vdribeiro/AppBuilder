@@ -11,6 +11,8 @@ import javax.crypto.KeyGenerator
 import javax.crypto.spec.GCMParameterSpec
 import javax.crypto.spec.SecretKeySpec
 import kotlin.io.encoding.Base64
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import com.app.builder.App
 import com.app.builder.core.flow.Dispatcher
@@ -87,18 +89,38 @@ private fun machineId(): CharArray? = runCatching {
 
 private fun File.load(keyStore: KeyStore, password: CharArray) = runCatching { inputStream().use { keyStore.load(it, password) } }
 
+/** The secret key, kept once loaded so the keystore is only opened again after a failure. */
+@Volatile
+private var cachedSecretKey: SecretKeySpec? = null
+
+/** Serializes keystore access, so concurrent first calls never each generate and store a different key. */
+private val secretKeyMutex = Mutex()
+
+/**
+ * Returns the [SecretKeySpec], loading it from the [KeyStore] on first use.
+ * A successful load is cached for the lifetime of the process, while a failed one is retried on the next call.
+ *
+ * @return the secret key spec or throw on error.
+ */
+private suspend fun getSecretKey(): SecretKeySpec = cachedSecretKey ?: secretKeyMutex.withLock {
+    cachedSecretKey ?: loadSecretKey().also { cachedSecretKey = it }
+}
+
 /**
  * Get the [SecretKeySpec] from [KeyStore] or generate one if it does not exist.
  * The keystore is unlocked with a random secret held by the operating system's secret store, falling back to the machine id where there is none.
+ * A new secret is only generated while no keystore is locked by another one: when the keystore does not exist yet, or is still locked by the machine id.
  * A keystore still locked by the machine id is reopened with it and written back under the stored secret.
  *
  * @return the secret key spec or throw on error.
  */
-private suspend fun getSecretKey(): SecretKeySpec = withContext(context = Dispatcher.IO) {
+private suspend fun loadSecretKey(): SecretKeySpec = withContext(context = Dispatcher.IO) {
     runCatching {
         val keyStoreFile = File(appDataPath, "security.p12")
         val machineId = machineId()
-        val password = getKeystoreSecret()?.toCharArray() ?: machineId ?: error(message = "Unable to get a keystore password")
+        val canCreateSecret = !keyStoreFile.exists() || (machineId != null && keyStoreFile.load(keyStore = KeyStore.getInstance("PKCS12"), password = machineId).isSuccess)
+        val secret = readKeystoreSecret() ?: if (canCreateSecret) createKeystoreSecret() else null
+        val password = secret?.toCharArray() ?: machineId ?: error(message = "Unable to get a keystore password")
 
         val keyStore = KeyStore.getInstance("PKCS12")
         val legacyPassword = when {
