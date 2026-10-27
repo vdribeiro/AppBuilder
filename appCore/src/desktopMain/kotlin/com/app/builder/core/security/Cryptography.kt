@@ -89,7 +89,7 @@ private fun File.load(keyStore: KeyStore, password: CharArray) = runCatching { i
 
 /**
  * Get the [SecretKeySpec] from [KeyStore] or generate one if it does not exist.
- * The keystore is unlocked with a random secret held by the operating system's [secretStore], falling back to the machine id where there is none.
+ * The keystore is unlocked with a random secret held by the operating system's secret store, falling back to the machine id where there is none.
  * A keystore still locked by the machine id is reopened with it and written back under the stored secret.
  *
  * @return the secret key spec or throw on error.
@@ -98,7 +98,7 @@ private suspend fun getSecretKey(): SecretKeySpec = withContext(context = Dispat
     runCatching {
         val keyStoreFile = File(appDataPath, "security.p12")
         val machineId = machineId()
-        val password = secretStore?.let { getOrCreateSecret(store = it) }?.toCharArray() ?: machineId ?: error(message = "Unable to get a keystore password")
+        val password = getKeystoreSecret()?.toCharArray() ?: machineId ?: error(message = "Unable to get a keystore password")
 
         val keyStore = KeyStore.getInstance("PKCS12")
         val legacyPassword = when {
