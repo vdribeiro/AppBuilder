@@ -6,10 +6,8 @@ import app.cash.sqldelight.db.QueryResult
 import app.cash.sqldelight.db.SqlCursor
 import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.db.SqlPreparedStatement
-import com.app.builder.test.ExcludeFromTesting
 
 /** A no-op implementation of [SqlDriver]. */
-@ExcludeFromTesting
 object NoOpSqlDriver: SqlDriver {
 
     override fun <R> executeQuery(

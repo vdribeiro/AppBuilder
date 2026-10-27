@@ -13,10 +13,8 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.util.date.GMTDate
 import io.ktor.utils.io.ByteReadChannel
 import com.app.builder.core.flow.Dispatcher
-import com.app.builder.test.ExcludeFromTesting
 
 /** A no-op implementation of [HttpClientEngine]. */
-@ExcludeFromTesting
 object NoOpHttpClientEngine: HttpClientEngine {
     override suspend fun execute(data: HttpRequestData): HttpResponseData =
         HttpResponseData(
