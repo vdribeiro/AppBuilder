@@ -8,9 +8,11 @@ import android.content.Intent
 import com.app.builder.core.telemetry.Telemetry
 import com.app.builder.data.serializer.decode
 import com.app.builder.domain.PushPayload
+import com.app.builder.test.ExcludeFromTesting
 import com.google.firebase.messaging.FirebaseMessaging
 
 /** Provider to manage push payloads. */
+@ExcludeFromTesting
 object AndroidPushProvider {
     private const val TAG = "AndroidPushProvider"
 

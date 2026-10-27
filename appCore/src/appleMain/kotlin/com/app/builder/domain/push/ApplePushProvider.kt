@@ -24,7 +24,9 @@ import cocoapods.FirebaseMessaging.FIRMessagingDelegateProtocol
 import com.app.builder.core.telemetry.Telemetry
 import com.app.builder.data.serializer.decode
 import com.app.builder.domain.PushPayload
+import com.app.builder.test.ExcludeFromTesting
 
+@ExcludeFromTesting
 object ApplePushProvider {
     private const val TAG = "ApplePushProvider"
 

@@ -9,8 +9,10 @@ import com.app.builder.core.flow.Dispatcher
 import com.app.builder.core.telemetry.Telemetry
 import com.app.builder.data.serializer.decode
 import com.app.builder.domain.PushPayload
+import com.app.builder.test.ExcludeFromTesting
 
 /** Provider to manage push payloads. */
+@ExcludeFromTesting
 object WebPushProvider {
 
     private const val TAG = "WebPushProvider"

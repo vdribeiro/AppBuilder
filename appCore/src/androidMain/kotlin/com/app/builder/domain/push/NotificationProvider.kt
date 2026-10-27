@@ -14,8 +14,10 @@ import com.app.builder.applicationContext
 import com.app.builder.core.telemetry.Telemetry
 import com.app.builder.data.serializer.encode
 import com.app.builder.domain.PushPayload
+import com.app.builder.test.ExcludeFromTesting
 import android.app.Notification as OSNotification
 
+@ExcludeFromTesting
 actual object NotificationProvider {
 
     private const val TAG = "NotificationProvider"

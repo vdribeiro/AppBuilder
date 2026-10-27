@@ -6,7 +6,9 @@ import java.awt.image.BufferedImage
 import kotlin.concurrent.thread
 import com.app.builder.core.telemetry.Telemetry
 import com.app.builder.domain.PushPayload
+import com.app.builder.test.ExcludeFromTesting
 
+@ExcludeFromTesting
 actual object NotificationProvider {
 
     private const val TAG = "DesktopPushProvider"

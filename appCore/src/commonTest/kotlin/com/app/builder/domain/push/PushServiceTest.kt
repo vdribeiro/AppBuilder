@@ -142,6 +142,35 @@ class PushServiceTest: TestCase() {
         assertEquals(expected = listOf(DeviceToken(deviceUuid = getDeviceUuid(), token = "token")), actual = registered)
     }
 
+    /** Verifies that starting an already running service is a no-op, so the push token is registered only once. */
+    @Test
+    fun startingTwiceKeepsASingleTokenRegistration() = runUnitTest {
+        val pushService = pushService(user = FakeData.adminUser)
+
+        pushService.start()
+        pushService.start()
+        PushProvider.setToken(token = "token")
+        registeredTokens.first { it.isNotEmpty() }
+        testScheduler.runCurrent()
+        pushService.stop()
+
+        assertEquals(expected = 1, actual = registeredTokens.value.size)
+    }
+
+    /** Verifies that a stopped service can be started again, registering the push token anew. */
+    @Test
+    fun restartingAfterStopRegistersTheTokenAgain() = runUnitTest {
+        val pushService = pushService(user = FakeData.adminUser)
+        PushProvider.setToken(token = "token")
+        pushService.start()
+        registeredTokens.first { it.size == 1 }
+        pushService.stop()
+
+        pushService.start()
+        registeredTokens.first { it.size == 2 }
+        pushService.stop()
+    }
+
     /** Verifies that starting the service does nothing while the push feature flag is disabled. */
     @Test
     fun startIsIgnoredWhilePushIsDisabled() = runUnitTest {

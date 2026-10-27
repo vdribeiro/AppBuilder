@@ -96,6 +96,35 @@ class BroadcastServiceTest: TestCase() {
         assertEquals(expected = listOf(DeviceToken(token = "token")), actual = subscribed)
     }
 
+    /** Verifies that starting an already running service is a no-op, so the push token is subscribed only once. */
+    @Test
+    fun startingTwiceKeepsASingleSubscription() = runUnitTest {
+        val broadcastService = broadcastService()
+
+        broadcastService.start()
+        broadcastService.start()
+        PushProvider.setToken(token = "token")
+        subscribedTokens.first { it.isNotEmpty() }
+        testScheduler.runCurrent()
+        broadcastService.stop()
+
+        assertEquals(expected = 1, actual = subscribedTokens.value.size)
+    }
+
+    /** Verifies that a stopped service can be started again, subscribing the push token anew. */
+    @Test
+    fun restartingAfterStopSubscribesTheTokenAgain() = runUnitTest {
+        val broadcastService = broadcastService()
+        PushProvider.setToken(token = "token")
+        broadcastService.start()
+        subscribedTokens.first { it.size == 1 }
+        broadcastService.stop()
+
+        broadcastService.start()
+        subscribedTokens.first { it.size == 2 }
+        broadcastService.stop()
+    }
+
     /** Verifies that starting the service does nothing while the broadcast feature flag is disabled. */
     @Test
     fun startIsIgnoredWhileBroadcastIsDisabled() = runUnitTest {
