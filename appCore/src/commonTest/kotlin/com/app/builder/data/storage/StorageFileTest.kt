@@ -2,9 +2,12 @@ package com.app.builder.data.storage
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertNotEquals
+import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.builtins.nullable
+import com.app.builder.core.security.decrypt
 import com.app.builder.data.serializer.encode
 import com.app.builder.test.TestCase
 
@@ -90,7 +93,7 @@ class StorageFileTest: TestCase() {
         assertNull(actual = TestFile.Secret.load())
     }
 
-    /** Verifies that an unencrypted file is written as plain JSON, while an encrypted file never stores the plain JSON. */
+    /** Verifies that an unencrypted file is written as plain JSON, while an encrypted file is written through the cipher and decrypts back to the same JSON. */
     @Test
     fun encryptionFlagControlsTheStoredContent() = runUnitTest {
         val document = TestFile.Document(name = "doc", count = 2)
@@ -100,7 +103,23 @@ class StorageFileTest: TestCase() {
         TestFile.Secret.save { document }
 
         assertEquals(expected = plainJson, actual = loadFile(path = TestFile.Plain.path))
-        assertNotEquals(illegal = plainJson, actual = loadFile(path = TestFile.Secret.path))
+        assertEquals(expected = plainJson, actual = loadFile(path = TestFile.Secret.path)?.let { decrypt(content = it) })
+    }
+
+    /** Verifies that the first [StorageFile.cache] read of a file that already exists on disk hydrates the cache from it. */
+    @Test
+    fun cacheHydratesFromAFileAlreadyOnDisk() = runUnitTest {
+        val document = TestFile.Document(name = "disk", count = 4)
+        val file = object: StorageFile<TestFile.Document?>(path = "test-hydrate", encrypted = false) {
+            override val serializer: KSerializer<TestFile.Document?> = TestFile.Document.serializer().nullable
+        }
+        saveFile(path = file.path, content = assertNotNull(actual = encode(serializer = TestFile.Document.serializer(), value = document)))
+
+        try {
+            assertEquals(expected = document, actual = file.cache().value)
+        } finally {
+            deleteFile(path = file.path)
+        }
     }
 
     /** Verifies that a file without a cache layer hands the value currently on disk to [StorageFile.save] and reads it back through [StorageFile.load]. */

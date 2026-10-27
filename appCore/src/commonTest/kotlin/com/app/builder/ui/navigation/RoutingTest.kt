@@ -7,6 +7,7 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 import kotlinx.serialization.Serializable
 import androidx.compose.foundation.text.BasicText
+import androidx.compose.ui.platform.UriHandler
 import androidx.compose.ui.test.onNodeWithText
 import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
@@ -92,6 +93,24 @@ class RoutingTest: TestCase() {
                 setUI { Navigation(entryProviderScope = { registerFakeScreens() }) }
             }
         }
+    }
+
+    /** Verifies that [open] forwards a uri to the handler, and swallows a null uri or a handler failure instead of throwing. */
+    @Test
+    fun openForwardsTheUriAndSwallowsFailures() = runUnitTest {
+        val opened = mutableListOf<String>()
+        val handler = object: UriHandler {
+            override fun openUri(uri: String) {
+                if (uri == "fail") error(message = "No handler")
+                opened.add(element = uri)
+            }
+        }
+
+        handler.open(uri = "https://example.com")
+        handler.open(uri = null)
+        handler.open(uri = "fail")
+
+        assertEquals(expected = listOf("https://example.com"), actual = opened)
     }
 
     /** Registers the fake screens used by these tests as navigation entries. */
