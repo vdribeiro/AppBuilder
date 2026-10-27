@@ -13,41 +13,36 @@ import com.app.builder.core.platform.platform
 import com.app.builder.core.telemetry.Telemetry
 import com.app.builder.test.ExcludeFromTesting
 
-/** The last secret read from the operating system's secret store, kept so the store is only queried again after a failure. */
-@Volatile
-private var cachedSecret: String? = null
-
 /**
- * Returns the secret held by the operating system's secret store, generating and storing a new one when it holds none.
- * A successful read is cached for the lifetime of the process, while a failed one is retried on the next call.
+ * Reads the keystore secret from the operating system's secret store.
  *
- * @return The secret, or null where there is no secret store or it cannot hold one.
+ * @return The secret, or null where there is no secret store, it holds none, or it cannot be read.
  */
-internal fun getKeystoreSecret(): String? =
-    cachedSecret ?: getSecretStore()?.let { getOrCreateSecret(store = it) }?.also { cachedSecret = it }
+internal fun readKeystoreSecret(): String? = runCatching {
+    getSecretStore()?.read()?.takeIf { it.isNotEmpty() }
+}.onFailure {
+    Telemetry.error(tag = TAG, message = "Unable to read the secret from the store", throwable = it)
+}.getOrNull()
 
 /**
- * Returns the secret held by [store], generating and storing a new one when it holds none.
+ * Generates a new keystore secret and stores it in the operating system's secret store, replacing any previous one.
  * The generated secret is read back before being accepted, so a store that silently drops it resolves to null rather than to a value that cannot be recovered on the next run.
  *
- * @param store The secret store to use.
- * @return The secret, or null when the store cannot hold one.
+ * @return The new secret, or null where there is no secret store, or it cannot hold one.
  */
-private fun getOrCreateSecret(store: SecretStore): String? = runCatching {
-    store.read()?.takeIf { it.isNotEmpty() } ?: run {
-        val generated = Base64.encode(source = ByteArray(size = SECRET_LENGTH_BYTE).apply { SecureRandom().nextBytes(this) })
-        if (!store.write(secret = generated)) return@run null
-        store.read()?.takeIf { it == generated }
-    }
+internal fun createKeystoreSecret(): String? = runCatching {
+    val store = getSecretStore() ?: return null
+    val generated = Base64.encode(source = ByteArray(size = SECRET_LENGTH_BYTE).apply { SecureRandom().nextBytes(this) })
+    if (!store.write(secret = generated)) return null
+    store.read()?.takeIf { it == generated }
 }.onFailure {
-    Telemetry.error(tag = TAG, message = "Unable to get secret from the store", throwable = it)
+    Telemetry.error(tag = TAG, message = "Unable to create a secret in the store", throwable = it)
 }.getOrNull()
 
 /**
  * Returns the secret store of the running operating system.
- * Each store needs where it files the secret: the app data directory on Windows, and the app id on macOS and Linux.
  *
- * @return The store, or null where there is none or the app has no identity to file a secret under.
+ * @return The store, or null where there is none, or the app has no identity to file a secret under.
  */
 private fun getSecretStore(): SecretStore? =
     when (platform.os) {
