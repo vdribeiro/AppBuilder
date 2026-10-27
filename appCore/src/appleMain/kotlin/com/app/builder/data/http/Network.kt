@@ -12,8 +12,6 @@ import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
-import platform.CoreFoundation.CFRelease
-import platform.CoreFoundation.CFTypeRef
 import platform.Network.nw_path_get_status
 import platform.Network.nw_path_monitor_cancel
 import platform.Network.nw_path_monitor_create
@@ -33,6 +31,7 @@ import platform.posix.sockaddr
 import platform.posix.sockaddr_in
 import platform.posix.sockaddr_in6
 import com.app.builder.core.telemetry.Telemetry
+import com.app.builder.use
 
 actual fun isInternetAvailable(): Boolean = runCatching {
     memScoped {
@@ -87,20 +86,5 @@ private fun MemScope.checkAddress(address: CValuesRef<sockaddr>): Boolean =
         val needsConnection = (networkStatus.value and kSCNetworkReachabilityFlagsConnectionRequired) != 0u
         isReachable && !needsConnection
     } ?: false
-
-/**
- * Runs [block] with this Core Foundation reference and releases it afterward via [CFRelease].
- *
- * @receiver The Core Foundation reference to release after use.
- * @param block The operation to perform with the reference.
- * @return The result of [block].
- */
-private inline fun <T: CFTypeRef?, R> T.use(block: (T) -> R): R {
-    try {
-        return block(this)
-    } finally {
-        if (this != null) CFRelease(cf = this)
-    }
-}
 
 private const val TAG = "Network"
