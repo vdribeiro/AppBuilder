@@ -104,6 +104,32 @@ class NfcControllerTest: TestCase() {
         assertEquals(expected = NfcController.State.Idle, actual = reader.state.value)
     }
 
+    /** Verifies that disabling the NFC feature flag makes a write request stop the session instead of writing. */
+    @Test
+    fun disabledFlagIgnoresWrite() = runUnitTest {
+        val reader = RecordingNfcController()
+        ClientFlags.set { it.copy(nfc = false) }
+
+        reader.write(records = listOf(fillerRecord))
+
+        assertEquals(expected = listOf("stop"), actual = reader.events)
+        assertEquals(expected = NfcController.State.Idle, actual = reader.state.value)
+    }
+
+    /** Verifies that a controller overriding only [NfcController.available] can read and write through the default platform hooks. */
+    @Test
+    fun defaultPlatformHooksAllowReadAndWrite() = runUnitTest {
+        val reader = object: NfcController() {
+            override val available: Boolean = true
+        }
+
+        reader.read()
+        assertEquals(expected = NfcController.State.Scanning, actual = reader.state.value)
+
+        reader.write(records = listOf(fillerRecord))
+        assertEquals(expected = NfcController.State.Writing, actual = reader.state.value)
+    }
+
     /** Verifies that an unavailable controller ignores read and write requests. */
     @Test
     fun unavailableControllerIgnoresActions() = runUnitTest {
@@ -125,6 +151,22 @@ class NfcControllerTest: TestCase() {
         reader.dispose()
 
         assertEquals(expected = listOf("stop", "dispose"), actual = reader.events)
+        assertEquals(expected = NfcController.State.Idle, actual = reader.state.value)
+    }
+
+    /** Verifies that an exception thrown by the platform's dispose call is caught after the session has been stopped. */
+    @Test
+    fun exceptionFromPlatformDisposeIsCaught() = runUnitTest {
+        val reader = object: NfcController() {
+            override val available: Boolean = true
+            override fun platformDispose() {
+                throw IllegalStateException("boom")
+            }
+        }
+        reader.read()
+
+        reader.dispose()
+
         assertEquals(expected = NfcController.State.Idle, actual = reader.state.value)
     }
 
