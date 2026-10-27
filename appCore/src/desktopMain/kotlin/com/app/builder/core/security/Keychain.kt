@@ -13,8 +13,52 @@ import com.app.builder.core.platform.platform
 import com.app.builder.core.telemetry.Telemetry
 import com.app.builder.test.ExcludeFromTesting
 
+/** The last secret read from the operating system's secret store, kept so the store is only queried again after a failure. */
+@Volatile
+private var cachedSecret: String? = null
+
+/**
+ * Returns the secret held by the operating system's secret store, generating and storing a new one when it holds none.
+ * A successful read is cached for the lifetime of the process, while a failed one is retried on the next call.
+ *
+ * @return The secret, or null where there is no secret store or it cannot hold one.
+ */
+internal fun getKeystoreSecret(): String? =
+    cachedSecret ?: getSecretStore()?.let { getOrCreateSecret(store = it) }?.also { cachedSecret = it }
+
+/**
+ * Returns the secret held by [store], generating and storing a new one when it holds none.
+ * The generated secret is read back before being accepted, so a store that silently drops it resolves to null rather than to a value that cannot be recovered on the next run.
+ *
+ * @param store The secret store to use.
+ * @return The secret, or null when the store cannot hold one.
+ */
+private fun getOrCreateSecret(store: SecretStore): String? = runCatching {
+    store.read()?.takeIf { it.isNotEmpty() } ?: run {
+        val generated = Base64.encode(source = ByteArray(size = SECRET_LENGTH_BYTE).apply { SecureRandom().nextBytes(this) })
+        if (!store.write(secret = generated)) return@run null
+        store.read()?.takeIf { it == generated }
+    }
+}.onFailure {
+    Telemetry.error(tag = TAG, message = "Unable to get secret from the store", throwable = it)
+}.getOrNull()
+
+/**
+ * Returns the secret store of the running operating system.
+ * Each store needs where it files the secret: the app data directory on Windows, and the app id on macOS and Linux.
+ *
+ * @return The store, or null where there is none or the app has no identity to file a secret under.
+ */
+private fun getSecretStore(): SecretStore? =
+    when (platform.os) {
+        OS.Windows -> appDataPath.takeIf { it.isNotBlank() }?.let { WindowsSecretStore(directory = it) }
+        OS.Mac -> App.id.takeIf { it.isNotBlank() }?.let { AppleSecretStore(appId = it) }
+        OS.Linux -> App.id.takeIf { it.isNotBlank() }?.let { LinuxSecretStore(appId = it) }?.takeIf { it.isAvailable() }
+        else -> null
+    }
+
 /** A place the operating system keeps a secret on behalf of the current user. */
-internal interface SecretStore {
+private interface SecretStore {
     /** Returns the stored secret, or null when there is none. */
     fun read(): String?
 
@@ -27,37 +71,13 @@ internal interface SecretStore {
 }
 
 /**
- * Returns the secret held by [store], generating and storing a new one when it holds none.
- * The generated secret is read back before being accepted, so a store that silently drops it resolves to null rather than to a value that cannot be recovered on the next run.
+ * A file encrypted by the Windows Data Protection API under the current user account, written and read through PowerShell.
  *
- * @param store The secret store to use.
- * @return The secret, or null when the store cannot hold one.
+ * @property directory The app data directory the encrypted file is kept in.
  */
-internal fun getOrCreateSecret(store: SecretStore): String? = runCatching {
-    store.read()?.takeIf { it.isNotEmpty() } ?: run {
-        val generated = Base64.encode(source = ByteArray(size = SECRET_LENGTH_BYTE).apply { SecureRandom().nextBytes(this) })
-        if (!store.write(secret = generated)) return@run null
-        store.read()?.takeIf { it == generated }
-    }
-}.onFailure {
-    Telemetry.error(tag = TAG, message = "Unable to get secret from the store", throwable = it)
-}.getOrNull()
-
-/** The secret store of the running operating system, or null where there is none or the app has no identity to file a secret under. */
-internal val secretStore: SecretStore? by lazy {
-    if (App.id.isBlank()) return@lazy null
-    when (platform.os) {
-        OS.Windows -> WindowsSecretStore()
-        OS.Mac -> AppleSecretStore()
-        OS.Linux -> LinuxSecretStore().takeIf { it.isAvailable() }
-        else -> null
-    }
-}
-
-/** A file encrypted by the Windows Data Protection API under the current user account, written and read through PowerShell. */
 @ExcludeFromTesting
-private class WindowsSecretStore: SecretStore {
-    private val file: File get() = File(appDataPath, "security.dpapi")
+private class WindowsSecretStore(private val directory: String): SecretStore {
+    private val file: File get() = File(directory, "security.dpapi")
 
     override fun read(): String? {
         val blob = runCatching { file.takeIf { it.exists() }?.readText()?.trim() }.getOrNull()?.takeIf { it.isNotEmpty() } ?: return null
@@ -80,32 +100,40 @@ private class WindowsSecretStore: SecretStore {
     }
 }
 
-/** The macOS login keychain, reached through the `security` command line tool. */
+/**
+ * The macOS login keychain, reached through the `security` command line tool.
+ *
+ * @property appId The application identifier the secret is filed under, as the keychain item's service.
+ */
 @ExcludeFromTesting
-private class AppleSecretStore: SecretStore {
+private class AppleSecretStore(private val appId: String): SecretStore {
 
     override fun read(): String? = run(
-        command = listOf("security", "find-generic-password", "-w", "-s", App.id, "-a", ACCOUNT)
+        command = listOf("security", "find-generic-password", "-w", "-s", appId, "-a", ACCOUNT)
     )?.trim()?.takeIf { it.isNotEmpty() }
 
     override fun write(secret: String): Boolean = run(
-        command = listOf("security", "add-generic-password", "-U", "-s", App.id, "-a", ACCOUNT, "-w", secret)
+        command = listOf("security", "add-generic-password", "-U", "-s", appId, "-a", ACCOUNT, "-w", secret)
     ) != null
 }
 
-/** The Linux Secret Service, reached through the `secret-tool` command line tool. */
+/**
+ * The Linux Secret Service, reached through the `secret-tool` command line tool.
+ *
+ * @property appId The application identifier the secret is filed under, as the item's service attribute and label.
+ */
 @ExcludeFromTesting
-private class LinuxSecretStore: SecretStore {
+private class LinuxSecretStore(private val appId: String): SecretStore {
 
     /** Whether `secret-tool` is installed and its keyring reachable. */
-    fun isAvailable(): Boolean = run(command = listOf("secret-tool", "lookup", "service", App.id, "attribute", "probe")) != null
+    fun isAvailable(): Boolean = run(command = listOf("secret-tool", "lookup", "service", appId, "attribute", "probe")) != null
 
     override fun read(): String? = run(
-        command = listOf("secret-tool", "lookup", "service", App.id, "account", ACCOUNT)
+        command = listOf("secret-tool", "lookup", "service", appId, "account", ACCOUNT)
     )?.trim()?.takeIf { it.isNotEmpty() }
 
     override fun write(secret: String): Boolean = run(
-        command = listOf("secret-tool", "store", "--label=${App.id}", "service", App.id, "account", ACCOUNT),
+        command = listOf("secret-tool", "store", "--label=$appId", "service", appId, "account", ACCOUNT),
         input = secret
     ) != null
 }
