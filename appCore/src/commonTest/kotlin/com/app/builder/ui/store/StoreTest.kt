@@ -109,6 +109,53 @@ class StoreTest: TestCase() {
         assertTrue(actual = secondRan)
     }
 
+    /** Verifies that [Store.launch] replaces a previous active job for the same id by default. */
+    @Test
+    fun launchReplacesByDefault() = runUnitTest { testDispatcher ->
+        val store = CounterStore()
+
+        val firstJob = store.runLaunchWithDefaults(id = JOB_ID) { awaitCancellation() }
+        testDispatcher.scheduler.runCurrent()
+        store.runLaunchWithDefaults(id = JOB_ID) {}
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        assertTrue(actual = firstJob.isCancelled)
+    }
+
+    /** Verifies that [Store.observe] forwards values while the UI is subscribed when called with its defaults. */
+    @Test
+    fun observeForwardsValuesWithDefaults() = runUnitTest { testDispatcher ->
+        val store = CounterStore()
+        val source = MutableSharedFlow<Int>(extraBufferCapacity = 10)
+        val received = mutableListOf<Int>()
+        val uiJob = backgroundScope.launch(context = testDispatcher) { store.stateFlow.collect {} }
+
+        store.runObserveWithDefaults(source = source, id = JOB_ID) { received.add(element = it) }
+        testDispatcher.scheduler.runCurrent()
+        source.emit(value = 1)
+        testDispatcher.scheduler.runCurrent()
+
+        assertEquals(expected = listOf(1), actual = received)
+        uiJob.cancel()
+    }
+
+    /** Verifies that [Store.toStateFlow] only collects the upstream flow once subscribed when called with its default sharing strategy. */
+    @Test
+    fun toStateFlowStartsOnSubscriptionByDefault() = runUnitTest { testDispatcher ->
+        val store = CounterStore()
+        val upstream = flow { emit(value = 42) }
+
+        val result = store.runToStateFlowWithDefaults(source = upstream, initialValue = -1)
+        testDispatcher.scheduler.runCurrent()
+        assertEquals(expected = -1, actual = result.value)
+
+        val subscriber = backgroundScope.launch(context = testDispatcher) { result.collect {} }
+        testDispatcher.scheduler.runCurrent()
+
+        assertEquals(expected = 42, actual = result.value)
+        subscriber.cancel()
+    }
+
     /** Verifies that [Store.toStateFlow] exposes the initial value until the upstream flow emits. */
     @Test
     fun toStateFlowExposesInitialValueUntilUpstreamEmits() = runUnitTest { testDispatcher ->
@@ -271,6 +318,34 @@ private class CounterStore: Store<CounterState, CounterAction>(initialState = Co
         timeout: Long = 5000L,
         block: (Int) -> Unit
     ): Job = source.observe(id = id, replace = replace, timeout = timeout) { value -> block(value) }
+
+    /**
+     * Exposes [Store.launch] with its default arguments for testing.
+     *
+     * @param id Identifier used to key the launched job.
+     * @param block The suspending work to run.
+     * @return The [Job] representing the launched work.
+     */
+    fun runLaunchWithDefaults(id: String, block: suspend CoroutineScope.() -> Unit): Job = launch(id = id, block = block)
+
+    /**
+     * Exposes [Store.observe] with its default arguments for testing.
+     *
+     * @param source The flow to observe.
+     * @param id Identifier used to key the observing job.
+     * @param block Invoked with every value emitted by [source].
+     * @return The [Job] representing the observation.
+     */
+    fun runObserveWithDefaults(source: Flow<Int>, id: String, block: (Int) -> Unit): Job = source.observe(id = id) { value -> block(value) }
+
+    /**
+     * Exposes [Store.toStateFlow] with its default sharing strategy for testing.
+     *
+     * @param source The flow to convert.
+     * @param initialValue The value the resulting [StateFlow] holds before [source] emits.
+     * @return The resulting [StateFlow].
+     */
+    fun runToStateFlowWithDefaults(source: Flow<Int>, initialValue: Int): StateFlow<Int> = source.toStateFlow(initialValue = initialValue)
 
     /**
      * Exposes [Store.toStateFlow] for testing.
