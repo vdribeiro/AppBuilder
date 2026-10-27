@@ -18,11 +18,13 @@ import com.app.builder.NfcInfo
 import com.app.builder.core.telemetry.Telemetry
 import com.app.builder.data.serializer.decode
 import com.app.builder.data.serializer.encode
+import com.app.builder.test.ExcludeFromTesting
 import com.app.builder.toByteArray
 import com.app.builder.toHex
 import com.app.builder.toNSData
 
 /** Apple [NfcController] implementation backed by Core NFC's [NFCNDEFReaderSession]. */
+@ExcludeFromTesting
 internal class AppleNfcController: NfcController() {
 
     /** The active reader session, while a scan or write is in progress. */

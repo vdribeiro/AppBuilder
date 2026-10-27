@@ -21,8 +21,10 @@ import androidx.lifecycle.LifecycleOwner
 import com.app.builder.applicationContext
 import com.app.builder.core.platform.appCachePath
 import com.app.builder.core.telemetry.Telemetry
+import com.app.builder.test.ExcludeFromTesting
 
 /** Android [Camera] implementation backed by CameraX. */
+@ExcludeFromTesting
 internal class AndroidCamera: Camera() {
 
     /** CameraX binder that ties use cases to the Android lifecycle. */

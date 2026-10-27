@@ -16,6 +16,7 @@ import com.app.builder.core.config.ClientFlags
 import com.app.builder.core.locale.now
 import com.app.builder.core.security.uuid
 import com.app.builder.core.telemetry.Telemetry
+import com.app.builder.test.ExcludeFromTesting
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
 import com.google.android.gms.location.FusedLocationProviderClient
@@ -27,6 +28,7 @@ import com.google.android.gms.location.Priority
 import com.google.android.gms.tasks.Task
 
 /** Android [DeviceLocationProvider] implementation backed by the Fused Location Provider, falling back to the platform [LocationManager] when Google Play Services is unavailable. */
+@ExcludeFromTesting
 internal class AndroidDeviceLocationProvider: DeviceLocationProvider() {
 
     /** The platform location manager, used for availability checks and as the fallback source when Play Services is unavailable. */

@@ -19,9 +19,11 @@ import com.app.builder.core.flow.Dispatcher
 import com.app.builder.core.telemetry.Telemetry
 import com.app.builder.data.serializer.decode
 import com.app.builder.data.serializer.encode
+import com.app.builder.test.ExcludeFromTesting
 import com.app.builder.toHex
 
 /** Android [NfcController] implementation backed by [NfcAdapter]. */
+@ExcludeFromTesting
 internal class AndroidNfcController: NfcController() {
 
     /** Scope for working with nfc tags. */

@@ -15,8 +15,10 @@ import com.app.builder.core.config.ClientConfigs
 import com.app.builder.core.locale.now
 import com.app.builder.core.security.uuid
 import com.app.builder.core.telemetry.Telemetry
+import com.app.builder.test.ExcludeFromTesting
 
 /** Apple [DeviceLocationProvider] implementation backed by [CLLocationManager]. */
+@ExcludeFromTesting
 internal class AppleDeviceLocationProvider: DeviceLocationProvider() {
 
     /** The active location manager, while capture is in progress. */

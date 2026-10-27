@@ -27,8 +27,10 @@ import platform.darwin.NSObject
 import com.app.builder.core.locale.epoch
 import com.app.builder.core.platform.appCachePath
 import com.app.builder.core.telemetry.Telemetry
+import com.app.builder.test.ExcludeFromTesting
 
 /** Apple [Camera] implementation backed by AVFoundation. */
+@ExcludeFromTesting
 internal class AppleCamera: Camera() {
 
     /** The AVFoundation capture session. */

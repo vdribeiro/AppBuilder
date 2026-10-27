@@ -11,8 +11,10 @@ import platform.Foundation.NSBundle
 import platform.Foundation.NSNotificationCenter
 import platform.darwin.NSObjectProtocol
 import com.app.builder.core.platform.observe
+import com.app.builder.test.ExcludeFromTesting
 
 /** Apple [AudioPlayer] implementation backed by AVFoundation's [AVPlayer]. */
+@ExcludeFromTesting
 internal class AppleAudioPlayer: AudioPlayer() {
 
     /** The AVFoundation's [AVPlayer] instance. */

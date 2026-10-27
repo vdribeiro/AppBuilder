@@ -2,8 +2,10 @@ package com.app.builder.core.media
 
 import javafx.scene.media.Media
 import javafx.scene.media.MediaPlayer
+import com.app.builder.test.ExcludeFromTesting
 
 /** Desktop [AudioPlayer] implementation backed by JavaFX [MediaPlayer]. */
+@ExcludeFromTesting
 internal class DesktopAudioPlayer: AudioPlayer() {
 
     /** The JavaFX [MediaPlayer] instance. */
