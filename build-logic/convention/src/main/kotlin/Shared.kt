@@ -354,6 +354,37 @@ abstract class GenerateNfcInfoValuesTask: DefaultTask() {
     }
 }
 
+/** Generates a ServerConfig.kt file with the production server host. */
+abstract class GenerateServerValuesTask: DefaultTask() {
+    @get:Input
+    abstract val taskAppId: Property<String>
+    @get:Input
+    abstract val taskServerHost: Property<String>
+    @get:OutputDirectory
+    abstract val taskOutputDir: DirectoryProperty
+
+    @TaskAction
+    fun generate() {
+        val packageId: String = taskAppId.get()
+        val serverHost: String = taskServerHost.get()
+        val objectName = "ServerConfig"
+        val file = taskOutputDir.get().file("${packageId.replace(oldChar = '.', newChar = '/')}/$objectName.kt").asFile
+        file.parentFile.mkdirs()
+        file.writeText(
+            text = """
+                package $packageId
+
+                import $appId.test.ExcludeFromTesting
+
+                @ExcludeFromTesting
+                object $objectName {
+                    const val HOST: String = "$serverHost"
+                }
+            """.trimIndent()
+        )
+    }
+}
+
 /** Generates a SentryConfig.kt file with an obfuscated Sentry DSN. */
 abstract class GenerateSentryValuesTask: DefaultTask() {
     @get:Input

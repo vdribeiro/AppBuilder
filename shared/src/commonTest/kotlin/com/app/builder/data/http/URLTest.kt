@@ -6,10 +6,9 @@ import com.app.builder.test.TestCase
 
 class URLTest: TestCase() {
 
-    /** Verifies the URL host, dev port, and dev host constants have their expected values. */
+    /** Verifies the dev port, and dev host constants have their expected values. */
     @Test
     fun hostConstants() = runUnitTest {
-        assertEquals(expected = "p01--app-builder--r9rdqjhkvs6y.code.run", actual = URL.HOST)
         assertEquals(expected = 8080, actual = URL.DEV_PORT)
         assertEquals(expected = "localhost:8080", actual = URL.DEV_HOST)
     }

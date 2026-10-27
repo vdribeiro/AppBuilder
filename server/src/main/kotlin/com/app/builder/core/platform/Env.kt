@@ -8,6 +8,8 @@ object Env {
     val sentryDsn: String? = getEnv(name = "SENTRY_DSN")
     /** The port number on which the application server will listen. */
     val port: Int? = getEnv(name = "PORT")?.toIntOrNull()
+    /** The hosts allowed to make HTTPS cross-origin requests in production, read as a comma separated list. */
+    val corsHosts: List<String> = getEnv(name = "CORS_HOSTS")?.split(',')?.map { it.trim() }?.filter { it.isNotEmpty() }.orEmpty()
     /** The superuser uuid. */
     val adminUuid: String? = getEnv(name = "ADMIN_UUID")
     /** The superuser username. */

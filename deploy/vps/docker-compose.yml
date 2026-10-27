@@ -39,6 +39,7 @@ services:
       # Caddy is the only proxy in front of the server and appends the caller to
       # X-Forwarded-For, so the last entry is the real client address.
       TRUSTED_PROXY_HOPS: "1"
+      CORS_HOSTS: ${CORS_HOSTS:-}
       ADMIN_UUID: ${ADMIN_UUID}
       ADMIN_USERNAME: ${ADMIN_USERNAME}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD}

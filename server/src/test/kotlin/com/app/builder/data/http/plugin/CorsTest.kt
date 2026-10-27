@@ -32,13 +32,13 @@ class CorsTest: TestCase() {
         }
     }
 
-    /** Verifies that, in development mode, requests from any other origin, including the production hosts, are refused. */
+    /** Verifies that, in development mode, requests from any other origin, including production ones, are refused. */
     @Test
     fun refusesOtherOrigins() = runServerTest {
         installTestRoutes()
         val client = createClient(token = null)
 
-        listOf("https://evil.example", "https://${URL.HOST}").forEach { origin ->
+        listOf("https://evil.example", "https://app.example").forEach { origin ->
             val response = client.get(urlString = "/test") { header(HttpHeaders.Origin, origin) }
             assertEquals(expected = HttpStatusCode.Forbidden, actual = response.status)
             assertNull(actual = response.headers[HttpHeaders.AccessControlAllowOrigin])

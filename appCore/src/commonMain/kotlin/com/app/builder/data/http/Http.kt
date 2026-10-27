@@ -23,10 +23,10 @@ import io.ktor.http.encodeURLPath
 import io.ktor.http.encodeURLQueryComponent
 import io.ktor.sse.ServerSentEvent
 import io.ktor.websocket.Frame
+import com.app.builder.ServerConfig
 import com.app.builder.core.flow.Dispatcher
 import com.app.builder.core.platform.developmentMode
 import com.app.builder.data.http.URL.Companion.DEV_HOST
-import com.app.builder.data.http.URL.Companion.HOST
 
 /**
  * Executes a type-safe HTTP HEAD request.
@@ -207,7 +207,7 @@ suspend inline fun <reified T: Frame> HttpClient.webSocket(
 }
 
 /** The active base URL evaluated at runtime. */
-val baseUrl: String = if (developmentMode) "${URLProtocol.HTTP.name}://$DEV_HOST" else "${URLProtocol.HTTPS.name}://$HOST"
+val baseUrl: String = if (developmentMode) "${URLProtocol.HTTP.name}://$DEV_HOST" else "${URLProtocol.HTTPS.name}://${ServerConfig.HOST}"
 
 /** The active base WebSocket URL evaluated at runtime. */
-val baseWSUrl: String = if (developmentMode) "${URLProtocol.WS.name}://$DEV_HOST" else "${URLProtocol.WSS.name}://$HOST"
+val baseWSUrl: String = if (developmentMode) "${URLProtocol.WS.name}://$DEV_HOST" else "${URLProtocol.WSS.name}://${ServerConfig.HOST}"

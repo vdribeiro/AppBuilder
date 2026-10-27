@@ -624,10 +624,11 @@ The file is optional: it is loaded only if it exists and every key falls back to
 * **Mac Notarization**: `mac.sign.identity`, `mac.notarization.appleId`, `mac.notarization.teamId`, `mac.notarization.password`.
 * **Sentry Monitoring**: `sentryDsn` for production monitoring.
 * **Web Push**: `web.vapidKey`, `web.firebaseConfig`.
+* **Server Host**: `server.host`, the production server host the clients target.
 
 The server instead reads its configuration from OS environment variables via `Env.kt`:
 
-* **Server**: `DEVELOPMENT`, `PORT`, `SENTRY_DSN`.
+* **Server**: `DEVELOPMENT`, `PORT`, `SENTRY_DSN`, `CORS_HOSTS`.
 * **Admin**: `ADMIN_UUID`, `ADMIN_USERNAME`, `ADMIN_PASSWORD`
 * **Database**: `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `DB_SSL_MODE`.
 * **JWT**: `JWT_ISSUER`, `JWT_AUDIENCE`, `JWT_SECRET`.
@@ -659,7 +660,7 @@ The dev environment is a property of the **Gradle task**, not of the code, so la
 | FCM             | Push delivery when a device has no live WebSocket/SSE connection       | `NoOpFcmService`                      | `FcmManager` (*1)                                 |
 | JWT             | How access tokens are signed and verified                              | HMAC512 with the injected secret      | HMAC512 with the real `JWT_SECRET`                |
 | Telemetry       | Where logs are sent                                                    | Console `ServerLogger`                | Console, plus Sentry if `SENTRY_DSN` is set       |
-| CORS            | Which origins the server accepts requests from                         | `localhost:8080` and `localhost:8010` | HTTPS-only on `URL.HOST`                          |
+| CORS            | Which origins the server accepts requests from                         | `localhost:8080` and `localhost:8010` | HTTPS-only on the `CORS_HOSTS` list               |
 | Time validation | Whether requests timestamped in the future are rejected                | Skipped                               | Enforced                                          |
 | Rate limiting   | How callers are told apart                                             | One shared bucket                     | By caller address, if `TRUSTED_PROXY_HOPS` is set |
 | Seeded account  | The one admin account created on every boot                            | `admin`/`admin`                       | Real `ADMIN_*` values                             |
@@ -1506,6 +1507,7 @@ Add a `local.properties` to the project root once you need one of the things it 
 * Signing an Android release, or signing and notarizing a Mac build.
 * Reporting to Sentry from a production client build.
 * Web push, which needs a VAPID key and a Firebase web config.
+* A production client build, which needs `server.host` to know which server to talk to.
 
 See [Environment Setup](#environment-setup) for the full key list, and [Push Notifications](#push-notifications) if you want FCM working end-to-end.
 
@@ -1690,7 +1692,8 @@ If you outgrow this (very high fan-out, cross-region, need for durable ordered d
 
 ### Where do I change the production server host?
 
-`URL.HOST` in `shared/src/commonMain/kotlin/com/app/builder/data/http/URL.kt`. Development builds ignore it and target `URL.DEV_HOST` (`localhost:8080`) instead, so you can leave dev alone while switching production.
+Set `server.host` in `local.properties`; the build generates it into `ServerConfig.HOST`. Development builds ignore it and target `URL.DEV_HOST` (`localhost:8080`) instead, so you can leave dev alone while switching production.
+On the server, list the same host, plus any web app hosts, in the `CORS_HOSTS` environment variable.
 If the web app is served through Firebase Hosting, also update the `/api/**` rewrite in `firebase.json`.
 
 ---

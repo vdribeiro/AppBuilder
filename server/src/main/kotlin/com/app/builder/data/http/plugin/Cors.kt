@@ -6,8 +6,6 @@ import io.ktor.server.application.install
 import io.ktor.server.plugins.cors.routing.CORS
 import com.app.builder.core.platform.Env
 import com.app.builder.data.http.URL.Companion.DEV_HOST
-import com.app.builder.data.http.URL.Companion.HOST
-import com.app.builder.data.http.URL.Companion.WEB_HOSTS
 
 /** Configures Cross-Origin Resource Sharing (CORS) for the Ktor server. */
 fun Application.installCors() {
@@ -18,7 +16,7 @@ fun Application.installCors() {
                 allowHost(host = DEV_HOST)
             }
 
-            else -> (WEB_HOSTS + HOST).forEach { allowHost(host = it, schemes = listOf("https")) }
+            else -> Env.corsHosts.forEach { allowHost(host = it, schemes = listOf("https")) }
         }
 
         allowHeaders { true }

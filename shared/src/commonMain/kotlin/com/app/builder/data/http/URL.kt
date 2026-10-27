@@ -8,14 +8,10 @@ package com.app.builder.data.http
 sealed class URL(val path: String) {
 
     companion object {
-        /** The production environment host. */
-        const val HOST = "p01--app-builder--r9rdqjhkvs6y.code.run"
         /** The local development port. */
         const val DEV_PORT = 8080
         /** The local development base host. */
         const val DEV_HOST = "localhost:$DEV_PORT"
-        /** Web addresses. */
-        val WEB_HOSTS = listOf("appbuilder-317b5.web.app", "appbuilder-317b5.firebaseapp.com")
     }
 
     /** Endpoint for server flags. */

@@ -29,6 +29,13 @@ val generateNfcInfoValues = tasks.register<GenerateNfcInfoValuesTask>(name = "ge
     taskNfcActionMimeType.set(nfcActionMimeType)
     taskOutputDir.set(outputDir)
 }
+val serverHost: String = localProperties.getProperty("server.host", "")
+val generateServerValues = tasks.register<GenerateServerValuesTask>(name = "generateServerValues") {
+    description = "Generate ServerConfig.kt file."
+    taskAppId.set(appId)
+    taskServerHost.set(serverHost)
+    taskOutputDir.set(outputDir)
+}
 val webVapidKey: String = localProperties.getProperty("web.vapidKey", "")
 val webFirebaseConfigJson: String = localProperties.getProperty("web.firebaseConfig", "{}")
 val generateWebPushValues = tasks.register<GenerateWebPushValuesTask>(name = "generateWebPushValues") {
@@ -56,6 +63,7 @@ kotlin {
         val commonMain = getByName("commonMain") {
             kotlin.srcDir(generateDevelopmentValues.map { it.outputs.files })
             kotlin.srcDir(generateNfcInfoValues.map { it.outputs.files })
+            kotlin.srcDir(generateServerValues.map { it.outputs.files })
             dependencies {
                 implementation(dependencyNotation = projects.shared)
                 implementation(dependencyNotation = projects.design)
