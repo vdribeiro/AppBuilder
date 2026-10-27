@@ -7,6 +7,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.test.ComposeUiTest
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation3.runtime.NavBackStack
+import com.app.builder.App
 import com.app.builder.core.nfc.TagProvider
 import com.app.builder.data.storage.CoreFile
 import com.app.builder.data.translation.TranslationCache
@@ -20,6 +21,14 @@ import com.app.builder.ui.navigation.Router
 
 /** Abstract class for defining test cases. It provides a hermetic testing environment. */
 abstract class TestCase: PlatformTestCase() {
+
+    init {
+        App.setInfo(
+            id = FakeData.APP_ID,
+            name = FakeData.APP_NAME,
+            version = FakeData.APP_VERSION
+        )
+    }
 
     /** Navigation router. */
     protected val router: Router = Navigator(backStack = NavBackStack())

@@ -7,6 +7,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.test.ComposeUiTest
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation3.runtime.NavBackStack
+import com.app.builder.App
 import com.app.builder.Application.reset
 import com.app.builder.Dependency
 import com.app.builder.core.flow.LazyData
@@ -20,6 +21,14 @@ import com.app.builder.ui.navigation.Router
 
 /** Abstract class for defining test cases. It provides a hermetic testing environment. */
 abstract class TestCase: PlatformTestCase() {
+
+    init {
+        App.setInfo(
+            id = FakeData.APP_ID,
+            name = FakeData.APP_NAME,
+            version = FakeData.APP_VERSION
+        )
+    }
 
     /** Dependency index for test cases with in memory Database and Mock Http Engine. */
     protected val dependency: LazyData<Dependency.AppGraph> = LazyData {

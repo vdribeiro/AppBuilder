@@ -24,6 +24,15 @@ import com.app.builder.domain.UserCredentials
 /** A collection of fake data for testing. */
 object FakeData {
 
+    /** The application id the test suites run under, kept apart from the real app's. */
+    const val APP_ID = "com.app.builder.test"
+
+    /** The application name the test suites run under, which also names their data directory. */
+    const val APP_NAME = "AppBuilder Test"
+
+    /** The application version the test suites run under. */
+    const val APP_VERSION = "0.0.0"
+
     val clientFlags = ClientFlags.flags.copy()
 
     val clientConfigs = ClientConfigs.configs.copy()
