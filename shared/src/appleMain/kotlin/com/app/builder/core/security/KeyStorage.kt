@@ -29,6 +29,7 @@ import platform.Security.kSecValueData
 import platform.posix.memcpy
 import com.app.builder.test.ExcludeFromTesting
 import com.app.builder.toCFString
+import com.app.builder.use
 
 /** Where the secret key used to encrypt and decrypt app data is kept. */
 interface KeyStorage {
@@ -60,34 +61,42 @@ var keyStorage: KeyStorage = KeychainKeyStorage
 internal object KeychainKeyStorage: KeyStorage {
 
     override fun read(account: String): ByteArray? = memScoped {
-        val query = CFDictionaryCreateMutable(allocator = null, capacity = 4, keyCallBacks = null, valueCallBacks = null)
-        CFDictionaryAddValue(theDict = query, key = kSecClass, value = kSecClassGenericPassword)
-        CFDictionaryAddValue(theDict = query, key = kSecAttrAccount, value = account.toCFString())
-        CFDictionaryAddValue(theDict = query, key = kSecReturnData, value = kCFBooleanTrue)
-        CFDictionaryAddValue(theDict = query, key = kSecMatchLimit, value = kSecMatchLimitOne)
-        val result = alloc<CFTypeRefVar>()
-        when (val status = SecItemCopyMatching(query = query, result = result.ptr)) {
-            errSecSuccess -> {
-                @Suppress("UNCHECKED_CAST") val data = result.value as CFDataRef
-                val bytes = CFDataGetBytePtr(theData = data)
-                val length = CFDataGetLength(theData = data)
-                ByteArray(size = length.toInt()).apply {
-                    if (isNotEmpty()) usePinned { pinned -> memcpy(__dst = pinned.addressOf(0), __src = bytes, __n = length.toULong()) }
+        account.toCFString().use { cfAccount ->
+            CFDictionaryCreateMutable(allocator = null, capacity = 4, keyCallBacks = null, valueCallBacks = null).use { query ->
+                CFDictionaryAddValue(theDict = query, key = kSecClass, value = kSecClassGenericPassword)
+                CFDictionaryAddValue(theDict = query, key = kSecAttrAccount, value = cfAccount)
+                CFDictionaryAddValue(theDict = query, key = kSecReturnData, value = kCFBooleanTrue)
+                CFDictionaryAddValue(theDict = query, key = kSecMatchLimit, value = kSecMatchLimitOne)
+                val result = alloc<CFTypeRefVar>()
+                when (val status = SecItemCopyMatching(query = query, result = result.ptr)) {
+                    errSecSuccess -> result.value.use { value ->
+                        @Suppress("UNCHECKED_CAST") val data = value as CFDataRef
+                        val bytes = CFDataGetBytePtr(theData = data)
+                        val length = CFDataGetLength(theData = data)
+                        ByteArray(size = length.toInt()).apply {
+                            if (isNotEmpty()) usePinned { pinned -> memcpy(__dst = pinned.addressOf(0), __src = bytes, __n = length.toULong()) }
+                        }
+                    }
+
+                    errSecItemNotFound -> null
+                    else -> error(message = "Unable to read secret key: $status")
                 }
             }
-
-            errSecItemNotFound -> null
-            else -> error(message = "Unable to read secret key: $status")
         }
     }
 
     override fun add(account: String, key: ByteArray) {
         val data = key.usePinned { CFDataCreate(allocator = null, bytes = it.addressOf(index = 0).reinterpret(), length = key.size.toLong()) }
-        val query = CFDictionaryCreateMutable(allocator = null, capacity = 3, keyCallBacks = null, valueCallBacks = null)
-        CFDictionaryAddValue(theDict = query, key = kSecClass, value = kSecClassGenericPassword)
-        CFDictionaryAddValue(theDict = query, key = kSecAttrAccount, value = account.toCFString())
-        CFDictionaryAddValue(theDict = query, key = kSecValueData, value = data)
-        val status = SecItemAdd(attributes = query, result = null)
-        if (status != errSecSuccess) error(message = "Unable to persist secret key: $status")
+        data.use {
+            account.toCFString().use { cfAccount ->
+                CFDictionaryCreateMutable(allocator = null, capacity = 3, keyCallBacks = null, valueCallBacks = null).use { query ->
+                    CFDictionaryAddValue(theDict = query, key = kSecClass, value = kSecClassGenericPassword)
+                    CFDictionaryAddValue(theDict = query, key = kSecAttrAccount, value = cfAccount)
+                    CFDictionaryAddValue(theDict = query, key = kSecValueData, value = data)
+                    val status = SecItemAdd(attributes = query, result = null)
+                    if (status != errSecSuccess) error(message = "Unable to persist secret key: $status")
+                }
+            }
+        }
     }
 }
