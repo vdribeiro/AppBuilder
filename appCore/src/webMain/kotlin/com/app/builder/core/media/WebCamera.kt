@@ -10,11 +10,13 @@ import kotlinx.coroutines.withTimeoutOrNull
 import com.app.builder.core.media.WebCamera.Companion.FINALIZE_TIMEOUT
 import com.app.builder.core.platform.loop
 import com.app.builder.core.telemetry.Telemetry
+import com.app.builder.test.ExcludeFromTesting
 import org.w3c.dom.HTMLCanvasElement
 import org.w3c.dom.HTMLDivElement
 import org.w3c.dom.HTMLVideoElement
 
 /** Web [Camera] implementation backed by `navigator.mediaDevices` and a `MediaRecorder`. */
+@ExcludeFromTesting
 internal class WebCamera: Camera() {
 
     /** Scope for the MediaRecorder. */

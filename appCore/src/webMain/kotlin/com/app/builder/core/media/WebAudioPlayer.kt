@@ -2,8 +2,10 @@ package com.app.builder.core.media
 
 import kotlinx.browser.document
 import org.w3c.dom.HTMLAudioElement
+import com.app.builder.test.ExcludeFromTesting
 
 /** Web [AudioPlayer] implementation backed by an [HTMLAudioElement]. */
+@ExcludeFromTesting
 internal class WebAudioPlayer: AudioPlayer() {
 
     /** The [HTMLAudioElement] instance reused across tracks. `preload = "auto"` hints to the browser to buffer the next chunk proactively. */

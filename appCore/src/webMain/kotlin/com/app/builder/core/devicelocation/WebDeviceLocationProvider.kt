@@ -12,8 +12,10 @@ import com.app.builder.core.platform.loop
 import com.app.builder.core.security.uuid
 import com.app.builder.core.telemetry.Telemetry
 import com.app.builder.data.serializer.decode
+import com.app.builder.test.ExcludeFromTesting
 
 /** Web [DeviceLocationProvider] implementation backed by the browser `navigator.geolocation` API. */
+@ExcludeFromTesting
 internal class WebDeviceLocationProvider: DeviceLocationProvider() {
 
     /** Scope used to poll the browser for fixes. */
