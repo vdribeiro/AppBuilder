@@ -80,6 +80,7 @@ actual suspend fun hash(content: String): String? = withContext(context = Dispat
 
 actual suspend fun deriveKey(password: String, salt: String): String? = withContext(context = Dispatcher.Default) {
     runCatching {
+        require(value = salt.isNotEmpty()) { "Salt must not be empty" }
         val spec = PBEKeySpec(password.toCharArray(), salt.encodeToByteArray(), DERIVATION_ROUNDS, DERIVED_KEY_SIZE)
         SecretKeyFactory.getInstance(DERIVATION_ALGORITHM)
             .generateSecret(spec)

@@ -1,13 +1,10 @@
 package com.app.builder.core.security
 
 import kotlin.io.encoding.Base64
-import kotlinx.cinterop.addressOf
 import kotlinx.cinterop.alloc
 import kotlinx.cinterop.memScoped
 import kotlinx.cinterop.ptr
 import kotlinx.cinterop.refTo
-import kotlinx.cinterop.reinterpret
-import kotlinx.cinterop.usePinned
 import kotlinx.cinterop.value
 import kotlinx.coroutines.withContext
 import platform.CoreCrypto.CCCrypt
@@ -25,28 +22,7 @@ import platform.CoreCrypto.kCCPRFHmacAlgSHA256
 import platform.CoreCrypto.kCCKeySizeAES256
 import platform.CoreCrypto.kCCOptionPKCS7Padding
 import platform.CoreCrypto.kCCSuccess
-import platform.CoreFoundation.CFDataCreate
-import platform.CoreFoundation.CFDataGetBytePtr
-import platform.CoreFoundation.CFDataGetLength
-import platform.CoreFoundation.CFDataRef
-import platform.CoreFoundation.CFDictionaryAddValue
-import platform.CoreFoundation.CFDictionaryCreateMutable
-import platform.CoreFoundation.CFStringCreateWithCString
-import platform.CoreFoundation.CFTypeRefVar
-import platform.CoreFoundation.kCFBooleanTrue
-import platform.CoreFoundation.kCFStringEncodingUTF8
-import platform.Security.SecItemAdd
-import platform.Security.SecItemCopyMatching
-import platform.Security.errSecSuccess
-import platform.Security.kSecAttrAccount
-import platform.Security.kSecClass
-import platform.Security.kSecClassGenericPassword
-import platform.Security.kSecMatchLimit
-import platform.Security.kSecMatchLimitOne
-import platform.Security.kSecReturnData
-import platform.Security.kSecValueData
 import platform.posix.arc4random_buf
-import platform.posix.memcpy
 import platform.posix.size_tVar
 import com.app.builder.App
 import com.app.builder.core.flow.Dispatcher
@@ -73,7 +49,7 @@ actual suspend fun encrypt(content: String): String? = withContext(context = Dis
                 key = secretKey.refTo(index = 0),
                 keyLength = KEY_SIZE.toULong(),
                 iv = iv.refTo(index = 0),
-                dataIn = inputData.refTo(index = 0),
+                dataIn = inputData.takeIf { it.isNotEmpty() }?.refTo(index = 0),
                 dataInLength = inputData.size.toULong(),
                 dataOut = buffer.refTo(index = 0),
                 dataOutAvailable = bufferSize.toULong(),
@@ -151,47 +127,23 @@ actual suspend fun decrypt(content: String): String? = withContext(context = Dis
 }
 
 /**
- * Get the Secret Key or generate one if it does not exist.
- * A freshly generated key that the keychain refuses to store is rejected rather than returned, so callers never encrypt with a key that cannot be recovered to decrypt again.
+ * Get the Secret Key from [keyStorage], or generate and store one when none is stored.
+ * A key is only generated when the storage reports that none exists; any other read failure throws, so an existing key is never replaced by a new one that cannot decrypt what was encrypted before.
+ * A freshly generated key that the storage refuses to keep is rejected rather than returned, so callers never encrypt with a key that cannot be recovered to decrypt again.
  *
  * @return the secret key or throw on error.
  */
 private suspend fun getSecretKey(): ByteArray = withContext(context = Dispatcher.IO) {
     runCatching {
-        memScoped {
-            val account = "${App.id}.masterkey"
-            val cfAccount = CFStringCreateWithCString(alloc = null, cStr = account, encoding = kCFStringEncodingUTF8)
-            val query = CFDictionaryCreateMutable(allocator = null, capacity = 4, keyCallBacks = null, valueCallBacks = null)
-            CFDictionaryAddValue(theDict = query, key = kSecClass, value = kSecClassGenericPassword)
-            CFDictionaryAddValue(theDict = query, key = kSecAttrAccount, value = cfAccount)
-            CFDictionaryAddValue(theDict = query, key = kSecReturnData, value = kCFBooleanTrue)
-            CFDictionaryAddValue(theDict = query, key = kSecMatchLimit, value = kSecMatchLimitOne)
-            val result = alloc<CFTypeRefVar>()
-            val status = SecItemCopyMatching(query = query, result = result.ptr)
-
-            if (status == errSecSuccess) {
-                @Suppress("UNCHECKED_CAST") val data = result.value as CFDataRef
-                val bytes = CFDataGetBytePtr(theData = data)
-                val length = CFDataGetLength(theData = data)
-                ByteArray(size = length.toInt()).apply {
-                    usePinned { pinned ->
-                        memcpy(__dst = pinned.addressOf(0), __src = bytes, __n = length.toULong())
-                    }
-                }
-            } else {
-                val key = ByteArray(size = KEY_SIZE.toInt()).apply {
-                    arc4random_buf(__buf = refTo(0), __nbytes = KEY_SIZE.toULong())
-                }
-                val cfData = key.usePinned { CFDataCreate(allocator = null, bytes = it.addressOf(index = 0).reinterpret(), length = KEY_SIZE.toLong()) }
-                val addQuery = CFDictionaryCreateMutable(allocator = null, capacity = 3, keyCallBacks = null, valueCallBacks = null)
-                CFDictionaryAddValue(theDict = addQuery, key = kSecClass, value = kSecClassGenericPassword)
-                CFDictionaryAddValue(theDict = addQuery, key = kSecAttrAccount, value = cfAccount)
-                CFDictionaryAddValue(theDict = addQuery, key = kSecValueData, value = cfData)
-                val addStatus = SecItemAdd(attributes = addQuery, result = null)
-                if (addStatus != errSecSuccess) error(message = "Unable to persist secret key: $addStatus")
-                key
-            }
+        val account = "${App.id}.masterkey"
+        val stored = keyStorage.read(account = account)
+        if (stored != null) {
+            if (stored.size != KEY_SIZE.toInt()) error(message = "Stored secret key has an invalid length: ${stored.size}")
+            return@runCatching stored
         }
+        ByteArray(size = KEY_SIZE.toInt())
+            .apply { arc4random_buf(__buf = refTo(index = 0), __nbytes = KEY_SIZE.toULong()) }
+            .also { keyStorage.add(account = account, key = it) }
     }.onFailure {
         Telemetry.error(tag = TAG, message = "Unable to get secret key", throwable = it)
     }.getOrThrow()
@@ -203,7 +155,7 @@ actual suspend fun hash(content: String): String? = withContext(context = Dispat
             val inputData = content.encodeToByteArray()
             val hash = UByteArray(size = CC_SHA256_DIGEST_LENGTH)
             CC_SHA256(
-                data = inputData.refTo(index = 0),
+                data = inputData.takeIf { it.isNotEmpty() }?.refTo(index = 0),
                 len = inputData.size.toUInt(),
                 md = hash.refTo(index = 0)
             )
@@ -216,6 +168,7 @@ actual suspend fun hash(content: String): String? = withContext(context = Dispat
 
 actual suspend fun deriveKey(password: String, salt: String): String? = withContext(context = Dispatcher.Default) {
     runCatching {
+        require(value = salt.isNotEmpty()) { "Salt must not be empty" }
         memScoped {
             val saltBytes = salt.encodeToByteArray().toUByteArray()
             val derived = UByteArray(size = DERIVED_KEY_SIZE)

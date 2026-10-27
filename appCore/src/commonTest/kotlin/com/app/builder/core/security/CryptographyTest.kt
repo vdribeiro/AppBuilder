@@ -4,6 +4,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
 import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 import com.app.builder.data.serializer.decode
 import com.app.builder.data.serializer.encode
 import com.app.builder.test.FakeData
@@ -51,5 +52,17 @@ class CryptographyTest: TestCase() {
 
         assertEquals(expected = first, actual = second)
         assertNotEquals(illegal = first, actual = different)
+    }
+
+    /** Verifies that [hash] of an empty string is the standard SHA-256 digest of no input. */
+    @Test
+    fun hashingEmptyString() = runUnitTest {
+        assertEquals(expected = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855", actual = hash(content = ""))
+    }
+
+    /** Verifies that [deriveKey] rejects an empty salt on every platform rather than deriving a weaker, unsalted key. */
+    @Test
+    fun deriveKeyRejectsEmptySalt() = runUnitTest {
+        assertNull(actual = deriveKey(password = "password", salt = ""))
     }
 }

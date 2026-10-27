@@ -175,6 +175,7 @@ private const val DERIVED_KEY_SIZE = 256
 
 actual suspend fun deriveKey(password: String, salt: String): String? = withContext(context = Dispatcher.Default) {
     runCatching {
+        require(value = salt.isNotEmpty()) { "Salt must not be empty" }
         deriveKeyJs(password = password, salt = salt, rounds = DERIVATION_ROUNDS, size = DERIVED_KEY_SIZE).await().toString()
     }.onFailure {
         Telemetry.error(tag = TAG, message = "Unable to derive key", throwable = it)
