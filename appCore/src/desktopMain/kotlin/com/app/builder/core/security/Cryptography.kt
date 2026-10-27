@@ -1,19 +1,14 @@
 package com.app.builder.core.security
 
 import java.io.File
-import java.io.OutputStream
-import java.nio.channels.FileChannel
-import java.nio.file.Files
-import java.nio.file.StandardCopyOption
-import java.nio.file.StandardOpenOption
 import java.security.KeyStore
 import java.security.MessageDigest
 import java.security.SecureRandom
 import javax.crypto.Cipher
-import javax.crypto.SecretKeyFactory
-import javax.crypto.spec.PBEKeySpec
 import javax.crypto.KeyGenerator
+import javax.crypto.SecretKeyFactory
 import javax.crypto.spec.GCMParameterSpec
+import javax.crypto.spec.PBEKeySpec
 import javax.crypto.spec.SecretKeySpec
 import kotlin.io.encoding.Base64
 import kotlinx.coroutines.sync.Mutex
@@ -21,11 +16,12 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import com.app.builder.App
 import com.app.builder.core.flow.Dispatcher
-import com.app.builder.core.platform.OS
 import com.app.builder.core.platform.appDataPath
 import com.app.builder.core.platform.developmentMode
-import com.app.builder.core.platform.platform
+import com.app.builder.core.platform.machineId
 import com.app.builder.core.telemetry.Telemetry
+import com.app.builder.data.storage.withFileLock
+import com.app.builder.data.storage.writeAtomically
 
 actual suspend fun encrypt(content: String): String? = withContext(context = Dispatcher.Default) {
     runCatching {
@@ -56,68 +52,6 @@ actual suspend fun decrypt(content: String): String? = withContext(context = Dis
     }.getOrNull() ?: if (developmentMode) return@withContext content else null
 }
 
-/**
- * Reads the identifier the operating system assigns to this machine.
- *
- * @return The machine id, or null when it cannot be read.
- */
-private fun machineId(): CharArray? = runCatching {
-    when (platform.os) {
-        OS.Windows -> runCommand(command = listOf("reg", "query", "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Cryptography", "/v", "MachineGuid"))
-            ?.substringAfter(delimiter = "REG_SZ")
-            .orEmpty()
-            .trim()
-
-        OS.Mac -> runCommand(command = listOf("bash", "-c", "ioreg -rd1 -c IOPlatformExpertDevice | grep IOPlatformUUID"))
-            ?.split("\"")
-            ?.getOrNull(index = 3)
-            .orEmpty()
-            .trim()
-
-        OS.Linux -> (File("/var/lib/dbus/machine-id").takeIf { it.exists() } ?: File("/etc/machine-id").takeIf { it.exists() })
-            ?.readText()
-            .orEmpty()
-            .trim()
-
-        else -> ""
-    }.takeIf { it.isNotEmpty() }?.toCharArray()
-}.onFailure {
-    Telemetry.error(tag = TAG, message = "Unable to read the machine id", throwable = it)
-}.getOrNull()
-
-private fun File.load(keyStore: KeyStore, password: CharArray) = runCatching { inputStream().use { keyStore.load(it, password) } }
-
-/**
- * Replaces this file with the bytes written by [write], so the file holds either its previous or its new content, never a partial one.
- * The content goes to a temporary file in the same directory, is flushed to disk, and is then moved over this file in one step.
- *
- * @param write Writes the new content to the given stream.
- */
-internal fun File.writeAtomically(write: (OutputStream) -> Unit) {
-    val temporary = File.createTempFile(name, ".tmp", parentFile)
-    try {
-        temporary.outputStream().use { stream ->
-            write(stream)
-            stream.fd.sync()
-        }
-        Files.move(temporary.toPath(), toPath(), StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING)
-    } finally {
-        temporary.delete()
-    }
-}
-
-/**
- * Runs [block] while holding an exclusive lock on [file], shared with every other process of the app.
- *
- * @param file The lock file, created if missing.
- * @param block The work to run under the lock.
- * @return The result of [block].
- */
-private inline fun <T> withFileLock(file: File, block: () -> T): T =
-    FileChannel.open(file.toPath(), StandardOpenOption.CREATE, StandardOpenOption.WRITE).use { channel ->
-        channel.lock().use { block() }
-    }
-
 /** The secret key and the alias it was loaded under, kept once loaded so the keystore is only opened again after a failure or an alias change. */
 @Volatile
 private var cachedSecretKey: Pair<String, SecretKeySpec>? = null
@@ -139,6 +73,11 @@ private suspend fun getSecretKey(): SecretKeySpec {
         cachedSecretKey?.takeIf { it.first == alias }?.second ?: loadSecretKey(alias = alias).also { cachedSecretKey = alias to it }
     }
 }
+
+/**
+ * 
+ */
+private fun File.load(keyStore: KeyStore, password: CharArray) = runCatching { inputStream().use { keyStore.load(it, password) } }
 
 /**
  * Get the [SecretKeySpec] from [KeyStore], generating the key only when the keystore does not exist yet.
