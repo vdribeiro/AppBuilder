@@ -1,3 +1,5 @@
+@file:ExcludeFromTesting
+
 package com.app.builder.core.security
 
 import java.io.File
@@ -53,7 +55,6 @@ internal val secretStore: SecretStore? by lazy {
 }
 
 /** A file encrypted by the Windows Data Protection API under the current user account, written and read through PowerShell. */
-@ExcludeFromTesting
 private class WindowsSecretStore: SecretStore {
     private val file: File get() = File(appDataPath, "security.dpapi")
 
@@ -79,7 +80,6 @@ private class WindowsSecretStore: SecretStore {
 }
 
 /** The macOS login keychain, reached through the `security` command line tool. */
-@ExcludeFromTesting
 private class AppleSecretStore: SecretStore {
 
     override fun read(): String? = run(
@@ -92,7 +92,6 @@ private class AppleSecretStore: SecretStore {
 }
 
 /** The Linux Secret Service, reached through the `secret-tool` command line tool. */
-@ExcludeFromTesting
 private class LinuxSecretStore: SecretStore {
 
     /** Whether `secret-tool` is installed and its keyring reachable. */
@@ -115,7 +114,6 @@ private class LinuxSecretStore: SecretStore {
  * @param input The text to write to the process standard input, if any.
  * @return The standard output of the command, or null when it fails, times out, or exits with a non-zero status.
  */
-@ExcludeFromTesting
 private fun run(command: List<String>, input: String? = null): String? = runCatching {
     val process = ProcessBuilder(command).redirectErrorStream(false).start()
     input?.let { process.outputStream.bufferedWriter().use { writer -> writer.write(it) } } ?: process.outputStream.close()

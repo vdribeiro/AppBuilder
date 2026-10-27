@@ -14,7 +14,7 @@ class LocaleTest: TestCase() {
         assertEquals(expected = getLanguage(), actual = observeLocale().first())
     }
 
-    /** Verifies that [observeLocale] keeps polling on every loop tick but only re-emits when the language actually changes, per its `distinctUntilChanged` guard. A genuine locale change is exercised separately in the desktop-specific test, since faking it here would require a JVM-only API unavailable to this shared source set. */
+    /** Verifies that [observeLocale] emits the current language once and stays silent while it does not change, even as time passes. */
     @Test
     fun observeLocaleDoesNotEmitDuplicatesOnSubsequentTicks() = runUnitTest {
         val emissions = mutableListOf<String>()
@@ -57,7 +57,7 @@ class LocaleTest: TestCase() {
     }
 
     private companion object {
-        /** The interval, in milliseconds, matching the desktop locale-change loop's default polling interval. */
+        /** The time, in milliseconds, advanced between checks; long enough to cover any platform that polls. */
         private const val INTERVAL_MILLIS = 3000L
     }
 }
