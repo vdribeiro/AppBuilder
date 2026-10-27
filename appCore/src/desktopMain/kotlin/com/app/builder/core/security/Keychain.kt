@@ -4,13 +4,14 @@ package com.app.builder.core.security
 
 import java.io.File
 import java.security.SecureRandom
-import java.util.concurrent.TimeUnit
 import kotlin.io.encoding.Base64
 import com.app.builder.App
 import com.app.builder.core.platform.OS
 import com.app.builder.core.platform.appDataPath
 import com.app.builder.core.platform.platform
+import com.app.builder.core.platform.runCommand
 import com.app.builder.core.telemetry.Telemetry
+import com.app.builder.data.storage.writeAtomically
 import com.app.builder.test.ExcludeFromTesting
 
 /**
@@ -134,30 +135,9 @@ private class LinuxSecretStore(private val appId: String): SecretStore {
     ) != null
 }
 
-/**
- * Runs [command] and collects its output.
- * Standard error is discarded and the process is awaited before its output is read, so a process that stalls is stopped after [PROCESS_TIMEOUT_SECONDS] instead of blocking the caller.
- * The output must fit in the pipe buffer, which holds for the short single values these commands print.
- *
- * @param command The command and its arguments.
- * @param input The text to write to the process standard input, if any.
- * @return The standard output of the command, or null when it fails, times out, or exits with a non-zero status.
- */
-internal fun runCommand(command: List<String>, input: String? = null): String? = runCatching {
-    val process = ProcessBuilder(command).redirectError(ProcessBuilder.Redirect.DISCARD).start()
-    process.outputStream.bufferedWriter().use { writer -> input?.let { writer.write(it) } }
-    if (!process.waitFor(PROCESS_TIMEOUT_SECONDS, TimeUnit.SECONDS)) {
-        process.destroyForcibly()
-        return null
-    }
-    process.inputStream.bufferedReader().use { it.readText() }.takeIf { process.exitValue() == 0 }
-}.getOrNull()
-
 private const val TAG = "Keychain"
 
 /** The account the secret is filed under. */
 private const val ACCOUNT = "master_key"
 /** The length, in bytes, of a generated secret. */
 private const val SECRET_LENGTH_BYTE = 32
-/** How long to wait for a secret store command before giving up. */
-private const val PROCESS_TIMEOUT_SECONDS = 10L
