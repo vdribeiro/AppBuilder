@@ -49,7 +49,7 @@ open class DeviceLocationProvider {
             _state.update { State.Active }
         }.onFailure {
             Telemetry.error(tag = TAG, message = "Error starting capture", throwable = it)
-            platformStopUpdate()
+            stopUpdate()
         }
     }
 

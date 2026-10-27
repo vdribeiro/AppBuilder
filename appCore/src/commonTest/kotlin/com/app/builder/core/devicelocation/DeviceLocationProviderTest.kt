@@ -165,6 +165,171 @@ class DeviceLocationProviderTest: TestCase() {
         assertEquals(expected = fixture, actual = provider.getLastKnownLocation())
     }
 
+    /** Verifies that starting an update is ignored while the provider is unavailable, even with the feature flag enabled. */
+    @Test
+    fun startUpdateIgnoredWhileUnavailable() = runUnitTest {
+        ClientFlags.set { it.copy(locationCapture = true) }
+        val provider = object: DeviceLocationProvider() {
+            override fun hasPermission(): Boolean = true
+        }
+
+        provider.startUpdate()
+
+        assertEquals(expected = DeviceLocationProvider.State.Idle, actual = provider.state.value)
+    }
+
+    /** Verifies that starting an update is ignored while location permission is not granted. */
+    @Test
+    fun startUpdateIgnoredWithoutPermission() = runUnitTest {
+        ClientFlags.set { it.copy(locationCapture = true) }
+        val provider = object: DeviceLocationProvider() {
+            override val available: Boolean = true
+        }
+
+        provider.startUpdate()
+
+        assertEquals(expected = DeviceLocationProvider.State.Idle, actual = provider.state.value)
+    }
+
+    /** Verifies that an exception thrown by the platform's start call is caught, stops the platform update, and leaves the provider idle. */
+    @Test
+    fun exceptionFromPlatformStartUpdateIsCaught() = runUnitTest {
+        ClientFlags.set { it.copy(locationCapture = true) }
+        val events = mutableListOf<String>()
+        val provider = object: DeviceLocationProvider() {
+            override val available: Boolean = true
+            override fun hasPermission(): Boolean = true
+            override fun platformStartUpdate() {
+                events.add(element = "start")
+                throw IllegalStateException("boom")
+            }
+            override fun platformStopUpdate() {
+                events.add(element = "stop")
+            }
+        }
+
+        provider.startUpdate()
+
+        assertEquals(expected = listOf("stop", "start", "stop"), actual = events)
+        assertEquals(expected = DeviceLocationProvider.State.Idle, actual = provider.state.value)
+    }
+
+    /** Verifies that a failed restart of an active provider transitions it back to idle, since the platform update was stopped. */
+    @Test
+    fun failedRestartTransitionsActiveProviderToIdle() = runUnitTest {
+        ClientFlags.set { it.copy(locationCapture = true) }
+        var failStart = false
+        val provider = object: DeviceLocationProvider() {
+            override val available: Boolean = true
+            override fun hasPermission(): Boolean = true
+            override fun platformStartUpdate() {
+                if (failStart) throw IllegalStateException("boom")
+            }
+        }
+        provider.startUpdate()
+        assertEquals(expected = DeviceLocationProvider.State.Active, actual = provider.state.value)
+        failStart = true
+
+        provider.startUpdate()
+
+        assertEquals(expected = DeviceLocationProvider.State.Idle, actual = provider.state.value)
+    }
+
+    /** Verifies that starting an update whose platform stop call always throws is caught without escaping and leaves the provider idle. */
+    @Test
+    fun exceptionFromPlatformStopUpdateDuringStartIsCaught() = runUnitTest {
+        ClientFlags.set { it.copy(locationCapture = true) }
+        val provider = object: DeviceLocationProvider() {
+            override val available: Boolean = true
+            override fun hasPermission(): Boolean = true
+            override fun platformStopUpdate() {
+                throw IllegalStateException("boom")
+            }
+        }
+
+        provider.startUpdate()
+
+        assertEquals(expected = DeviceLocationProvider.State.Idle, actual = provider.state.value)
+    }
+
+    /** Verifies that an exception thrown by the platform's stop call is caught and the provider still transitions to idle. */
+    @Test
+    fun exceptionFromPlatformStopUpdateIsCaught() = runUnitTest {
+        ClientFlags.set { it.copy(locationCapture = true) }
+        var failStop = false
+        val provider = object: DeviceLocationProvider() {
+            override val available: Boolean = true
+            override fun hasPermission(): Boolean = true
+            override fun platformStopUpdate() {
+                if (failStop) throw IllegalStateException("boom")
+            }
+        }
+        provider.startUpdate()
+        failStop = true
+
+        provider.stopUpdate()
+
+        assertEquals(expected = DeviceLocationProvider.State.Idle, actual = provider.state.value)
+    }
+
+    /** Verifies that [DeviceLocationProvider.getLastKnownLocation] returns null and stops updates while the feature flag is disabled. */
+    @Test
+    fun getLastKnownLocationReturnsNullWhileFeatureFlagDisabled() = runUnitTest {
+        ClientFlags.set { it.copy(locationCapture = true) }
+        val provider = testProvider()
+        provider.startUpdate()
+        ClientFlags.set { it.copy(locationCapture = false) }
+
+        assertNull(actual = provider.getLastKnownLocation())
+        assertEquals(expected = DeviceLocationProvider.State.Idle, actual = provider.state.value)
+    }
+
+    /** Verifies that [DeviceLocationProvider.getLastKnownLocation] returns null while location permission is not granted. */
+    @Test
+    fun getLastKnownLocationReturnsNullWithoutPermission() = runUnitTest {
+        ClientFlags.set { it.copy(locationCapture = true) }
+        val provider = object: DeviceLocationProvider() {
+            override val available: Boolean = true
+        }
+
+        assertNull(actual = provider.getLastKnownLocation())
+    }
+
+    /** Verifies that a provider relying on the default platform query, which supports no cached location, returns null. */
+    @Test
+    fun getLastKnownLocationReturnsNullWithDefaultPlatformQuery() = runUnitTest {
+        ClientFlags.set { it.copy(locationCapture = true) }
+
+        assertNull(actual = testProvider().getLastKnownLocation())
+    }
+
+    /** Verifies that an exception thrown by the platform query is caught and answered from the last captured fix. */
+    @Test
+    fun exceptionFromPlatformQueryFallsBackToTheLastCapturedFix() = runUnitTest {
+        ClientFlags.set { it.copy(locationCapture = true) }
+        val fixture = fixtureLocation()
+        var fail = false
+        val provider = object: DeviceLocationProvider() {
+            override val available: Boolean = true
+            override fun hasPermission(): Boolean = true
+            override suspend fun platformGetLastKnownLocation(): DeviceLocation? {
+                if (fail) throw IllegalStateException("boom")
+                return fixture
+            }
+        }
+        assertEquals(expected = fixture, actual = provider.getLastKnownLocation())
+
+        fail = true
+
+        assertEquals(expected = fixture, actual = provider.getLastKnownLocation())
+    }
+
+    /** Verifies that the top-level [getLastKnownLocation] returns null while the location capture feature flag is disabled. */
+    @Test
+    fun topLevelGetLastKnownLocationReturnsNullWhileFeatureFlagDisabled() = runUnitTest {
+        assertNull(actual = getLastKnownLocation())
+    }
+
     /** Verifies that the shared [DeviceLocationProvider.instance] is a valid, non-crashing default. */
     @Test
     fun sharedInstanceIsUsable() = runUnitTest {
