@@ -43,7 +43,7 @@ internal fun createKeystoreSecret(): String? = runCatching {
 /**
  * Returns the secret store of the running operating system.
  *
- * @return The store, or null where there is none, or the app has no identity to file a secret under.
+ * @return The store, or null where there is none, or where the app has nowhere to file a secret.
  */
 private fun getSecretStore(): SecretStore? =
     when (platform.os) {
@@ -73,6 +73,7 @@ private interface SecretStore {
  */
 @ExcludeFromTesting
 private class WindowsSecretStore(private val directory: String): SecretStore {
+    /** The file holding the encrypted secret. */
     private val file: File get() = File(directory, "security.dpapi")
 
     override fun read(): String? {

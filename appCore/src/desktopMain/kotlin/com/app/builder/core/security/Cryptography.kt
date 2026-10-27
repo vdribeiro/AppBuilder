@@ -75,7 +75,11 @@ private suspend fun getSecretKey(): SecretKeySpec {
 }
 
 /**
- * 
+ * Loads this keystore file into [keyStore], unlocking it with [password].
+ *
+ * @param keyStore The keystore to load the file into.
+ * @param password The password the keystore file is locked with.
+ * @return A successful [Result] when the file was loaded, or a failed one when it is unreadable or [password] does not unlock it.
  */
 private fun File.load(keyStore: KeyStore, password: CharArray) = runCatching { inputStream().use { keyStore.load(it, password) } }
 
