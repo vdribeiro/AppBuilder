@@ -213,7 +213,10 @@ Each package has a specific isolated responsibility, and dependencies always poi
 * **ui**: User-facing presentation layer. It can depend on **domain**, **data** and **core**.
 * **test**: Test utilities like annotations and fake data shared across test source sets. It can depend on all layers, **domain**, **data**, **core**, **ui**.
 
-Not every module has every package. The lists below are the union across modules.
+Not every module has every package. 
+
+<details>
+<summary>Expand to see the union across modules.</summary>
 
 #### core
 
@@ -272,6 +275,8 @@ Also holds the domain models themselves at the root of the package.
 #### test
 
 Testing suites, fake data and annotations.
+
+</details>
 
 ## Modules Structure
 
