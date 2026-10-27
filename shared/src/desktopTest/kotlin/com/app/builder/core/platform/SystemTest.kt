@@ -3,6 +3,7 @@ package com.app.builder.core.platform
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
+import kotlin.time.Duration.Companion.milliseconds
 import com.app.builder.test.TestCase
 
 class SystemTest: TestCase() {
@@ -30,5 +31,49 @@ class SystemTest: TestCase() {
     @Test
     fun getEnvReturnsNullForUnknownKey() = runUnitTest {
         assertNull(actual = getEnv(name = "NOT_A_REAL_ENV_VAR"))
+    }
+
+    /** Verifies runCommand returns the standard output of a successful command. */
+    @Test
+    fun runCommandReturnsOutput() = runUnitTest {
+        if (isWindows()) return@runUnitTest
+        assertEquals(expected = "hello\n", actual = runCommand(command = listOf("echo", "hello")))
+    }
+
+    /** Verifies runCommand writes its input to the process standard input. */
+    @Test
+    fun runCommandWritesInput() = runUnitTest {
+        if (isWindows()) return@runUnitTest
+        assertEquals(expected = "secret", actual = runCommand(command = listOf("cat"), input = "secret"))
+    }
+
+    /** Verifies runCommand returns null for a non-zero exit status, discarding standard error. */
+    @Test
+    fun runCommandReturnsNullOnFailure() = runUnitTest {
+        if (isWindows()) return@runUnitTest
+        assertNull(actual = runCommand(command = listOf("sh", "-c", "echo out; echo err >&2; exit 3")))
+    }
+
+    /** Verifies runCommand returns null for a command that does not exist. */
+    @Test
+    fun runCommandReturnsNullForMissingCommand() = runUnitTest {
+        assertNull(actual = runCommand(command = listOf("not-a-real-command-xyz")))
+    }
+
+    /** Verifies runCommand stops a process that outlives the timeout and returns null. */
+    @Test
+    fun runCommandStopsAStalledProcess() = runUnitTest {
+        if (isWindows()) return@runUnitTest
+        assertNull(actual = runCommand(command = listOf("sleep", "5"), timeout = 200.milliseconds))
+    }
+
+    /**
+     * Whether the tests run on Windows, where the POSIX commands used here are unavailable.
+     *
+     * @return `true` on Windows.
+     */
+    private fun isWindows(): Boolean = when (platform.os) {
+        OS.Windows -> true
+        OS.Android, OS.Ios, OS.Mac, OS.Linux, OS.Web, OS.Unknown -> false
     }
 }
