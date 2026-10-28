@@ -1,3 +1,5 @@
+@file:ExcludeFromTesting
+
 package com.app.builder.ui.media
 
 import androidx.compose.foundation.layout.Box
@@ -8,7 +10,6 @@ import com.app.builder.core.media.Camera
 import com.app.builder.test.ExcludeFromTesting
 import com.app.builder.ui.core.text.Text
 
-@ExcludeFromTesting
 @Composable
 actual fun CameraPreview(modifier: Modifier, camera: Camera) {
     // Live preview is not supported on desktop as there is no standard JVM API for rendering a webcam stream without native libraries.

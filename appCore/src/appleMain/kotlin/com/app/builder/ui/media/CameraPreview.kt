@@ -1,3 +1,5 @@
+@file:ExcludeFromTesting
+
 package com.app.builder.ui.media
 
 import platform.AVFoundation.AVCaptureVideoPreviewLayer
@@ -12,7 +14,6 @@ import com.app.builder.core.media.AppleCamera
 import com.app.builder.core.media.Camera
 import com.app.builder.test.ExcludeFromTesting
 
-@ExcludeFromTesting
 @Composable
 actual fun CameraPreview(modifier: Modifier, camera: Camera) {
     val appleCamera = camera as? AppleCamera ?: return
