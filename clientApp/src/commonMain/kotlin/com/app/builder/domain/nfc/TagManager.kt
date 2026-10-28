@@ -4,6 +4,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
@@ -29,9 +30,11 @@ import com.app.builder.domain.gateway.UseCases
  * Written entities always use the current (guest, if none is signed in) user's use cases, since a tag carries no user context of its own.
  *
  * @property appGraph dependency index.
+ * @property tags The tag reads to process.
  */
 class TagManager(
-    private val appGraph: Dependency.AppGraph
+    private val appGraph: Dependency.AppGraph,
+    private val tags: Flow<NfcTag> = TagProvider.tags,
 ): TagService {
 
     /** An isolated scope for the manager's coroutine operations. */
@@ -65,7 +68,7 @@ class TagManager(
      */
     private fun startJob() {
         if (job?.isActive != true) job = scope.launch(context = Dispatcher.IO) {
-            TagProvider.tags.collect { handleTag(tag = it) }
+            tags.collect { handleTag(tag = it) }
         }
     }
 
