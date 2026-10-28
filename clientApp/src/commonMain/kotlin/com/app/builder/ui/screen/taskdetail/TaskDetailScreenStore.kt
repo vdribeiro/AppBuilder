@@ -5,26 +5,21 @@ import kotlinx.coroutines.flow.firstOrNull
 import com.app.builder.core.locale.now
 import com.app.builder.core.security.toUuid
 import com.app.builder.core.telemetry.Telemetry
-import com.app.builder.domain.EntityType
-import com.app.builder.domain.Permission
-import com.app.builder.domain.gateway.authentication.AuthenticationUseCases
 import com.app.builder.domain.gateway.task.TaskUseCases
 import com.app.builder.ui.navigation.Router
 import com.app.builder.ui.store.Store
 
 /**
- * Store backing the Task Detail Screen, loading the task, observing the current user's write permission, and applying and saving edits.
+ * Store backing the Task Detail Screen, observing the task while viewing it, and applying, saving and discarding edits while editing it.
  *
  * @param state Initial Task Detail Screen state.
  * @property router The router used for navigation.
- * @property authenticationUseCases Use cases used to observe the current user.
- * @property taskUseCases Use cases used to load and save the task.
+ * @property taskUseCases Use cases used to observe and save the task.
  * @property taskUuid UUID of the task being displayed.
  */
 class TaskDetailScreenStore(
     state: TaskDetailScreenState,
     private val router: Router,
-    private val authenticationUseCases: AuthenticationUseCases,
     private val taskUseCases: TaskUseCases,
     private val taskUuid: String
 ): Store<TaskDetailScreenState, TaskDetailScreenAction>(initialState = state) {
@@ -33,25 +28,21 @@ class TaskDetailScreenStore(
     }
 
     /**
-     * Observes the current user's write permission and loads the task with [taskUuid].
+     * Observes the task with [taskUuid], ignoring its changes while it's being edited.
      *
      * @return The [Job] representing this execution.
      */
     private fun setup(): Job = launch(id = "setup") {
         Telemetry.info(tag = TAG, message = "Setup")
 
-        authenticationUseCases.observeCurrentUser().observe(id = "current_user") { user ->
-            val editable = user?.hasPermission(entityType = EntityType.TASK, permission = Permission.WRITE) ?: false
-            updateState { it.copy(editable = editable) }
-        }
-
         val uuid = taskUuid.toUuid() ?: run {
             Telemetry.info(tag = TAG, message = "Invalid task uuid")
             return@launch
         }
 
-        val task = taskUseCases.observeTask(uuid = uuid).firstOrNull()
-        updateState { it.copy(task = task) }
+        taskUseCases.observeTask(uuid = uuid).observe(id = "task") { task ->
+            updateState { if (it.editing) it else it.copy(task = task) }
+        }
 
         Telemetry.info(tag = TAG, message = "Setup complete")
     }
@@ -61,13 +52,15 @@ class TaskDetailScreenStore(
         when (action) {
             is TaskDetailScreenAction.ChangeTitle -> updateState { it.copy(task = it.task?.copy(title = action.title)) }
             is TaskDetailScreenAction.ChangeDescription -> updateState { it.copy(task = it.task?.copy(description = action.description)) }
+            TaskDetailScreenAction.Edit -> updateState { it.copy(editing = true) }
             TaskDetailScreenAction.Save -> save(state = state)
+            TaskDetailScreenAction.Cancel -> cancel(state = state)
             TaskDetailScreenAction.Delete -> delete(state = state)
         }
     }
 
     /**
-     * Saves the edited task and makes it the stored one.
+     * Saves the edited task and stops editing it.
      *
      * @param state Task Detail Screen state at the time the save was requested.
      * @return The [Job] representing this execution.
@@ -75,7 +68,18 @@ class TaskDetailScreenStore(
     private fun save(state: TaskDetailScreenState): Job = launch(id = "save") {
         val task = state.task?.copy(modifiedAt = now()) ?: return@launch
         taskUseCases.upsertTask(task = task)
-        updateState { it.copy(task = task) }
+        updateState { it.copy(task = task, editing = false) }
+    }
+
+    /**
+     * Discards the edits, reloads the stored task and stops editing it.
+     *
+     * @param state Task Detail Screen state at the time the cancel was requested.
+     * @return The [Job] representing this execution.
+     */
+    private fun cancel(state: TaskDetailScreenState): Job = launch(id = "cancel") {
+        val task = state.task?.let { taskUseCases.observeTask(uuid = it.uuid).firstOrNull() }
+        updateState { it.copy(task = task, editing = false) }
     }
 
     private fun delete(state: TaskDetailScreenState): Job = launch(id = "delete") {

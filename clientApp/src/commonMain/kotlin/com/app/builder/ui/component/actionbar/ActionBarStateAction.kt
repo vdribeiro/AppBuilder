@@ -12,8 +12,12 @@ sealed interface ActionBarAction {
     data object OpenUser: ActionBarAction
     /** Add a domain. */
     data object Add: ActionBarAction
-    /** Save the current domain. */
+    /** Start editing the current domain. */
+    data object Edit: ActionBarAction
+    /** Save the current domain and stop editing it. */
     data object Save: ActionBarAction
+    /** Discard the edits to the current domain and stop editing it. */
+    data object Cancel: ActionBarAction
     /** Delete the current domain. */
     data object Delete: ActionBarAction
     /** Opens the login screen. */
@@ -58,8 +62,12 @@ sealed interface ActionBarAction {
  * @property avatarImage The image resource.
  * @property synced Whether no background job is pending or running, or `null` when the status isn't followed.
  * @property clockTrusted Whether the device clock can be trusted.
+ * @property writable Whether the current user has write permission on the entity.
+ * @property editing Whether the current domain is being edited.
  * @property showAdd Whether the add button should be shown.
+ * @property showEdit Whether the edit button should be shown.
  * @property showSave Whether the save button should be shown.
+ * @property showCancel Whether the cancel button should be shown.
  * @property showDelete Whether the delete button should be shown.
  * @property showLogin Whether the login button should be shown.
  * @property searchableProperties Property keys currently included when searching.
@@ -73,8 +81,12 @@ data class ActionBarState(
     val avatarImage: Image? = null,
     val synced: Boolean? = null,
     val clockTrusted: Boolean = true,
+    val writable: Boolean = false,
+    val editing: Boolean = false,
     val showAdd: Boolean = false,
+    val showEdit: Boolean = false,
     val showSave: Boolean = false,
+    val showCancel: Boolean = false,
     val showDelete: Boolean = false,
     val showLogin: Boolean = false,
     val searchableProperties: ImmutableList<String> = persistentListOf(),

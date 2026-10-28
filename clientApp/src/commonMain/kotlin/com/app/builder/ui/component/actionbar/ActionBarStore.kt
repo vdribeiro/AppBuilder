@@ -18,7 +18,7 @@ import com.app.builder.ui.navigation.Screen
 import com.app.builder.ui.store.Store
 
 /**
- * Store backing an action bar, resolving the current user's avatar and write permission, following the application status and persisting its mode, sorting and property filters.
+ * Store backing an action bar, resolving the current user's avatar and write permission, switching between viewing and editing, following the application status and persisting its mode, sorting and property filters.
  *
  * @param state Initial action bar state.
  * @property router The router used for navigation.
@@ -28,7 +28,9 @@ import com.app.builder.ui.store.Store
  * @property defaults Action bar data used when [storageFile] holds nothing yet.
  * @property entityType Entity the write permission is checked against, or `null` when the screen has no entity.
  * @property onAddClick Called when the add button is clicked.
+ * @property onEditClick Called when the edit button is clicked.
  * @property onSaveClick Called when the save button is clicked.
+ * @property onCancelClick Called when the cancel button is clicked, or when the write permission is lost while editing.
  * @property onDeleteClick Called when the delete button is clicked.
  */
 class ActionBarStore(
@@ -40,7 +42,9 @@ class ActionBarStore(
     private val defaults: AppFile.ActionBarData = AppFile.ActionBarData(),
     private val entityType: EntityType? = null,
     private val onAddClick: (suspend () -> Unit)? = null,
+    private val onEditClick: (suspend () -> Unit)? = null,
     private val onSaveClick: (suspend () -> Unit)? = null,
+    private val onCancelClick: (suspend () -> Unit)? = null,
     private val onDeleteClick: (suspend () -> Unit)? = null,
 ): Store<ActionBarState, ActionBarAction>(initialState = state) {
     init {
@@ -52,7 +56,9 @@ class ActionBarStore(
         when (action) {
             ActionBarAction.OpenUser -> router.navigate(screen = Screen.UserProfile)
             ActionBarAction.Add -> add()
+            ActionBarAction.Edit -> edit()
             ActionBarAction.Save -> save()
+            ActionBarAction.Cancel -> cancel()
             ActionBarAction.Delete -> delete()
             ActionBarAction.Login -> router.navigate(screen = Screen.Login)
             is ActionBarAction.Search -> search(action = action)
@@ -93,17 +99,16 @@ class ActionBarStore(
                 else -> user.avatar?.let { avatar -> Image(url = avatar) }
             }
             val write = entityType?.let { user?.hasPermission(entityType = it, permission = Permission.WRITE) } ?: false
+            val editingLost = state.editing && !write
 
             updateState {
                 it.copy(
                     avatarName = user?.name,
                     avatarImage = userImage,
-                    showAdd = onAddClick != null && write,
-                    showSave = onSaveClick != null && write,
-                    showDelete = onDeleteClick != null && write,
                     showLogin = user == null,
-                )
+                ).withButtons(writable = write, editing = it.editing && write)
             }
+            if (editingLost) onCancelClick?.invoke()
         }
 
         statusUseCases?.observeSynced()?.observe(id = "synced") { synced ->
@@ -131,6 +136,24 @@ class ActionBarStore(
     }
 
     /**
+     * Resolves which buttons are shown for the given write permission and mode.
+     * Editing shows only save and cancel, viewing shows add, edit and delete.
+     *
+     * @param writable Whether the current user has write permission on the entity.
+     * @param editing Whether the current domain is being edited.
+     * @return This state with the permission, the mode and the buttons updated.
+     */
+    private fun ActionBarState.withButtons(writable: Boolean = this.writable, editing: Boolean = this.editing): ActionBarState = copy(
+        writable = writable,
+        editing = editing,
+        showAdd = onAddClick != null && writable && !editing,
+        showEdit = onEditClick != null && writable && !editing,
+        showSave = onSaveClick != null && writable && editing,
+        showCancel = onCancelClick != null && writable && editing,
+        showDelete = onDeleteClick != null && writable && !editing,
+    )
+
+    /**
      * Call add callback.
      *
      * @return The [Job] representing this execution.
@@ -140,12 +163,33 @@ class ActionBarStore(
     }
 
     /**
-     * Call save callback.
+     * Switches to editing and calls the edit callback.
+     *
+     * @return The [Job] representing this execution.
+     */
+    private fun edit(): Job = launch(id = "edit") {
+        updateState { it.withButtons(editing = true) }
+        onEditClick?.invoke()
+    }
+
+    /**
+     * Calls the save callback and switches back to viewing.
      *
      * @return The [Job] representing this execution.
      */
     private fun save(): Job = launch(id = "save") {
         onSaveClick?.invoke()
+        updateState { it.withButtons(editing = false) }
+    }
+
+    /**
+     * Switches back to viewing and calls the cancel callback.
+     *
+     * @return The [Job] representing this execution.
+     */
+    private fun cancel(): Job = launch(id = "cancel") {
+        updateState { it.withButtons(editing = false) }
+        onCancelClick?.invoke()
     }
 
     /**

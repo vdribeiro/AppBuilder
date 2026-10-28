@@ -24,6 +24,7 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Cloud
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.FilterList
@@ -69,7 +70,9 @@ import com.app.builder.ui.core.text.Text
  * @param synced Shows a cloud status icon after the avatar when not null, in the primary color when `true` and in the error color when `false`.
  * @param clockTrusted Shows a clock status icon in the error color after the avatar when `false`.
  * @param onAddClick Shows an add button when not null and executes this callback when clicked.
+ * @param onEditClick Shows an edit button when not null and executes this callback when clicked.
  * @param onSaveClick Shows a save button when not null and executes this callback when clicked.
+ * @param onCancelClick Shows a cancel button when not null and executes this callback when clicked.
  * @param onDeleteClick Shows a delete button when not null and executes this callback when clicked.
  * @param onLoginClick Shows a login button when not null and executes this callback when clicked.
  * @param onSearch Shows a search button when not null and is called with the debounced search query as the user types in search mode.
@@ -94,7 +97,9 @@ fun TopActionBar(
     synced: Boolean? = null,
     clockTrusted: Boolean = true,
     onAddClick: (() -> Unit)? = null,
+    onEditClick: (() -> Unit)? = null,
     onSaveClick: (() -> Unit)? = null,
+    onCancelClick: (() -> Unit)? = null,
     onDeleteClick: (() -> Unit)? = null,
     onLoginClick: (() -> Unit)? = null,
     onSearch: ((String) -> Unit)? = null,
@@ -219,10 +224,22 @@ fun TopActionBar(
                 content = { Icon(imageVector = Icons.Default.Add) }
             )
 
+            if (onEditClick != null) Button(
+                modifier = Modifier.testTag(tag = "action_edit"),
+                onClick = { onEditClick() },
+                content = { Icon(imageVector = Icons.Default.Edit) }
+            )
+
             if (onSaveClick != null) Button(
                 modifier = Modifier.testTag(tag = "action_save"),
                 onClick = { onSaveClick() },
                 content = { Icon(imageVector = Icons.Default.Save) }
+            )
+
+            if (onCancelClick != null) Button(
+                modifier = Modifier.testTag(tag = "action_cancel"),
+                onClick = { onCancelClick() },
+                content = { Icon(imageVector = Icons.Default.Close) }
             )
 
             if (onDeleteClick != null) Button(
@@ -330,19 +347,30 @@ private fun TopActionBarPreview() = Preview {
 
 @Preview
 @Composable
-private fun TopActionBarAllPreview() = Preview {
+private fun TopActionBarBackLoginPreview() = Preview {
+    TopActionBar(
+        title = "All",
+        onBackClick = {},
+        avatarName = "V R",
+        onLoginClick = {},
+    )
+}
+
+@Preview
+@Composable
+private fun TopActionBarWritePreview() = Preview {
     TopActionBar(
         title = "All",
         properties = persistentMapOf(
             "name" to "Name",
             "type" to "Type",
         ),
-        onBackClick = {},
         avatarName = "V R",
+        synced = true,
+        clockTrusted = false,
         onAddClick = {},
-        onSaveClick = {},
+        onEditClick = {},
         onDeleteClick = {},
-        onLoginClick = {},
         onSearch = {},
         onSearchablePropertiesChange = {},
         onSortAscendingClick = {},
@@ -354,7 +382,7 @@ private fun TopActionBarAllPreview() = Preview {
 
 @Preview
 @Composable
-private fun TopActionBarStatusPreview() = Preview {
+private fun TopActionBarEditPreview() = Preview {
     TopActionBar(
         properties = persistentMapOf(
             "name" to "Name",
@@ -363,9 +391,8 @@ private fun TopActionBarStatusPreview() = Preview {
         avatarName = "V R",
         synced = true,
         clockTrusted = false,
-        onAddClick = {},
         onSaveClick = {},
-        onDeleteClick = {},
+        onCancelClick = {},
         onSearch = {},
         onSearchablePropertiesChange = {},
         onSortAscendingClick = {},

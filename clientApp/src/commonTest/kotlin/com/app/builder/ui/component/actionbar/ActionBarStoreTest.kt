@@ -66,14 +66,16 @@ class ActionBarStoreTest: TestCase() {
             authenticationUseCases = authenticationUseCases,
             entityType = EntityType.TASK,
             onAddClick = {},
+            onEditClick = {},
             onSaveClick = {},
+            onCancelClick = {},
             onDeleteClick = {},
         )
         subscribe(store = store)
-        return store.stateFlow.first { !it.showLogin }
+        return store.stateFlow.first { it.avatarName != null }
     }
 
-    /** Verifies that a logged out user is offered the login button and none of add, save or delete, even with every callback set. */
+    /** Verifies that a logged out user is offered the login button and none of the entity buttons, even with every callback set. */
     @Test
     fun loggedOut() = runUnitTest {
         val store = ActionBarStore(
@@ -82,42 +84,53 @@ class ActionBarStoreTest: TestCase() {
             authenticationUseCases = authenticationUseCases(),
             entityType = EntityType.TASK,
             onAddClick = {},
+            onEditClick = {},
             onSaveClick = {},
+            onCancelClick = {},
             onDeleteClick = {},
         )
         subscribe(store = store)
 
         val state = store.stateFlow.first { it.showLogin }
         assertFalse(actual = state.showAdd)
+        assertFalse(actual = state.showEdit)
         assertFalse(actual = state.showSave)
+        assertFalse(actual = state.showCancel)
         assertFalse(actual = state.showDelete)
         assertNull(actual = state.avatarName)
     }
 
-    /** Verifies that a user with write permission on the entity is offered add, save and delete, and no login button. */
+    /** Verifies that a user with write permission on the entity views it with add, edit and delete, and no login button. */
     @Test
     fun writePermission() = runUnitTest {
         val state = loggedInState(credentials = FakeData.adminCredentials)
 
         assertEquals(expected = FakeData.adminUser.name, actual = state.avatarName)
+        assertTrue(actual = state.writable)
+        assertFalse(actual = state.editing)
         assertTrue(actual = state.showAdd)
-        assertTrue(actual = state.showSave)
+        assertTrue(actual = state.showEdit)
+        assertFalse(actual = state.showSave)
+        assertFalse(actual = state.showCancel)
         assertTrue(actual = state.showDelete)
         assertFalse(actual = state.showLogin)
     }
 
-    /** Verifies that a user with only read permission on the entity is offered none of add, save or delete. */
+    /** Verifies that a user with only read permission on the entity is offered none of the entity buttons. */
     @Test
     fun readPermission() = runUnitTest {
         val state = loggedInState(credentials = FakeData.credentials)
 
         assertEquals(expected = FakeData.user.name, actual = state.avatarName)
+        assertFalse(actual = state.writable)
         assertFalse(actual = state.showAdd)
+        assertFalse(actual = state.showEdit)
         assertFalse(actual = state.showSave)
+        assertFalse(actual = state.showCancel)
         assertFalse(actual = state.showDelete)
     }
 
-    /** Verifies that add, save and delete stay hidden when their callbacks are missing, or when the store has no entity to check permissions against. */
+    /** Verifies that the entity buttons stay hidden when their callbacks are missing, or when the store has no entity to check permissions against. */
     @Test
     fun missingCallbacksOrEntity() = runUnitTest {
         val authenticationUseCases = authenticationUseCases()
@@ -132,6 +145,7 @@ class ActionBarStoreTest: TestCase() {
         subscribe(store = withoutCallbacks)
         val withoutCallbacksState = withoutCallbacks.stateFlow.first { !it.showLogin }
         assertFalse(actual = withoutCallbacksState.showAdd)
+        assertFalse(actual = withoutCallbacksState.showEdit)
         assertFalse(actual = withoutCallbacksState.showSave)
         assertFalse(actual = withoutCallbacksState.showDelete)
 
@@ -140,48 +154,123 @@ class ActionBarStoreTest: TestCase() {
             router = router,
             authenticationUseCases = authenticationUseCases,
             onAddClick = {},
+            onEditClick = {},
             onSaveClick = {},
+            onCancelClick = {},
             onDeleteClick = {},
         )
         subscribe(store = withoutEntity)
         val withoutEntityState = withoutEntity.stateFlow.first { !it.showLogin }
         assertFalse(actual = withoutEntityState.showAdd)
+        assertFalse(actual = withoutEntityState.showEdit)
         assertFalse(actual = withoutEntityState.showSave)
         assertFalse(actual = withoutEntityState.showDelete)
     }
 
-    /** Verifies that the add, save and delete actions invoke their callbacks. */
+    /** Verifies that the add and delete actions invoke their callbacks. */
     @Test
-    fun addSaveAndDelete() = runUnitTest {
+    fun addAndDelete() = runUnitTest {
         var added = 0
-        var saved = 0
         var deleted = 0
         val store = ActionBarStore(
             state = ActionBarState(),
             router = router,
             authenticationUseCases = authenticationUseCases(),
             onAddClick = { added++ },
-            onSaveClick = { saved++ },
             onDeleteClick = { deleted++ },
         )
 
         store.send(action = ActionBarAction.Add)
         testScheduler.advanceUntilIdle()
         assertEquals(expected = 1, actual = added)
-        assertEquals(expected = 0, actual = saved)
-        assertEquals(expected = 0, actual = deleted)
-
-        store.send(action = ActionBarAction.Save)
-        testScheduler.advanceUntilIdle()
-        assertEquals(expected = 1, actual = added)
-        assertEquals(expected = 1, actual = saved)
         assertEquals(expected = 0, actual = deleted)
 
         store.send(action = ActionBarAction.Delete)
         testScheduler.advanceUntilIdle()
         assertEquals(expected = 1, actual = added)
-        assertEquals(expected = 1, actual = saved)
         assertEquals(expected = 1, actual = deleted)
+    }
+
+    /** Verifies that edit switches to save and cancel, and that save and cancel switch back to add, edit and delete, invoking their callbacks. */
+    @Test
+    fun editSaveAndCancel() = runUnitTest {
+        val authenticationUseCases = authenticationUseCases()
+        authenticationUseCases.login(credentials = FakeData.adminCredentials)
+        var edited = 0
+        var saved = 0
+        var canceled = 0
+        val store = ActionBarStore(
+            state = ActionBarState(),
+            router = router,
+            authenticationUseCases = authenticationUseCases,
+            entityType = EntityType.TASK,
+            onAddClick = {},
+            onEditClick = { edited++ },
+            onSaveClick = { saved++ },
+            onCancelClick = { canceled++ },
+            onDeleteClick = {},
+        )
+        subscribe(store = store)
+        store.stateFlow.first { it.showEdit }
+
+        store.send(action = ActionBarAction.Edit)
+        val editing = store.stateFlow.first { it.editing }
+        assertEquals(expected = 1, actual = edited)
+        assertFalse(actual = editing.showAdd)
+        assertFalse(actual = editing.showEdit)
+        assertTrue(actual = editing.showSave)
+        assertTrue(actual = editing.showCancel)
+        assertFalse(actual = editing.showDelete)
+
+        store.send(action = ActionBarAction.Save)
+        val saving = store.stateFlow.first { !it.editing }
+        assertEquals(expected = 1, actual = saved)
+        assertTrue(actual = saving.showAdd)
+        assertTrue(actual = saving.showEdit)
+        assertFalse(actual = saving.showSave)
+        assertFalse(actual = saving.showCancel)
+        assertTrue(actual = saving.showDelete)
+
+        store.send(action = ActionBarAction.Edit)
+        store.stateFlow.first { it.editing }
+        store.send(action = ActionBarAction.Cancel)
+        val canceling = store.stateFlow.first { !it.editing }
+        testScheduler.advanceUntilIdle()
+        assertEquals(expected = 2, actual = edited)
+        assertEquals(expected = 1, actual = canceled)
+        assertTrue(actual = canceling.showEdit)
+        assertFalse(actual = canceling.showCancel)
+    }
+
+    /** Verifies that losing the write permission while editing switches back to viewing and invokes the cancel callback. */
+    @Test
+    fun permissionLostWhileEditing() = runUnitTest {
+        val authenticationUseCases = authenticationUseCases()
+        authenticationUseCases.login(credentials = FakeData.adminCredentials)
+        var canceled = 0
+        val store = ActionBarStore(
+            state = ActionBarState(),
+            router = router,
+            authenticationUseCases = authenticationUseCases,
+            entityType = EntityType.TASK,
+            onEditClick = {},
+            onSaveClick = {},
+            onCancelClick = { canceled++ },
+        )
+        subscribe(store = store)
+        store.stateFlow.first { it.showEdit }
+        store.send(action = ActionBarAction.Edit)
+        store.stateFlow.first { it.editing }
+
+        authenticationUseCases.login(credentials = FakeData.credentials)
+        val state = store.stateFlow.first { it.avatarName == FakeData.user.name }
+        testScheduler.advanceUntilIdle()
+
+        assertFalse(actual = state.editing)
+        assertFalse(actual = state.writable)
+        assertFalse(actual = state.showSave)
+        assertFalse(actual = state.showCancel)
+        assertEquals(expected = 1, actual = canceled)
     }
 
     /** Verifies that the status flags follow the status use cases, and stay at their defaults without them. */

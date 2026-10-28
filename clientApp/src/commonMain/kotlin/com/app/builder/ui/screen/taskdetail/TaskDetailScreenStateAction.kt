@@ -16,8 +16,12 @@ sealed interface TaskDetailScreenAction {
      * @param description The new description value.
      */
     data class ChangeDescription(val description: String): TaskDetailScreenAction
-    /** Save the current task with the edited title and description. */
+    /** Start editing the current task. */
+    data object Edit: TaskDetailScreenAction
+    /** Save the edited task and stop editing it. */
     data object Save: TaskDetailScreenAction
+    /** Discard the edits, reload the stored task and stop editing it. */
+    data object Cancel: TaskDetailScreenAction
     /** Delete the current task. */
     data object Delete: TaskDetailScreenAction
 }
@@ -26,9 +30,9 @@ sealed interface TaskDetailScreenAction {
  * State of the Task Detail Screen.
  *
  * @property task Task being viewed or edited, or `null` while it's still loading.
- * @property editable Whether the current user has write permission on tasks.
+ * @property editing Whether the task is being edited, which stops it from following the stored task.
  */
 data class TaskDetailScreenState(
     val task: Task? = null,
-    val editable: Boolean = false,
+    val editing: Boolean = false,
 )

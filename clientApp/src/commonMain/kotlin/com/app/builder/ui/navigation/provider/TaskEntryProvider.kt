@@ -42,7 +42,9 @@ fun EntryProviderScope<NavKey>.taskProvider(useCases: UseCases) {
                     router = router,
                     useCases = useCases,
                     showAdd = true,
+                    onEditClick = null,
                     onSaveClick = null,
+                    onCancelClick = null,
                     onDeleteClick = null
                 )
             },
@@ -53,14 +55,16 @@ fun EntryProviderScope<NavKey>.taskProvider(useCases: UseCases) {
     entry<Screen.TaskDetail>(metadata = split()) {
         val router = LocalRouter.current
         val splitScreen = LocalSplitScreen.current
-        val store = viewModel { TaskDetailScreenStore(state = TaskDetailScreenState(), router = router, authenticationUseCases = useCases.authenticationUseCases, taskUseCases = useCases.taskUseCases, taskUuid = it.uuid) }
+        val store = viewModel { TaskDetailScreenStore(state = TaskDetailScreenState(), router = router, taskUseCases = useCases.taskUseCases, taskUuid = it.uuid) }
         TaskDetailScreen(
             actionBarStore = viewModel {
                 getActionBarStore(
                     router = router,
                     useCases = useCases,
                     showAdd = splitScreen,
+                    onEditClick = { store.send(action = TaskDetailScreenAction.Edit) },
                     onSaveClick = { store.send(action = TaskDetailScreenAction.Save) },
+                    onCancelClick = { store.send(action = TaskDetailScreenAction.Cancel) },
                     onDeleteClick = { store.send(action = TaskDetailScreenAction.Delete) }
                 )
             },
@@ -97,7 +101,9 @@ private val actionBarState = ActionBarState(
  * @param router The router.
  * @param useCases The use cases.
  * @param showAdd true to show add button, false otherwise.
+ * @param onEditClick The edit click callback, or null to hide the edit action.
  * @param onSaveClick The save click callback, or null to hide the save action.
+ * @param onCancelClick The cancel click callback, or null to hide the cancel action.
  * @param onDeleteClick The delete click callback, or null to hide the delete action.
  * @return The action bar store.
  */
@@ -105,7 +111,9 @@ private fun getActionBarStore(
     router: Router,
     useCases: UseCases,
     showAdd: Boolean,
+    onEditClick: (suspend () -> Unit)?,
     onSaveClick: (suspend () -> Unit)?,
+    onCancelClick: (suspend () -> Unit)?,
     onDeleteClick: (suspend () -> Unit)?
 ): ActionBarStore = ActionBarStore(
     state = actionBarState,
@@ -122,6 +130,8 @@ private fun getActionBarStore(
             router.navigate(screen = Screen.TaskDetail(uuid = task.uuid.toString()), option = Router.NavOption.REPLACE_LAST)
         }
     } else null,
+    onEditClick = onEditClick,
     onSaveClick = onSaveClick,
+    onCancelClick = onCancelClick,
     onDeleteClick = onDeleteClick
 )
