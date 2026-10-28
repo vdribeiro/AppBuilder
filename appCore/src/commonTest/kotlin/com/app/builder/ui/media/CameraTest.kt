@@ -16,4 +16,10 @@ class CameraTest: TestCase() {
 
         assertNotNull(actual = camera)
     }
+
+    /** Verifies that [CameraPreview] renders without failing when given a camera that is not the platform's own. */
+    @Test
+    fun cameraPreviewRendersForANonPlatformCamera() = runUITest {
+        setUI { CameraPreview(camera = Camera()) }
+    }
 }
