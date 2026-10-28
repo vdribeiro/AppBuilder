@@ -2,11 +2,11 @@ package com.app.builder.data.database
 
 import kotlin.test.Test
 import kotlin.test.assertFailsWith
+import com.app.builder.test.TestCase
 import io.r2dbc.spi.Connection
 import io.r2dbc.spi.ConnectionFactory
 import io.r2dbc.spi.ConnectionFactoryMetadata
 import org.reactivestreams.Publisher
-import com.app.builder.test.TestCase
 
 class DatabaseFactoryTest: TestCase() {
 

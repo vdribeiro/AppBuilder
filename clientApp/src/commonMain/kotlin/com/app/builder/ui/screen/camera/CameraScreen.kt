@@ -14,7 +14,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.app.builder.core.media.Camera
@@ -39,6 +39,7 @@ import com.app.builder.ui.permission.LocalPermissionManager
 import com.app.builder.ui.permission.Permission
 import com.app.builder.ui.screen.Screen
 import com.app.builder.ui.store.Store
+import com.app.builder.ui.store.previewStore
 
 /**
  * The Camera Screen.
@@ -149,11 +150,11 @@ fun CameraScreen(
     }
 }
 
-@Preview
+@PreviewLightDark
 @Composable
 private fun CameraScreenPreview() = Preview {
     CameraScreen(
-        actionBarStore = Store(initialState = ActionBarState(avatarName = "Camera")),
-        navigationStore = Store(initialState = NavigationState()),
+        actionBarStore = previewStore(initialState = ActionBarState(avatarName = "Camera")),
+        navigationStore = previewStore(initialState = NavigationState()),
     )
 }

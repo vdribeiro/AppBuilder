@@ -25,7 +25,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.app.builder.core.nfc.NfcController
@@ -59,6 +59,7 @@ import com.app.builder.ui.navigation.Router
 import com.app.builder.ui.navigation.Screen
 import com.app.builder.ui.screen.Screen
 import com.app.builder.ui.store.Store
+import com.app.builder.ui.store.previewStore
 import com.app.builder.ui.core.list.LazyColumn as ListLazyColumn
 
 /**
@@ -255,11 +256,11 @@ fun NfcScreen(
 /** The kind of [NfcRecord] to write. */
 private enum class NfcRecordKind { OPEN, UPSERT }
 
-@Preview
+@PreviewLightDark
 @Composable
 private fun NfcScreenPreview() = Preview {
     NfcScreen(
-        actionBarStore = Store(initialState = ActionBarState(avatarName = "NFC")),
-        navigationStore = Store(initialState = NavigationState()),
+        actionBarStore = previewStore(initialState = ActionBarState(avatarName = "NFC")),
+        navigationStore = previewStore(initialState = NavigationState()),
     )
 }

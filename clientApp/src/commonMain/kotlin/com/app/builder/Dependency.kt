@@ -7,7 +7,6 @@ import io.ktor.client.HttpClient
 import io.ktor.client.engine.HttpClientEngine
 import app.cash.sqldelight.async.coroutines.awaitAsOneOrNull
 import app.cash.sqldelight.db.SqlDriver
-import com.app.builder.Dependency.getUserDependency
 import com.app.builder.core.locale.now
 import com.app.builder.data.database.DatabaseFactory
 import com.app.builder.data.http.Configurations

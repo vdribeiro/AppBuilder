@@ -34,8 +34,8 @@ import com.app.builder.data.signal.LocalSignal
 import com.app.builder.data.signal.PostgresSignal
 import com.app.builder.domain.EntityType
 import com.app.builder.domain.Permission
-import com.app.builder.domain.User
 import com.app.builder.domain.RegistrationForm
+import com.app.builder.domain.User
 import com.app.builder.domain.UserCredentials
 import com.app.builder.domain.push.FcmManager
 import com.app.builder.domain.push.NoOpFcmService

@@ -25,8 +25,8 @@ import com.app.builder.domain.route.getQueryMap
 import com.app.builder.domain.route.getUserUuid
 import com.app.builder.domain.route.receive
 import com.app.builder.domain.route.respondSafely
-import com.app.builder.domain.route.validateActive
 import com.app.builder.domain.route.toRegistry
+import com.app.builder.domain.route.validateActive
 import com.app.builder.domain.route.validatePermission
 import com.app.builder.domain.usecase.devicetoken.DeviceTokenUseCases
 import com.app.builder.domain.usecase.registry.RegistryUseCases

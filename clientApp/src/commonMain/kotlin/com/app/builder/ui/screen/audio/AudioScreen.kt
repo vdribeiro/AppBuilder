@@ -11,7 +11,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.app.builder.core.config.ClientFlags
@@ -38,6 +38,7 @@ import com.app.builder.ui.navigation.Router
 import com.app.builder.ui.navigation.Screen
 import com.app.builder.ui.screen.Screen
 import com.app.builder.ui.store.Store
+import com.app.builder.ui.store.previewStore
 
 /**
  * The Audio Screen.
@@ -155,11 +156,11 @@ fun AudioScreen(
     }
 }
 
-@Preview
+@PreviewLightDark
 @Composable
 private fun AudioScreenPreview() = Preview {
     AudioScreen(
-        actionBarStore = Store(initialState = ActionBarState(avatarName = "Audio")),
-        navigationStore = Store(initialState = NavigationState()),
+        actionBarStore = previewStore(initialState = ActionBarState(avatarName = "Audio")),
+        navigationStore = previewStore(initialState = NavigationState()),
     )
 }

@@ -30,7 +30,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import com.app.builder.ui.LocalTypography
 import com.app.builder.ui.Preview
@@ -131,7 +131,7 @@ fun Button(
 
 // TODO - SplitButton
 
-@Preview
+@PreviewLightDark
 @Composable
 private fun ButtonPreview() = Preview {
     Row(horizontalArrangement = Arrangement.spacedBy(space = 24.dp)) {
@@ -179,7 +179,7 @@ private fun ButtonPreview() = Preview {
     }
 }
 
-@Preview
+@PreviewLightDark
 @Composable
 private fun IconButtonPreview() = Preview {
     Row(horizontalArrangement = Arrangement.spacedBy(space = 24.dp)) {
@@ -208,7 +208,7 @@ private fun IconButtonPreview() = Preview {
     }
 }
 
-@Preview
+@PreviewLightDark
 @Composable
 private fun ToggleButtonPreview() = Preview {
     Row(horizontalArrangement = Arrangement.spacedBy(space = 24.dp)) {

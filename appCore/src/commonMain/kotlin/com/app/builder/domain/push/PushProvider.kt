@@ -14,7 +14,6 @@ import com.app.builder.core.telemetry.Telemetry
 import com.app.builder.domain.PushPayload
 import com.app.builder.domain.deeplink.DeepLink
 import com.app.builder.domain.push.PushProvider.handledPayloads
-import com.app.builder.domain.push.PushProvider.pushPayloads
 
 /** Provider to manage push payloads. */
 object PushProvider {

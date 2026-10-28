@@ -1,10 +1,10 @@
 package com.app.builder.data.storage
 
 import java.io.File
+import kotlinx.coroutines.withContext
 import android.content.Intent
 import android.webkit.MimeTypeMap
 import androidx.core.content.FileProvider
-import kotlinx.coroutines.withContext
 import com.app.builder.applicationContext
 import com.app.builder.core.flow.Dispatcher
 import com.app.builder.core.platform.appCachePath
@@ -33,7 +33,7 @@ actual suspend fun loadFile(path: String): String? = withContext(context = Dispa
 actual suspend fun deleteFile(path: String): Boolean = withContext(context = Dispatcher.IO) {
     runCatching {
         val file = File(appDataPath, path)
-        if (file.exists()) file.delete() else true
+        !file.exists() || file.delete()
     }.onFailure {
         Telemetry.error(tag = TAG, message = "Unable to delete file $path", throwable = it)
     }.getOrDefault(defaultValue = false)

@@ -2,7 +2,7 @@ package com.app.builder.ui.screen.taskdetail
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.app.builder.core.locale.now
 import com.app.builder.core.security.uuid
@@ -16,10 +16,9 @@ import com.app.builder.ui.component.card.TaskCard
 import com.app.builder.ui.component.navigation.Navigation
 import com.app.builder.ui.component.navigation.NavigationState
 import com.app.builder.ui.navigation.LocalRouter
-import com.app.builder.ui.navigation.Router
-import com.app.builder.ui.navigation.Screen
 import com.app.builder.ui.screen.Screen
 import com.app.builder.ui.store.Store
+import com.app.builder.ui.store.previewStore
 
 /**
  * The user-facing Task Detail Screen, showing a single task.
@@ -56,7 +55,7 @@ fun TaskDetailScreen(
     }
 }
 
-@Preview
+@PreviewLightDark
 @Composable
 private fun TaskDetailScreenPreview() = Preview {
     InjectTranslations(
@@ -73,9 +72,9 @@ private fun TaskDetailScreenPreview() = Preview {
         state = Task.State.TODO
     )
     TaskDetailScreen(
-        actionBarStore = Store(initialState = ActionBarState(avatarName = "Task")),
-        navigationStore = Store(initialState = NavigationState()),
-        store = Store(
+        actionBarStore = previewStore(initialState = ActionBarState(avatarName = "Task")),
+        navigationStore = previewStore(initialState = NavigationState()),
+        store = previewStore(
             initialState = TaskDetailScreenState(
                 task = task
             )

@@ -5,11 +5,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.app.builder.ui.Preview
 import com.app.builder.ui.component.bar.TopActionBar
 import com.app.builder.ui.store.Store
+import com.app.builder.ui.store.previewStore
 
 /**
  * Renders a [TopActionBar] driven by [store], forwarding every user interaction back to it as an [ActionBarAction].
@@ -59,11 +60,11 @@ fun ActionBar(store: Store<ActionBarState, ActionBarAction>) {
     )
 }
 
-@Preview
+@PreviewLightDark
 @Composable
 private fun ActionBarPreview() = Preview {
     ActionBar(
-        store = Store(
+        store = previewStore(
             initialState = ActionBarState(),
         )
     )

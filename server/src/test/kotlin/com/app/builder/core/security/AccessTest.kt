@@ -15,8 +15,8 @@ import com.app.builder.core.locale.now
 import com.app.builder.core.platform.Env
 import com.app.builder.domain.EntityType
 import com.app.builder.domain.Permission
-import com.app.builder.domain.permission.createAccessToken
 import com.app.builder.domain.permission.UserAccess
+import com.app.builder.domain.permission.createAccessToken
 import com.app.builder.domain.permission.getAccess
 import com.app.builder.test.FakeData
 import com.app.builder.test.TestCase

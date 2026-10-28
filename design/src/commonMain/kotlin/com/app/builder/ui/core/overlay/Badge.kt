@@ -7,7 +7,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Apps
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import com.app.builder.ui.LocalTypography
 import com.app.builder.ui.Preview
@@ -63,7 +63,7 @@ fun BadgedBox(
     )
 }
 
-@Preview
+@PreviewLightDark
 @Composable
 private fun BadgePreview() = Preview {
     Column(verticalArrangement = Arrangement.spacedBy(space = 8.dp)) {

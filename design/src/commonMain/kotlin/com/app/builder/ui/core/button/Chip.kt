@@ -18,7 +18,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import com.app.builder.ui.LocalTypography
 import com.app.builder.ui.Preview
@@ -109,7 +109,7 @@ fun Chip(
     }
 }
 
-@Preview
+@PreviewLightDark
 @Composable
 private fun AssistChipPreview() = Preview {
     var count by remember { mutableIntStateOf(value = 0) }
@@ -123,7 +123,7 @@ private fun AssistChipPreview() = Preview {
     }
 }
 
-@Preview
+@PreviewLightDark
 @Composable
 private fun FilterChipPreview() = Preview {
     val labels = listOf("Small", "Medium", "Large")
@@ -145,7 +145,7 @@ private fun FilterChipPreview() = Preview {
     }
 }
 
-@Preview
+@PreviewLightDark
 @Composable
 private fun InputChipPreview() = Preview {
     val defaults = listOf("Design", "Kotlin", "Compose")
@@ -168,7 +168,7 @@ private fun InputChipPreview() = Preview {
     }
 }
 
-@Preview
+@PreviewLightDark
 @Composable
 private fun SuggestionChipPreview() = Preview {
     Row(horizontalArrangement = Arrangement.spacedBy(space = 12.dp)) {

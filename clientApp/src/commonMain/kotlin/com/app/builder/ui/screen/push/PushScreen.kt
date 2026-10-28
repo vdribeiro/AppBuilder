@@ -2,7 +2,7 @@ package com.app.builder.ui.screen.push
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.app.builder.ui.Preview
 import com.app.builder.ui.component.actionbar.ActionBar
@@ -17,6 +17,7 @@ import com.app.builder.ui.navigation.Router
 import com.app.builder.ui.navigation.Screen
 import com.app.builder.ui.screen.Screen
 import com.app.builder.ui.store.Store
+import com.app.builder.ui.store.previewStore
 
 /**
  * Renders a form for composing and sending a push payload:
@@ -61,12 +62,12 @@ fun PushScreen(
     }
 }
 
-@Preview
+@PreviewLightDark
 @Composable
 private fun PushScreenPreview() = Preview {
     PushScreen(
-        actionBarStore = Store(initialState = ActionBarState(avatarName = "Tails")),
-        navigationStore = Store(initialState = NavigationState()),
-        store = Store(initialState = PushScreenState()),
+        actionBarStore = previewStore(initialState = ActionBarState(avatarName = "Tails")),
+        navigationStore = previewStore(initialState = NavigationState()),
+        store = previewStore(initialState = PushScreenState()),
     )
 }

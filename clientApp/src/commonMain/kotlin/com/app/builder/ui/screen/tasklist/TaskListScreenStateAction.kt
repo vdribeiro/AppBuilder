@@ -1,6 +1,5 @@
 package com.app.builder.ui.screen.tasklist
 
-import kotlin.uuid.Uuid
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import com.app.builder.ui.component.list.TaskItem

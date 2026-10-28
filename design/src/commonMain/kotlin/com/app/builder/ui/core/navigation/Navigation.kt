@@ -33,7 +33,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
@@ -279,13 +279,13 @@ private fun getItems(): PersistentList<NavigationItem> {
     )
 }
 
-@Preview
+@PreviewLightDark
 @Composable
 private fun NavigationBarPreview() = Preview {
     NavigationBar(items = getItems())
 }
 
-@Preview
+@PreviewLightDark
 @Composable
 private fun NavigationRailPreview() = Preview {
     NavigationRail(
@@ -296,7 +296,7 @@ private fun NavigationRailPreview() = Preview {
     )
 }
 
-@Preview
+@PreviewLightDark
 @Composable
 private fun NavigationRailExpandedPreview() = Preview {
     NavigationRail(
@@ -307,7 +307,7 @@ private fun NavigationRailExpandedPreview() = Preview {
     )
 }
 
-@Preview
+@PreviewLightDark
 @Composable
 private fun NavigationRailExpandablePreview() = Preview {
     NavigationRail(
@@ -318,7 +318,7 @@ private fun NavigationRailExpandablePreview() = Preview {
     )
 }
 
-@Preview
+@PreviewLightDark
 @Composable
 private fun NavigationRailOverlayPreview() = Preview {
     NavigationRail(
@@ -329,7 +329,7 @@ private fun NavigationRailOverlayPreview() = Preview {
     )
 }
 
-@Preview
+@PreviewLightDark
 @Composable
 private fun NavigationRailOverlayExpandedPreview() = Preview {
     NavigationRail(
@@ -340,7 +340,7 @@ private fun NavigationRailOverlayExpandedPreview() = Preview {
     )
 }
 
-@Preview
+@PreviewLightDark
 @Composable
 private fun NavigationRailOverlayExpandablePreview() = Preview {
     NavigationRail(

@@ -13,7 +13,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import com.app.builder.ui.LocalTypography
 import com.app.builder.ui.Preview
@@ -155,7 +155,7 @@ private fun String.toLabel(): String = buildString {
     }
 }
 
-@Preview
+@PreviewLightDark
 @Composable
 private fun ConfigCardSwitchPreview() = Preview {
     ConfigCardSwitch(
@@ -165,7 +165,7 @@ private fun ConfigCardSwitchPreview() = Preview {
     )
 }
 
-@Preview
+@PreviewLightDark
 @Composable
 private fun ConfigCardInputPreview() = Preview {
     ConfigCardInput(
@@ -175,7 +175,7 @@ private fun ConfigCardInputPreview() = Preview {
     )
 }
 
-@Preview
+@PreviewLightDark
 @Composable
 private fun ConfigCardLoadingPreview() = Preview {
     ConfigCardSwitch(

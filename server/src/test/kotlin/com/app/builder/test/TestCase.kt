@@ -20,10 +20,10 @@ import com.app.builder.data.database.create
 import com.app.builder.data.database.reset
 import com.app.builder.data.http.installHttpPlugins
 import com.app.builder.data.signal.LocalSignal
-import com.app.builder.domain.RegistrationForm
-import com.app.builder.domain.push.NoOpFcmService
 import com.app.builder.domain.Authentication
 import com.app.builder.domain.BearerToken
+import com.app.builder.domain.RegistrationForm
+import com.app.builder.domain.push.NoOpFcmService
 import com.app.builder.domain.route.installRouting
 
 /** Abstract class for defining test cases. It provides a hermetic testing environment. */

@@ -203,6 +203,7 @@ class DeviceLocationProviderTest: TestCase() {
                 events.add(element = "start")
                 throw IllegalStateException("boom")
             }
+
             override fun platformStopUpdate() {
                 events.add(element = "stop")
             }

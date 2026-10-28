@@ -8,7 +8,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import com.app.builder.ui.LocalTypography
 import com.app.builder.ui.Preview
@@ -160,7 +160,7 @@ private fun UserProfileSection(
     }
 }
 
-@Preview
+@PreviewLightDark
 @Composable
 private fun UserProfilePreview() = Preview {
     UserProfile(

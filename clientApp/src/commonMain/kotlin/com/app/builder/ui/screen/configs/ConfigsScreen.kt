@@ -13,7 +13,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.app.builder.ui.Preview
 import com.app.builder.ui.component.actionbar.ActionBar
@@ -33,6 +33,7 @@ import com.app.builder.ui.navigation.Screen
 import com.app.builder.ui.screen.Screen
 import com.app.builder.ui.showcase.CategorySection
 import com.app.builder.ui.store.Store
+import com.app.builder.ui.store.previewStore
 
 /**
  * The Config Screen, stacking the client and server flags and configs the current user may browse as one scrollable page, with a side navigation rail jumping to each section.
@@ -101,13 +102,13 @@ fun ConfigsScreen(
     }
 }
 
-@Preview
+@PreviewLightDark
 @Composable
 private fun ConfigsScreenPreview() = Preview {
     ConfigsScreen(
-        actionBarStore = Store(initialState = ActionBarState(avatarName = "Sonic")),
-        navigationStore = Store(initialState = NavigationState()),
-        store = Store(
+        actionBarStore = previewStore(initialState = ActionBarState(avatarName = "Sonic")),
+        navigationStore = previewStore(initialState = NavigationState()),
+        store = previewStore(
             initialState = ConfigScreenState(
                 sections = ConfigType.entries.map { configType ->
                     ConfigSection(

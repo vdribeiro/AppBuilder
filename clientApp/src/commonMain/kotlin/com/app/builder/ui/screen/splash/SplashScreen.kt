@@ -2,7 +2,7 @@ package com.app.builder.ui.screen.splash
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import com.app.builder.ui.Preview
 import com.app.builder.ui.core.progress.ProgressIndicator
 import com.app.builder.ui.screen.Screen
@@ -15,7 +15,7 @@ fun SplashScreen() {
     }
 }
 
-@Preview
+@PreviewLightDark
 @Composable
 private fun SplashScreenPreview() = Preview {
     SplashScreen()

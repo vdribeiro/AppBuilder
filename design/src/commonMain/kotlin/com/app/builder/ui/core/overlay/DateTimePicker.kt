@@ -8,7 +8,7 @@ import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import com.app.builder.core.locale.toInstant
 import com.app.builder.ui.LocalTypography
 import com.app.builder.ui.Preview
@@ -123,7 +123,7 @@ fun TimePicker(
     }
 }
 
-@Preview
+@PreviewLightDark
 @Composable
 private fun DatePickerPreview() = Preview {
     DatePicker(
@@ -132,7 +132,7 @@ private fun DatePickerPreview() = Preview {
     )
 }
 
-@Preview
+@PreviewLightDark
 @Composable
 private fun TimePickerPreview() = Preview {
     TimePicker(

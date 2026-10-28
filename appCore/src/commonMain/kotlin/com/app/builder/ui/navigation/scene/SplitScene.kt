@@ -13,7 +13,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.NavMetadataKey
 import androidx.navigation3.runtime.get
@@ -116,7 +116,7 @@ private fun SplitContent(
     }
 }
 
-@Preview
+@PreviewLightDark
 @Composable
 private fun SplitContentSplitPreview() = Preview {
     CompositionLocalProvider(value = LocalSplitScreen provides true) {
@@ -141,7 +141,7 @@ private fun SplitContentSplitPreview() = Preview {
     }
 }
 
-@Preview
+@PreviewLightDark
 @Composable
 private fun SplitContentPreview() = Preview {
     CompositionLocalProvider(value = LocalSplitScreen provides false) {

@@ -3,7 +3,7 @@ package com.app.builder.ui.screen.devicefiles
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.app.builder.ui.InjectTranslations
 import com.app.builder.ui.Preview
@@ -19,6 +19,7 @@ import com.app.builder.ui.navigation.Router
 import com.app.builder.ui.navigation.Screen
 import com.app.builder.ui.screen.Screen
 import com.app.builder.ui.store.Store
+import com.app.builder.ui.store.previewStore
 
 /**
  * The Device Files Screen, listing the files the application holds on the device and opening them with the platform's own handler.
@@ -56,7 +57,7 @@ fun DeviceFilesScreen(
     }
 }
 
-@Preview
+@PreviewLightDark
 @Composable
 private fun DeviceFilesScreenPreview() = Preview {
     InjectTranslations(
@@ -65,8 +66,8 @@ private fun DeviceFilesScreenPreview() = Preview {
         )
     )
     DeviceFilesScreen(
-        actionBarStore = Store(initialState = ActionBarState(avatarName = "Files")),
-        navigationStore = Store(initialState = NavigationState()),
-        store = Store(initialState = DeviceFilesScreenState())
+        actionBarStore = previewStore(initialState = ActionBarState(avatarName = "Files")),
+        navigationStore = previewStore(initialState = NavigationState()),
+        store = previewStore(initialState = DeviceFilesScreenState())
     )
 }

@@ -12,7 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import com.app.builder.ui.LocalTypography
 import com.app.builder.ui.Preview
@@ -75,7 +75,7 @@ data class DropdownItem(
     val leadingIcon: @Composable () -> Unit = { Icon(emptySize = 8.dp) }
 )
 
-@Preview
+@PreviewLightDark
 @Composable
 private fun DropdownPreview() = Preview {
     Scaffold(

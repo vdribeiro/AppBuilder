@@ -3,7 +3,7 @@ package com.app.builder.ui.screen.register
 import kotlinx.collections.immutable.persistentListOf
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.app.builder.domain.EntityType
 import com.app.builder.ui.InjectTranslations
@@ -20,6 +20,7 @@ import com.app.builder.ui.navigation.Router
 import com.app.builder.ui.navigation.Screen
 import com.app.builder.ui.screen.Screen
 import com.app.builder.ui.store.Store
+import com.app.builder.ui.store.previewStore
 
 /**
  * The user-facing Register Screen.
@@ -58,7 +59,7 @@ fun RegisterScreen(
     }
 }
 
-@Preview
+@PreviewLightDark
 @Composable
 private fun RegisterScreenPreview() = Preview {
     InjectTranslations(
@@ -77,9 +78,9 @@ private fun RegisterScreenPreview() = Preview {
         )
     )
     RegisterScreen(
-        actionBarStore = Store(initialState = ActionBarState(avatarName = "Knuckles")),
-        navigationStore = Store(initialState = NavigationState()),
-        store = Store(
+        actionBarStore = previewStore(initialState = ActionBarState(avatarName = "Knuckles")),
+        navigationStore = previewStore(initialState = NavigationState()),
+        store = previewStore(
             initialState = RegistrationScreenState(
                 permissions = persistentListOf(
                     PermissionItem(id = EntityType.CLIENT_FLAG.name, name = EntityType.CLIENT_FLAG.name.lowercase(), read = true, write = true),

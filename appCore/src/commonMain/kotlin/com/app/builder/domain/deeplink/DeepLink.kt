@@ -8,7 +8,6 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import com.app.builder.core.telemetry.Telemetry
 import com.app.builder.domain.EntityType
-import com.app.builder.domain.deeplink.DeepLink.Companion.deepLinks
 
 /** Deep links. */
 @Serializable

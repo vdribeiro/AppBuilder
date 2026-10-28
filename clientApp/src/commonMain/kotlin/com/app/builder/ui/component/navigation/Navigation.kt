@@ -5,11 +5,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.app.builder.ui.Preview
 import com.app.builder.ui.core.navigation.NavigationBar
 import com.app.builder.ui.store.Store
+import com.app.builder.ui.store.previewStore
 
 /**
  * Renders the app's navigation bar from the given [store]'s [NavigationState], or nothing while it holds no items.
@@ -28,11 +29,11 @@ fun Navigation(store: Store<NavigationState, Unit>) {
     )
 }
 
-@Preview
+@PreviewLightDark
 @Composable
 private fun NavigationPreview() = Preview {
     Navigation(
-        store = Store(
+        store = previewStore(
             initialState = NavigationState()
         )
     )

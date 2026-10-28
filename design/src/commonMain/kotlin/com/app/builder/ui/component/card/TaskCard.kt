@@ -7,7 +7,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import com.app.builder.ui.InjectTranslations
 import com.app.builder.ui.Preview
@@ -86,7 +86,7 @@ fun TaskCard(
     }
 }
 
-@Preview
+@PreviewLightDark
 @Composable
 private fun TaskCardPreview() = Preview {
     InjectTranslations(
@@ -111,7 +111,7 @@ private fun TaskCardPreview() = Preview {
     }
 }
 
-@Preview
+@PreviewLightDark
 @Composable
 private fun TaskCardSelectedPreview() = Preview {
     InjectTranslations(
@@ -136,7 +136,7 @@ private fun TaskCardSelectedPreview() = Preview {
     }
 }
 
-@Preview
+@PreviewLightDark
 @Composable
 private fun TaskCardNullablePreview() = Preview {
     InjectTranslations(

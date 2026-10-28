@@ -42,7 +42,7 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import com.app.builder.ui.LocalColorScheme
 import com.app.builder.ui.Preview
@@ -339,13 +339,13 @@ fun TopActionBar(
     )
 }
 
-@Preview
+@PreviewLightDark
 @Composable
 private fun TopActionBarPreview() = Preview {
     TopActionBar(title = "None")
 }
 
-@Preview
+@PreviewLightDark
 @Composable
 private fun TopActionBarBackLoginPreview() = Preview {
     TopActionBar(
@@ -356,7 +356,7 @@ private fun TopActionBarBackLoginPreview() = Preview {
     )
 }
 
-@Preview
+@PreviewLightDark
 @Composable
 private fun TopActionBarWritePreview() = Preview {
     TopActionBar(
@@ -380,7 +380,7 @@ private fun TopActionBarWritePreview() = Preview {
     )
 }
 
-@Preview
+@PreviewLightDark
 @Composable
 private fun TopActionBarEditPreview() = Preview {
     TopActionBar(

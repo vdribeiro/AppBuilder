@@ -13,12 +13,12 @@ import com.app.builder.ui.navigation.provider.authenticationProvider
 import com.app.builder.ui.navigation.provider.cameraProvider
 import com.app.builder.ui.navigation.provider.configsProvider
 import com.app.builder.ui.navigation.provider.designProvider
+import com.app.builder.ui.navigation.provider.deviceFilesProvider
 import com.app.builder.ui.navigation.provider.deviceLocationProvider
 import com.app.builder.ui.navigation.provider.errorProvider
 import com.app.builder.ui.navigation.provider.homeProvider
 import com.app.builder.ui.navigation.provider.nfcProvider
 import com.app.builder.ui.navigation.provider.pushProvider
-import com.app.builder.ui.navigation.provider.deviceFilesProvider
 import com.app.builder.ui.navigation.provider.taskProvider
 import com.app.builder.ui.navigation.provider.userProfileProvider
 import com.app.builder.ui.navigation.provider.userProvider

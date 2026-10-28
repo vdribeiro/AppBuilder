@@ -11,7 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import com.app.builder.core.security.uuid
 import com.app.builder.ui.LocalTypography
@@ -83,7 +83,7 @@ fun UserMultiSelector(
     }
 }
 
-@Preview
+@PreviewLightDark
 @Composable
 private fun UserMultiSelectorPreview() = Preview {
     UserMultiSelector(

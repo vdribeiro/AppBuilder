@@ -15,7 +15,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.app.builder.ui.LocalColorScheme
@@ -106,7 +106,7 @@ private fun initials(name: String?): String {
     }
 }
 
-@Preview
+@PreviewLightDark
 @Composable
 private fun AvatarPreview() = Preview {
     Column(verticalArrangement = Arrangement.spacedBy(space = 8.dp)) {

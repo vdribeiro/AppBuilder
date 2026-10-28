@@ -1,9 +1,9 @@
 package com.app.builder.data.http.plugin
 
 import kotlin.time.Duration.Companion.milliseconds
+import io.ktor.http.HttpHeaders
 import io.ktor.server.application.Application
 import io.ktor.server.application.ApplicationCall
-import io.ktor.http.HttpHeaders
 import io.ktor.server.application.install
 import io.ktor.server.plugins.origin
 import io.ktor.server.plugins.ratelimit.RateLimit

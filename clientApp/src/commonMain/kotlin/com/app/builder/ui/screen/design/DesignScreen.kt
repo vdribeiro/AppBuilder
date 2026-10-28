@@ -11,7 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import com.app.builder.ui.Preview
 import com.app.builder.ui.core.bar.TopBar
 import com.app.builder.ui.core.navigation.NavigationBar
@@ -119,7 +119,7 @@ fun DesignNavigation(
     )
 }
 
-@Preview
+@PreviewLightDark
 @Composable
 private fun DesignScreenPreview() = Preview {
     DesignScreen(section = DesignSection.TYPOGRAPHY)

@@ -4,12 +4,12 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
 import kotlin.test.assertTrue
+import kotlinx.collections.immutable.toPersistentList
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
-import kotlinx.collections.immutable.toPersistentList
 import com.app.builder.Dependency.getUserDependency
 import com.app.builder.data.storage.AppFile
 import com.app.builder.domain.EntityType

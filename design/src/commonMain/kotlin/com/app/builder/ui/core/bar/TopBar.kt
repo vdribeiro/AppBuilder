@@ -21,7 +21,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import com.app.builder.ui.LocalColorScheme
 import com.app.builder.ui.Preview
@@ -105,7 +105,7 @@ fun TopBar(
     }
 }
 
-@Preview
+@PreviewLightDark
 @Composable
 private fun TopBarPreview() = Preview {
     TopBar(
@@ -119,7 +119,7 @@ private fun TopBarPreview() = Preview {
     )
 }
 
-@Preview
+@PreviewLightDark
 @Composable
 private fun TopBarMediumPreview() = Preview {
     TopBar(
@@ -133,7 +133,7 @@ private fun TopBarMediumPreview() = Preview {
     )
 }
 
-@Preview
+@PreviewLightDark
 @Composable
 private fun TopBarLargePreview() = Preview {
     TopBar(
@@ -147,7 +147,7 @@ private fun TopBarLargePreview() = Preview {
     )
 }
 
-@Preview
+@PreviewLightDark
 @Composable
 private fun TopBarSecondaryActionsPreview() = Preview {
     TopBar(
@@ -164,7 +164,7 @@ private fun TopBarSecondaryActionsPreview() = Preview {
     )
 }
 
-@Preview
+@PreviewLightDark
 @Composable
 private fun TopBarMediumSecondaryActionsPreview() = Preview {
     TopBar(
@@ -181,7 +181,7 @@ private fun TopBarMediumSecondaryActionsPreview() = Preview {
     )
 }
 
-@Preview
+@PreviewLightDark
 @Composable
 private fun TopBarLargeSecondaryActionsPreview() = Preview {
     TopBar(

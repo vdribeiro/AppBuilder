@@ -20,7 +20,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.app.builder.core.config.ClientFlags
@@ -97,7 +97,7 @@ fun LazyColumn(
     }
 }
 
-@Preview
+@PreviewLightDark
 @Composable
 private fun LazyColumnPreview() = Preview {
     LazyColumn(

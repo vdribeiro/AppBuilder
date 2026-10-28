@@ -26,7 +26,6 @@ import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.TaskAction
 import org.gradle.internal.os.OperatingSystem
 import org.gradle.kotlin.dsl.add
-import org.gradle.kotlin.dsl.assign
 
 val appId: String = "com.app.builder"
 val appName: String = "App Builder"

@@ -2,8 +2,8 @@ package com.app.builder.domain.gateway.authentication
 
 import io.ktor.client.plugins.auth.providers.BearerTokens
 import com.app.builder.core.security.decrypt
-import com.app.builder.core.security.encrypt
 import com.app.builder.core.security.deriveKey
+import com.app.builder.core.security.encrypt
 import com.app.builder.data.database.SessionSchema
 import com.app.builder.data.database.UserSchema
 import com.app.builder.data.serializer.decode

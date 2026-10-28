@@ -10,7 +10,7 @@ import androidx.compose.runtime.Stable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import com.app.builder.core.security.uuid
 import com.app.builder.ui.Preview
 import com.app.builder.ui.component.card.ConfigCardInput
@@ -96,7 +96,7 @@ fun ConfigList(
     }
 }
 
-@Preview
+@PreviewLightDark
 @Composable
 private fun ConfigListPreview() = Preview {
     ConfigList(

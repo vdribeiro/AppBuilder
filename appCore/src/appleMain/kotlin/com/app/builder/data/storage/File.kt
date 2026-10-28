@@ -8,12 +8,12 @@ import platform.Foundation.NSFileSize
 import platform.Foundation.NSFileType
 import platform.Foundation.NSFileTypeRegular
 import platform.Foundation.NSNumber
-import platform.Foundation.NSURL
 import platform.Foundation.NSString
+import platform.Foundation.NSURL
 import platform.Foundation.NSUTF8StringEncoding
 import platform.Foundation.create
-import platform.Foundation.stringByAppendingPathComponent
 import platform.Foundation.lastPathComponent
+import platform.Foundation.stringByAppendingPathComponent
 import platform.Foundation.stringWithContentsOfFile
 import platform.Foundation.timeIntervalSince1970
 import platform.Foundation.writeToFile
@@ -62,12 +62,10 @@ actual suspend fun deleteFile(path: String): Boolean = withContext(context = Dis
     runCatching {
         val fullPath = NSString.create(string = appDataPath).stringByAppendingPathComponent(str = path)
         val fileManager = NSFileManager.defaultManager
-        if (fileManager.fileExistsAtPath(path = fullPath)) {
-            fileManager.removeItemAtPath(
-                path = fullPath,
-                error = null
-            )
-        } else true
+        !fileManager.fileExistsAtPath(path = fullPath) || fileManager.removeItemAtPath(
+            path = fullPath,
+            error = null
+        )
     }.onFailure {
         Telemetry.error(tag = TAG, message = "Unable to delete file $path", throwable = it)
     }.getOrDefault(defaultValue = false)

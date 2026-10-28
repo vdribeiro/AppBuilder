@@ -10,7 +10,7 @@ import androidx.compose.runtime.Stable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalInspectionMode
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import appbuilder.design.generated.resources.Res
 import coil3.compose.AsyncImage
@@ -79,7 +79,7 @@ fun Image(
     }
 }
 
-@Preview
+@PreviewLightDark
 @Composable
 private fun ImagePreview() = Preview {
     Column(verticalArrangement = Arrangement.spacedBy(space = 8.dp)) {

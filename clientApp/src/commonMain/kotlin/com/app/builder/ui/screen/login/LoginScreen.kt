@@ -6,17 +6,16 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.key.Key
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.app.builder.ui.InjectTranslations
 import com.app.builder.ui.Preview
 import com.app.builder.ui.component.container.Login
 import com.app.builder.ui.modifier.onKeyPress
 import com.app.builder.ui.navigation.LocalRouter
-import com.app.builder.ui.navigation.Router
-import com.app.builder.ui.navigation.Screen
 import com.app.builder.ui.screen.Screen
 import com.app.builder.ui.store.Store
+import com.app.builder.ui.store.previewStore
 
 /**
  * The user-facing Login Screen.
@@ -49,7 +48,7 @@ fun LoginScreen(store: Store<LoginScreenState, LoginScreenAction>) {
     }
 }
 
-@Preview
+@PreviewLightDark
 @Composable
 private fun LoginScreenLoadingPreview() = Preview {
     InjectTranslations(
@@ -61,7 +60,7 @@ private fun LoginScreenLoadingPreview() = Preview {
         )
     )
     LoginScreen(
-        store = Store(
+        store = previewStore(
             initialState = LoginScreenState(
                 loading = true,
                 username = "test@example.com",
@@ -71,7 +70,7 @@ private fun LoginScreenLoadingPreview() = Preview {
     )
 }
 
-@Preview
+@PreviewLightDark
 @Composable
 private fun LoginScreenAllPreview() = Preview {
     InjectTranslations(
@@ -83,7 +82,7 @@ private fun LoginScreenAllPreview() = Preview {
         )
     )
     LoginScreen(
-        store = Store(
+        store = previewStore(
             initialState = LoginScreenState(
                 loading = false,
                 username = "",

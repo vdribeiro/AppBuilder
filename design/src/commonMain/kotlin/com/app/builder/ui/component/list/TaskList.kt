@@ -11,7 +11,7 @@ import androidx.compose.runtime.Stable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import com.app.builder.core.security.uuid
 import com.app.builder.ui.Preview
@@ -75,7 +75,7 @@ data class TaskItem(
     val state: String? = null
 )
 
-@Preview
+@PreviewLightDark
 @Composable
 private fun TaskListPreview() = Preview {
     TaskList(

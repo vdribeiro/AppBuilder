@@ -21,7 +21,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import com.app.builder.ui.LocalTypography
 import com.app.builder.ui.Preview
@@ -141,7 +141,7 @@ private val items = listOf(
     "Underline" to Icons.Default.FormatUnderlined
 )
 
-@Preview
+@PreviewLightDark
 @Composable
 private fun ButtonGroupPreview() = Preview {
     var selectedIndex by remember { mutableIntStateOf(value = 0) }
@@ -160,7 +160,7 @@ private fun ButtonGroupPreview() = Preview {
     )
 }
 
-@Preview
+@PreviewLightDark
 @Composable
 private fun ButtonGroupDisabledPreview() = Preview {
     ButtonGroup(
@@ -178,7 +178,7 @@ private fun ButtonGroupDisabledPreview() = Preview {
     )
 }
 
-@Preview
+@PreviewLightDark
 @Composable
 private fun ButtonGroupConnectedPreview() = Preview {
     var selectedIndex by remember { mutableIntStateOf(value = 0) }
@@ -197,7 +197,7 @@ private fun ButtonGroupConnectedPreview() = Preview {
     )
 }
 
-@Preview
+@PreviewLightDark
 @Composable
 private fun ButtonGroupConnectedDisabledPreview() = Preview {
     ButtonGroup(
@@ -215,7 +215,7 @@ private fun ButtonGroupConnectedDisabledPreview() = Preview {
     )
 }
 
-@Preview
+@PreviewLightDark
 @Composable
 private fun ButtonGroupMultiSelectPreview() = Preview {
     var selectedIndices by remember { mutableStateOf(value = persistentSetOf(0, 1)) }
@@ -235,7 +235,7 @@ private fun ButtonGroupMultiSelectPreview() = Preview {
     )
 }
 
-@Preview
+@PreviewLightDark
 @Composable
 private fun ButtonGroupMultiSelectDisabledPreview() = Preview {
     ButtonGroup(

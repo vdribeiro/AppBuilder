@@ -11,7 +11,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import com.app.builder.ui.Preview
 import com.app.builder.ui.core.button.Button
@@ -65,7 +65,7 @@ fun PushTypeSelector(
     }
 }
 
-@Preview
+@PreviewLightDark
 @Composable
 private fun PushTypeSelectorPreview() = Preview {
     PushTypeSelector(

@@ -35,7 +35,7 @@ actual suspend fun loadFile(path: String): String? = withContext(context = Dispa
 actual suspend fun deleteFile(path: String): Boolean = withContext(context = Dispatcher.IO) {
     runCatching {
         val file = File(appDataPath, path)
-        if (file.exists()) file.delete() else true
+        !file.exists() || file.delete()
     }.onFailure {
         Telemetry.error(tag = TAG, message = "Unable to delete file $path", throwable = it)
     }.getOrDefault(defaultValue = false)

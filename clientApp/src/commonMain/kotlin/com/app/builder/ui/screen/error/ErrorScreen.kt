@@ -10,7 +10,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import com.app.builder.core.config.ClientFlags
 import com.app.builder.core.telemetry.Console
 import com.app.builder.ui.AppState
@@ -70,7 +70,7 @@ fun ErrorScreen(error: Boolean) {
     }
 }
 
-@Preview
+@PreviewLightDark
 @Composable
 private fun ErrorScreenPreview() = Preview {
     ErrorScreen(error = true)

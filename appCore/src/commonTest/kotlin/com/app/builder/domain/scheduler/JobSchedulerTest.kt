@@ -98,7 +98,6 @@ class JobSchedulerTest: TestCase() {
         override suspend fun stop() {}
     }
 
-
     /** Verifies queuing a job with the append conflict policy keeps both jobs pending. */
     @Test
     fun queueWithAppendPolicy() = runUnitTest {

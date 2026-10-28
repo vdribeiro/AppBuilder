@@ -101,8 +101,7 @@ class TaskListScreenStore(
      * @return `true` if any of the searchable properties contains [search], ignoring case.
      */
     private fun Task.matchesSearch(search: String, searchableProperties: List<String>): Boolean {
-        if (search.isBlank()) return true
-        return searchableProperties.any { property ->
+        return search.isBlank() || searchableProperties.any { property ->
             when (property) {
                 Property.TITLE.name -> title
                 Property.DESCRIPTION.name -> description

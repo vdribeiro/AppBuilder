@@ -12,7 +12,7 @@ import androidx.compose.runtime.Stable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import com.app.builder.ui.Preview
 import com.app.builder.ui.core.image.Icon
 import com.app.builder.ui.core.list.LazyColumn
@@ -64,7 +64,7 @@ data class DeviceFileItem(
     val description: String? = null
 )
 
-@Preview
+@PreviewLightDark
 @Composable
 private fun DeviceFileListPreview() = Preview {
     DeviceFileList(

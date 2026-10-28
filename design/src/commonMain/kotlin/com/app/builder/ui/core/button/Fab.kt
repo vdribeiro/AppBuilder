@@ -11,7 +11,7 @@ import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import com.app.builder.ui.LocalColorScheme
 import com.app.builder.ui.Preview
@@ -54,7 +54,7 @@ fun Fab(
 
 // TODO - FAB menu
 
-@Preview
+@PreviewLightDark
 @Composable
 private fun FabPreview() = Preview {
     Column(verticalArrangement = Arrangement.spacedBy(space = 8.dp)) {

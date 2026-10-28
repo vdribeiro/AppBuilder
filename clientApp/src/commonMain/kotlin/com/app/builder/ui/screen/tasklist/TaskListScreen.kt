@@ -2,7 +2,7 @@ package com.app.builder.ui.screen.tasklist
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.app.builder.ui.InjectTranslations
 import com.app.builder.ui.Preview
@@ -17,6 +17,7 @@ import com.app.builder.ui.navigation.Router
 import com.app.builder.ui.navigation.Screen
 import com.app.builder.ui.screen.Screen
 import com.app.builder.ui.store.Store
+import com.app.builder.ui.store.previewStore
 
 /**
  * The user-facing Task List Screen, showing the list of tasks.
@@ -47,7 +48,7 @@ fun TaskListScreen(
     }
 }
 
-@Preview
+@PreviewLightDark
 @Composable
 private fun TaskListScreenPreview() = Preview {
     InjectTranslations(
@@ -58,8 +59,8 @@ private fun TaskListScreenPreview() = Preview {
         )
     )
     TaskListScreen(
-        actionBarStore = Store(initialState = ActionBarState(avatarName = "Tasks")),
-        navigationStore = Store(initialState = NavigationState()),
-        store = Store(initialState = TaskListScreenState())
+        actionBarStore = previewStore(initialState = ActionBarState(avatarName = "Tasks")),
+        navigationStore = previewStore(initialState = NavigationState()),
+        store = previewStore(initialState = TaskListScreenState())
     )
 }

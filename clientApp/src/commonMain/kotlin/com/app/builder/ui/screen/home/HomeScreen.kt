@@ -2,7 +2,7 @@ package com.app.builder.ui.screen.home
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import com.app.builder.data.resource.ImageResource
 import com.app.builder.ui.Preview
 import com.app.builder.ui.component.actionbar.ActionBar
@@ -15,6 +15,7 @@ import com.app.builder.ui.core.image.Image
 import com.app.builder.ui.core.text.Text
 import com.app.builder.ui.screen.Screen
 import com.app.builder.ui.store.Store
+import com.app.builder.ui.store.previewStore
 
 /**
  * The Home Screen.
@@ -37,11 +38,11 @@ fun HomeScreen(
     }
 }
 
-@Preview
+@PreviewLightDark
 @Composable
 private fun HomeScreenPreview() = Preview {
     HomeScreen(
-        actionBarStore = Store(initialState = ActionBarState()),
-        navigationStore = Store(initialState = NavigationState()),
+        actionBarStore = previewStore(initialState = ActionBarState()),
+        navigationStore = previewStore(initialState = NavigationState()),
     )
 }

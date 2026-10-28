@@ -7,7 +7,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import com.app.builder.ui.Preview
 import com.app.builder.ui.core.text.Text
 import androidx.compose.material3.Scaffold as MaterialScaffold
@@ -39,7 +39,7 @@ fun Scaffold(
     )
 }
 
-@Preview
+@PreviewLightDark
 @Composable
 private fun ScaffoldPreview() = Preview {
     Scaffold(

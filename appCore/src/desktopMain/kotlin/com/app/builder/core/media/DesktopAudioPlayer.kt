@@ -1,8 +1,8 @@
 package com.app.builder.core.media
 
+import com.app.builder.test.ExcludeFromTesting
 import javafx.scene.media.Media
 import javafx.scene.media.MediaPlayer
-import com.app.builder.test.ExcludeFromTesting
 
 /** Desktop [AudioPlayer] implementation backed by JavaFX [MediaPlayer]. */
 @ExcludeFromTesting

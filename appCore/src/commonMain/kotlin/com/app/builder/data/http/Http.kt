@@ -1,7 +1,6 @@
 package com.app.builder.data.http
 
 import kotlin.uuid.Uuid
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.consumeAsFlow
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.withContext

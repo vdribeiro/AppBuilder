@@ -9,7 +9,7 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import com.app.builder.ui.Preview
 import com.app.builder.ui.core.text.Text
@@ -47,7 +47,7 @@ fun Slider(
     )
 }
 
-@Preview
+@PreviewLightDark
 @Composable
 private fun SliderPreview() = Preview {
     var value by remember { mutableFloatStateOf(value = 0.5f) }
@@ -61,7 +61,7 @@ private fun SliderPreview() = Preview {
     }
 }
 
-@Preview
+@PreviewLightDark
 @Composable
 private fun SteppedSliderPreview() = Preview {
     var value by remember { mutableFloatStateOf(value = 2f) }

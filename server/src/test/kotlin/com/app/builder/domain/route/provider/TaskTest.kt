@@ -5,7 +5,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import kotlin.time.Duration.Companion.seconds
 import io.ktor.client.call.body
-import io.ktor.client.request.get as ktorGet
 import io.ktor.http.HttpStatusCode
 import com.app.builder.core.locale.now
 import com.app.builder.core.security.uuid
@@ -21,6 +20,7 @@ import com.app.builder.domain.Task
 import com.app.builder.domain.UserCredentials
 import com.app.builder.test.FakeData
 import com.app.builder.test.TestCase
+import io.ktor.client.request.get as ktorGet
 
 class TaskTest: TestCase() {
 

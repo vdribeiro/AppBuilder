@@ -1,7 +1,6 @@
 package com.app.builder.ui.screen.devicelocation
 
 import kotlin.math.round
-import kotlin.time.Instant
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.launch
 import androidx.compose.foundation.layout.Arrangement
@@ -24,7 +23,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import com.app.builder.core.devicelocation.DeviceLocation
 import com.app.builder.core.devicelocation.DeviceLocationProvider
@@ -53,6 +52,7 @@ import com.app.builder.ui.permission.LocalPermissionManager
 import com.app.builder.ui.permission.Permission
 import com.app.builder.ui.screen.Screen
 import com.app.builder.ui.store.Store
+import com.app.builder.ui.store.previewStore
 
 /**
  * The Device Location Screen.
@@ -205,11 +205,11 @@ private fun Double.roundTo(decimals: Int): Double {
     return round(this * factor) / factor
 }
 
-@Preview
+@PreviewLightDark
 @Composable
 private fun DeviceLocationScreenPreview() = Preview {
     DeviceLocationScreen(
-        actionBarStore = Store(initialState = ActionBarState(avatarName = "Device Locations")),
-        navigationStore = Store(initialState = NavigationState()),
+        actionBarStore = previewStore(initialState = ActionBarState(avatarName = "Device Locations")),
+        navigationStore = previewStore(initialState = NavigationState()),
     )
 }

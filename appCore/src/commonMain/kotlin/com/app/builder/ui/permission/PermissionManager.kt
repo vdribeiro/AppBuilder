@@ -48,8 +48,7 @@ open class PermissionManager {
             Permission.CAMERA -> if (!ClientFlags.flags.camera) return false
             Permission.LOCATION -> if (!ClientFlags.flags.locationCapture) return false
         }
-        if (hasPermission(permission = permission)) return true
-        return mutex.withLock {
+        return hasPermission(permission = permission) || mutex.withLock {
             inFlightRequests.getOrPut(key = permission) {
                 scope.async(context = Dispatcher.Default) {
                     try {

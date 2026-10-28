@@ -5,8 +5,8 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNull
 import kotlin.test.assertSame
 import kotlin.test.assertTrue
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.first
 import com.app.builder.Application.createDependency
 import com.app.builder.Dependency.getUserDependency
 import com.app.builder.data.database.NoOpSqlDriver

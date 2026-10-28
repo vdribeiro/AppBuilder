@@ -14,7 +14,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import com.app.builder.ui.Preview
 import com.app.builder.ui.core.image.Icon
@@ -77,7 +77,7 @@ fun SearchBar(
     }
 }
 
-@Preview
+@PreviewLightDark
 @Composable
 private fun SearchBarPreview() = Preview {
     var query by remember { mutableStateOf(value = "") }
@@ -103,7 +103,7 @@ private fun SearchBarPreview() = Preview {
     )
 }
 
-@Preview
+@PreviewLightDark
 @Composable
 private fun SearchBarFullScreenPreview() = Preview {
     var query by remember { mutableStateOf(value = "") }

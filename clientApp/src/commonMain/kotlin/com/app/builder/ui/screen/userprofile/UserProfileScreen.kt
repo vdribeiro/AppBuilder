@@ -3,7 +3,7 @@ package com.app.builder.ui.screen.userprofile
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.LocalUriHandler
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.app.builder.AppInfo
 import com.app.builder.ui.Preview
@@ -12,11 +12,11 @@ import com.app.builder.ui.component.container.UserProfile
 import com.app.builder.ui.component.navigation.Navigation
 import com.app.builder.ui.component.navigation.NavigationState
 import com.app.builder.ui.navigation.LocalRouter
-import com.app.builder.ui.navigation.Router
 import com.app.builder.ui.navigation.Screen
 import com.app.builder.ui.navigation.open
 import com.app.builder.ui.screen.Screen
 import com.app.builder.ui.store.Store
+import com.app.builder.ui.store.previewStore
 
 /**
  * The User Profile Screen.
@@ -62,11 +62,11 @@ fun UserProfileScreen(
     }
 }
 
-@Preview
+@PreviewLightDark
 @Composable
 private fun UserProfileScreenPreview() = Preview {
     UserProfileScreen(
-        navigationStore = Store(initialState = NavigationState()),
-        store = Store(initialState = UserProfileScreenState()),
+        navigationStore = previewStore(initialState = NavigationState()),
+        store = previewStore(initialState = UserProfileScreenState()),
     )
 }
