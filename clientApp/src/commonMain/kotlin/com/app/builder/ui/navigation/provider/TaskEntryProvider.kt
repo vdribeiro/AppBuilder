@@ -41,7 +41,6 @@ fun EntryProviderScope<NavKey>.taskProvider(useCases: UseCases) {
                 getActionBarStore(
                     router = router,
                     useCases = useCases,
-                    title = "tasks",
                     showAdd = true,
                     onSaveClick = null,
                     onDeleteClick = null
@@ -60,7 +59,6 @@ fun EntryProviderScope<NavKey>.taskProvider(useCases: UseCases) {
                 getActionBarStore(
                     router = router,
                     useCases = useCases,
-                    title = "task",
                     showAdd = splitScreen,
                     onSaveClick = { store.send(action = TaskDetailScreenAction.Save) },
                     onDeleteClick = { store.send(action = TaskDetailScreenAction.Delete) }
@@ -98,7 +96,6 @@ private val actionBarState = ActionBarState(
  *
  * @param router The router.
  * @param useCases The use cases.
- * @param title The action bar title.
  * @param showAdd true to show add button, false otherwise.
  * @param onSaveClick The save click callback, or null to hide the save action.
  * @param onDeleteClick The delete click callback, or null to hide the delete action.
@@ -107,14 +104,14 @@ private val actionBarState = ActionBarState(
 private fun getActionBarStore(
     router: Router,
     useCases: UseCases,
-    title: String,
     showAdd: Boolean,
     onSaveClick: (suspend () -> Unit)?,
     onDeleteClick: (suspend () -> Unit)?
 ): ActionBarStore = ActionBarStore(
-    state = actionBarState.copy(title = title),
+    state = actionBarState,
     router = router,
     authenticationUseCases = useCases.authenticationUseCases,
+    statusUseCases = useCases.statusUseCases,
     storageFile = AppFile.TaskPreferences,
     defaults = defaults,
     entityType = EntityType.TASK,
