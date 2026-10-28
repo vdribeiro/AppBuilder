@@ -18,6 +18,8 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
+import io.ktor.client.engine.HttpClientEngine
+import app.cash.sqldelight.db.SqlDriver
 import androidx.annotation.VisibleForTesting
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -104,7 +106,8 @@ object Application {
     }
 
     /** Dependency app graph. */
-    private val appGraph: LazyData<Dependency.AppGraph> = LazyData { createDependency() }
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    internal var appGraph: LazyData<Dependency.AppGraph> = LazyData { createDependency() }
 
     /** Resets the application. */
     suspend fun reset() = withContext(context = Dispatcher.IO) {
@@ -294,20 +297,23 @@ object Application {
     /**
      * Creates the [Dependency.AppGraph] graph, using No-Op implementations if platform engines fail to initialize.
      *
+     * @param sqlDriverFactory Creates the platform [SqlDriver].
+     * @param httpEngineFactory Creates the platform [HttpClientEngine].
      * @return The populated [Dependency.AppGraph] instance.
      */
-    private suspend fun createDependency(): Dependency.AppGraph {
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    internal suspend fun createDependency(
+        sqlDriverFactory: suspend () -> SqlDriver = { createSqlDriver(name = DATABASE_FILE, schema = AppDatabase.Schema) },
+        httpEngineFactory: () -> HttpClientEngine = { createHttpEngine() },
+    ): Dependency.AppGraph {
         val sqlDriver = runCatching {
-            createSqlDriver(
-                name = DATABASE_FILE,
-                schema = AppDatabase.Schema
-            ).also { Telemetry.info(tag = TAG, message = "Sql Driver created") }
+            sqlDriverFactory().also { Telemetry.info(tag = TAG, message = "Sql Driver created") }
         }.onFailure {
             Telemetry.error(tag = TAG, message = "Unable to create the Sql Driver", throwable = it)
         }.getOrDefault(defaultValue = NoOpSqlDriver)
 
         val httpEngine = runCatching {
-            createHttpEngine().also { Telemetry.info(tag = TAG, message = "Http Engine created") }
+            httpEngineFactory().also { Telemetry.info(tag = TAG, message = "Http Engine created") }
         }.onFailure {
             Telemetry.error(tag = TAG, message = "Unable to create the Http Engine", throwable = it)
         }.getOrDefault(defaultValue = NoOpHttpClientEngine)
