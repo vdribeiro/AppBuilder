@@ -51,7 +51,7 @@ class TaskDetailScreenStore(
         }
 
         val task = taskUseCases.observeTask(uuid = uuid).firstOrNull()
-        updateState { it.copy(task = task, editedTask = task) }
+        updateState { it.copy(task = task) }
 
         Telemetry.info(tag = TAG, message = "Setup complete")
     }
@@ -59,8 +59,8 @@ class TaskDetailScreenStore(
     override fun reducer(state: TaskDetailScreenState, action: TaskDetailScreenAction) {
         super.reducer(state = state, action = action)
         when (action) {
-            is TaskDetailScreenAction.ChangeTitle -> updateState { it.copy(editedTask = it.editedTask?.copy(title = action.title)) }
-            is TaskDetailScreenAction.ChangeDescription -> updateState { it.copy(editedTask = it.editedTask?.copy(description = action.description)) }
+            is TaskDetailScreenAction.ChangeTitle -> updateState { it.copy(task = it.task?.copy(title = action.title)) }
+            is TaskDetailScreenAction.ChangeDescription -> updateState { it.copy(task = it.task?.copy(description = action.description)) }
             TaskDetailScreenAction.Save -> save(state = state)
             TaskDetailScreenAction.Delete -> delete(state = state)
         }
@@ -73,9 +73,9 @@ class TaskDetailScreenStore(
      * @return The [Job] representing this execution.
      */
     private fun save(state: TaskDetailScreenState): Job = launch(id = "save") {
-        val task = state.editedTask?.copy(modifiedAt = now()) ?: return@launch
+        val task = state.task?.copy(modifiedAt = now()) ?: return@launch
         taskUseCases.upsertTask(task = task)
-        updateState { it.copy(task = task, editedTask = task) }
+        updateState { it.copy(task = task) }
     }
 
     private fun delete(state: TaskDetailScreenState): Job = launch(id = "delete") {
