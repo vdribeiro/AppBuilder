@@ -2,6 +2,7 @@ package com.app.builder.domain.gateway
 
 import io.ktor.client.HttpClient
 import com.app.builder.domain.User
+import com.app.builder.domain.clock.ClockService
 import com.app.builder.domain.gateway.authentication.AuthenticationGateway
 import com.app.builder.domain.gateway.authentication.AuthenticationRepository
 import com.app.builder.domain.gateway.authentication.AuthenticationUseCases
@@ -15,6 +16,8 @@ import com.app.builder.domain.gateway.push.PushUseCases
 import com.app.builder.domain.gateway.registry.RegistryGateway
 import com.app.builder.domain.gateway.registry.RegistryRepository
 import com.app.builder.domain.gateway.registry.RegistryUseCases
+import com.app.builder.domain.gateway.status.StatusGateway
+import com.app.builder.domain.gateway.status.StatusUseCases
 import com.app.builder.domain.gateway.task.TaskGateway
 import com.app.builder.domain.gateway.task.TaskRepository
 import com.app.builder.domain.gateway.task.TaskUseCases
@@ -33,12 +36,14 @@ import database.AppDatabase
  * @param database The SQLite database instance.
  * @param httpClient The HTTP client used for network operations.
  * @param scheduler The job scheduler for background tasks.
+ * @param clockService The service managing the device's clock.
  */
 class Gateways(
     user: User,
     database: AppDatabase,
     httpClient: HttpClient,
-    scheduler: Scheduler
+    scheduler: Scheduler,
+    clockService: ClockService
 ): UseCases, Repositories {
 
     private val translationGateway: TranslationGateway = TranslationGateway(
@@ -86,6 +91,12 @@ class Gateways(
     )
     override val authenticationUseCases: AuthenticationUseCases = authenticationGateway
     override val authenticationRepository: AuthenticationRepository = authenticationGateway
+
+    private val statusGateway: StatusGateway = StatusGateway(
+        scheduler = scheduler,
+        clockService = clockService
+    )
+    override val statusUseCases: StatusUseCases = statusGateway
 
     private val userGateway: UserGateway = UserGateway(
         user = user,

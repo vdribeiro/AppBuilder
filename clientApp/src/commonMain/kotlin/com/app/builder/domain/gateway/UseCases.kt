@@ -4,6 +4,7 @@ import com.app.builder.domain.gateway.authentication.AuthenticationUseCases
 import com.app.builder.domain.gateway.config.ConfigUseCases
 import com.app.builder.domain.gateway.push.PushUseCases
 import com.app.builder.domain.gateway.registry.RegistryUseCases
+import com.app.builder.domain.gateway.status.StatusUseCases
 import com.app.builder.domain.gateway.task.TaskUseCases
 import com.app.builder.domain.gateway.user.UserUseCases
 
@@ -17,6 +18,8 @@ interface UseCases {
     val registryUseCases: RegistryUseCases
     /** The use cases for authentication, registration, and session management. */
     val authenticationUseCases: AuthenticationUseCases
+    /** The use cases for following the application status. */
+    val statusUseCases: StatusUseCases
     /** The use cases for managing users. */
     val userUseCases: UserUseCases
     /** The use cases for managing tasks. */

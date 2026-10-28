@@ -1,5 +1,7 @@
 package com.app.builder.domain.scheduler
 
+import kotlinx.coroutines.flow.Flow
+
 /**
  * Defines the core capabilities for staging and tracking asynchronous background work.
  * The [Scheduler] orchestrates dispatch logic by serving as the primary bridge to append, modify, or verify job queues destined for persistent execution.
@@ -25,4 +27,11 @@ interface Scheduler {
      * @param job The job configuration blueprint.
      */
     suspend fun queue(job: Job)
+
+    /**
+     * Observes whether any job is pending or running.
+     *
+     * @return A flow emitting `true` while there are pending or running jobs, `false` otherwise.
+     */
+    fun observeSyncing(): Flow<Boolean>
 }

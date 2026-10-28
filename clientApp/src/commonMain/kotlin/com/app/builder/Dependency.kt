@@ -131,7 +131,8 @@ object Dependency {
             user = user,
             database = dependency.database,
             httpClient = httpClient,
-            scheduler = dependency.scheduler
+            scheduler = dependency.scheduler,
+            clockService = dependency.clockService
         )
         /** Use cases. */
         val useCases: UseCases = gateways
