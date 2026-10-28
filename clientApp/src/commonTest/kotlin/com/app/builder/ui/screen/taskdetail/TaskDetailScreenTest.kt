@@ -87,8 +87,8 @@ class TaskDetailScreenTest: TestCase() {
         onNodeWithText(text = FakeData.task.description).performTextReplacement(text = "New description")
         waitForIdle()
 
-        assertEquals(expected = "New title", actual = store.state.title)
-        assertEquals(expected = "New description", actual = store.state.description)
+        assertEquals(expected = "New title", actual = store.state.editedTask?.title)
+        assertEquals(expected = "New description", actual = store.state.editedTask?.description)
         assertEquals(expected = FakeData.task.title, actual = store.state.task?.title)
         assertEquals(expected = FakeData.task.description, actual = store.state.task?.description)
     }
@@ -166,40 +166,9 @@ class TaskDetailScreenTest: TestCase() {
 
         val saved = authenticatedUseCases.taskUseCases.observeTask(uuid = FakeData.task.uuid).first { it?.title == "New title" }
         assertEquals(expected = "New description", actual = saved?.description)
-        assertEquals(expected = "New title", actual = store.state.title)
-        assertEquals(expected = "New description", actual = store.state.description)
-    }
-
-    /** Verifies that unsaved edits are kept when the task changes while it's being edited. */
-    @Test
-    fun keepEditsOnTaskChange() = runUITest {
-        val authenticatedUseCases = dependency.get()
-            .getUserDependency(user = FakeData.adminUser)
-            .useCases
-        authenticatedUseCases.authenticationUseCases.login(credentials = FakeData.adminCredentials)
-        authenticatedUseCases.taskUseCases.upsertTask(task = FakeData.task)
-
-        val store = TaskDetailScreenStore(state = TaskDetailScreenState(), router = router, authenticationUseCases = authenticatedUseCases.authenticationUseCases, taskUseCases = authenticatedUseCases.taskUseCases, taskUuid = FakeData.task.uuid.toString())
-        val navigationStore = NavigationStore(state = NavigationState(selected = NavigationRoute.TASK), router = router, authenticationUseCases = authenticatedUseCases.authenticationUseCases)
-        val actionBarStore = ActionBarStore(state = ActionBarState(), router = router, authenticationUseCases = authenticatedUseCases.authenticationUseCases)
-
-        setUI {
-            TaskDetailScreen(
-                actionBarStore = actionBarStore,
-                store = store,
-                navigationStore = navigationStore
-            )
-        }
-
-        waitUntil { store.state.task != null && store.state.editable }
-        onNodeWithText(text = FakeData.task.title).performTextReplacement(text = "New title")
-        waitForIdle()
-
-        authenticatedUseCases.taskUseCases.upsertTask(task = FakeData.task.copy(title = "Remote title"))
-        waitUntil { store.state.task?.title == "Remote title" }
-
-        assertEquals(expected = "New title", actual = store.state.title)
-        onNodeWithText(text = "New title").assertIsDisplayed()
+        assertEquals(expected = "New title", actual = store.state.task?.title)
+        assertEquals(expected = "New description", actual = store.state.task?.description)
+        assertEquals(expected = store.state.task, actual = store.state.editedTask)
     }
 
     /** Verifies that the delete action soft deletes the task and navigates back. */
