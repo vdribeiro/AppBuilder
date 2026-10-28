@@ -22,7 +22,7 @@ fun EntryProviderScope<NavKey>.nfcProvider(useCases: UseCases) {
     entry<Screen.NFC> {
         val router = LocalRouter.current
         NfcScreen(
-            actionBarStore = viewModel { ActionBarStore(state = ActionBarState(title = "nfc"), router = router, authenticationUseCases = useCases.authenticationUseCases) },
+            actionBarStore = viewModel { ActionBarStore(state = ActionBarState(), router = router, authenticationUseCases = useCases.authenticationUseCases, statusUseCases = useCases.statusUseCases) },
             navigationStore = viewModel { NavigationStore(state = NavigationState(selected = NavigationRoute.NFC), router = router, authenticationUseCases = useCases.authenticationUseCases) },
         )
     }

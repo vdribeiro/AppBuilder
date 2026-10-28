@@ -24,7 +24,7 @@ fun EntryProviderScope<NavKey>.pushProvider(useCases: UseCases) {
     entry<Screen.Push> {
         val router = LocalRouter.current
         PushScreen(
-            actionBarStore = viewModel { ActionBarStore(state = ActionBarState(title = "notifications"), router = router, authenticationUseCases = useCases.authenticationUseCases) },
+            actionBarStore = viewModel { ActionBarStore(state = ActionBarState(), router = router, authenticationUseCases = useCases.authenticationUseCases, statusUseCases = useCases.statusUseCases) },
             navigationStore = viewModel { NavigationStore(state = NavigationState(selected = NavigationRoute.NOTIFICATION), router = router, authenticationUseCases = useCases.authenticationUseCases) },
             store = viewModel { PushScreenStore(state = PushScreenState(), pushUseCases = useCases.pushUseCases, userUseCases = useCases.userUseCases) },
         )

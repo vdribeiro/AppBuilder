@@ -15,6 +15,8 @@ class LocalJobStore: JobStore {
 
     override fun observePendingJobs(): Flow<List<Job>> = _jobs.map { jobs -> jobs.filter { it.state == Job.State.PENDING } }
 
+    override fun observeActiveJobs(): Flow<List<Job>> = _jobs.map { jobs -> jobs.filter { it.state == Job.State.PENDING || it.state == Job.State.RUNNING } }
+
     override suspend fun upsertJob(job: Job): Boolean {
         _jobs.value = _jobs.value.filterNot { it.uuid == job.uuid } + job
         return true
