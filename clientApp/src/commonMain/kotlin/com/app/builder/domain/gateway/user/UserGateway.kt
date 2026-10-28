@@ -92,7 +92,7 @@ class UserGateway(
         }
 
     override suspend fun upsertUser(user: User) = withContext(context = Dispatcher.IO) {
-        if (!user.hasPermission(entityType = EntityType.USER, permission = Permission.WRITE)) {
+        if (!this@UserGateway.user.hasPermission(entityType = EntityType.USER, permission = Permission.WRITE)) {
             val throwable = Throwable(message = "User does not have ${Permission.WRITE} permission for ${EntityType.USER}")
             Telemetry.error(tag = TAG, message = "Invalid permissions", throwable = throwable)
             return@withContext
@@ -105,7 +105,7 @@ class UserGateway(
             return@withContext
         }
         val job = Job(
-            userUuid = user.uuid,
+            userUuid = this@UserGateway.user.uuid,
             entityUuid = user.uuid,
             entityType = EntityType.USER,
             type = Job.Type.POST,
