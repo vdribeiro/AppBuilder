@@ -5,13 +5,16 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import kotlin.time.Duration.Companion.hours
 import kotlin.uuid.Uuid
 import kotlinx.coroutines.flow.firstOrNull
+import app.cash.sqldelight.async.coroutines.awaitAsList
 import com.app.builder.Dependency.getUserDependency
 import com.app.builder.core.config.ClientFlags
 import com.app.builder.data.serializer.encode
 import com.app.builder.data.storage.AppFile
 import com.app.builder.domain.EntityType
+import com.app.builder.domain.User
 import com.app.builder.domain.scheduler.Job
 import com.app.builder.domain.scheduler.JobResult
 import com.app.builder.test.FakeData
@@ -92,6 +95,104 @@ class TaskRepositoryTest: TestCase() {
             payload = encode(value = FakeData.task)
         )
         val jobResult = taskRepository.executeUpsertTask(job = job)
+        assertTrue(actual = jobResult is JobResult.Error)
+    }
+
+    /** A user without any permission, so every task operation is refused. */
+    private val unauthorizedUser: User = FakeData.user.copy(permissions = emptyMap())
+
+    /**
+     * Lists the jobs queued in the scheduler, in every state.
+     *
+     * @return The queued jobs, oldest first.
+     */
+    private suspend fun queuedJobs(): List<database.Job> = dependency.get()
+        .database
+        .jobQueries
+        .getJobsByState(states = Job.State.entries)
+        .awaitAsList()
+
+    /** Verifies that requesting a task list sync and a single task sync queues a get job for each. */
+    @Test
+    fun syncTasksQueuesGetJobs() = runUnitTest {
+        val taskRepository = dependency.get()
+            .getUserDependency(user = FakeData.adminUser)
+            .repositories
+            .taskRepository
+
+        taskRepository.syncTasks()
+        taskRepository.syncTask(uuid = FakeData.task.uuid)
+
+        val jobs = queuedJobs().filter { it.entityType == EntityType.TASK && it.type == Job.Type.GET }
+        assertEquals(expected = setOf(null, FakeData.task.uuid), actual = jobs.map { it.entityUuid }.toSet())
+    }
+
+    /** Verifies that a user without read permission observes no tasks, queues no sync and fails every sync job. */
+    @Test
+    fun withoutReadPermission() = runUnitTest {
+        val userDependency = dependency.get().getUserDependency(user = unauthorizedUser)
+        val taskUseCases = userDependency.useCases.taskUseCases
+        val taskRepository = userDependency.repositories.taskRepository
+
+        assertNull(actual = taskUseCases.observeTasks().firstOrNull())
+        assertNull(actual = taskUseCases.observeTask(uuid = FakeData.task.uuid).firstOrNull())
+
+        taskRepository.syncTasks()
+        taskRepository.syncTask(uuid = FakeData.task.uuid)
+        assertTrue(actual = queuedJobs().isEmpty())
+
+        val job = Job(userUuid = Uuid.NIL, entityUuid = FakeData.task.uuid, entityType = EntityType.TASK, type = Job.Type.GET)
+        assertTrue(actual = taskRepository.executeSyncTasks(job = job) is JobResult.Error)
+        assertTrue(actual = taskRepository.executeSyncTask(job = job) is JobResult.Error)
+    }
+
+    /** Verifies that a tasks sync keeps a local task that is newer than the remote one, and replaces one that is older. */
+    @Test
+    fun executeSyncTasksResolvesConflictsByModificationTime() = runUnitTest {
+        val userDependency = dependency.get().getUserDependency(user = FakeData.adminUser)
+        val taskUseCases = userDependency.useCases.taskUseCases
+        val taskRepository = userDependency.repositories.taskRepository
+        val job = Job(userUuid = Uuid.NIL, entityType = EntityType.TASK, type = Job.Type.GET)
+
+        val newer = FakeData.task.copy(modifiedAt = FakeData.task.modifiedAt + 1.hours, title = "Local")
+        taskUseCases.upsertTask(task = newer)
+        assertTrue(actual = taskRepository.executeSyncTasks(job = job) is JobResult.Success)
+        assertEquals(expected = newer, actual = taskUseCases.observeTask(uuid = FakeData.task.uuid).firstOrNull())
+
+        val older = FakeData.task.copy(modifiedAt = FakeData.task.modifiedAt - 1.hours, title = "Local")
+        taskUseCases.upsertTask(task = older)
+        assertTrue(actual = taskRepository.executeSyncTasks(job = job) is JobResult.Success)
+        assertEquals(expected = FakeData.task, actual = taskUseCases.observeTask(uuid = FakeData.task.uuid).firstOrNull())
+    }
+
+    /** Verifies that a single task sync keeps a local task that is newer than the remote one, and replaces one that is older. */
+    @Test
+    fun executeSyncTaskResolvesConflictsByModificationTime() = runUnitTest {
+        val userDependency = dependency.get().getUserDependency(user = FakeData.adminUser)
+        val taskUseCases = userDependency.useCases.taskUseCases
+        val taskRepository = userDependency.repositories.taskRepository
+        val job = Job(userUuid = Uuid.NIL, entityUuid = FakeData.task.uuid, entityType = EntityType.TASK, type = Job.Type.GET)
+
+        val newer = FakeData.task.copy(modifiedAt = FakeData.task.modifiedAt + 1.hours, title = "Local")
+        taskUseCases.upsertTask(task = newer)
+        assertTrue(actual = taskRepository.executeSyncTask(job = job) is JobResult.Success)
+        assertEquals(expected = newer, actual = taskUseCases.observeTask(uuid = FakeData.task.uuid).firstOrNull())
+
+        val older = FakeData.task.copy(modifiedAt = FakeData.task.modifiedAt - 1.hours, title = "Local")
+        taskUseCases.upsertTask(task = older)
+        assertTrue(actual = taskRepository.executeSyncTask(job = job) is JobResult.Success)
+        assertEquals(expected = FakeData.task, actual = taskUseCases.observeTask(uuid = FakeData.task.uuid).firstOrNull())
+    }
+
+    /** Verifies that a single task sync job without an entity uuid fails. */
+    @Test
+    fun executeSyncTaskWithoutEntityUuid() = runUnitTest {
+        val taskRepository = dependency.get()
+            .getUserDependency(user = FakeData.adminUser)
+            .repositories
+            .taskRepository
+
+        val jobResult = taskRepository.executeSyncTask(job = Job(userUuid = Uuid.NIL, entityType = EntityType.TASK, type = Job.Type.GET))
         assertTrue(actual = jobResult is JobResult.Error)
     }
 }
