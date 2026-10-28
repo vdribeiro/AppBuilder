@@ -7,7 +7,9 @@ import androidx.core.content.IntentCompat
 import com.app.builder.core.nfc.AndroidNfcController.Companion.toNfcTag
 import com.app.builder.core.nfc.TagProvider
 import com.app.builder.core.telemetry.Telemetry
+import com.app.builder.test.ExcludeFromTesting
 
+@ExcludeFromTesting
 object AndroidTagProvider {
 
     private const val TAG = "AndroidTagProvider"

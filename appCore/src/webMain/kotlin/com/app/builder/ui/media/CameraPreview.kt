@@ -6,7 +6,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import com.app.builder.core.media.Camera
 import com.app.builder.core.media.WebCamera
+import com.app.builder.test.ExcludeFromTesting
 
+@ExcludeFromTesting
 @Composable
 actual fun CameraPreview(modifier: Modifier, camera: Camera) {
     val webCamera = camera as? WebCamera ?: return

@@ -1,7 +1,9 @@
 package com.app.builder.core.telemetry
 
 import platform.Foundation.NSLog
+import com.app.builder.test.ExcludeFromTesting
 
+@ExcludeFromTesting
 actual object PlatformLogger: TelemetryEngine {
 
     actual override fun info(tag: String, message: String) {

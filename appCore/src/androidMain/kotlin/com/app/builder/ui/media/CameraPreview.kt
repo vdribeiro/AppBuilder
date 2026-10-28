@@ -9,7 +9,9 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.app.builder.core.media.AndroidCamera
 import com.app.builder.core.media.Camera
+import com.app.builder.test.ExcludeFromTesting
 
+@ExcludeFromTesting
 @Composable
 actual fun CameraPreview(modifier: Modifier, camera: Camera) {
     val androidCamera = camera as? AndroidCamera ?: return
