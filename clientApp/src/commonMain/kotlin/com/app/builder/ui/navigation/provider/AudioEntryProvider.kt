@@ -22,7 +22,7 @@ fun EntryProviderScope<NavKey>.audioProvider(useCases: UseCases) {
     entry<Screen.Audio> {
         val router = LocalRouter.current
         AudioScreen(
-            actionBarStore = viewModel { ActionBarStore(state = ActionBarState(), router = router, authenticationUseCases = useCases.authenticationUseCases, syncUseCases = useCases.syncUseCases) },
+            actionBarStore = viewModel { ActionBarStore(state = ActionBarState(), router = router, authenticationUseCases = useCases.authenticationUseCases, statusUseCases = useCases.statusUseCases) },
             navigationStore = viewModel { NavigationStore(state = NavigationState(selected = NavigationRoute.AUDIO), router = router, authenticationUseCases = useCases.authenticationUseCases) },
         )
     }

@@ -22,7 +22,7 @@ fun EntryProviderScope<NavKey>.homeProvider(useCases: UseCases) {
     entry<Screen.Home> {
         val router = LocalRouter.current
         HomeScreen(
-            actionBarStore = viewModel { ActionBarStore(state = ActionBarState(), router = router, authenticationUseCases = useCases.authenticationUseCases) },
+            actionBarStore = viewModel { ActionBarStore(state = ActionBarState(), router = router, authenticationUseCases = useCases.authenticationUseCases, statusUseCases = useCases.statusUseCases) },
             navigationStore = viewModel { NavigationStore(state = NavigationState(selected = NavigationRoute.HOME), router = router, authenticationUseCases = useCases.authenticationUseCases) },
         )
     }

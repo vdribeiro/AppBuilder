@@ -7,6 +7,8 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.TestScope
@@ -14,6 +16,7 @@ import com.app.builder.data.storage.AppFile
 import com.app.builder.domain.EntityType
 import com.app.builder.domain.UserCredentials
 import com.app.builder.domain.gateway.authentication.AuthenticationUseCases
+import com.app.builder.domain.gateway.status.StatusUseCases
 import com.app.builder.test.FakeData
 import com.app.builder.test.TestCase
 import com.app.builder.ui.navigation.Screen
@@ -179,6 +182,41 @@ class ActionBarStoreTest: TestCase() {
         assertEquals(expected = 1, actual = added)
         assertEquals(expected = 1, actual = saved)
         assertEquals(expected = 1, actual = deleted)
+    }
+
+    /** Verifies that the status flags follow the status use cases, and stay at their defaults without them. */
+    @Test
+    fun status() = runUnitTest {
+        val synced = MutableStateFlow(value = true)
+        val clockTrusted = MutableStateFlow(value = true)
+        val store = ActionBarStore(
+            state = ActionBarState(),
+            router = router,
+            authenticationUseCases = authenticationUseCases(),
+            statusUseCases = object: StatusUseCases {
+                override fun observeSynced(): Flow<Boolean> = synced
+                override fun observeClockTrusted(): Flow<Boolean> = clockTrusted
+            },
+        )
+        subscribe(store = store)
+
+        store.stateFlow.first { it.synced == true && it.clockTrusted }
+
+        synced.value = false
+        store.stateFlow.first { it.synced == false }
+
+        clockTrusted.value = false
+        store.stateFlow.first { !it.clockTrusted }
+
+        synced.value = true
+        clockTrusted.value = true
+        store.stateFlow.first { it.synced == true && it.clockTrusted }
+
+        val withoutStatus = ActionBarStore(state = ActionBarState(), router = router, authenticationUseCases = authenticationUseCases())
+        subscribe(store = withoutStatus)
+        val withoutStatusState = withoutStatus.stateFlow.first { it.showLogin }
+        assertNull(actual = withoutStatusState.synced)
+        assertTrue(actual = withoutStatusState.clockTrusted)
     }
 
     /** Verifies that the avatar opens the user profile and the login button opens the login screen. */

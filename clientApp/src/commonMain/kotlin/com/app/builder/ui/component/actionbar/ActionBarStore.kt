@@ -9,6 +9,7 @@ import com.app.builder.data.storage.StorageFile
 import com.app.builder.domain.EntityType
 import com.app.builder.domain.Permission
 import com.app.builder.domain.gateway.authentication.AuthenticationUseCases
+import com.app.builder.domain.gateway.status.StatusUseCases
 import com.app.builder.plusOrMinus
 import com.app.builder.ui.component.image.toImage
 import com.app.builder.ui.core.image.Image
@@ -17,11 +18,12 @@ import com.app.builder.ui.navigation.Screen
 import com.app.builder.ui.store.Store
 
 /**
- * Store backing an action bar, resolving the current user's avatar and write permission and persisting its mode, sorting and property filters.
+ * Store backing an action bar, resolving the current user's avatar and write permission, following the application status and persisting its mode, sorting and property filters.
  *
  * @param state Initial action bar state.
  * @property router The router used for navigation.
  * @property authenticationUseCases Use cases used to observe the current user.
+ * @property statusUseCases Use cases used to observe the application status, or `null` to never show it.
  * @property storageFile File the action bar data is persisted to, or `null` to keep it in memory only.
  * @property defaults Action bar data used when [storageFile] holds nothing yet.
  * @property entityType Entity the write permission is checked against, or `null` when the screen has no entity.
@@ -33,6 +35,7 @@ class ActionBarStore(
     state: ActionBarState,
     private val router: Router,
     private val authenticationUseCases: AuthenticationUseCases,
+    private val statusUseCases: StatusUseCases? = null,
     private val storageFile: StorageFile<AppFile.ActionBarData>? = null,
     private val defaults: AppFile.ActionBarData = AppFile.ActionBarData(),
     private val entityType: EntityType? = null,
@@ -61,7 +64,7 @@ class ActionBarStore(
     }
 
     /**
-     * Loads the persisted action bar data and keeps the avatar and write permission in sync with the current user.
+     * Loads the persisted action bar data, keeps the avatar and write permission in sync with the current user and follows the application status.
      *
      * @return The [Job] representing this execution.
      */
@@ -101,6 +104,13 @@ class ActionBarStore(
                     showLogin = user == null,
                 )
             }
+        }
+
+        statusUseCases?.observeSynced()?.observe(id = "synced") { synced ->
+            updateState { it.copy(synced = synced) }
+        }
+        statusUseCases?.observeClockTrusted()?.observe(id = "clock_trusted") { clockTrusted ->
+            updateState { it.copy(clockTrusted = clockTrusted) }
         }
 
         Telemetry.info(tag = TAG, message = "Setup complete")

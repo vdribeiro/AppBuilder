@@ -24,7 +24,7 @@ fun EntryProviderScope<NavKey>.configsProvider(useCases: UseCases) {
     entry<Screen.Configs> {
         val router = LocalRouter.current
         ConfigsScreen(
-            actionBarStore = viewModel { ActionBarStore(state = ActionBarState(title = "config"), router = router, authenticationUseCases = useCases.authenticationUseCases) },
+            actionBarStore = viewModel { ActionBarStore(state = ActionBarState(), router = router, authenticationUseCases = useCases.authenticationUseCases, statusUseCases = useCases.statusUseCases) },
             navigationStore = viewModel { NavigationStore(state = NavigationState(selected = NavigationRoute.CONFIG), router = router, authenticationUseCases = useCases.authenticationUseCases) },
             store = viewModel { ConfigScreenStore(state = ConfigScreenState(), configUseCases = useCases.configUseCases, authenticationUseCases = useCases.authenticationUseCases) },
         )

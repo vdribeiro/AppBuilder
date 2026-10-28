@@ -24,7 +24,7 @@ fun EntryProviderScope<NavKey>.deviceFilesProvider(useCases: UseCases) {
     entry<Screen.DeviceFiles> {
         val router = LocalRouter.current
         DeviceFilesScreen(
-            actionBarStore = viewModel { ActionBarStore(state = ActionBarState(title = "device_file"), router = router, authenticationUseCases = useCases.authenticationUseCases) },
+            actionBarStore = viewModel { ActionBarStore(state = ActionBarState(), router = router, authenticationUseCases = useCases.authenticationUseCases, statusUseCases = useCases.statusUseCases) },
             navigationStore = viewModel { NavigationStore(state = NavigationState(selected = NavigationRoute.DEVICE_FILE), router = router, authenticationUseCases = useCases.authenticationUseCases) },
             store = viewModel { DeviceFilesScreenStore(state = DeviceFilesScreenState()) },
         )

@@ -53,10 +53,11 @@ sealed interface ActionBarAction {
 /**
  * State of an action bar, holding what it displays and the sorting and property filters it applies to the screen below it.
  *
- * @property title Text shown as the action bar's title.
  * @property properties Map of property keys to their display labels, used to populate the sort, visibility and search menus.
  * @property avatarName The name to fit in the avatar. Only the first letter of the first and last name will show capitalized if no image is provided.
  * @property avatarImage The image resource.
+ * @property synced Whether no background job is pending or running, or `null` when the status isn't followed.
+ * @property clockTrusted Whether the device clock can be trusted.
  * @property showAdd Whether the add button should be shown.
  * @property showSave Whether the save button should be shown.
  * @property showDelete Whether the delete button should be shown.
@@ -67,14 +68,15 @@ sealed interface ActionBarAction {
  * @property visibleProperties Property keys currently shown as visible columns.
  */
 data class ActionBarState(
-    val title: String = "",
     val properties: ImmutableMap<String, String> = persistentMapOf(),
     val avatarName: String? = null,
     val avatarImage: Image? = null,
+    val synced: Boolean? = null,
+    val clockTrusted: Boolean = true,
     val showAdd: Boolean = false,
     val showSave: Boolean = false,
     val showDelete: Boolean = false,
-    val showLogin: Boolean = true,
+    val showLogin: Boolean = false,
     val searchableProperties: ImmutableList<String> = persistentListOf(),
     val sortAscending: Boolean = true,
     val sortProperty: String = "",

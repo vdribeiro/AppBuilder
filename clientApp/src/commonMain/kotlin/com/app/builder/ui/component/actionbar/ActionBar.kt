@@ -23,11 +23,12 @@ fun ActionBar(store: Store<ActionBarState, ActionBarAction>) {
         modifier = Modifier
             .testTag(tag = "action_bar")
             .fillMaxWidth(),
-        title = state.title,
         properties = state.properties,
         avatarName = state.avatarName,
         avatarImage = state.avatarImage,
         onAvatarClick = { store.send(action = ActionBarAction.OpenUser) },
+        synced = state.synced,
+        clockTrusted = state.clockTrusted,
         onAddClick = if (state.showAdd) {
             { store.send(action = ActionBarAction.Add) }
         } else null,

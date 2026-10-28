@@ -22,7 +22,7 @@ fun EntryProviderScope<NavKey>.cameraProvider(useCases: UseCases) {
     entry<Screen.Camera> {
         val router = LocalRouter.current
         CameraScreen(
-            actionBarStore = viewModel { ActionBarStore(state = ActionBarState(title = "camera"), router = router, authenticationUseCases = useCases.authenticationUseCases) },
+            actionBarStore = viewModel { ActionBarStore(state = ActionBarState(), router = router, authenticationUseCases = useCases.authenticationUseCases, statusUseCases = useCases.statusUseCases) },
             navigationStore = viewModel { NavigationStore(state = NavigationState(selected = NavigationRoute.CAMERA), router = router, authenticationUseCases = useCases.authenticationUseCases) },
         )
     }

@@ -22,7 +22,7 @@ fun EntryProviderScope<NavKey>.deviceLocationProvider(useCases: UseCases) {
     entry<Screen.DeviceLocation> {
         val router = LocalRouter.current
         DeviceLocationScreen(
-            actionBarStore = viewModel { ActionBarStore(state = ActionBarState(title = "device_location"), router = router, authenticationUseCases = useCases.authenticationUseCases) },
+            actionBarStore = viewModel { ActionBarStore(state = ActionBarState(), router = router, authenticationUseCases = useCases.authenticationUseCases, statusUseCases = useCases.statusUseCases) },
             navigationStore = viewModel { NavigationStore(state = NavigationState(selected = NavigationRoute.DEVICE_LOCATION), router = router, authenticationUseCases = useCases.authenticationUseCases) },
         )
     }
