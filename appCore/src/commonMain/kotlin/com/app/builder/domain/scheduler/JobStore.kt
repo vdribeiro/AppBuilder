@@ -13,6 +13,13 @@ interface JobStore {
     fun observePendingJobs(): Flow<List<Job>>
 
     /**
+     * Observes jobs either awaiting or currently in execution.
+     *
+     * @return A flow of pending and running jobs.
+     */
+    fun observeActiveJobs(): Flow<List<Job>>
+
+    /**
      * Inserts or updates a job in storage.
      *
      * @param job The [Job] to save.

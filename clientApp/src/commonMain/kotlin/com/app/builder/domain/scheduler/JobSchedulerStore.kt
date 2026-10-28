@@ -18,6 +18,9 @@ class JobSchedulerStore(database: AppDatabase): JobStore {
     override fun observePendingJobs(): Flow<List<Job>> =
         jobDao.getJobsByState(states = listOf(Job.State.PENDING)).asFlow { it.toJob() }
 
+    override fun observeActiveJobs(): Flow<List<Job>> =
+        jobDao.getJobsByState(states = listOf(Job.State.PENDING, Job.State.RUNNING)).asFlow { it.toJob() }
+
     override suspend fun upsertJob(job: Job): Boolean =
         jobDao.upsertJob(Job = job.toJobSchema()) > 0
 

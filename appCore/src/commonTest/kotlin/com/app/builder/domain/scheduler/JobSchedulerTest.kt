@@ -2,6 +2,7 @@ package com.app.builder.domain.scheduler
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 import kotlin.time.Duration.Companion.milliseconds
@@ -82,6 +83,7 @@ class JobSchedulerTest: TestCase() {
     /** [JobStore] fixture whose every operation throws, for verifying failures are swallowed. */
     private class ThrowingJobStore: JobStore {
         override fun observePendingJobs(): Flow<List<Job>> = flow { throw IllegalStateException("boom") }
+        override fun observeActiveJobs(): Flow<List<Job>> = flow { throw IllegalStateException("boom") }
         override suspend fun upsertJob(job: Job): Boolean = throw IllegalStateException("boom")
         override suspend fun cancelPendingJobs(job: Job): Boolean = throw IllegalStateException("boom")
         override suspend fun getDuplicateJobsCount(job: Job): Long = throw IllegalStateException("boom")
@@ -288,6 +290,33 @@ class JobSchedulerTest: TestCase() {
         scheduler.queue(job = job.copy(conflictPolicy = Job.ConflictPolicy.APPEND))
         scheduler.queue(job = job.copy(conflictPolicy = Job.ConflictPolicy.REPLACE))
         scheduler.queue(job = job.copy(conflictPolicy = Job.ConflictPolicy.IGNORE))
+    }
+
+    /** Verifies that syncing is reported while a job is pending or running, and stops once no job is left. */
+    @Test
+    fun observeSyncingFollowsActiveJobs() = runUnitTest {
+        val jobStore = LocalJobStore()
+        val scheduler = JobScheduler(jobStore = jobStore, jobFactory = FakeJobFactory(), clockService = FakeClockService())
+        val job = Job(userUuid = Uuid.NIL, entityType = EntityType.CLIENT_FLAG, type = Job.Type.GET)
+
+        assertFalse(actual = scheduler.observeSyncing().first())
+
+        scheduler.queue(job = job)
+        assertTrue(actual = scheduler.observeSyncing().first())
+
+        jobStore.updateJobStateAndAttempt(job = job.copy(state = Job.State.RUNNING))
+        assertTrue(actual = scheduler.observeSyncing().first())
+
+        jobStore.updateJobStateAndAttempt(job = job.copy(state = Job.State.COMPLETE))
+        assertFalse(actual = scheduler.observeSyncing().first())
+    }
+
+    /** Verifies that a job store failure while observing active jobs is reported as not syncing. */
+    @Test
+    fun observeSyncingSwallowsJobStoreFailures() = runUnitTest {
+        val scheduler = JobScheduler(jobStore = ThrowingJobStore(), jobFactory = FakeJobFactory(), clockService = FakeClockService())
+
+        assertFalse(actual = scheduler.observeSyncing().first())
     }
 
     /** Verifies job store failures during start are swallowed. */

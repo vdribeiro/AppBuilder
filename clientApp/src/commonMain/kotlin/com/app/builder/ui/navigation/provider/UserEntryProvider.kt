@@ -25,7 +25,7 @@ fun EntryProviderScope<NavKey>.userProvider(useCases: UseCases) {
         val router = LocalRouter.current
         // TODO
         RegisterScreen(
-            actionBarStore = viewModel { ActionBarStore(state = ActionBarState(title = "registration"), router = router, authenticationUseCases = useCases.authenticationUseCases) },
+            actionBarStore = viewModel { ActionBarStore(state = ActionBarState(), router = router, authenticationUseCases = useCases.authenticationUseCases, syncUseCases = useCases.syncUseCases) },
             navigationStore = viewModel { NavigationStore(state = NavigationState(selected = NavigationRoute.USER), router = router, authenticationUseCases = useCases.authenticationUseCases) },
             store = viewModel { RegistrationScreenStore(state = RegistrationScreenState(), authenticationUseCases = useCases.authenticationUseCases) }
         )
