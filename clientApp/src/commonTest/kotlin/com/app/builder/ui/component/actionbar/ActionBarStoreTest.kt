@@ -48,7 +48,7 @@ class ActionBarStoreTest: TestCase() {
     private fun TestScope.subscribe(store: ActionBarStore): Job = backgroundScope.launch { store.stateFlow.collect {} }
 
     /**
-     * Logs in, builds a store wired with both callbacks on the task entity, and waits until it reflects the logged in user.
+     * Logs in, builds a store wired with every callback on the task entity, and waits until it reflects the logged in user.
      *
      * @param credentials The credentials to log in with.
      * @return The [ActionBarState] once the user is resolved.
@@ -63,13 +63,14 @@ class ActionBarStoreTest: TestCase() {
             authenticationUseCases = authenticationUseCases,
             entityType = EntityType.TASK,
             onAddClick = {},
+            onSaveClick = {},
             onDeleteClick = {},
         )
         subscribe(store = store)
         return store.stateFlow.first { !it.showLogin }
     }
 
-    /** Verifies that a logged out user is offered the login button and neither add nor delete, even with both callbacks set. */
+    /** Verifies that a logged out user is offered the login button and none of add, save or delete, even with every callback set. */
     @Test
     fun loggedOut() = runUnitTest {
         val store = ActionBarStore(
@@ -78,38 +79,42 @@ class ActionBarStoreTest: TestCase() {
             authenticationUseCases = authenticationUseCases(),
             entityType = EntityType.TASK,
             onAddClick = {},
+            onSaveClick = {},
             onDeleteClick = {},
         )
         subscribe(store = store)
 
         val state = store.stateFlow.first { it.showLogin }
         assertFalse(actual = state.showAdd)
+        assertFalse(actual = state.showSave)
         assertFalse(actual = state.showDelete)
         assertNull(actual = state.avatarName)
     }
 
-    /** Verifies that a user with write permission on the entity is offered add and delete, and no login button. */
+    /** Verifies that a user with write permission on the entity is offered add, save and delete, and no login button. */
     @Test
     fun writePermission() = runUnitTest {
         val state = loggedInState(credentials = FakeData.adminCredentials)
 
         assertEquals(expected = FakeData.adminUser.name, actual = state.avatarName)
         assertTrue(actual = state.showAdd)
+        assertTrue(actual = state.showSave)
         assertTrue(actual = state.showDelete)
         assertFalse(actual = state.showLogin)
     }
 
-    /** Verifies that a user with only read permission on the entity is offered neither add nor delete. */
+    /** Verifies that a user with only read permission on the entity is offered none of add, save or delete. */
     @Test
     fun readPermission() = runUnitTest {
         val state = loggedInState(credentials = FakeData.credentials)
 
         assertEquals(expected = FakeData.user.name, actual = state.avatarName)
         assertFalse(actual = state.showAdd)
+        assertFalse(actual = state.showSave)
         assertFalse(actual = state.showDelete)
     }
 
-    /** Verifies that add and delete stay hidden when their callbacks are missing, or when the store has no entity to check permissions against. */
+    /** Verifies that add, save and delete stay hidden when their callbacks are missing, or when the store has no entity to check permissions against. */
     @Test
     fun missingCallbacksOrEntity() = runUnitTest {
         val authenticationUseCases = authenticationUseCases()
@@ -124,6 +129,7 @@ class ActionBarStoreTest: TestCase() {
         subscribe(store = withoutCallbacks)
         val withoutCallbacksState = withoutCallbacks.stateFlow.first { !it.showLogin }
         assertFalse(actual = withoutCallbacksState.showAdd)
+        assertFalse(actual = withoutCallbacksState.showSave)
         assertFalse(actual = withoutCallbacksState.showDelete)
 
         val withoutEntity = ActionBarStore(
@@ -131,35 +137,47 @@ class ActionBarStoreTest: TestCase() {
             router = router,
             authenticationUseCases = authenticationUseCases,
             onAddClick = {},
+            onSaveClick = {},
             onDeleteClick = {},
         )
         subscribe(store = withoutEntity)
         val withoutEntityState = withoutEntity.stateFlow.first { !it.showLogin }
         assertFalse(actual = withoutEntityState.showAdd)
+        assertFalse(actual = withoutEntityState.showSave)
         assertFalse(actual = withoutEntityState.showDelete)
     }
 
-    /** Verifies that the add and delete actions invoke their callbacks. */
+    /** Verifies that the add, save and delete actions invoke their callbacks. */
     @Test
-    fun addAndDelete() = runUnitTest {
+    fun addSaveAndDelete() = runUnitTest {
         var added = 0
+        var saved = 0
         var deleted = 0
         val store = ActionBarStore(
             state = ActionBarState(),
             router = router,
             authenticationUseCases = authenticationUseCases(),
             onAddClick = { added++ },
+            onSaveClick = { saved++ },
             onDeleteClick = { deleted++ },
         )
 
         store.send(action = ActionBarAction.Add)
         testScheduler.advanceUntilIdle()
         assertEquals(expected = 1, actual = added)
+        assertEquals(expected = 0, actual = saved)
+        assertEquals(expected = 0, actual = deleted)
+
+        store.send(action = ActionBarAction.Save)
+        testScheduler.advanceUntilIdle()
+        assertEquals(expected = 1, actual = added)
+        assertEquals(expected = 1, actual = saved)
         assertEquals(expected = 0, actual = deleted)
 
         store.send(action = ActionBarAction.Delete)
         testScheduler.advanceUntilIdle()
         assertEquals(expected = 1, actual = added)
+        assertEquals(expected = 1, actual = saved)
         assertEquals(expected = 1, actual = deleted)
     }
 

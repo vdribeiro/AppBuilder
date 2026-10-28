@@ -31,6 +31,9 @@ fun ActionBar(store: Store<ActionBarState, ActionBarAction>) {
         onAddClick = if (state.showAdd) {
             { store.send(action = ActionBarAction.Add) }
         } else null,
+        onSaveClick = if (state.showSave) {
+            { store.send(action = ActionBarAction.Save) }
+        } else null,
         onDeleteClick = if (state.showDelete) {
             { store.send(action = ActionBarAction.Delete) }
         } else null,

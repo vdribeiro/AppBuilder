@@ -43,6 +43,7 @@ fun EntryProviderScope<NavKey>.taskProvider(useCases: UseCases) {
                     useCases = useCases,
                     title = "tasks",
                     showAdd = true,
+                    onSaveClick = null,
                     onDeleteClick = null
                 )
             },
@@ -53,7 +54,7 @@ fun EntryProviderScope<NavKey>.taskProvider(useCases: UseCases) {
     entry<Screen.TaskDetail>(metadata = split()) {
         val router = LocalRouter.current
         val splitScreen = LocalSplitScreen.current
-        val store = viewModel { TaskDetailScreenStore(state = TaskDetailScreenState(), router = router, taskUseCases = useCases.taskUseCases, taskUuid = it.uuid) }
+        val store = viewModel { TaskDetailScreenStore(state = TaskDetailScreenState(), router = router, authenticationUseCases = useCases.authenticationUseCases, taskUseCases = useCases.taskUseCases, taskUuid = it.uuid) }
         TaskDetailScreen(
             actionBarStore = viewModel {
                 getActionBarStore(
@@ -61,6 +62,7 @@ fun EntryProviderScope<NavKey>.taskProvider(useCases: UseCases) {
                     useCases = useCases,
                     title = "task",
                     showAdd = splitScreen,
+                    onSaveClick = { store.send(action = TaskDetailScreenAction.Save) },
                     onDeleteClick = { store.send(action = TaskDetailScreenAction.Delete) }
                 )
             },
@@ -98,6 +100,7 @@ private val actionBarState = ActionBarState(
  * @param useCases The use cases.
  * @param title The action bar title.
  * @param showAdd true to show add button, false otherwise.
+ * @param onSaveClick The save click callback, or null to hide the save action.
  * @param onDeleteClick The delete click callback, or null to hide the delete action.
  * @return The action bar store.
  */
@@ -106,6 +109,7 @@ private fun getActionBarStore(
     useCases: UseCases,
     title: String,
     showAdd: Boolean,
+    onSaveClick: (suspend () -> Unit)?,
     onDeleteClick: (suspend () -> Unit)?
 ): ActionBarStore = ActionBarStore(
     state = actionBarState.copy(title = title),
@@ -121,5 +125,6 @@ private fun getActionBarStore(
             router.navigate(screen = Screen.TaskDetail(uuid = task.uuid.toString()), option = Router.NavOption.REPLACE_LAST)
         }
     } else null,
+    onSaveClick = onSaveClick,
     onDeleteClick = onDeleteClick
 )

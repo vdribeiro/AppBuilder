@@ -26,6 +26,7 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.FilterList
+import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.runtime.Composable
@@ -63,6 +64,7 @@ import com.app.builder.ui.core.text.Text
  * @param avatarImage The image resource.
  * @param onAvatarClick Callback for the avatar click action.
  * @param onAddClick Shows an add button when not null and executes this callback when clicked.
+ * @param onSaveClick Shows a save button when not null and executes this callback when clicked.
  * @param onDeleteClick Shows a delete button when not null and executes this callback when clicked.
  * @param onLoginClick Shows a login button when not null and executes this callback when clicked.
  * @param onSearch Shows a search button when not null and is called with the debounced search query as the user types in search mode.
@@ -85,6 +87,7 @@ fun TopActionBar(
     avatarImage: Image? = null,
     onAvatarClick: (() -> Unit)? = null,
     onAddClick: (() -> Unit)? = null,
+    onSaveClick: (() -> Unit)? = null,
     onDeleteClick: (() -> Unit)? = null,
     onLoginClick: (() -> Unit)? = null,
     onSearch: ((String) -> Unit)? = null,
@@ -195,6 +198,12 @@ fun TopActionBar(
                 modifier = Modifier.testTag(tag = "action_add"),
                 onClick = { onAddClick() },
                 content = { Icon(imageVector = Icons.Default.Add) }
+            )
+
+            if (onSaveClick != null) Button(
+                modifier = Modifier.testTag(tag = "action_save"),
+                onClick = { onSaveClick() },
+                content = { Icon(imageVector = Icons.Default.Save) }
             )
 
             if (onDeleteClick != null) Button(

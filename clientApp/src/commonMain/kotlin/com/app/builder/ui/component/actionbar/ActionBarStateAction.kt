@@ -12,6 +12,8 @@ sealed interface ActionBarAction {
     data object OpenUser: ActionBarAction
     /** Add a domain. */
     data object Add: ActionBarAction
+    /** Save the current domain. */
+    data object Save: ActionBarAction
     /** Delete the current domain. */
     data object Delete: ActionBarAction
     /** Opens the login screen. */
@@ -56,6 +58,7 @@ sealed interface ActionBarAction {
  * @property avatarName The name to fit in the avatar. Only the first letter of the first and last name will show capitalized if no image is provided.
  * @property avatarImage The image resource.
  * @property showAdd Whether the add button should be shown.
+ * @property showSave Whether the save button should be shown.
  * @property showDelete Whether the delete button should be shown.
  * @property showLogin Whether the login button should be shown.
  * @property searchableProperties Property keys currently included when searching.
@@ -69,6 +72,7 @@ data class ActionBarState(
     val avatarName: String? = null,
     val avatarImage: Image? = null,
     val showAdd: Boolean = false,
+    val showSave: Boolean = false,
     val showDelete: Boolean = false,
     val showLogin: Boolean = true,
     val searchableProperties: ImmutableList<String> = persistentListOf(),

@@ -26,6 +26,7 @@ import com.app.builder.ui.store.Store
  * @property defaults Action bar data used when [storageFile] holds nothing yet.
  * @property entityType Entity the write permission is checked against, or `null` when the screen has no entity.
  * @property onAddClick Called when the add button is clicked.
+ * @property onSaveClick Called when the save button is clicked.
  * @property onDeleteClick Called when the delete button is clicked.
  */
 class ActionBarStore(
@@ -36,6 +37,7 @@ class ActionBarStore(
     private val defaults: AppFile.ActionBarData = AppFile.ActionBarData(),
     private val entityType: EntityType? = null,
     private val onAddClick: (suspend () -> Unit)? = null,
+    private val onSaveClick: (suspend () -> Unit)? = null,
     private val onDeleteClick: (suspend () -> Unit)? = null,
 ): Store<ActionBarState, ActionBarAction>(initialState = state) {
     init {
@@ -47,6 +49,7 @@ class ActionBarStore(
         when (action) {
             ActionBarAction.OpenUser -> router.navigate(screen = Screen.UserProfile)
             ActionBarAction.Add -> add()
+            ActionBarAction.Save -> save()
             ActionBarAction.Delete -> delete()
             ActionBarAction.Login -> router.navigate(screen = Screen.Login)
             is ActionBarAction.Search -> search(action = action)
@@ -93,6 +96,7 @@ class ActionBarStore(
                     avatarName = user?.name,
                     avatarImage = userImage,
                     showAdd = onAddClick != null && write,
+                    showSave = onSaveClick != null && write,
                     showDelete = onDeleteClick != null && write,
                     showLogin = user == null,
                 )
@@ -123,6 +127,15 @@ class ActionBarStore(
      */
     private fun add(): Job = launch(id = "add") {
         onAddClick?.invoke()
+    }
+
+    /**
+     * Call save callback.
+     *
+     * @return The [Job] representing this execution.
+     */
+    private fun save(): Job = launch(id = "save") {
+        onSaveClick?.invoke()
     }
 
     /**
