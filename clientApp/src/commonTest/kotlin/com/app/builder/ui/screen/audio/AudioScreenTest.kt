@@ -34,7 +34,7 @@ class AudioScreenTest: TestCase() {
             .useCases
         authenticatedUseCases.authenticationUseCases.login(credentials = FakeData.adminCredentials)
 
-        val actionBarStore = ActionBarStore(state = ActionBarState(title = "audio"), router = router, authenticationUseCases = authenticatedUseCases.authenticationUseCases)
+        val actionBarStore = ActionBarStore(state = ActionBarState(), router = router, authenticationUseCases = authenticatedUseCases.authenticationUseCases)
         val navigationStore = NavigationStore(state = NavigationState(selected = NavigationRoute.AUDIO), router = router, authenticationUseCases = authenticatedUseCases.authenticationUseCases)
         val audioPlayer = FakeAudioPlayer()
 

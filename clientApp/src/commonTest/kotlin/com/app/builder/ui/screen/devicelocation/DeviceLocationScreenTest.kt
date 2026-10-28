@@ -39,7 +39,7 @@ class DeviceLocationScreenTest: TestCase() {
             .useCases
         authenticatedUseCases.authenticationUseCases.login(credentials = FakeData.adminCredentials)
 
-        val actionBarStore = ActionBarStore(state = ActionBarState(title = "device location"), router = router, authenticationUseCases = authenticatedUseCases.authenticationUseCases)
+        val actionBarStore = ActionBarStore(state = ActionBarState(), router = router, authenticationUseCases = authenticatedUseCases.authenticationUseCases)
         val navigationStore = NavigationStore(state = NavigationState(), router = router, authenticationUseCases = authenticatedUseCases.authenticationUseCases)
         val deviceLocationProvider = FakeDeviceLocationProvider()
 

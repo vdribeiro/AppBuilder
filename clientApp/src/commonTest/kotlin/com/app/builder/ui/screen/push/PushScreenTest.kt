@@ -30,7 +30,7 @@ class PushScreenTest: TestCase() {
         val navigationStore = NavigationStore(state = NavigationState(selected = NavigationRoute.NOTIFICATION), router = router, authenticationUseCases = authenticatedUseCases.authenticationUseCases)
         val pushScreenStore = PushScreenStore(state = PushScreenState(), pushUseCases = authenticatedUseCases.pushUseCases, userUseCases = authenticatedUseCases.userUseCases)
 
-        val actionBarStore = ActionBarStore(state = ActionBarState(title = "notifications"), router = router, authenticationUseCases = authenticatedUseCases.authenticationUseCases)
+        val actionBarStore = ActionBarStore(state = ActionBarState(), router = router, authenticationUseCases = authenticatedUseCases.authenticationUseCases)
 
         setUI { PushScreen(actionBarStore = actionBarStore, navigationStore = navigationStore, store = pushScreenStore) }
 

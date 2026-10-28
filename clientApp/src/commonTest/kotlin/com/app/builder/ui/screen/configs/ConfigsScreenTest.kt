@@ -34,7 +34,7 @@ class ConfigsScreenTest: TestCase() {
 
         val navigationStore = NavigationStore(state = NavigationState(selected = NavigationRoute.CONFIG), router = router, authenticationUseCases = authenticatedUseCases.authenticationUseCases)
         val configScreenStore = ConfigScreenStore(state = ConfigScreenState(), configUseCases = authenticatedUseCases.configUseCases, authenticationUseCases = authenticatedUseCases.authenticationUseCases)
-        val actionBarStore = ActionBarStore(state = ActionBarState(title = "config"), router = router, authenticationUseCases = authenticatedUseCases.authenticationUseCases)
+        val actionBarStore = ActionBarStore(state = ActionBarState(), router = router, authenticationUseCases = authenticatedUseCases.authenticationUseCases)
 
         setUI { ConfigsScreen(actionBarStore = actionBarStore, navigationStore = navigationStore, store = configScreenStore) }
 
@@ -152,7 +152,7 @@ class ConfigsScreenTest: TestCase() {
 
         val navigationStore = NavigationStore(state = NavigationState(selected = NavigationRoute.CONFIG), router = router, authenticationUseCases = authenticatedUseCases.authenticationUseCases)
         val configScreenStore = ConfigScreenStore(state = ConfigScreenState(), configUseCases = authenticatedUseCases.configUseCases, authenticationUseCases = authenticatedUseCases.authenticationUseCases)
-        val actionBarStore = ActionBarStore(state = ActionBarState(title = "config"), router = router, authenticationUseCases = authenticatedUseCases.authenticationUseCases)
+        val actionBarStore = ActionBarStore(state = ActionBarState(), router = router, authenticationUseCases = authenticatedUseCases.authenticationUseCases)
 
         setUI { ConfigsScreen(actionBarStore = actionBarStore, navigationStore = navigationStore, store = configScreenStore) }
 

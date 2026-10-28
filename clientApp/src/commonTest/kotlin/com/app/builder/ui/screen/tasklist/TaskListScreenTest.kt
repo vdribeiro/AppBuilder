@@ -47,7 +47,7 @@ class TaskListScreenTest: TestCase() {
             searchableProperties = properties,
         )
         val actionBarStore = ActionBarStore(
-            state = ActionBarState(title = "tasks", visibleProperties = properties, searchableProperties = properties),
+            state = ActionBarState(visibleProperties = properties, searchableProperties = properties),
             router = router,
             authenticationUseCases = authenticatedUseCases.authenticationUseCases,
             storageFile = AppFile.TaskPreferences,
@@ -71,7 +71,6 @@ class TaskListScreenTest: TestCase() {
         onNodeWithTag(testTag = "navigation_bar").assertIsDisplayed()
         onNodeWithText(text = "task").assertIsSelected()
 
-        onNodeWithText(text = "tasks").assertIsDisplayed()
         onNodeWithTag(testTag = "task_list").assertIsDisplayed()
         onNodeWithTag(testTag = "task_list").count(count = 1)
 
@@ -98,7 +97,7 @@ class TaskListScreenTest: TestCase() {
             searchableProperties = properties,
         )
         val actionBarStore = ActionBarStore(
-            state = ActionBarState(title = "tasks", visibleProperties = properties, searchableProperties = properties),
+            state = ActionBarState(visibleProperties = properties, searchableProperties = properties),
             router = router,
             authenticationUseCases = authenticatedUseCases.authenticationUseCases,
             storageFile = AppFile.TaskPreferences,

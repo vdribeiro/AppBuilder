@@ -38,7 +38,7 @@ class RegisterScreenTest: TestCase() {
         val navigationStore = NavigationStore(state = NavigationState(selected = NavigationRoute.USER), router = router, authenticationUseCases = authenticatedUseCases.authenticationUseCases)
         val registrationScreenStore = RegistrationScreenStore(state = RegistrationScreenState(), authenticationUseCases = authenticatedUseCases.authenticationUseCases)
 
-        val actionBarStore = ActionBarStore(state = ActionBarState(title = "registration"), router = router, authenticationUseCases = authenticatedUseCases.authenticationUseCases)
+        val actionBarStore = ActionBarStore(state = ActionBarState(), router = router, authenticationUseCases = authenticatedUseCases.authenticationUseCases)
 
         setUI { RegisterScreen(actionBarStore = actionBarStore, navigationStore = navigationStore, store = registrationScreenStore) }
 

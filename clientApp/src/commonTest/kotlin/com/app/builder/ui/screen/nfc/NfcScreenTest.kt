@@ -51,7 +51,7 @@ class NfcScreenTest: TestCase() {
             .useCases
             .authenticationUseCases
 
-        val actionBarStore = ActionBarStore(state = ActionBarState(title = "nfc"), router = router, authenticationUseCases = authenticationUseCases)
+        val actionBarStore = ActionBarStore(state = ActionBarState(), router = router, authenticationUseCases = authenticationUseCases)
         val navigationStore = NavigationStore(state = NavigationState(selected = NavigationRoute.NFC), router = router, authenticationUseCases = authenticationUseCases)
 
         setUI {

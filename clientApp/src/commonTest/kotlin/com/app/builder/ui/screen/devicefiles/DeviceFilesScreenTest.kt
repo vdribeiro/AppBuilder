@@ -28,7 +28,7 @@ class DeviceFilesScreenTest: TestCase() {
             .authenticationUseCases
         AppFile.TaskPreferences.save { AppFile.ActionBarData(search = "query") }
 
-        val actionBarStore = ActionBarStore(state = ActionBarState(title = "device_file"), router = router, authenticationUseCases = authenticationUseCases)
+        val actionBarStore = ActionBarStore(state = ActionBarState(), router = router, authenticationUseCases = authenticationUseCases)
         val navigationStore = NavigationStore(state = NavigationState(selected = NavigationRoute.DEVICE_FILE), router = router, authenticationUseCases = authenticationUseCases)
         val store = DeviceFilesScreenStore(state = DeviceFilesScreenState())
 
@@ -50,7 +50,7 @@ class DeviceFilesScreenTest: TestCase() {
             .useCases
             .authenticationUseCases
 
-        val actionBarStore = ActionBarStore(state = ActionBarState(title = "device_file"), router = router, authenticationUseCases = authenticationUseCases)
+        val actionBarStore = ActionBarStore(state = ActionBarState(), router = router, authenticationUseCases = authenticationUseCases)
         val navigationStore = NavigationStore(state = NavigationState(selected = NavigationRoute.DEVICE_FILE), router = router, authenticationUseCases = authenticationUseCases)
         val store = DeviceFilesScreenStore(state = DeviceFilesScreenState())
 

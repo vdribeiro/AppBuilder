@@ -61,7 +61,7 @@ class CameraScreenTest: TestCase() {
             .useCases
         authenticatedUseCases.authenticationUseCases.login(credentials = FakeData.adminCredentials)
 
-        val actionBarStore = ActionBarStore(state = ActionBarState(title = "camera"), router = router, authenticationUseCases = authenticatedUseCases.authenticationUseCases)
+        val actionBarStore = ActionBarStore(state = ActionBarState(), router = router, authenticationUseCases = authenticatedUseCases.authenticationUseCases)
         val navigationStore = NavigationStore(state = NavigationState(), router = router, authenticationUseCases = authenticatedUseCases.authenticationUseCases)
         val camera = FakeCamera()
 

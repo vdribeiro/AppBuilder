@@ -2,9 +2,12 @@ package com.app.builder.ui.screen.taskdetail
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsEnabled
+import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -33,9 +36,9 @@ class TaskDetailScreenTest: TestCase() {
         authenticatedUseCases.authenticationUseCases.login(credentials = FakeData.adminCredentials)
         authenticatedUseCases.taskUseCases.upsertTask(task = FakeData.task)
 
-        val store = TaskDetailScreenStore(state = TaskDetailScreenState(), router = router, taskUseCases = authenticatedUseCases.taskUseCases, taskUuid = FakeData.task.uuid.toString())
+        val store = TaskDetailScreenStore(state = TaskDetailScreenState(), router = router, authenticationUseCases = authenticatedUseCases.authenticationUseCases, taskUseCases = authenticatedUseCases.taskUseCases, taskUuid = FakeData.task.uuid.toString())
         val navigationStore = NavigationStore(state = NavigationState(selected = NavigationRoute.TASK), router = router, authenticationUseCases = authenticatedUseCases.authenticationUseCases)
-        val actionBarStore = ActionBarStore(state = ActionBarState(title = "task"), router = router, authenticationUseCases = authenticatedUseCases.authenticationUseCases)
+        val actionBarStore = ActionBarStore(state = ActionBarState(), router = router, authenticationUseCases = authenticatedUseCases.authenticationUseCases)
 
         setUI {
             TaskDetailScreen(
@@ -68,9 +71,9 @@ class TaskDetailScreenTest: TestCase() {
         authenticatedUseCases.authenticationUseCases.login(credentials = FakeData.adminCredentials)
         authenticatedUseCases.taskUseCases.upsertTask(task = FakeData.task)
 
-        val store = TaskDetailScreenStore(state = TaskDetailScreenState(), router = router, taskUseCases = authenticatedUseCases.taskUseCases, taskUuid = FakeData.task.uuid.toString())
+        val store = TaskDetailScreenStore(state = TaskDetailScreenState(), router = router, authenticationUseCases = authenticatedUseCases.authenticationUseCases, taskUseCases = authenticatedUseCases.taskUseCases, taskUuid = FakeData.task.uuid.toString())
         val navigationStore = NavigationStore(state = NavigationState(selected = NavigationRoute.TASK), router = router, authenticationUseCases = authenticatedUseCases.authenticationUseCases)
-        val actionBarStore = ActionBarStore(state = ActionBarState(title = "task"), router = router, authenticationUseCases = authenticatedUseCases.authenticationUseCases)
+        val actionBarStore = ActionBarStore(state = ActionBarState(), router = router, authenticationUseCases = authenticatedUseCases.authenticationUseCases)
 
         setUI {
             TaskDetailScreen(
@@ -84,8 +87,119 @@ class TaskDetailScreenTest: TestCase() {
         onNodeWithText(text = FakeData.task.description).performTextReplacement(text = "New description")
         waitForIdle()
 
-        assertEquals(expected = "New title", actual = store.state.task?.title)
-        assertEquals(expected = "New description", actual = store.state.task?.description)
+        assertEquals(expected = "New title", actual = store.state.title)
+        assertEquals(expected = "New description", actual = store.state.description)
+        assertEquals(expected = FakeData.task.title, actual = store.state.task?.title)
+        assertEquals(expected = FakeData.task.description, actual = store.state.task?.description)
+    }
+
+    /** Verifies that a user with only read permission sees the title and description disabled and no save button. */
+    @Test
+    fun readOnlyTask() = runUITest {
+        val authenticatedUseCases = dependency.get()
+            .getUserDependency(user = FakeData.adminUser)
+            .useCases
+        authenticatedUseCases.authenticationUseCases.login(credentials = FakeData.adminCredentials)
+        authenticatedUseCases.taskUseCases.upsertTask(task = FakeData.task)
+        authenticatedUseCases.authenticationUseCases.login(credentials = FakeData.credentials)
+
+        val store = TaskDetailScreenStore(state = TaskDetailScreenState(), router = router, authenticationUseCases = authenticatedUseCases.authenticationUseCases, taskUseCases = authenticatedUseCases.taskUseCases, taskUuid = FakeData.task.uuid.toString())
+        val navigationStore = NavigationStore(state = NavigationState(selected = NavigationRoute.TASK), router = router, authenticationUseCases = authenticatedUseCases.authenticationUseCases)
+        val actionBarStore = ActionBarStore(
+            state = ActionBarState(),
+            router = router,
+            authenticationUseCases = authenticatedUseCases.authenticationUseCases,
+            entityType = EntityType.TASK,
+            onSaveClick = { store.send(action = TaskDetailScreenAction.Save) },
+            onDeleteClick = { store.send(action = TaskDetailScreenAction.Delete) }
+        )
+
+        setUI {
+            TaskDetailScreen(
+                actionBarStore = actionBarStore,
+                store = store,
+                navigationStore = navigationStore
+            )
+        }
+
+        waitUntil { store.state.task != null && actionBarStore.state.avatarName == FakeData.user.name }
+        assertFalse(actual = store.state.editable)
+        onNodeWithText(text = FakeData.task.title).assertIsNotEnabled()
+        onNodeWithText(text = FakeData.task.description).assertIsNotEnabled()
+        onNodeWithTag(testTag = "action_save").assertDoesNotExist()
+        onNodeWithTag(testTag = "action_delete").assertDoesNotExist()
+    }
+
+    /** Verifies that the save action persists the edited title and description. */
+    @Test
+    fun saveTask() = runUITest {
+        val authenticatedUseCases = dependency.get()
+            .getUserDependency(user = FakeData.adminUser)
+            .useCases
+        authenticatedUseCases.authenticationUseCases.login(credentials = FakeData.adminCredentials)
+        authenticatedUseCases.taskUseCases.upsertTask(task = FakeData.task)
+
+        val store = TaskDetailScreenStore(state = TaskDetailScreenState(), router = router, authenticationUseCases = authenticatedUseCases.authenticationUseCases, taskUseCases = authenticatedUseCases.taskUseCases, taskUuid = FakeData.task.uuid.toString())
+        val navigationStore = NavigationStore(state = NavigationState(selected = NavigationRoute.TASK), router = router, authenticationUseCases = authenticatedUseCases.authenticationUseCases)
+        val actionBarStore = ActionBarStore(
+            state = ActionBarState(),
+            router = router,
+            authenticationUseCases = authenticatedUseCases.authenticationUseCases,
+            entityType = EntityType.TASK,
+            onSaveClick = { store.send(action = TaskDetailScreenAction.Save) },
+            onDeleteClick = { store.send(action = TaskDetailScreenAction.Delete) }
+        )
+
+        setUI {
+            TaskDetailScreen(
+                actionBarStore = actionBarStore,
+                store = store,
+                navigationStore = navigationStore
+            )
+        }
+
+        waitUntil { store.state.task != null && store.state.editable }
+        onNodeWithText(text = FakeData.task.title).assertIsEnabled().performTextReplacement(text = "New title")
+        onNodeWithText(text = FakeData.task.description).assertIsEnabled().performTextReplacement(text = "New description")
+        onNodeWithTag(testTag = "action_save").assertIsDisplayed().performClick()
+        waitForIdle()
+
+        val saved = authenticatedUseCases.taskUseCases.observeTask(uuid = FakeData.task.uuid).first { it?.title == "New title" }
+        assertEquals(expected = "New description", actual = saved?.description)
+        assertEquals(expected = "New title", actual = store.state.title)
+        assertEquals(expected = "New description", actual = store.state.description)
+    }
+
+    /** Verifies that unsaved edits are kept when the task changes while it's being edited. */
+    @Test
+    fun keepEditsOnTaskChange() = runUITest {
+        val authenticatedUseCases = dependency.get()
+            .getUserDependency(user = FakeData.adminUser)
+            .useCases
+        authenticatedUseCases.authenticationUseCases.login(credentials = FakeData.adminCredentials)
+        authenticatedUseCases.taskUseCases.upsertTask(task = FakeData.task)
+
+        val store = TaskDetailScreenStore(state = TaskDetailScreenState(), router = router, authenticationUseCases = authenticatedUseCases.authenticationUseCases, taskUseCases = authenticatedUseCases.taskUseCases, taskUuid = FakeData.task.uuid.toString())
+        val navigationStore = NavigationStore(state = NavigationState(selected = NavigationRoute.TASK), router = router, authenticationUseCases = authenticatedUseCases.authenticationUseCases)
+        val actionBarStore = ActionBarStore(state = ActionBarState(), router = router, authenticationUseCases = authenticatedUseCases.authenticationUseCases)
+
+        setUI {
+            TaskDetailScreen(
+                actionBarStore = actionBarStore,
+                store = store,
+                navigationStore = navigationStore
+            )
+        }
+
+        waitUntil { store.state.task != null && store.state.editable }
+        onNodeWithText(text = FakeData.task.title).performTextReplacement(text = "New title")
+        waitForIdle()
+
+        authenticatedUseCases.taskUseCases.upsertTask(task = FakeData.task.copy(title = "Remote title"))
+        waitUntil { store.state.task?.title == "Remote title" }
+
+        assertEquals(expected = "New title", actual = store.state.title)
+        onNodeWithText(text = "New title").assertIsDisplayed()
     }
 
     /** Verifies that the delete action soft deletes the task and navigates back. */
@@ -100,10 +214,10 @@ class TaskDetailScreenTest: TestCase() {
         router.navigate(screen = Screen.TaskList, option = Router.NavOption.ADD)
         router.navigate(screen = Screen.TaskDetail(uuid = FakeData.task.uuid.toString()), option = Router.NavOption.ADD)
 
-        val store = TaskDetailScreenStore(state = TaskDetailScreenState(), router = router, taskUseCases = authenticatedUseCases.taskUseCases, taskUuid = FakeData.task.uuid.toString())
+        val store = TaskDetailScreenStore(state = TaskDetailScreenState(), router = router, authenticationUseCases = authenticatedUseCases.authenticationUseCases, taskUseCases = authenticatedUseCases.taskUseCases, taskUuid = FakeData.task.uuid.toString())
         val navigationStore = NavigationStore(state = NavigationState(selected = NavigationRoute.TASK), router = router, authenticationUseCases = authenticatedUseCases.authenticationUseCases)
         val actionBarStore = ActionBarStore(
-            state = ActionBarState(title = "task"),
+            state = ActionBarState(),
             router = router,
             authenticationUseCases = authenticatedUseCases.authenticationUseCases,
             entityType = EntityType.TASK,
