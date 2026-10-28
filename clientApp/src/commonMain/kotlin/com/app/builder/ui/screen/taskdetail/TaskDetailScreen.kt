@@ -35,7 +35,7 @@ fun TaskDetailScreen(
     store: Store<TaskDetailScreenState, TaskDetailScreenAction>,
 ) {
     val state by store.stateFlow.collectAsStateWithLifecycle()
-    val task = state.task
+    val task = state.editedTask
 
     val router = LocalRouter.current
 
@@ -45,7 +45,7 @@ fun TaskDetailScreen(
         bottomBar = { Navigation(store = navigationStore) },
     ) {
         TaskCard(
-            enabled = task != null,
+            enabled = task != null && state.editable,
             modifiedAt = task?.modifiedAt?.toString(),
             deletedAt = task?.deletedAt?.toString(),
             title = task?.title,
@@ -59,6 +59,14 @@ fun TaskDetailScreen(
 @Preview
 @Composable
 private fun TaskDetailScreenPreview() = Preview {
+    val task = Task(
+        uuid = uuid(),
+        modifiedAt = now(),
+        deletedAt = null,
+        title = "Big Title",
+        description = "A description lalala",
+        state = Task.State.TODO
+    )
     InjectTranslations(
         translations = mapOf(
             "title" to "Title"
@@ -69,14 +77,9 @@ private fun TaskDetailScreenPreview() = Preview {
         navigationStore = Store(initialState = NavigationState()),
         store = Store(
             initialState = TaskDetailScreenState(
-                task = Task(
-                    uuid = uuid(),
-                    modifiedAt = now(),
-                    deletedAt = null,
-                    title = "Big Title",
-                    description = "A description lalala",
-                    state = Task.State.TODO
-                )
+                task = task,
+                editedTask = task,
+                editable = true
             )
         )
     )
