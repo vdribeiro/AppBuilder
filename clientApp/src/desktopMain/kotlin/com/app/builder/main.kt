@@ -2,6 +2,7 @@
 
 package com.app.builder
 
+import javafx.embed.swing.JFXPanel
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
 import androidx.compose.runtime.remember
@@ -16,7 +17,6 @@ import com.app.builder.core.telemetry.Telemetry
 import com.app.builder.test.ExcludeFromTesting
 import com.app.builder.ui.App
 import com.app.builder.ui.lifecycle.LocalWindowState
-import javafx.embed.swing.JFXPanel
 
 private const val TAG = "App"
 

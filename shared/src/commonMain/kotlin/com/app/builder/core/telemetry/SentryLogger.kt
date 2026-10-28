@@ -1,11 +1,11 @@
 package com.app.builder.core.telemetry
 
 import kotlin.concurrent.Volatile
-import com.app.builder.test.ExcludeFromTesting
 import io.sentry.kotlin.multiplatform.Sentry
 import io.sentry.kotlin.multiplatform.SentryLevel
 import io.sentry.kotlin.multiplatform.protocol.Breadcrumb
 import io.sentry.kotlin.multiplatform.protocol.UserFeedback
+import com.app.builder.test.ExcludeFromTesting
 
 /** Sentry integration for remote crash reporting and telemetry. */
 @ExcludeFromTesting

@@ -2,9 +2,9 @@ package com.app.builder.ui.lifecycle
 
 import kotlinx.browser.document
 import kotlinx.browser.window
+import org.w3c.dom.events.Event
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import org.w3c.dom.events.Event
 
 @Composable
 actual fun Register(

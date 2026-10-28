@@ -1,8 +1,8 @@
 package com.app.builder.core.media
 
 import kotlinx.browser.document
-import com.app.builder.test.ExcludeFromTesting
 import org.w3c.dom.HTMLAudioElement
+import com.app.builder.test.ExcludeFromTesting
 
 /** Web [AudioPlayer] implementation backed by an [HTMLAudioElement]. */
 @ExcludeFromTesting

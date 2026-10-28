@@ -1,13 +1,13 @@
 package com.app.builder.domain.push
 
 import kotlinx.browser.window
-import com.app.builder.core.telemetry.Telemetry
-import com.app.builder.domain.PushPayload
-import com.app.builder.test.ExcludeFromTesting
 import org.w3c.notifications.DENIED
 import org.w3c.notifications.GRANTED
 import org.w3c.notifications.NotificationOptions
 import org.w3c.notifications.NotificationPermission
+import com.app.builder.core.telemetry.Telemetry
+import com.app.builder.domain.PushPayload
+import com.app.builder.test.ExcludeFromTesting
 import org.w3c.notifications.Notification as OSNotification
 
 @ExcludeFromTesting

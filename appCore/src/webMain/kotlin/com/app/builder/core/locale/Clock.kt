@@ -7,8 +7,8 @@ import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.launch
-import com.app.builder.core.platform.loop
 import org.w3c.dom.events.Event
+import com.app.builder.core.platform.loop
 
 actual fun observeClockChanges(): Flow<Unit> = callbackFlow {
     var lastSystemNow = now()

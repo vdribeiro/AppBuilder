@@ -5,8 +5,8 @@ import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
-import com.app.builder.core.telemetry.Telemetry
 import org.w3c.dom.events.Event
+import com.app.builder.core.telemetry.Telemetry
 
 actual fun isInternetAvailable(): Boolean = runCatching {
     window.navigator.onLine
