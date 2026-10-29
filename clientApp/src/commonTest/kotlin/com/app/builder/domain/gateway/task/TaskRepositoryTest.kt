@@ -34,13 +34,13 @@ class TaskRepositoryTest: TestCase() {
             .repositories
             .taskRepository
         assertNull(actual = AppFile.Sync.cache().value.orEmpty()[AppFile.Sync.Key.TASKS_LAST_SYNC_UTC])
-        assertTrue(actual = taskUseCases.observeTasks().firstOrNull().orEmpty().isEmpty())
+        assertTrue(actual = taskUseCases.observeTasks(filter = TaskFilter.Active).firstOrNull().orEmpty().isEmpty())
 
         val jobResult = taskRepository.executeSyncTasks(job = Job(userUuid = Uuid.NIL, entityType = EntityType.TASK, type = Job.Type.GET))
         assertTrue(actual = jobResult is JobResult.Success)
 
         assertNotNull(actual = AppFile.Sync.cache().value.orEmpty()[AppFile.Sync.Key.TASKS_LAST_SYNC_UTC])
-        assertEquals(expected = listOf(element = FakeData.task), actual = taskUseCases.observeTasks().firstOrNull().orEmpty())
+        assertEquals(expected = listOf(element = FakeData.task), actual = taskUseCases.observeTasks(filter = TaskFilter.Active).firstOrNull().orEmpty())
     }
 
     /** Verifies that executing a tasks sync job fails when the http client flag is disabled. */
@@ -134,7 +134,7 @@ class TaskRepositoryTest: TestCase() {
         val taskUseCases = userDependency.useCases.taskUseCases
         val taskRepository = userDependency.repositories.taskRepository
 
-        assertNull(actual = taskUseCases.observeTasks().firstOrNull())
+        assertNull(actual = taskUseCases.observeTasks(filter = TaskFilter.Active).firstOrNull())
         assertNull(actual = taskUseCases.observeTask(uuid = FakeData.task.uuid).firstOrNull())
 
         taskRepository.syncTasks()

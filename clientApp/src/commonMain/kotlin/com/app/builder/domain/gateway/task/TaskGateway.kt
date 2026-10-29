@@ -61,12 +61,14 @@ class TaskGateway(
     /** Query interface for the task-user join table. */
     private val taskUserJoinDao = database.taskUserJoinQueries
 
-    override fun observeTasks(): Flow<List<Task>> = if (!user.hasPermission(entityType = EntityType.TASK, permission = Permission.READ)) {
+    override fun observeTasks(filter: TaskFilter): Flow<List<Task>> = if (!user.hasPermission(entityType = EntityType.TASK, permission = Permission.READ)) {
         val throwable = Throwable(message = "User does not have ${Permission.READ} permission for ${EntityType.TASK}")
         Telemetry.error(tag = TAG, message = "Invalid permissions", throwable = throwable)
         return emptyFlow()
-    } else taskDao.getTasks(userUuid = user.uuid)
-        .asFlow { it.toTask() }
+    } else when (filter) {
+        TaskFilter.Active -> taskDao.getActiveTasks(userUuid = user.uuid)
+        TaskFilter.Deleted -> taskDao.getDeletedTasks(userUuid = user.uuid, mapper = ::TaskSchema)
+    }.asFlow { it.toTask() }
         .onStart {
             val job = Job(
                 userUuid = user.uuid,

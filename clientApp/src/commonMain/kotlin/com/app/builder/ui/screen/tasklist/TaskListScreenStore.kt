@@ -12,6 +12,7 @@ import com.app.builder.core.telemetry.Telemetry
 import com.app.builder.data.storage.AppFile
 import com.app.builder.domain.Task
 import com.app.builder.domain.Task.Property
+import com.app.builder.domain.gateway.task.TaskFilter
 import com.app.builder.domain.gateway.task.TaskUseCases
 import com.app.builder.ui.component.list.TaskItem
 import com.app.builder.ui.navigation.Router
@@ -49,7 +50,7 @@ class TaskListScreenStore(
     private fun setup(): Job = launch(id = "setup") {
         Telemetry.info(tag = TAG, message = "Setup")
 
-        val tasksFlow = taskUseCases.observeTasks().toStateFlow(initialValue = emptyList())
+        val tasksFlow = taskUseCases.observeTasks(filter = TaskFilter.Active).toStateFlow(initialValue = emptyList())
         val actionBarDataFlow = AppFile.TaskPreferences.cache()
             .mapNotNull { it }
             .distinctUntilChanged()

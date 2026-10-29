@@ -14,6 +14,7 @@ import com.app.builder.core.nfc.NfcTag
 import com.app.builder.domain.EntityType
 import com.app.builder.domain.deeplink.DeepLink
 import com.app.builder.domain.gateway.UseCases
+import com.app.builder.domain.gateway.task.TaskFilter
 import com.app.builder.test.FakeData
 import com.app.builder.test.TestCase
 
@@ -84,7 +85,7 @@ class TagManagerTest: TestCase() {
 
         tagManager.start()
         sendTag(record = NfcRecord.Upsert(entityType = EntityType.TASK))
-        val created = useCases.taskUseCases.observeTasks().first { it.isNotEmpty() }
+        val created = useCases.taskUseCases.observeTasks(filter = TaskFilter.Active).first { it.isNotEmpty() }
         tagManager.stop()
 
         assertEquals(expected = 1, actual = created.size)
@@ -113,7 +114,7 @@ class TagManagerTest: TestCase() {
         tagManager.start()
         sendTag(record = NfcRecord.Upsert(entityType = EntityType.REGISTRY, entityUuid = Uuid.random()))
         sendTag(record = NfcRecord.Upsert(entityType = EntityType.TASK, entityUuid = uuid))
-        val tasks = useCases.taskUseCases.observeTasks().first { it.isNotEmpty() }
+        val tasks = useCases.taskUseCases.observeTasks(filter = TaskFilter.Active).first { it.isNotEmpty() }
         tagManager.stop()
 
         assertEquals(expected = listOf(uuid), actual = tasks.map { it.uuid })
@@ -168,7 +169,7 @@ class TagManagerTest: TestCase() {
         DeepLink.deepLinks.first()
         tagManager.stop()
 
-        assertEquals(expected = null, actual = guestUseCases.taskUseCases.observeTasks().firstOrNull())
-        assertTrue(actual = adminUseCases.taskUseCases.observeTasks().first().isEmpty())
+        assertEquals(expected = null, actual = guestUseCases.taskUseCases.observeTasks(filter = TaskFilter.Active).firstOrNull())
+        assertTrue(actual = adminUseCases.taskUseCases.observeTasks(filter = TaskFilter.Active).first().isEmpty())
     }
 }

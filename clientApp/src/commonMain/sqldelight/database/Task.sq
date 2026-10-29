@@ -28,11 +28,19 @@ WHERE uuid = :taskUuid
 upsertTask:
 INSERT OR REPLACE INTO Task VALUES ?;
 
-getTasks:
+getActiveTasks:
 SELECT Task.*
 FROM Task
 INNER JOIN TaskUserJoin ON Task.uuid = TaskUserJoin.taskUuid
-WHERE TaskUserJoin.userUuid = :userUuid;
+WHERE TaskUserJoin.userUuid = :userUuid
+AND Task.deletedAt IS NULL;
+
+getDeletedTasks:
+SELECT Task.*
+FROM Task
+INNER JOIN TaskUserJoin ON Task.uuid = TaskUserJoin.taskUuid
+WHERE TaskUserJoin.userUuid = :userUuid
+AND Task.deletedAt IS NOT NULL;
 
 getTasksByUuids:
 SELECT Task.*
