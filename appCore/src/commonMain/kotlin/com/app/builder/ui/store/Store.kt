@@ -1,6 +1,8 @@
 package com.app.builder.ui.store
 
 import kotlin.coroutines.CoroutineContext
+import kotlinx.atomicfu.locks.SynchronizedObject
+import kotlinx.atomicfu.locks.synchronized
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -49,6 +51,8 @@ open class Store<State, Action>(initialState: State): ViewModel() {
 
     /** Registry of active background [Job]s, keyed by a unique identifier to prevent leaks or redundant executions. */
     private val activeJobs = mutableMapOf<String, Job>()
+    /** Guards [activeJobs], which is accessed from the dispatching thread and from job completion handlers. */
+    private val activeJobsLock = SynchronizedObject()
 
     /**
      * Dispatches a user [Action] to the [reducer].
@@ -106,13 +110,15 @@ open class Store<State, Action>(initialState: State): ViewModel() {
         id: String,
         replace: Boolean,
         block: () -> Job
-    ): Job {
+    ): Job = synchronized(lock = activeJobsLock) {
         val job = activeJobs[id]?.takeIf { it.isActive }
-        return if (job != null && !replace) job else {
+        if (job != null && !replace) job else {
             job?.cancel()
             block().also { job ->
                 activeJobs[id] = job
-                job.invokeOnCompletion { if (activeJobs[id] === job) activeJobs.remove(key = id) }
+                job.invokeOnCompletion {
+                    synchronized(lock = activeJobsLock) { if (activeJobs[id] === job) activeJobs.remove(key = id) }
+                }
             }
         }
     }
