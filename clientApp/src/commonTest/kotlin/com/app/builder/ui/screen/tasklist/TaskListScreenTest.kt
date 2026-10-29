@@ -5,15 +5,18 @@ import kotlin.test.assertEquals
 import kotlin.test.assertIs
 import kotlin.test.assertTrue
 import kotlinx.collections.immutable.toPersistentList
+import kotlinx.coroutines.flow.first
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import com.app.builder.Dependency.getUserDependency
+import com.app.builder.core.security.uuid
 import com.app.builder.data.storage.AppFile
 import com.app.builder.domain.EntityType
 import com.app.builder.domain.Task
+import com.app.builder.domain.gateway.task.TaskFilter
 import com.app.builder.test.FakeData
 import com.app.builder.test.TestCase
 import com.app.builder.test.count
@@ -79,7 +82,7 @@ class TaskListScreenTest: TestCase() {
         assertEquals(expected = listOf(taskDetailScreen), actual = router.backStack.toList())
     }
 
-    /** Verifies that the add action creates a new task and navigates to its detail screen. */
+    /** Verifies that the add action opens the detail screen of a new task without storing it. */
     @Test
     fun addTask() = runUITest {
         val authenticatedUseCases = dependency.get()
@@ -103,11 +106,7 @@ class TaskListScreenTest: TestCase() {
             storageFile = AppFile.TaskPreferences,
             defaults = defaults,
             entityType = EntityType.TASK,
-            onAddClick = {
-                val task = Task()
-                authenticatedUseCases.taskUseCases.upsertTask(task = task)
-                router.navigate(screen = Screen.TaskDetail(uuid = task.uuid.toString()), option = Router.NavOption.REPLACE_LAST)
-            }
+            onAddClick = { router.navigate(screen = Screen.TaskDetail(uuid = uuid().toString(), new = true), option = Router.NavOption.REPLACE_LAST) }
         )
         val taskListScreenStore = TaskListScreenStore(state = TaskListScreenState(), router = router, taskUseCases = authenticatedUseCases.taskUseCases)
 
@@ -120,9 +119,10 @@ class TaskListScreenTest: TestCase() {
         }
 
         onNodeWithTag(testTag = "action_add").assertIsDisplayed().performClick()
-        waitUntil { taskListScreenStore.state.tasks.size == 1 }
+        waitUntil { router.backStack.isNotEmpty() }
 
         val screen = assertIs<Screen.TaskDetail>(value = router.backStack.single())
-        assertEquals(expected = taskListScreenStore.state.tasks.first().uuid, actual = screen.uuid)
+        assertTrue(actual = screen.new)
+        assertTrue(actual = authenticatedUseCases.taskUseCases.observeTasks(filter = TaskFilter.Active).first().isEmpty())
     }
 }

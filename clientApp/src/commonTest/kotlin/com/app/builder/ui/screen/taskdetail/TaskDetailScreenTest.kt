@@ -4,18 +4,24 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import kotlin.uuid.Uuid
 import kotlinx.coroutines.flow.first
 import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.hasSetTextAction
+import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextReplacement
 import com.app.builder.Dependency.getUserDependency
+import com.app.builder.core.security.uuid
 import com.app.builder.domain.EntityType
+import com.app.builder.domain.Task
 import com.app.builder.domain.UserCredentials
 import com.app.builder.domain.gateway.UseCases
 import com.app.builder.test.FakeData
@@ -47,16 +53,18 @@ class TaskDetailScreenTest: TestCase() {
     }
 
     /**
-     * Renders the task detail screen of [FakeData.task] with an action bar wired to every task detail action, as the task entry provider does.
+     * Renders the task detail screen of the task with [taskUuid] with an action bar wired to every task detail action, as the task entry provider does.
      *
      * @param useCases The use cases backing the stores.
+     * @param taskUuid The uuid of the task to display.
+     * @param new Whether the task is new and not stored yet.
      * @return The [TaskDetailScreenStore] and the [ActionBarStore] rendered.
      */
-    private fun ComposeUiTest.setTaskDetailScreen(useCases: UseCases): Pair<TaskDetailScreenStore, ActionBarStore> {
-        val store = TaskDetailScreenStore(state = TaskDetailScreenState(), router = router, taskUseCases = useCases.taskUseCases, taskUuid = FakeData.task.uuid.toString())
+    private fun ComposeUiTest.setTaskDetailScreen(useCases: UseCases, taskUuid: Uuid = FakeData.task.uuid, new: Boolean = false): Pair<TaskDetailScreenStore, ActionBarStore> {
+        val store = TaskDetailScreenStore(state = TaskDetailScreenState(), router = router, taskUseCases = useCases.taskUseCases, taskUuid = taskUuid.toString(), new = new)
         val navigationStore = NavigationStore(state = NavigationState(selected = NavigationRoute.TASK), router = router, authenticationUseCases = useCases.authenticationUseCases)
         val actionBarStore = ActionBarStore(
-            state = ActionBarState(),
+            state = ActionBarState(editing = new),
             router = router,
             authenticationUseCases = useCases.authenticationUseCases,
             entityType = EntityType.TASK,
@@ -237,5 +245,85 @@ class TaskDetailScreenTest: TestCase() {
         assertEquals(expected = listOf<Any>(Screen.TaskList), actual = router.backStack.toList())
         val deleted = useCases.taskUseCases.observeTask(uuid = FakeData.task.uuid).first()
         assertNotNull(actual = deleted?.deletedAt)
+    }
+
+    /** Verifies that a new task opens in edit mode, with only the save and cancel buttons, and is not stored yet. */
+    @Test
+    fun newTask() = runUITest {
+        val useCases = storedTaskUseCases()
+        val taskUuid = uuid()
+        val (store, _) = setTaskDetailScreen(useCases = useCases, taskUuid = taskUuid, new = true)
+
+        waitUntil { store.state.task != null }
+        assertTrue(actual = store.state.editing)
+        assertTrue(actual = store.state.new)
+        assertEquals(expected = taskUuid, actual = store.state.task?.uuid)
+        onAllNodes(matcher = hasSetTextAction()).onFirst().assertIsEnabled()
+        onNodeWithTag(testTag = "action_save").assertIsDisplayed()
+        onNodeWithTag(testTag = "action_cancel").assertIsDisplayed()
+        onNodeWithTag(testTag = "action_edit").assertDoesNotExist()
+        onNodeWithTag(testTag = "action_delete").assertDoesNotExist()
+        assertNull(actual = useCases.taskUseCases.observeTask(uuid = taskUuid).first())
+    }
+
+    /** Verifies that saving a new task stores it and goes back to viewing it. */
+    @Test
+    fun saveNewTask() = runUITest {
+        val useCases = storedTaskUseCases()
+        val taskUuid = uuid()
+        val (store, _) = setTaskDetailScreen(useCases = useCases, taskUuid = taskUuid, new = true)
+
+        waitUntil { store.state.task != null }
+        onAllNodes(matcher = hasSetTextAction()).onFirst().performTextReplacement(text = "New title")
+        waitUntil { store.state.task?.title == "New title" }
+        onNodeWithTag(testTag = "action_save").performClick()
+        waitUntil { !store.state.editing }
+
+        assertFalse(actual = store.state.new)
+        val saved = useCases.taskUseCases.observeTask(uuid = taskUuid).first { it != null }
+        assertEquals(expected = "New title", actual = saved?.title)
+        onNodeWithText(text = "New title").assertIsNotEnabled()
+        onNodeWithTag(testTag = "action_edit").assertIsDisplayed()
+    }
+
+    /** Verifies that canceling a new task leaves the screen without storing it. */
+    @Test
+    fun cancelNewTask() = runUITest {
+        val useCases = storedTaskUseCases()
+        val taskUuid = uuid()
+
+        router.navigate(screen = Screen.TaskList, option = Router.NavOption.ADD)
+        router.navigate(screen = Screen.TaskDetail(uuid = taskUuid.toString(), new = true), option = Router.NavOption.ADD)
+
+        val (store, _) = setTaskDetailScreen(useCases = useCases, taskUuid = taskUuid, new = true)
+
+        waitUntil { store.state.task != null }
+        onNodeWithTag(testTag = "action_cancel").performClick()
+        waitUntil { router.backStack.size == 1 }
+
+        assertEquals(expected = listOf<Any>(Screen.TaskList), actual = router.backStack.toList())
+        assertNull(actual = useCases.taskUseCases.observeTask(uuid = taskUuid).first())
+    }
+
+    /** Verifies that the task state is shown, can't be changed while viewing, and is saved when changed while editing. */
+    @Test
+    fun changeState() = runUITest {
+        val useCases = storedTaskUseCases()
+        val (store, _) = setTaskDetailScreen(useCases = useCases)
+
+        waitUntil { store.state.task != null }
+        onNodeWithText(text = "task_state").assertIsDisplayed()
+        onNodeWithText(text = "task_state_complete", useUnmergedTree = true).assertIsDisplayed()
+        onNodeWithText(text = "task_state_complete").assertIsNotEnabled()
+
+        onNodeWithTag(testTag = "action_edit").performClick()
+        waitUntil { store.state.editing }
+        onNodeWithText(text = "task_state_complete").assertIsEnabled().performClick()
+        waitUntil { store.state.task?.state == Task.State.COMPLETE }
+        onNodeWithTag(testTag = "action_save").performClick()
+        waitUntil { !store.state.editing }
+
+        val saved = useCases.taskUseCases.observeTask(uuid = FakeData.task.uuid).first { it?.state == Task.State.COMPLETE }
+        assertEquals(expected = Task.State.COMPLETE, actual = saved?.state)
     }
 }

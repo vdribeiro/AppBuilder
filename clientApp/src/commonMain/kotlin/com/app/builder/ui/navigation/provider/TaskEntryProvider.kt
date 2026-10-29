@@ -5,6 +5,7 @@ import kotlinx.collections.immutable.toPersistentList
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
+import com.app.builder.core.security.uuid
 import com.app.builder.data.storage.AppFile
 import com.app.builder.domain.EntityType
 import com.app.builder.domain.Task
@@ -42,6 +43,7 @@ fun EntryProviderScope<NavKey>.taskProvider(useCases: UseCases) {
                     router = router,
                     useCases = useCases,
                     showAdd = true,
+                    editing = false,
                     onEditClick = null,
                     onSaveClick = null,
                     onCancelClick = null,
@@ -55,13 +57,14 @@ fun EntryProviderScope<NavKey>.taskProvider(useCases: UseCases) {
     entry<Screen.TaskDetail>(metadata = split()) {
         val router = LocalRouter.current
         val splitScreen = LocalSplitScreen.current
-        val store = viewModel { TaskDetailScreenStore(state = TaskDetailScreenState(), router = router, taskUseCases = useCases.taskUseCases, taskUuid = it.uuid) }
+        val store = viewModel { TaskDetailScreenStore(state = TaskDetailScreenState(), router = router, taskUseCases = useCases.taskUseCases, taskUuid = it.uuid, new = it.new) }
         TaskDetailScreen(
             actionBarStore = viewModel {
                 getActionBarStore(
                     router = router,
                     useCases = useCases,
                     showAdd = splitScreen,
+                    editing = it.new,
                     onEditClick = { store.send(action = TaskDetailScreenAction.Edit) },
                     onSaveClick = { store.send(action = TaskDetailScreenAction.Save) },
                     onCancelClick = { store.send(action = TaskDetailScreenAction.Cancel) },
@@ -101,6 +104,7 @@ private val actionBarState = ActionBarState(
  * @param router The router.
  * @param useCases The use cases.
  * @param showAdd true to show add button, false otherwise.
+ * @param editing true to start in edit mode, false to start in view mode.
  * @param onEditClick The edit click callback, or null to hide the edit action.
  * @param onSaveClick The save click callback, or null to hide the save action.
  * @param onCancelClick The cancel click callback, or null to hide the cancel action.
@@ -111,12 +115,13 @@ private fun getActionBarStore(
     router: Router,
     useCases: UseCases,
     showAdd: Boolean,
+    editing: Boolean,
     onEditClick: (suspend () -> Unit)?,
     onSaveClick: (suspend () -> Unit)?,
     onCancelClick: (suspend () -> Unit)?,
     onDeleteClick: (suspend () -> Unit)?
 ): ActionBarStore = ActionBarStore(
-    state = actionBarState,
+    state = actionBarState.copy(editing = editing),
     router = router,
     authenticationUseCases = useCases.authenticationUseCases,
     statusUseCases = useCases.statusUseCases,
@@ -124,11 +129,7 @@ private fun getActionBarStore(
     defaults = defaults,
     entityType = EntityType.TASK,
     onAddClick = if (showAdd) {
-        {
-            val task = Task()
-            useCases.taskUseCases.upsertTask(task = task)
-            router.navigate(screen = Screen.TaskDetail(uuid = task.uuid.toString()), option = Router.NavOption.REPLACE_LAST)
-        }
+        { router.navigate(screen = Screen.TaskDetail(uuid = uuid().toString(), new = true), option = Router.NavOption.REPLACE_LAST) }
     } else null,
     onEditClick = onEditClick,
     onSaveClick = onSaveClick,

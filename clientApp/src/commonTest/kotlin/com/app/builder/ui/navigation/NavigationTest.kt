@@ -3,6 +3,7 @@ package com.app.builder.ui.navigation
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
+import kotlin.test.assertTrue
 import kotlin.uuid.Uuid
 import kotlinx.coroutines.flow.first
 import androidx.compose.ui.test.onNodeWithTag
@@ -125,7 +126,7 @@ class NavigationTest: TestCase() {
         }
     }
 
-    /** Verifies that the task list's add action creates a task and opens it, and that the task detail's delete action marks it deleted. */
+    /** Verifies that the task list's add action opens a new task in edit mode, that saving stores it, and that the task detail's delete action marks it deleted. */
     @Test
     fun taskRoutesAddAndDelete() = runUITest {
         val authenticatedUseCases = dependency.get()
@@ -141,7 +142,12 @@ class NavigationTest: TestCase() {
 
         onNodeWithTag(testTag = "action_add").performClick()
         waitUntil { router.backStack.lastOrNull() is Screen.TaskDetail }
-        val taskUuid = Uuid.parse(uuidString = assertIs<Screen.TaskDetail>(value = router.backStack.last()).uuid)
+        val screen = assertIs<Screen.TaskDetail>(value = router.backStack.last())
+        assertTrue(actual = screen.new)
+        val taskUuid = Uuid.parse(uuidString = screen.uuid)
+        waitForIdle()
+
+        onNodeWithTag(testTag = "action_save").performClick()
         authenticatedUseCases.taskUseCases.observeTask(uuid = taskUuid).first { it != null }
         waitForIdle()
 

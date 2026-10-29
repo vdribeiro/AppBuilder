@@ -115,10 +115,11 @@ sealed interface Screen: NavKey {
      * The screen showing the details of a single task.
      *
      * @property uuid The unique identifier of the task to display.
+     * @property new Whether the task is new and not stored yet, opening it in edit mode.
      */
     @Serializable
     @SerialName(value = "screen_task_detail")
-    data class TaskDetail(val uuid: String): Screen
+    data class TaskDetail(val uuid: String, val new: Boolean = false): Screen
     /** The screen listing all files. */
     @Serializable
     @SerialName(value = "screen_file_list")
