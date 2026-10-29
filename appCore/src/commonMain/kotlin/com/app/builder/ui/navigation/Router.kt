@@ -29,14 +29,14 @@ interface Router {
         CLEAR,
 
         /**
-         * Finds the first instance of the screen, removes it and all screens above it, then pushes the new screen instance.
+         * Finds the first instance of the screen type, removes it and all screens above it, then pushes the new screen instance.
          * The removed screens lose their transient UI state, unless an equal screen is still in the backstack afterwards,
          * such as when the pushed screen equals the one it replaces. Equal screens share the same state.
          */
         REPLACE_FIRST,
 
         /**
-         * Finds the last instance of the screen, removes it and all screens above it, then pushes the new screen instance.
+         * Finds the last instance of the screen type, removes it and all screens above it, then pushes the new screen instance.
          * The removed screens lose their transient UI state, unless an equal screen is still in the backstack afterwards,
          * such as when the pushed screen equals the one it replaces. Equal screens share the same state.
          */
@@ -49,7 +49,8 @@ interface Router {
         SWAP,
 
         /**
-         * Finds the last instance of the screen and removes all screens above it.
+         * Finds the last instance of the screen type and removes all screens above it.
+         * Does nothing when no screen of the same type is in the backstack.
          * The new screen instance passed to the navigate function is discarded as well as its parameters.
          */
         POP,
