@@ -30,17 +30,22 @@ interface Router {
 
         /**
          * Finds the first instance of the screen, removes it and all screens above it, then pushes the new screen instance.
-         * This destroys the original screen and pushes a new one. Any transient UI state from the original screen will be lost.
+         * The removed screens lose their transient UI state, unless an equal screen is still in the backstack afterwards,
+         * such as when the pushed screen equals the one it replaces. Equal screens share the same state.
          */
         REPLACE_FIRST,
 
         /**
          * Finds the last instance of the screen, removes it and all screens above it, then pushes the new screen instance.
-         * This destroys the original screen and pushes a new one. Any transient UI state from the original screen will be lost.
+         * The removed screens lose their transient UI state, unless an equal screen is still in the backstack afterwards,
+         * such as when the pushed screen equals the one it replaces. Equal screens share the same state.
          */
         REPLACE_LAST,
 
-        /** Finds the last instance of the screen, and brings it to the top of the stack. */
+        /**
+         * Finds the last instance of the screen type, and brings it to the top of the stack, discarding the new screen instance.
+         * Pushes the new screen instance when no screen of the same type is in the backstack.
+         */
         SWAP,
 
         /**
@@ -49,7 +54,7 @@ interface Router {
          */
         POP,
 
-        /** Pushes the screen onto the top of the backstack only if it is not already on top. */
+        /** Pushes the screen onto the top of the backstack only if the top screen is not of the same type. */
         IGNORE,
     }
 }
