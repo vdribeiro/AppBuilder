@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
 import com.app.builder.test.TestCase
@@ -228,6 +229,36 @@ class StoreTest: TestCase() {
         source.emit(value = 5)
 
         assertEquals(expected = listOf(5), actual = received)
+    }
+
+    /** Verifies that [Store.observe] keeps the upstream collection running when the UI resubscribes before the pause timeout elapses. */
+    @Test
+    fun observeKeepsUpstreamRunningWhenUIResubscribesWithinTimeout() = runUnitTest { testDispatcher ->
+        val store = CounterStore()
+        val source = MutableSharedFlow<Int>(extraBufferCapacity = 10)
+        val received = mutableListOf<Int>()
+        var collections = 0
+        val upstream = flow {
+            collections++
+            emitAll(flow = source)
+        }
+
+        val firstUIJob = backgroundScope.launch(context = testDispatcher) { store.stateFlow.collect {} }
+        store.runObserve(source = upstream, id = JOB_ID, timeout = TIMEOUT_MILLIS) { value -> received.add(element = value) }
+        testDispatcher.scheduler.runCurrent()
+
+        firstUIJob.cancel()
+        testDispatcher.scheduler.advanceTimeBy(delayTimeMillis = TIMEOUT_MILLIS / 2)
+        testDispatcher.scheduler.runCurrent()
+
+        backgroundScope.launch(context = testDispatcher) { store.stateFlow.collect {} }
+        testDispatcher.scheduler.runCurrent()
+
+        source.emit(value = 1)
+        testDispatcher.scheduler.runCurrent()
+
+        assertEquals(expected = 1, actual = collections, message = "Resubscribing within the timeout should not restart the upstream collection")
+        assertEquals(expected = listOf(1), actual = received)
     }
 
     /** Verifies that observing without replace ignores a new observation request while the existing one is active. */

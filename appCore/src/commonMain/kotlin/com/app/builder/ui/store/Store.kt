@@ -51,7 +51,7 @@ open class Store<State, Action>(initialState: State): ViewModel() {
 
     /** Registry of active background [Job]s, keyed by a unique identifier to prevent leaks or redundant executions. */
     private val activeJobs = mutableMapOf<String, Job>()
-    /** Guards [activeJobs], which is accessed from the dispatching thread and from job completion handlers. */
+    /** Guards [activeJobs], which is accessed from any thread that launches a job and from job completion handlers. */
     private val activeJobsLock = SynchronizedObject()
 
     /**
@@ -167,7 +167,6 @@ open class Store<State, Action>(initialState: State): ViewModel() {
     ) {
         _stateFlow.subscriptionCount
             .map { count -> count > 0 }
-            .distinctUntilChanged()
             .transformLatest { isVisible ->
                 if (isVisible) emit(value = true) else {
                     delay(timeMillis = timeout)
