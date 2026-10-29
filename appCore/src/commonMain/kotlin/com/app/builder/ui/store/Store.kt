@@ -174,6 +174,7 @@ open class Store<State, Action>(initialState: State): ViewModel() {
                     emit(value = false)
                 }
             }
+            .distinctUntilChanged()
             .flatMapLatest { isVisible -> if (isVisible) this@observe else emptyFlow() }
             .onEach { data -> block(data) }
             .flowOn(context = context)
