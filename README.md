@@ -1141,6 +1141,7 @@ What happens when a user edits a domain while offline:
 The scheduler combines the pending jobs database stream with a `Network` stream and `ClockService.trusted` to gate execution.
 When either gate closes, the combined stream substitutes an empty list rather than stopping, so the loop stays subscribed and simply has nothing to dispatch. 
 When the device goes offline, or its clock drifts from the server, all dispatching pauses; it resumes automatically once connectivity and clock trust are restored, because the next emission from any of the three sources re-evaluates the gate.
+A fourth source, the retry wake timer, re-evaluates the queue when a backed-off job comes due (see [Retry & Failure Handling](#retry--failure-handling)).
 The pending jobs stream is additionally wrapped so that a database read failure emits an empty list instead of terminating the flow. 
 A transient storage error therefore costs one idle emission rather than killing the scheduler for the rest of the session.
 
@@ -1167,16 +1168,18 @@ The offline engine is still a trust based system, as this does not fully protect
 `JobResult` expresses the outcome of each execution:
 
 * **`Success`** / **`NoOp`** → job transitions to `COMPLETE`
-* **`Retry`** → attempt counter incremented; job reverts to `PENDING` if the new count is below `schedulerMaxAttempts`, otherwise transitions to `FAILED`
+* **`Retry`** → attempt counter incremented; job reverts to `PENDING` behind a backoff deadline if the new count is below `schedulerMaxAttempts`, otherwise transitions to `FAILED`
 * **`Error`** → terminal failure, job transitions to `FAILED`
 
 The split between retryable and terminal is made by one helper, `Throwable.toJobResult()`, which maps transient failures to `Retry` and everything else to `Error`.
 Transient means the same job can succeed unchanged on a later attempt: `InternetDisabledException` (refused before reaching the network), any `IOException` (timeouts, dropped connections), and `408`, `429` or `5xx` responses.
 Retrying a request that may already have reached the server is safe because upserts are idempotent.
 A validation rejection, a missing permission or a serialization failure will fail identically on every attempt, so retrying them only burns the attempt budget and delays the queue behind them.
-Retries carry no backoff of their own. A job that returns `Retry` goes straight back to `PENDING` and is eligible for the very next dispatch.
-For a connectivity loss that costs nothing, because the dispatch loop is already gated on connectivity and clock trust and will not pick the job up again until the condition that caused the failure has cleared.
-The other transient failures have no such gate, so a job failing against a struggling server spends its attempts in quick succession. `schedulerMaxAttempts` is deliberately small for that reason.
+Retries back off exponentially. A job that returns `Retry` goes back to `PENDING` with a `nextAttemptAt` deadline, starting at `schedulerRetryDelay` and doubling with each attempt up to `schedulerMaxRetryDelay`, so a job failing against a struggling server spreads its attempts out instead of spending them in quick succession.
+The dispatch loop skips jobs whose deadline has not passed and arms a single timer on the earliest one, so the queue is re-evaluated the moment that job comes due rather than waiting for an unrelated emission.
+A deferred job still counts as pending for the sync exclusion, so a mutation awaiting its retry keeps holding back a full sync of the same entity type.
+A deadline further ahead than `schedulerMaxRetryDelay` cannot have come from the backoff, so it was written against a since-changed device clock; such a job is treated as due immediately rather than stranded for as long as the clock moved.
+Connectivity loss is covered twice over: the dispatch loop is already gated on connectivity and clock trust, so the job will not be picked up again until the condition that caused the failure has cleared.
 
 Two safety properties are worth calling out:
 
@@ -1576,7 +1579,7 @@ The platform manifests are still yours to maintain: Android needs the entry in `
 Add the entity to `EntityType`, create the corresponding gateway in `domain/gateway` with its `.sq` queries, then handle the new entity in `JobProvider.resolve`, which switches on the job's `EntityType` and `Type` (`GET`, `POST`, `DELETE`) and delegates to the feature's **`Repository`**, not its `UseCases`.
 That split is deliberate: the scheduler needs the read/sync surface without the UI-facing write API that would re-enqueue work and loop. See [UseCases VS Repositories](#usecases-vs-repositories).
 
-Once it resolves, the scheduler persists the job, retries it on failure up to `schedulerMaxAttempts`, and pauses dispatch entirely while the device is offline or its clock is untrusted, resuming on its own when both recover.
+Once it resolves, the scheduler persists the job, retries it on failure with exponential backoff up to `schedulerMaxAttempts`, and pauses dispatch entirely while the device is offline or its clock is untrusted, resuming on its own when both recover.
 Write the local database change first and queue the job second, so the UI updates optimistically from the database flow rather than waiting on the network.
 
 ---
@@ -1608,7 +1611,7 @@ See [Account Deletion](#account-deletion).
 Flip its flag. Features are gated by `ClientFlags` on the client and `ServerFlags` on the server, both plain data classes of booleans with a `default` instance, exposed as a `StateFlow` the UI and the routes read live.
 The client fetches its flags from the server, persists them as an encrypted file, and hot-reloads them, so flipping a flag server-side takes effect without a release. Turning one off disables the whole vertical slice: the navigation entry, the screen, the background jobs and, on the server side, the routes themselves, which is why a new feature should get its flag before it gets its first screen.
 
-Tunable numbers live alongside them in `ClientConfigs` and `ServerConfigs` rather than as constants, covering things like `clockDriftTolerance`, `schedulerMaxAttempts`, HTTP timeouts, push retry backoff and sync `batchSize`.
+Tunable numbers live alongside them in `ClientConfigs` and `ServerConfigs` rather than as constants, covering things like `clockDriftTolerance`, `schedulerMaxAttempts`, job retry backoff, HTTP timeouts, push retry backoff and sync `batchSize`.
 See [Feature Flags & Remote Configs](#feature-flags--remote-configs).
 
 ---
