@@ -60,7 +60,7 @@ sealed interface ActionBarAction {
  * @property properties Map of property keys to their display labels, used to populate the sort, visibility and search menus.
  * @property avatarName The name to fit in the avatar. Only the first letter of the first and last name will show capitalized if no image is provided.
  * @property avatarImage The image resource.
- * @property synced Whether no background job is pending or running, or `null` when the status isn't followed.
+ * @property synced Whether no background job has been pending or running for longer than [ActionBarStore.NOT_SYNCED_DELAY].
  * @property clockTrusted Whether the device clock can be trusted.
  * @property writable Whether the current user has write permission on the entity.
  * @property editing Whether the current domain is being edited.
@@ -79,7 +79,7 @@ data class ActionBarState(
     val properties: ImmutableMap<String, String> = persistentMapOf(),
     val avatarName: String? = null,
     val avatarImage: Image? = null,
-    val synced: Boolean? = null,
+    val synced: Boolean = true,
     val clockTrusted: Boolean = true,
     val writable: Boolean = false,
     val editing: Boolean = false,

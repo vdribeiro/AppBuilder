@@ -2,6 +2,7 @@ package com.app.builder.ui.component.actionbar
 
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.debounce
 import com.app.builder.core.telemetry.Telemetry
 import com.app.builder.data.resource.ImageResource
 import com.app.builder.data.storage.AppFile
@@ -111,7 +112,7 @@ class ActionBarStore(
             if (editingLost) onCancelClick?.invoke()
         }
 
-        statusUseCases?.observeSynced()?.observe(id = "synced") { synced ->
+        statusUseCases?.observeSynced()?.debounce { synced -> if (synced) 0L else NOT_SYNCED_DELAY }?.observe(id = "synced") { synced ->
             updateState { it.copy(synced = synced) }
         }
         statusUseCases?.observeClockTrusted()?.observe(id = "clock_trusted") { clockTrusted ->
@@ -261,5 +262,7 @@ class ActionBarStore(
 
     companion object {
         private const val TAG = "ActionBarStore"
+        /** How long background jobs must be pending or running before the action bar shows them as not synced, in milliseconds. */
+        const val NOT_SYNCED_DELAY = 2000L
     }
 }

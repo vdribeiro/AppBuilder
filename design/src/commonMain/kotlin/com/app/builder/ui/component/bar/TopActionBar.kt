@@ -22,7 +22,6 @@ import androidx.compose.material.icons.filled.ArrowDownward
 import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Cloud
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.ExpandLess
@@ -31,6 +30,7 @@ import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.SyncDisabled
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -67,7 +67,7 @@ import com.app.builder.ui.core.text.Text
  * @param avatarName The name to fit in the avatar. Only the first letter of the first and last name will show capitalized if no image is provided.
  * @param avatarImage The image resource.
  * @param onAvatarClick Callback for the avatar click action.
- * @param synced Shows a cloud status icon after the avatar when not null, in the primary color when `true` and in the error color when `false`.
+ * @param synced Shows a sync disabled status icon in the error color after the avatar when `false`.
  * @param clockTrusted Shows a clock status icon in the error color after the avatar when `false`.
  * @param onAddClick Shows an add button when not null and executes this callback when clicked.
  * @param onEditClick Shows an edit button when not null and executes this callback when clicked.
@@ -94,7 +94,7 @@ fun TopActionBar(
     avatarName: String? = null,
     avatarImage: Image? = null,
     onAvatarClick: (() -> Unit)? = null,
-    synced: Boolean? = null,
+    synced: Boolean = true,
     clockTrusted: Boolean = true,
     onAddClick: (() -> Unit)? = null,
     onEditClick: (() -> Unit)? = null,
@@ -197,10 +197,10 @@ fun TopActionBar(
                     image = avatarImage,
                     size = 40.dp,
                 )
-                if (synced != null) Icon(
-                    modifier = Modifier.testTag(tag = if (synced) "status_synced" else "status_not_synced"),
-                    imageVector = Icons.Default.Cloud,
-                    tint = if (synced) color.primary else color.error
+                if (!synced) Icon(
+                    modifier = Modifier.testTag(tag = "status_not_synced"),
+                    imageVector = Icons.Default.SyncDisabled,
+                    tint = color.error
                 )
                 if (!clockTrusted) Icon(
                     modifier = Modifier.testTag(tag = "status_clock_untrusted"),
@@ -366,7 +366,7 @@ private fun TopActionBarWritePreview() = Preview {
             "type" to "Type",
         ),
         avatarName = "V R",
-        synced = true,
+        synced = false,
         clockTrusted = false,
         onAddClick = {},
         onEditClick = {},
@@ -389,7 +389,7 @@ private fun TopActionBarEditPreview() = Preview {
             "type" to "Type",
         ),
         avatarName = "V R",
-        synced = true,
+        synced = false,
         clockTrusted = false,
         onSaveClick = {},
         onCancelClick = {},

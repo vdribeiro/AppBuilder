@@ -5,6 +5,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
@@ -289,23 +290,56 @@ class ActionBarStoreTest: TestCase() {
         )
         subscribe(store = store)
 
-        store.stateFlow.first { it.synced == true && it.clockTrusted }
+        store.stateFlow.first { it.synced && it.clockTrusted }
 
         synced.value = false
-        store.stateFlow.first { it.synced == false }
+        store.stateFlow.first { !it.synced }
 
         clockTrusted.value = false
         store.stateFlow.first { !it.clockTrusted }
 
         synced.value = true
         clockTrusted.value = true
-        store.stateFlow.first { it.synced == true && it.clockTrusted }
+        store.stateFlow.first { it.synced && it.clockTrusted }
 
         val withoutStatus = ActionBarStore(state = ActionBarState(), router = router, authenticationUseCases = authenticationUseCases())
         subscribe(store = withoutStatus)
         val withoutStatusState = withoutStatus.stateFlow.first { it.showLogin }
-        assertNull(actual = withoutStatusState.synced)
+        assertTrue(actual = withoutStatusState.synced)
         assertTrue(actual = withoutStatusState.clockTrusted)
+    }
+
+    /** Verifies that jobs are only shown as not synced once they have been pending or running for [ActionBarStore.NOT_SYNCED_DELAY], and as synced right away. */
+    @Test
+    fun notSyncedDelay() = runUnitTest {
+        val synced = MutableStateFlow(value = true)
+        val store = ActionBarStore(
+            state = ActionBarState(),
+            router = router,
+            authenticationUseCases = authenticationUseCases(),
+            statusUseCases = object: StatusUseCases {
+                override fun observeSynced(): Flow<Boolean> = synced
+                override fun observeClockTrusted(): Flow<Boolean> = MutableStateFlow(value = true)
+            },
+        )
+        subscribe(store = store)
+        testScheduler.advanceUntilIdle()
+
+        synced.value = false
+        testScheduler.advanceTimeBy(delayTime = (ActionBarStore.NOT_SYNCED_DELAY - 1).milliseconds)
+        assertTrue(actual = store.state.synced)
+
+        synced.value = true
+        testScheduler.advanceUntilIdle()
+        assertTrue(actual = store.state.synced)
+
+        synced.value = false
+        testScheduler.advanceTimeBy(delayTime = (ActionBarStore.NOT_SYNCED_DELAY + 1).milliseconds)
+        assertFalse(actual = store.state.synced)
+
+        synced.value = true
+        testScheduler.runCurrent()
+        assertTrue(actual = store.state.synced)
     }
 
     /** Verifies that the avatar opens the user profile and the login button opens the login screen. */

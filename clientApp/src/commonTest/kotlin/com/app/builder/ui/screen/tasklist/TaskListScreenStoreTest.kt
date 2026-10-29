@@ -15,10 +15,9 @@ import com.app.builder.ui.component.list.TaskItem
 
 class TaskListScreenStoreTest: TestCase() {
 
-    /** A deleted task, modified in 2020 and deleted in 2021. */
+    /** A live task, modified in 2020. */
     private val alpha = Task(
         modifiedAt = Instant.parse(input = "2020-01-01T00:00:00Z"),
-        deletedAt = Instant.parse(input = "2021-01-01T00:00:00Z"),
         title = "Alpha",
         description = "first",
     )
@@ -30,11 +29,19 @@ class TaskListScreenStoreTest: TestCase() {
         description = "second",
     )
 
+    /** A deleted task, modified in 2019 and deleted in 2021, which the list never shows. */
+    private val gamma = Task(
+        modifiedAt = Instant.parse(input = "2019-01-01T00:00:00Z"),
+        deletedAt = Instant.parse(input = "2021-01-01T00:00:00Z"),
+        title = "Gamma",
+        description = "third",
+    )
+
     /** Every [Property] name, so every property is searchable and visible unless a test narrows it. */
     private val allProperties = Property.entries.map { it.name }
 
     /**
-     * Seeds [alpha] and [beta], saves [preferences] as the task preferences, and waits for the store to list [count] tasks.
+     * Seeds [alpha], [beta] and [gamma], saves [preferences] as the task preferences, and waits for the store to list [count] tasks.
      *
      * @param preferences The action bar data the store filters, sorts and projects with.
      * @param count The number of tasks the store is expected to list.
@@ -47,6 +54,7 @@ class TaskListScreenStoreTest: TestCase() {
         authenticatedUseCases.authenticationUseCases.login(credentials = FakeData.adminCredentials)
         authenticatedUseCases.taskUseCases.upsertTask(task = alpha)
         authenticatedUseCases.taskUseCases.upsertTask(task = beta)
+        authenticatedUseCases.taskUseCases.upsertTask(task = gamma)
         AppFile.TaskPreferences.save { preferences }
 
         val store = TaskListScreenStore(state = TaskListScreenState(), router = router, taskUseCases = authenticatedUseCases.taskUseCases)
@@ -103,12 +111,6 @@ class TaskListScreenStoreTest: TestCase() {
         assertEquals(expected = listOf("Alpha"), actual = search(search = "2020", Property.MODIFIED_AT))
     }
 
-    /** Verifies that a search matches the task's deletion time, skipping tasks that were never deleted. */
-    @Test
-    fun searchMatchesDeletedAt() = runUnitTest {
-        assertEquals(expected = listOf("Alpha"), actual = search(search = "2021", Property.DELETED_AT))
-    }
-
     /** Verifies that a property the search does not support never matches, leaving the supported ones to decide. */
     @Test
     fun searchIgnoresUnsupportedProperties() = runUnitTest {
@@ -120,12 +122,6 @@ class TaskListScreenStoreTest: TestCase() {
     fun sortByModifiedAt() = runUnitTest {
         assertEquals(expected = listOf("Alpha", "Beta"), actual = sort(sortProperty = Property.MODIFIED_AT.name, sortAscending = true))
         assertEquals(expected = listOf("Beta", "Alpha"), actual = sort(sortProperty = Property.MODIFIED_AT.name, sortAscending = false))
-    }
-
-    /** Verifies that tasks are sorted by deletion time, with never deleted tasks first when ascending. */
-    @Test
-    fun sortByDeletedAt() = runUnitTest {
-        assertEquals(expected = listOf("Beta", "Alpha"), actual = sort(sortProperty = Property.DELETED_AT.name, sortAscending = true))
     }
 
     /** Verifies that tasks are sorted by title. */
@@ -156,6 +152,14 @@ class TaskListScreenStoreTest: TestCase() {
             assertNull(actual = item.deletedAt)
             assertNull(actual = item.description)
         }
+        assertEquals(expected = setOf("Alpha", "Beta"), actual = items.map { it.title }.toSet())
+    }
+
+    /** Verifies that deleted tasks are not listed. */
+    @Test
+    fun deletedTasksAreLeftOut() = runUnitTest {
+        val items = listedTasks(preferences = AppFile.ActionBarData(visibleProperties = allProperties), count = 2)
+
         assertEquals(expected = setOf("Alpha", "Beta"), actual = items.map { it.title }.toSet())
     }
 }
