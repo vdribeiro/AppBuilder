@@ -173,7 +173,8 @@ class JobScheduler(
             ) { jobs, online, trusted, _ -> if (online && trusted) jobs else emptyList() }.collect { jobs ->
                 if (jobs.isEmpty()) return@collect
                 val now = now()
-                // Deferred jobs stay in the grouping below so that a mutation awaiting its retry still holds back a full sync of the same entity type.
+                // Deferred jobs stay in the grouping below so that a mutation awaiting its retry still holds back a full sync of the same entity type,
+                // and a chain whose oldest job is deferred waits for it rather than letting a newer job overtake it.
                 scheduleWake(loopScope = this@launch, jobs = jobs, now = now)
 
                 activeChainsMutex.withLock {
@@ -192,7 +193,7 @@ class JobScheduler(
                             val targetedChains = targetedJobs.groupBy { Chain(userUuid = userUuid, entityType = entityType, entityUuid = it.entityUuid) }
                             for ((chain, chainJobs) in targetedChains) {
                                 if (chain !in activeChains) {
-                                    val oldestJob = chainJobs.filter { it.isDue(now = now) }.minByOrNull { it.utc } ?: continue
+                                    val oldestJob = chainJobs.minByOrNull { it.utc }?.takeIf { it.isDue(now = now) } ?: continue
                                     activeChains.add(element = chain)
                                     executeJobAsync(loopScope = this@launch, job = oldestJob, chain = chain)
                                 }
@@ -206,7 +207,7 @@ class JobScheduler(
 
                         if (!hasPendingTargeted && !hasActiveTargeted && globalJobs.isNotEmpty()) {
                             if (globalChain !in activeChains) {
-                                val oldestGlobalJob = globalJobs.filter { it.isDue(now = now) }.minByOrNull { it.utc } ?: continue
+                                val oldestGlobalJob = globalJobs.minByOrNull { it.utc }?.takeIf { it.isDue(now = now) } ?: continue
                                 activeChains.add(element = globalChain)
                                 executeJobAsync(loopScope = this@launch, job = oldestGlobalJob, chain = globalChain)
                             }

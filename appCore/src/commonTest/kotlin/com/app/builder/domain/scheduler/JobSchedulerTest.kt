@@ -454,6 +454,25 @@ class JobSchedulerTest: TestCase() {
         scheduler.stop()
     }
 
+    /** Verifies a newer job in a chain waits for an older one deferred behind its backoff instead of overtaking it. */
+    @Test
+    fun deferredJobHoldsBackNewerJobsInItsChain() = runUnitTest {
+        val jobStore = LocalJobStore()
+        val jobFactory = FakeJobFactory()
+        val scheduler = JobScheduler(jobStore = jobStore, jobFactory = jobFactory, clockService = FakeClockService())
+        val entityUuid = uuid()
+        val deferred = Job(userUuid = Uuid.NIL, entityUuid = entityUuid, entityType = EntityType.TASK, type = Job.Type.POST, attempt = 1, nextAttemptAt = now() + ClientConfigs.configs.schedulerRetryDelay.milliseconds)
+        val newer = Job(userUuid = Uuid.NIL, utc = deferred.utc + 1.milliseconds, entityUuid = entityUuid, entityType = EntityType.TASK, type = Job.Type.POST)
+
+        jobStore.upsertJob(job = deferred)
+        jobStore.upsertJob(job = newer)
+        scheduler.start()
+        jobStore.jobs.first { jobs -> jobs.all { it.state == Job.State.COMPLETE } }
+        scheduler.stop()
+
+        assertEquals(expected = listOf(deferred.uuid, newer.uuid), actual = jobFactory.resolvedJobs.map { it.uuid })
+    }
+
     /** Verifies a deadline beyond the backoff ceiling, which only a device clock change can produce, does not strand the job. */
     @Test
     fun deadlineBeyondTheCeilingIsTreatedAsDue() = runUnitTest {
