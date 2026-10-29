@@ -18,9 +18,7 @@ sealed interface TaskListScreenAction {
  * State of the task list, holding the tasks to display and whether batch delete selection is active.
  *
  * @property tasks Tasks currently displayed.
- * @property selectedTaskUuid Uuid of the currently selected task, or null if none is selected.
  */
 data class TaskListScreenState(
     val tasks: ImmutableList<TaskItem> = persistentListOf(),
-    val selectedTaskUuid: String? = null
 )

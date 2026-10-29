@@ -7,6 +7,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.mapNotNull
+import androidx.compose.runtime.snapshotFlow
 import com.app.builder.core.flow.Dispatcher
 import com.app.builder.core.telemetry.Telemetry
 import com.app.builder.data.storage.AppFile
@@ -43,7 +44,7 @@ class TaskListScreenStore(
     }
 
     /**
-     * Observes tasks and keeps the displayed list in sync.
+     * Observes tasks and keeps the displayed list in sync, selecting the task whose detail screen is in the backstack.
      *
      * @return The [Job] representing this execution.
      */
@@ -53,6 +54,8 @@ class TaskListScreenStore(
         val tasksFlow = taskUseCases.observeTasks(filter = TaskFilter.Active).toStateFlow(initialValue = emptyList())
         val actionBarDataFlow = AppFile.TaskPreferences.cache()
             .mapNotNull { it }
+            .distinctUntilChanged()
+        val selectedUuidFlow = snapshotFlow { (router.backStack.lastOrNull { it is Screen.TaskDetail } as? Screen.TaskDetail)?.uuid }
             .distinctUntilChanged()
 
         val tasksActionBarFlow = combine(
@@ -69,10 +72,10 @@ class TaskListScreenStore(
 
         combine(
             flow = tasksActionBarFlow,
-            flow2 = stateFlow
-        ) { (tasks, actionBar), state ->
+            flow2 = selectedUuidFlow
+        ) { (tasks, actionBar), selectedUuid ->
             tasks
-                .map { it.toTaskItem(visibilityProperties = actionBar.visibleProperties, selectedUuid = state.selectedTaskUuid) }
+                .map { it.toTaskItem(visibilityProperties = actionBar.visibleProperties, selectedUuid = selectedUuid) }
                 .toPersistentList()
         }
             .flowOn(context = Dispatcher.Default)
@@ -84,13 +87,12 @@ class TaskListScreenStore(
     }
 
     /**
-     * Toggles the selection of the tapped task when in delete mode, otherwise navigates to its detail screen.
+     * Navigates to the detail screen of the selected task.
      *
      * @param action Action carrying the UUID of the selected task.
      * @return The [Job] representing this execution.
      */
     private fun selectTask(action: TaskListScreenAction.SelectTask): Job = launch(id = "selectTask") {
-        updateState { it.copy(selectedTaskUuid = action.taskUuid) }
         router.navigate(screen = Screen.TaskDetail(uuid = action.taskUuid), option = Router.NavOption.REPLACE_LAST)
     }
 

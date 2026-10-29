@@ -80,6 +80,64 @@ class TaskListScreenTest: TestCase() {
         onNodeWithTag(testTag = "task_card_0").assertIsDisplayed().performClick()
         val taskDetailScreen = Screen.TaskDetail(uuid = taskListScreenStore.state.tasks.first().uuid)
         assertEquals(expected = listOf(taskDetailScreen), actual = router.backStack.toList())
+        waitUntil { taskListScreenStore.state.tasks.first().selected }
+    }
+
+    /** Verifies that the selected task follows the task detail screen in the backstack, however it got there. */
+    @Test
+    fun selectionFollowsDetailScreen() = runUITest {
+        val authenticatedUseCases = dependency.get()
+            .getUserDependency(user = FakeData.adminUser)
+            .useCases
+        authenticatedUseCases.authenticationUseCases.login(credentials = FakeData.adminCredentials)
+        val otherTask = FakeData.task.copy(uuid = uuid(), title = "Other")
+        authenticatedUseCases.taskUseCases.upsertTask(task = FakeData.task)
+        authenticatedUseCases.taskUseCases.upsertTask(task = otherTask)
+
+        val navigationStore = NavigationStore(state = NavigationState(selected = NavigationRoute.TASK), router = router, authenticationUseCases = authenticatedUseCases.authenticationUseCases)
+        // The list store only emits once TaskPreferences holds data, and it is the action bar store that seeds that file, so it has to be wired up as the provider does.
+        val properties = Task.Property.entries.map { it.name }.toPersistentList()
+        val defaults = AppFile.ActionBarData(
+            search = "",
+            sortProperty = Task.Property.MODIFIED_AT.name,
+            sortAscending = false,
+            visibleProperties = properties,
+            searchableProperties = properties,
+        )
+        val actionBarStore = ActionBarStore(
+            state = ActionBarState(visibleProperties = properties, searchableProperties = properties),
+            router = router,
+            authenticationUseCases = authenticatedUseCases.authenticationUseCases,
+            storageFile = AppFile.TaskPreferences,
+            defaults = defaults,
+            entityType = EntityType.TASK,
+        )
+        val taskListScreenStore = TaskListScreenStore(state = TaskListScreenState(), router = router, taskUseCases = authenticatedUseCases.taskUseCases)
+
+        setUI {
+            TaskListScreen(
+                actionBarStore = actionBarStore,
+                navigationStore = navigationStore,
+                store = taskListScreenStore
+            )
+        }
+        waitUntil { taskListScreenStore.state.tasks.size == 2 }
+        fun selectedUuids() = taskListScreenStore.state.tasks.filter { it.selected }.map { it.uuid }
+
+        router.navigate(screen = Screen.TaskList)
+        router.navigate(screen = Screen.TaskDetail(uuid = otherTask.uuid.toString()), option = Router.NavOption.REPLACE_LAST)
+        waitUntil { selectedUuids() == listOf(otherTask.uuid.toString()) }
+
+        router.navigate(screen = Screen.TaskDetail(uuid = FakeData.task.uuid.toString()), option = Router.NavOption.REPLACE_LAST)
+        waitUntil { selectedUuids() == listOf(FakeData.task.uuid.toString()) }
+
+        router.navigate(screen = Screen.TaskDetail(uuid = uuid().toString(), new = true), option = Router.NavOption.REPLACE_LAST)
+        waitUntil { selectedUuids().isEmpty() }
+
+        router.navigate(screen = Screen.TaskDetail(uuid = otherTask.uuid.toString()), option = Router.NavOption.REPLACE_LAST)
+        waitUntil { selectedUuids() == listOf(otherTask.uuid.toString()) }
+        router.back()
+        waitUntil { selectedUuids().isEmpty() }
     }
 
     /** Verifies that the add action opens the detail screen of a new task without storing it. */
