@@ -1,5 +1,7 @@
 package com.app.builder.ui.screen.taskdetail
 
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.toPersistentList
 import com.app.builder.domain.Task
 
 /** Actions supported by the Task Detail Screen. */
@@ -38,9 +40,11 @@ sealed interface TaskDetailScreenAction {
  * @property task Task being viewed or edited, or `null` while it's still loading.
  * @property editing Whether the task is being edited, which stops it from following the stored task.
  * @property new Whether the task is new and not stored yet.
+ * @property states Every task state, in selection order.
  */
 data class TaskDetailScreenState(
     val task: Task? = null,
     val editing: Boolean = false,
     val new: Boolean = false,
+    val states: ImmutableList<String> = Task.State.entries.map { it.translationKey }.toPersistentList(),
 )

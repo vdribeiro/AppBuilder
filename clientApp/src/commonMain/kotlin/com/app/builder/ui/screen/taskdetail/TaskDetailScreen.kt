@@ -51,6 +51,9 @@ fun TaskDetailScreen(
             onTitleChange = { store.send(action = TaskDetailScreenAction.ChangeTitle(title = it)) },
             description = task?.description,
             onDescriptionChange = { store.send(action = TaskDetailScreenAction.ChangeDescription(description = it)) },
+            state = task?.state?.translationKey,
+            states = state.states,
+            onStateChange = { key -> Task.State.entries.firstOrNull { it.translationKey == key }?.let { store.send(action = TaskDetailScreenAction.ChangeState(state = it)) } },
         )
     }
 }
