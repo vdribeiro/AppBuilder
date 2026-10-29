@@ -189,6 +189,36 @@ class NavigationTest: TestCase() {
         assertEquals(expected = listOf(authenticatedScreen), actual = router.backStack.toList())
     }
 
+    /** Verifies that a back stack holding duplicate and circular screens renders and pops back without crashing. */
+    @Test
+    fun duplicateScreensRenderAndPop() = runUITest {
+        val authenticatedUseCases = dependency.get()
+            .getUserDependency(user = FakeData.adminUser)
+            .useCases
+        authenticatedUseCases.authenticationUseCases.login(credentials = FakeData.adminCredentials)
+        authenticatedUseCases.taskUseCases.upsertTask(task = FakeData.task)
+        val detail = Screen.TaskDetail(uuid = FakeData.task.uuid.toString())
+        val screens = listOf(Screen.Configs, Screen.TaskList, detail, Screen.TaskList, detail, Screen.Configs, Screen.Configs)
+        router.navigate(screen = screens.first())
+
+        setUI {
+            AuthenticatedNavigation(useCases = authenticatedUseCases)
+        }
+        waitForIdle()
+
+        screens.drop(n = 1).forEach { screen ->
+            router.navigate(screen = screen)
+            waitForIdle()
+        }
+        assertEquals(expected = screens, actual = router.backStack.toList())
+
+        (screens.size - 1 downTo 1).forEach { size ->
+            router.back()
+            waitForIdle()
+            assertEquals(expected = screens.take(n = size), actual = router.backStack.toList())
+        }
+    }
+
     /** Verifies that the unauthenticated landing screen prefers home, then login, then the error screen. */
     @Test
     fun unauthenticatedLandingScreen() = runUnitTest {
