@@ -506,7 +506,7 @@ Neither holds a state or talks to a gateway. A component takes its data and its 
     * `Database`: Schema aliases and database extension helpers.
 * **resource**: Resource index.
     * `AudioResource`: Sealed class functioning as a resource index for audio in `commonMain/resources/tracks`.
-    * `ImageResource`: Sealed class functioning as a resource index for images in `commonMain/resources/drawable`.
+    * `ImageResource`: Sealed class functioning as a resource index for images in `commonMain/composeResources/drawable`.
     * `JsonResource`: Sealed class functioning as a resource index for JSONs in `commonMain/composeResources/files`.
     * `ResourceLoader`: Loads resources via the Compose Resources API.
 * **storage**: File system access.
@@ -525,7 +525,7 @@ Neither holds a state or talks to a gateway. A component takes its data and its 
     * `JobProvider`: Implements `JobFactory` to resolve persisted `Job`s.
     * `JobSchedulerStore`: Implements `JobStore`.
     * `Mappers`: Converts between the persisted job row and the domain `Job`.
-* **gateway**: Implementation of specific business workflows. Each feature is a sub-package containing a `UseCases` interface, a `Repository` interface, and the `Gateway` implementing both.
+* **gateway**: Implementation of specific business workflows. Each feature is a sub-package containing a `Gateway` that implements the feature's `UseCases` interface, its `Repository` interface, or both.
   * `UseCases`: Aggregates every feature's use cases interface.
   * `Repositories`: Aggregates every feature's repository interface.
   * `Gateways`: Constructs every `Gateway` and implements both `UseCases` and `Repositories` by delegating to them.
@@ -904,8 +904,8 @@ The UI state uses `kotlinx.collections.immutable` to prevent accidental mutation
 
 The design showcase is a catalog of every design system component, color, shape and typography style, and it is a section of the app rather than a separate target, so it is reachable on every platform the client ships to.
 
-The catalogs live in `design` (`ui/showcase`), next to what they document: the package mirrors the component package one to one.
-The host, `ui/screen/design/DesignScreen`, sits in `clientApp` alongside every other screen, and stays free of routing itself: it takes the `DesignSection` to render plus an `onSectionClick` and an `onAppClick` callback.
+The catalogs live in `design` (`ui/showcase`), next to what they document: the package mirrors the `core` package one to one, while the composite `component`s have no catalog of their own.
+The host, `ui/screen/design/DesignScreen`, sits in `clientApp` alongside every other screen. It takes the `DesignSection` to render plus an `onSectionClick` and an `onAppClick` callback, and routes only its back action itself, clearing the stack to `Screen.Home`.
 The wiring sits next to it: `Screen.Design{Section}` is one navigation key per section, `designProvider` maps each key to its section and routes both callbacks back through the `Router`, and the navigation bar's `design` item enters the section.
 Inside the showcase, the app's navigation bar is replaced by the showcase's own, whose `App` entry navigates back to the app's landing screen. Both directions use `NavOption.CLEAR`, like every other navigation bar entry.
 
@@ -1015,6 +1015,7 @@ These are the declarations that resolve to a distinct implementation per source 
 
 * **SqlDriver**: Creates a SQLDelight async database driver.
 * **HttpClientEngine**: Creates a Ktor HTTP engine.
+* **NetworkClientEngine**: Creates the Ktor HTTP engine the design module's image loader fetches remote images with.
 * **Network**: Checks internet connectivity and exposes a `Flow<Boolean>` for real-time state changes.
 * **File**: IO operations on the local filesystem.
 * **AppPath**: Resolves the absolute paths to the application's data and cache directories.
@@ -1084,6 +1085,7 @@ A `Job` is the atomic unit of work. Every background operation is modeled as a `
 * `payload: String?` — a JSON string carrying the execution parameters.
 * `state: State` — the current lifecycle position: `PENDING` → `RUNNING` → `COMPLETE` / `FAILED` / `CANCELED`.
 * `attempt: Int` — a zero-indexed retry counter incremented on each failure.
+* `nextAttemptAt: Instant?` — the earliest moment a retried job may run again; `null` until the job is first retried.
 
 `toString()` is overridden to omit `payload`, so a job logged on a failure path cannot leak the contents it was carrying.
 
@@ -1108,6 +1110,7 @@ The corollary of excluding `payload`: if two `GET`s for the same entity type gen
 
 Jobs are grouped into logical **chains** identified by `(userUuid, entityType, entityUuid)`.
 Within a chain, only the oldest pending job runs at a time, ensuring sequential mutation ordering for the same entity without blocking unrelated entities.
+When that oldest job is waiting out a retry backoff, the whole chain waits with it, so a newer job never overtakes it.
 The set of chains currently executing is held in memory as `activeChains`, guarded by its own mutex, because the dispatch loop is reactive: a new database emission can arrive while previous jobs are still running, and without that registry the loop would dispatch the same chain twice.
 
 There are two job categories with distinct execution rules:
@@ -1178,8 +1181,10 @@ A validation rejection, a missing permission or a serialization failure will fai
 Retries back off exponentially. A job that returns `Retry` goes back to `PENDING` with a `nextAttemptAt` deadline, starting at `schedulerRetryDelay` and doubling with each attempt up to `schedulerMaxRetryDelay`, so a job failing against a struggling server spreads its attempts out instead of spending them in quick succession.
 The dispatch loop skips jobs whose deadline has not passed and arms a single timer on the earliest one, so the queue is re-evaluated the moment that job comes due rather than waiting for an unrelated emission.
 A deferred job still counts as pending for the sync exclusion, so a mutation awaiting its retry keeps holding back a full sync of the same entity type.
+It also still counts as pending for the conflict policy, so while a `GET` is backing off, `IGNORE` drops any identical `GET` queued behind it, such as a manual refresh or a push-triggered sync. Nothing is lost, since the deferred job pulls whatever is newest when it runs, but the refresh lands at its deadline, up to `schedulerMaxRetryDelay` later, rather than immediately.
 A deadline further ahead than `schedulerMaxRetryDelay` cannot have come from the backoff, so it was written against a since-changed device clock; such a job is treated as due immediately rather than stranded for as long as the clock moved.
 Connectivity loss is covered twice over: the dispatch loop is already gated on connectivity and clock trust, so the job will not be picked up again until the condition that caused the failure has cleared.
+The job still carries its backoff deadline though, so if connectivity returns before that deadline, it waits out the remainder rather than running the moment the device is back online.
 
 Two safety properties are worth calling out:
 
@@ -1380,7 +1385,7 @@ Three transports: FCM, WebSocket and SSE, presented to the app as one stream of 
 
 - `PushManager` mints a single-use ticket, opens the WebSocket, and reconnects with exponential backoff, all gated on the internet availability flow so a dead network does not spin the loop.
 - `BroadcastManager` opens the server-sent event stream and reconnects it with the same backoff and connectivity gating, without a ticket since the broadcast stream is not user-scoped.
-- `PushProvider` is where the channels converge: handlers register once and receive every payload regardless of how it arrived. `showNotification` triggers the platform's native system notification, and a tap on it is turned into a `DeepLink` for the client's navigation layer to collect.
+- `PushProvider` is where the channels converge: every payload, however it arrived, is emitted on a single `pushPayloads` flow, which the client's `PayloadManager` collects. `NotificationProvider.showNotification` triggers the platform's native system notification, and `PushProvider` turns a tap on it into a `DeepLink` for the client's navigation layer to collect.
 
 Deduplication is what makes "two independent channels" safe to expose as one stream. `PushProvider` keeps a mutex-guarded `ArrayDeque` of recently handled payload uuids and drops any payload whose uuid it has already seen, evicting the oldest entry once the deque passes `maxHandledPayloads`.
 A bounded ring rather than a growing set is the deliberate choice: the window only has to be wide enough to cover the gap between the same payload arriving over FCM and over the WebSocket, and a set that remembered every uuid forever would leak for the lifetime of the process.
@@ -1408,7 +1413,7 @@ Full rationale in [Multi-Instance Scaling](#multi-instance-scaling).
 
 `appCore/src/commonMain/kotlin/com/app/builder/domain/scheduler/`
 
-The largest extractable piece: a persistent, fault-tolerant job queue whose scheduling stream is the combination of pending jobs, network availability and clock trust, so it pauses and resumes on its own.
+The largest extractable piece: a persistent, fault-tolerant job queue whose scheduling stream is the combination of pending jobs, network availability, clock trust and a retry wake timer, so it pauses, resumes and picks up backed-off jobs on its own.
 Its distinguishing feature is the chain system. Mutations against the same entity run strictly in order, different entities run in parallel, and a full sync suspends until every pending mutation for that entity type has been pushed, 
 which is what stops a pull from overwriting unsynced local work.
 
@@ -1431,7 +1436,7 @@ Installed after `Auth`, or validating on the response pipeline, it instead runs 
 
 `shared/src/commonMain/kotlin/com/app/builder/core/config/`
 
-Four data classes - client and server flags and configs - each with a `default` instance, an atomic `set { }` and a `reset()`, exposed through a `StateFlow`.
+Four data classes - client and server flags and configs - each with a `default` instance, an atomic `set { }` and a `reset()`, exposed as a synchronous snapshot backed by a private `StateFlow`.
 They are shared types, so the server serves exactly what the client consumes, a push payload can trigger a re-sync, the client persists them as encrypted files, and tests snapshot and restore them for free.
 Adding a toggle is a single field plus its default; there is no schema, no console and no third-party service in the path.
 
@@ -1463,7 +1468,7 @@ See [UI Specifics](#ui-specifics).
 A thin `Router` interface, exposing the `backStack`, `back()` and `navigate(screen, option)`. Its value is the `NavOption` vocabulary, which turns backstack surgery that is normally open-coded per call site into one named strategy: 
 `ADD` pushes, `CLEAR` wipes the stack first, `REPLACE_FIRST`/`REPLACE_LAST` remove an existing instance and everything above it before pushing, `SWAP` lifts an existing instance to the top with its state intact, `POP` returns to an existing instance and discards the one passed in, and `IGNORE` pushes only when that screen isn't already on top.
 Matching is by screen class rather than equality, so "go back to the task list" works without reconstructing the exact arguments the original destination was created with. 
-`Routing` hosts the display, wires the system back gesture and mouse-back button, provides `LocalRouter`, and falls back to a recovery destination when a serialized backstack names a screen that no longer exists, so a stale stack recovers instead of crashing.
+`Navigation`, in `Routing.kt`, hosts the display, wires the system back gesture and mouse-back button, reads the `Router` from `LocalRouter`, and falls back to a recovery destination when a serialized backstack names a screen that no longer exists, so a stale stack recovers instead of crashing.
 
 The `scene` package supplies scene strategies, which decide how a list of backstack entries becomes what is actually on screen. 
 `SplitSceneStrategy` inspects the top two entries and, when both carry the split metadata key, groups them into a single two-pane `SplitScene` instead of stacking them, which renders them side-by-side whenever `LocalSplitScreen` says the window is wide enough. 
@@ -1560,7 +1565,7 @@ If you do not need user accounts or sessions, you can remove the corresponding r
 The `shared` module is the single source of truth for domain models used by both sides.
 Models are annotated with `@Serializable` and sent over the wire directly; no separate DTO layer is needed.
 The one mapping that does exist is between the domain model and each side's persistence schema, and it is kept local to the feature that owns it: 
-on the client in `domain/gateway/{feature}/Mappers.kt`, converting to and from the SQLDelight row, and on the server in the feature's `Exposed` table. The API contract itself stays the domain model, so adding a field is one change in `shared` plus the two mappers that persist it.
+on the client in the `Mappers.kt` of the gateway that persists it, converting to and from the SQLDelight row, and on the server in the feature's `Exposed` table. The API contract itself stays the domain model, so adding a field is one change in `shared` plus the two mappers that persist it.
 
 ---
 
@@ -1608,7 +1613,7 @@ See [Account Deletion](#account-deletion).
 
 ### How do I turn a feature off, or roll one out gradually?
 
-Flip its flag. Features are gated by `ClientFlags` on the client and `ServerFlags` on the server, both plain data classes of booleans with a `default` instance, exposed as a `StateFlow` the UI and the routes read live.
+Flip its flag. Features are gated by `ClientFlags` on the client and `ServerFlags` on the server, both plain data classes of booleans with a `default` instance, read through a synchronous snapshot that always returns the latest values.
 The client fetches its flags from the server, persists them as an encrypted file, and hot-reloads them, so flipping a flag server-side takes effect without a release. Turning one off disables the whole vertical slice: the navigation entry, the screen, the background jobs and, on the server side, the routes themselves, which is why a new feature should get its flag before it gets its first screen.
 
 Tunable numbers live alongside them in `ClientConfigs` and `ServerConfigs` rather than as constants, covering things like `clockDriftTolerance`, `schedulerMaxAttempts`, job retry backoff, HTTP timeouts, push retry backoff and sync `batchSize`.
@@ -1620,7 +1625,7 @@ See [Feature Flags & Remote Configs](#feature-flags--remote-configs).
 
 Add the entry to the server's `main/resources/static/translations.json`, which is the source of truth the client fetches at runtime, and mirror it into the client's bundled `commonMain/composeResources/files/translations.json` so a cold start with no network still renders it.
 Each entry is a `languageIso`/`key`/`value` triple, so a new language is the same keys repeated under a new ISO code rather than a new file.
-Read it in a composable with `getTranslation(key, args)`, which resolves against the cache's state, so a language change recomposes every string on screen without a restart.
+Read it in a composable with `getTranslation(key)`, or `getTranslation(key, default, *args)` when it needs a fallback and format arguments, which resolves against the cache's state, so a language change recomposes every string on screen without a restart.
 See [Translations](#translations).
 
 ---
@@ -1663,7 +1668,7 @@ See [Client Connection Lifecycle](#client-connection-lifecycle).
 
 Two reasons. First, the OS suspends idle sockets shortly after backgrounding anyway (Android Doze, iOS background execution limits), so keeping the app's own connection "alive" while backgrounded is often an illusion.
 Second, FCM/APNs already exist specifically to wake up a backgrounded or killed app reliably and battery-efficiently. Reimplementing that with a self-managed socket is worse on every axis (battery, data usage, reliability) for no latency benefit a background push notification needs anyway.
-`RegisterPushLifecycle` closes the connection on background and reopens it on foreground on those two platforms only.
+`RegisterPushLifecycle` and `RegisterBroadcastLifecycle` close the WebSocket and SSE connections on background and reopen them on foreground on those two platforms only.
 
 ---
 
@@ -1697,7 +1702,6 @@ If you outgrow this (very high fan-out, cross-region, need for durable ordered d
 
 Set `server.host` in `local.properties`; the build generates it into `ServerConfig.HOST`. Development builds ignore it and target `URL.DEV_HOST` (`localhost:8080`) instead, so you can leave dev alone while switching production.
 On the server, list the same host, plus any web app hosts, in the `CORS_HOSTS` environment variable.
-If the web app is served through Firebase Hosting, also update the `/api/**` rewrite in `firebase.json`.
 
 ---
 
