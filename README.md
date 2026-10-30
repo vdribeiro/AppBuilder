@@ -1,14 +1,23 @@
 # App Builder
 
 This is a ready-to-go Offline First Compose Multiplatform starter kit built to help you spin up full-stack apps fast.
-It bundles a Compose Multiplatform frontend for Android, iOS, Desktop, and Web right alongside a built-in backend.
 Everything is pre-wired so you can skip the boilerplate and go straight to shipping for every platform from a single codebase.
 
-## What It Means
+## TL;DR
 
-* A persistent, fault-tolerant [offline job queue](#offline-engine) that keeps working without connectivity and resumes on its own, with conflict-aware [delta sync](#delta-sync) on top.
-* A [push suite](#push-notifications) over FCM, WebSocket and SSE presented as one stream, with a server that [scales to multiple instances](#multi-instance-scaling) without sticky sessions.
-* Accounts, sessions and per-entity permissions, a configurable [design system](#design), [translations](#translations), [feature flags and remote configs](#feature-flags--remote-configs), and a [test harness](#multiplatform-test-harness) that runs Compose UI and a full Ktor server from common code.
+| Area                                                                           | What it means                                                                                                                                                                                                        |
+|--------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **[Kotlin Multiplatform at full breadth](#platform-specific-implementations)** | One Compose Multiplatform client for Android, iOS, Windows, macOS, Linux and Web.                                                                                                                                    |
+| **[Offline-first architecture](#offline-engine)**                              | A persistent job queue driven by pending jobs, network, clock trust and a wake timer. It has per-entity chains, syncs that wait for writes, exponential backoff, zombie recovery and cancellation-safe final writes. |
+| **[Sync correctness](#delta-sync)**                                            | Delta sync with the watermark captured before the first page, a keyset cursor, page-by-page transactions, and push as a signal routed through the scheduler.                                                         |
+| **[Distributed time](#clock-trust)**                                           | A clock-trust service built from an NTP-style offset measured on every HTTP response, OS clock-change events and a probe loop.                                                                                       |
+| **[Backend and scaling](#multi-instance-scaling)**                             | A Ktor + Exposed server with no single-instance state. Presence is stored in the database and Postgres LISTEN/NOTIFY wakes other instances.                                                                          |
+| **[Real-time delivery](#push-notifications)**                                  | Push over FCM, WebSocket and SSE merged into one stream, with reconnect backoff and a bounded de-duplication ring.                                                                                                   |
+| **[Security](#cryptography)**                                                  | Encryption backed by platform keystores on four platforms. Android Keystore, iOS Keychain, DPAPI, Keychain or Secret Service implementations. A PBKDF2 verifier with a per-session salt.                             |
+| **App foundations**                                                            | Accounts, sessions and per-entity permissions, a configurable [design system](#design), [translations](#translations), and [feature flags and remote configs](#feature-flags--remote-configs).                       |
+| **[UI architecture](#mvi-store)**                                              | An MVI Store with collection driven by subscription count with a grace period and Navigation strategies.                                                                                                             |
+| **[Testing](#multiplatform-test-harness)**                                     | One hermetic harness for unit, Compose UI and server tests, all from commonTest.                                                                                                                                     |
+| **[Build and release](#deployment--distribution)**                             | Convention plugins, and a bumpVersion task that updates Gradle, Xcode and the server together. Desktop packaging and notarisation.                                                                                   |
 
 It is licensed **AGPL-3.0**, which is worth knowing before you build on it: derivative works have to be distributed under the same license with source available, and that applies to network services too, not just distributed binaries. 
 If that doesn't suit you, the project still works as a reference architecture. See [License](#license).
