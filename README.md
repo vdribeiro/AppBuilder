@@ -5,23 +5,23 @@ Everything is pre-wired so you can skip the boilerplate and go straight to shipp
 
 ## TL;DR
 
-| Area                                                                           | What it means                                                                                    |
-|--------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------|
-| **[Kotlin Multiplatform at full breadth](#platform-specific-implementations)** | One Compose Multiplatform client for Android, iOS, Windows, macOS, Linux and Web.                |
-| **[Backend and scaling](#multi-instance-scaling)**                             | A Ktor server with no per-instance state, coordinated through a pluggable cross-instance signal. |
-| **[Offline-first architecture](#offline-engine)**                              | A persistent job queue with per-entity chains, backoff and zombie recovery.                      |
-| **[Sync correctness](#delta-sync)**                                            | Keyset-paginated delta sync, with push routed through the job scheduler.                         |
-| **[Distributed time](#clock-trust)**                                           | Detection of untrustworthy device clock from NTP-style offset measurements and OS clock changes. |
-| **[Real-time delivery](#push-notifications)**                                  | FCM, WebSocket and SSE push merged into one de-duplicated stream.                                |
-| **[Security](#cryptography)**                                                  | Encryption backed by each platform's native cryptography.                                        |
-| **[Accounts and sessions](#do-i-need-user-and-session-management)**            | Accounts, sessions and per-entity permissions.                                                   |
-| **[Design system](#design-showcase)**                                          | A configurable design system with an in-app catalog of every component.                          |
-| **[Translations](#translation-pipeline)**                                      | Server-served translations that update live, with a bundled offline fallback.                    |
-| **[Feature flags](#feature-flags--remote-configs)**                            | Typed flags and remote configs shared by client and server, with no third-party service.         |
-| **[Telemetry](#telemetry-hub)**                                                | One logging API fanning out to pluggable engines, so any telemetry service can be added.         |
-| **[UI architecture](#mvi-store)**                                              | An MVI Store plus Navigation scene strategies.                                                   |
-| **[Testing](#multiplatform-test-harness)**                                     | Unit, UI and server tests from one hermetic harness.                                             |
-| **[Build and release](#deployment--distribution)**                             | Convention plugins, one-command version bumps and notarised desktop packaging.                   |
+| Area                                                                           | What it means                                                                                     |
+|--------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------|
+| **[Kotlin Multiplatform at full breadth](#platform-specific-implementations)** | One Compose Multiplatform client for Android, iOS, Windows, macOS, Linux and Web.                 |
+| **[Backend and scaling](#multi-instance-scaling)**                             | A Ktor server with no per-instance state, coordinated through a pluggable cross-instance signal.  |
+| **[Offline-first architecture](#offline-engine)**                              | A persistent job queue with per-entity chains, backoff and zombie recovery.                       |
+| **[Sync correctness](#delta-sync)**                                            | Keyset-paginated delta sync, with push routed through the job scheduler.                          |
+| **[Distributed time](#clock-trust)**                                           | Detection of untrustworthy device clocks from NTP-style offset measurements and OS clock changes. |
+| **[Real-time delivery](#push-notifications)**                                  | FCM, WebSocket and SSE push merged into one de-duplicated stream.                                 |
+| **[Security](#cryptography)**                                                  | Encryption backed by each platform's native cryptography.                                         |
+| **[Accounts and sessions](#do-i-need-user-and-session-management)**            | Accounts, sessions and per-entity permissions.                                                    |
+| **[Design system](#design-showcase)**                                          | A configurable design system with an in-app catalog of every component.                           |
+| **[Translations](#translation-pipeline)**                                      | Server-served translations that update live, with a bundled offline fallback.                     |
+| **[Feature flags](#feature-flags--remote-configs)**                            | Typed flags and remote configs shared by client and server, with no third-party service.          |
+| **[Telemetry](#telemetry-hub)**                                                | One logging API fanning out to pluggable engines, so any telemetry service can be added.          |
+| **[UI architecture](#mvi-store)**                                              | An MVI Store plus Navigation scene strategies.                                                    |
+| **[Testing](#multiplatform-test-harness)**                                     | Unit, UI and server tests from one hermetic harness.                                              |
+| **[Build and release](#deployment--distribution)**                             | Convention plugins, one-command version bumps and notarised desktop packaging.                    |
 
 It is licensed **AGPL-3.0**, which is worth knowing before you build on it: derivative works have to be distributed under the same license with source available, and that applies to network services too, not just distributed binaries. 
 If that doesn't suit you, the project still works as a reference architecture. See [License](#license).
@@ -294,7 +294,7 @@ Testing suites, fake data and annotations.
 ## Modules Structure
 
 <details>
-<summary>Expand to see the folder-by-folder breakdown of each module.</summary>
+<summary>Expand to see the breakdown of each module.</summary>
 
 ### Shared
 
