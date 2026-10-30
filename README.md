@@ -80,14 +80,14 @@ A **Kotlin Multiplatform** project following a **layered Clean Architecture** wi
 
 ## Platforms & Tech Stack
 
-| Source Set    | Platform                      |
-|---------------|-------------------------------|
-| `commonMain`  | All                           |
-| `androidMain` | Android API 26+               |
-| `appleMain`   | iOS 16+                       |
+| Source Set    | Platform                       |
+|---------------|--------------------------------|
+| `commonMain`  | All                            |
+| `androidMain` | Android API 26+                |
+| `appleMain`   | iOS 16+                        |
 | `desktopMain` | JVM 21 (Windows, macOS, Linux) |
-| `webMain`     | WASM-JS                       |
-| `server`      | JVM 21                        |
+| `webMain`     | WASM-JS                        |
+| `server`      | JVM 21                         |
 
 * **UI**: [Compose Multiplatform](https://github.com/JetBrains/compose-multiplatform)
 * **Client database**: [SQLDelight](https://sqldelight.github.io/sqldelight)
@@ -97,14 +97,14 @@ A **Kotlin Multiplatform** project following a **layered Clean Architecture** wi
 
 ## Modules
 
-| Module        | Purpose                                                                                       |
-|---------------|-----------------------------------------------------------------------------------------------|
-| `shared`      | Code reused by every target, client and server: domain models, flags, the HTTP registry.      |
-| `sharedTest`  | Test fixtures, base test cases and mocks reused by every other module's tests.                |
-| `design`      | The design system: every UI component, each with its own showcase.                            |
-| `appCore`     | Reusable Compose Multiplatform app infrastructure: offline engine, push, media, navigation.   |
-| `clientApp`   | The end-user app for Android, iOS, Desktop and Web.                                           |
-| `server`      | The Ktor backend.                                                                             |
+| Module        | Purpose                                                                                            |
+|---------------|----------------------------------------------------------------------------------------------------|
+| `shared`      | Code reused by every target, client and server: domain models, flags, the HTTP registry.           |
+| `sharedTest`  | Test fixtures, base test cases and mocks reused by every other module's tests.                     |
+| `design`      | The design system: every UI component, each with its own showcase.                                 |
+| `appCore`     | Reusable Compose Multiplatform app infrastructure: offline engine, push, media, navigation.        |
+| `clientApp`   | The end-user app for Android, iOS, Desktop and Web.                                                |
+| `server`      | The Ktor backend.                                                                                  |
 | `build-logic` | App identity, versions, target configuration and build-time code generation, as a composite build. |
 
 Production dependencies form a single graph with `shared` at the bottom and nothing ever pointing back up.
@@ -167,19 +167,19 @@ stateDiagram-v2
 
 ## Job
 
-| Property         | Meaning                                                                                       |
-|------------------|-----------------------------------------------------------------------------------------------|
-| `uuid`           | The job's own identity and primary key.                                                       |
-| `userUuid`       | The user that created it. Part of the chain key, so two accounts never block each other.      |
-| `utc`            | Creation time, and the ordering key: within a chain the oldest job runs first.                |
-| `entityType`     | The domain entity the job operates on.                                                        |
-| `entityUuid`     | The specific entity, or `null` for a whole-collection sync.                                   |
-| `type`           | `GET`, `POST` or `DELETE`.                                                                    |
-| `conflictPolicy` | How to treat duplicates. Defaults to `IGNORE` for `GET` and `APPEND` for `POST`/`DELETE`.     |
-| `payload`        | JSON execution parameters. Left out of `toString()`, so logs never leak it.                   |
-| `state`          | `PENDING` → `RUNNING` → `COMPLETE` / `FAILED` / `CANCELED`.                                   |
-| `attempt`        | Zero-indexed retry counter.                                                                   |
-| `nextAttemptAt`  | Earliest time a retried job may run again.                                                    |
+| Property         | Meaning                                                                                   |
+|------------------|-------------------------------------------------------------------------------------------|
+| `uuid`           | The job's own identity and primary key.                                                   |
+| `userUuid`       | The user that created it. Part of the chain key, so two accounts never block each other.  |
+| `utc`            | Creation time, and the ordering key: within a chain the oldest job runs first.            |
+| `entityType`     | The domain entity the job operates on.                                                    |
+| `entityUuid`     | The specific entity, or `null` for a whole-collection sync.                               |
+| `type`           | `GET`, `POST` or `DELETE`.                                                                |
+| `conflictPolicy` | How to treat duplicates. Defaults to `IGNORE` for `GET` and `APPEND` for `POST`/`DELETE`. |
+| `payload`        | JSON execution parameters.                                                                |
+| `state`          | `PENDING` → `RUNNING` → `COMPLETE` / `FAILED` / `CANCELED`.                               |
+| `attempt`        | Zero-indexed retry counter.                                                               |
+| `nextAttemptAt`  | Earliest time a retried job may run again.                                                |
 
 ## Conflict Policies
 
@@ -383,11 +383,11 @@ If you ever keep sockets alive longer in the background on some platform, revisi
 
 `RegisterPushLifecycle` and `RegisterBroadcastLifecycle` decide what happens to the WebSocket and SSE connections when the app is backgrounded:
 
-| Platform          | In the background                                  | Why                                                                                                                                                                  |
-|-------------------|----------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| **Android / iOS** | Connections close; FCM is the only channel         | The OS suspends idle sockets soon after backgrounding anyway (Doze, iOS limits). FCM/APNs exist to wake a backgrounded or killed app, at far lower battery and data cost. |
-| **Web**           | Connections stay open while the tab is open        | An FCM service worker covers background delivery.                                                                                                                     |
-| **Desktop**       | Connections stay open for the app's lifetime       | There is no FCM client SDK for JVM desktop apps, so Desktop never registers a token. Notifications still render through the AWT `SystemTray`.                         |
+| Platform          | In the background                            | Why                                                                                                                                                                       |
+|-------------------|----------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **Android / iOS** | Connections close; FCM is the only channel   | The OS suspends idle sockets soon after backgrounding anyway (Doze, iOS limits). FCM/APNs exist to wake a backgrounded or killed app, at far lower battery and data cost. |
+| **Web**           | Connections stay open while the tab is open  | An FCM service worker covers background delivery.                                                                                                                         |
+| **Desktop**       | Connections stay open for the app's lifetime | There is no FCM client SDK for JVM desktop apps, so Desktop never registers a token. Notifications still render through the AWT `SystemTray`.                             |
 
 ## Multi-Instance Scaling
 
@@ -472,24 +472,24 @@ Adding something is a compile-time change in one known place, and removing it br
 
 **Everything else**
 
-| Adding            | Register it in                                                                                                     |
-|-------------------|--------------------------------------------------------------------------------------------------------------------|
-| Entity type       | `shared/domain/EntityType` (required by the offline engine)                                                        |
-| Endpoint          | `shared/data/http/URL`                                                                                             |
-| HTTP header       | `shared/data/http/Header`                                                                                          |
-| Query parameter   | `shared/data/http/Query`                                                                                           |
-| Push payload type | `shared/domain/PushPayload`, then handle it in `clientApp/domain/push/PayloadManager`                              |
-| Feature toggle    | `ClientFlags` and `ServerFlags`                                                                                    |
-| Tunable value     | `ClientConfigs` and `ServerConfigs`                                                                                |
-| Translation       | `main/resources/static/translations.json`, mirrored in `composeResources/files/translations.json`                 |
-| Persisted file    | A `StorageFile` in `CoreFile` (`appCore`) or `AppFile` (`clientApp`), plus that index's `all` list                 |
+| Adding            | Register it in                                                                                                      |
+|-------------------|---------------------------------------------------------------------------------------------------------------------|
+| Entity type       | `shared/domain/EntityType` (required by the offline engine)                                                         |
+| Endpoint          | `shared/data/http/URL`                                                                                              |
+| HTTP header       | `shared/data/http/Header`                                                                                           |
+| Query parameter   | `shared/data/http/Query`                                                                                            |
+| Push payload type | `shared/domain/PushPayload`, then handle it in `clientApp/domain/push/PayloadManager`                               |
+| Feature toggle    | `ClientFlags` and `ServerFlags`                                                                                     |
+| Tunable value     | `ClientConfigs` and `ServerConfigs`                                                                                 |
+| Translation       | `main/resources/static/translations.json`, mirrored in `composeResources/files/translations.json`                   |
+| Persisted file    | A `StorageFile` in `CoreFile` (`appCore`) or `AppFile` (`clientApp`), plus that index's `all` list                  |
 | Screen            | `ui/navigation/Screen` with a stable `@SerialName`, an entry in `ui/navigation/provider` and the `Navigation` graph |
-| Background job    | `domain/scheduler/JobProvider`                                                                                     |
-| Permission        | `ui/permission/Permission`, then each platform's `PermissionManager`                                               |
-| Telemetry engine  | `Telemetry.engines`                                                                                                |
-| Server table      | `data/database/table`, plus the table list in `Database`                                                           |
-| Server route      | `domain/route/provider`, plus the link in `Routing`                                                                |
-| Test fixture      | A `FakeData` value in `sharedTest` and a branch in `createMockHttpEngine`, not a mock per test                     |
+| Background job    | `domain/scheduler/JobProvider`                                                                                      |
+| Permission        | `ui/permission/Permission`, then each platform's `PermissionManager`                                                |
+| Telemetry engine  | `Telemetry.engines`                                                                                                 |
+| Server table      | `data/database/table`, plus the table list in `Database`                                                            |
+| Server route      | `domain/route/provider`, plus the link in `Routing`                                                                 |
+| Test fixture      | A `FakeData` value in `sharedTest` and a branch in `createMockHttpEngine`, not a mock per test                      |
 
 `ImageResource` also pairs the path with the generated `Res.drawable` reference, so the UI never touches generated identifiers.
 Persisted files are never opened by path: `Files.kt` concatenates every module index into `files`, which a full wipe iterates over, and `logFiles()` warns at startup when two files claim the same path.
@@ -501,28 +501,28 @@ Persisted files are never opened by path: `Files.kt` concatenates every module i
 Screens use a custom **MVI Store**: each has a `{Screen}Store` and a `{Screen}Screen` composable.
 `Store<State, Action>` extends `ViewModel`, and UI state uses `kotlinx.collections.immutable` so it stays stable for Compose.
 
-| Member                                 | Purpose                                                                                                    |
-|----------------------------------------|------------------------------------------------------------------------------------------------------------|
-| `stateFlow`                            | The single source of truth the composable observes.                                                        |
-| `state`                                | A non-reactive snapshot, for reads inside a reducer.                                                       |
-| `send(action)` → `reducer(state, action)` | The only entry point for UI events.                                                                     |
-| `updateState { }`                      | The only way to mutate state, applied atomically.                                                          |
-| `launch(id, replace, context) { }`     | Work keyed by id. `replace = true` (default) cancels the previous run; `false` ignores the new request while one is in flight: a search box vs a submit button. |
-| `Flow<T>.observe(id) { }`              | Collects only while the UI is subscribed, pausing after a five-second grace period, so a rotation or quick back-and-forth never restarts it. |
-| `Flow<T>.toStateFlow(started, initialValue)` | Shares a cold flow into `viewModelScope` as state.                                                   |
+| Member                                       | Purpose                                                                                                                                                         |
+|----------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `stateFlow`                                  | The single source of truth the composable observes.                                                                                                             |
+| `state`                                      | A non-reactive snapshot, for reads inside a reducer.                                                                                                            |
+| `send(action)` → `reducer(state, action)`    | The only entry point for UI events.                                                                                                                             |
+| `updateState { }`                            | The only way to mutate state, applied atomically.                                                                                                               |
+| `launch(id, replace, context) { }`           | Work keyed by id. `replace = true` (default) cancels the previous run; `false` ignores the new request while one is in flight: a search box vs a submit button. |
+| `Flow<T>.observe(id) { }`                    | Collects only while the UI is subscribed, pausing after a five-second grace period, so a rotation or quick back-and-forth never restarts it.                    |
+| `Flow<T>.toStateFlow(started, initialValue)` | Shares a cold flow into `viewModelScope` as state.                                                                                                              |
 
 ### Navigation
 
 `Router.navigate(screen, option)` takes a `NavOption` strategy. Matching is by screen **class**, not equality, so "go back to the task list" works without the original arguments.
 
-| Option          | Effect                                                                                   |
-|-----------------|------------------------------------------------------------------------------------------|
-| `ADD`           | Push on top.                                                                             |
-| `CLEAR`         | Wipe the backstack, then push.                                                           |
+| Option                           | Effect                                                                           |
+|----------------------------------|----------------------------------------------------------------------------------|
+| `ADD`                            | Push on top.                                                                     |
+| `CLEAR`                          | Wipe the backstack, then push.                                                   |
 | `REPLACE_FIRST` / `REPLACE_LAST` | Remove the first/last instance of that class and everything above it, then push. |
-| `SWAP`          | Move the last instance of that class to the top, keeping its state.                      |
-| `POP`           | Pop back to the last instance of that class, discarding the one passed in.               |
-| `IGNORE`        | Push only if that class isn't already on top.                                            |
+| `SWAP`                           | Move the last instance of that class to the top, keeping its state.              |
+| `POP`                            | Pop back to the last instance of that class, discarding the one passed in.       |
+| `IGNORE`                         | Push only if that class isn't already on top.                                    |
 
 `Navigation` (in `Routing.kt`) hosts the display, wires the system back gesture and mouse-back button, and falls back to a recovery destination when a restored backstack names a screen that no longer exists.
 
@@ -666,13 +666,13 @@ Keeping the session alive and judging each write by when it was created preserve
 **Clients and build** read signing keys and secrets from an optional `local.properties` in the project root.
 Every key falls back to an empty default, so a missing file costs you signed release builds and Sentry reporting, not a working dev environment.
 
-| Purpose           | Keys                                                                                              |
-|-------------------|---------------------------------------------------------------------------------------------------|
-| Android signing   | `android.storeFile`, `android.keyAlias`, `android.keyPassword`, `android.storePassword`           |
+| Purpose           | Keys                                                                                                    |
+|-------------------|---------------------------------------------------------------------------------------------------------|
+| Android signing   | `android.storeFile`, `android.keyAlias`, `android.keyPassword`, `android.storePassword`                 |
 | Mac notarization  | `mac.sign.identity`, `mac.notarization.appleId`, `mac.notarization.teamId`, `mac.notarization.password` |
-| Sentry            | `sentryDsn`                                                                                       |
-| Web push          | `web.vapidKey`, `web.firebaseConfig`                                                              |
-| Production server | `server.host`                                                                                     |
+| Sentry            | `sentryDsn`                                                                                             |
+| Web push          | `web.vapidKey`, `web.firebaseConfig`                                                                    |
+| Production server | `server.host`                                                                                           |
 
 **The server** reads OS environment variables via `Env.kt`:
 
@@ -706,17 +706,17 @@ JWT_SECRET=jwt_secret
 
 The switch is `Env.developmentMode`, from the `DEVELOPMENT` variable.
 
-| Concern         | Development                           | Production                                         |
-|-----------------|---------------------------------------|----------------------------------------------------|
-| Database        | In-memory H2, reset on restart        | Postgres                                           |
-| Signal          | `LocalSignal` (in-process)            | `PostgresSignal` (`LISTEN`/`NOTIFY`)               |
-| FCM             | `NoOpFcmService`                      | `FcmManager`, when fully configured (see below)    |
-| JWT             | HMAC512 with the injected secret      | HMAC512 with the real `JWT_SECRET`                 |
-| Telemetry       | Console `ServerLogger`                | Console, plus Sentry if `SENTRY_DSN` is set        |
-| CORS            | `localhost:8080` and `localhost:8010` | HTTPS only, from `CORS_HOSTS`                      |
-| Future-dated requests | Allowed                         | Rejected                                           |
-| Rate limiting   | One shared bucket                     | Per caller address, if `TRUSTED_PROXY_HOPS` is set |
-| Seeded account  | `admin`/`admin`                       | The `ADMIN_*` values                               |
+| Concern               | Development                           | Production                                         |
+|-----------------------|---------------------------------------|----------------------------------------------------|
+| Database              | In-memory H2, reset on restart        | Postgres                                           |
+| Signal                | `LocalSignal` (in-process)            | `PostgresSignal` (`LISTEN`/`NOTIFY`)               |
+| FCM                   | `NoOpFcmService`                      | `FcmManager`, when fully configured (see below)    |
+| JWT                   | HMAC512 with the injected secret      | HMAC512 with the real `JWT_SECRET`                 |
+| Telemetry             | Console `ServerLogger`                | Console, plus Sentry if `SENTRY_DSN` is set        |
+| CORS                  | `localhost:8080` and `localhost:8010` | HTTPS only, from `CORS_HOSTS`                      |
+| Future-dated requests | Allowed                               | Rejected                                           |
+| Rate limiting         | One shared bucket                     | Per caller address, if `TRUSTED_PROXY_HOPS` is set |
+| Seeded account        | `admin`/`admin`                       | The `ADMIN_*` values                               |
 
 > [!NOTE]
 > FCM needs **all** of: production mode, the `firebase` server flag, Google Application Default Credentials, and `GCP_PROJECT_ID`.
@@ -760,25 +760,25 @@ Always module-qualify tasks: several modules share the same unqualified task nam
 Most of this repository is scaffolding for the app it builds, but some pieces are self-contained enough to publish as standalone libraries, or drop into another Kotlin project with little more than a package rename.
 They follow the [platform convention](#platform-specific-code), which is why they travel well.
 
-| Piece                                               | Where                                                       | In one line                                                                        |
-|-----------------------------------------------------|-------------------------------------------------------------|------------------------------------------------------------------------------------|
-| [Offline job scheduler](#offline-engine)            | `appCore/.../domain/scheduler/`                             | Persistent job queue with chains, backoff, gating and zombie recovery.             |
-| [Clock trust service](#clock-trust)                 | `appCore/.../domain/clock/`                                 | Can the device clock be trusted? Needed by any last-write-wins offline system.     |
-| [Push suite](#push-notifications)                   | `appCore/.../domain/push/` · `server/.../domain/push/`      | FCM, WebSocket and SSE as one de-duplicated stream.                                |
-| [Instance signaling](#multi-instance-scaling)       | `server/.../data/signal/`                                   | Cross-instance wake-ups over Postgres `LISTEN`/`NOTIFY`.                           |
-| [MVI Store](#store)                                 | `appCore/.../ui/store/Store.kt`                             | MVI in one file, with keyed jobs and subscription-aware collection.                |
-| [Router & scenes](#navigation)                      | `appCore/.../ui/navigation/`                                | Named backstack strategies and adaptive split layouts.                             |
-| [Translation pipeline](#translations)               | `design/.../data/translation/` · `ui/Translations.kt`       | Server-served, reactive, with a bundled fallback.                                  |
-| [Permission manager](#permissions)                  | `appCore/.../ui/permission/`                                | Flag-aware, deduplicated permission requests.                                      |
-| [Flags & configs](#feature-flags--remote-configs)   | `shared/.../core/config/`                                   | Typed, shared, hot-reloaded toggles with no third-party service.                   |
-| [Test harness](#testing)                            | `sharedTest/.../test/SharedTestCase.kt`                     | Unit, Compose UI and Ktor server tests from `commonTest`.                          |
-| [LazyData](#lazydata)                               | `shared/.../core/flow/LazyData.kt`                          | A suspending `lazy {}`.                                                            |
-| [Mock HTTP engine](#mock-http-engine)               | `sharedTest/.../data/http/MockHttp.kt`                      | A `MockEngine` that supports WebSocket, SSE and timeouts.                          |
-| [Media, NFC & location](#media-nfc--location)       | `appCore/.../core/media/` · `core/nfc/` · `core/devicelocation/` | Hardware state machines that degrade instead of crashing.                     |
-| [Cryptography](#cryptography)                       | `appCore/.../core/security/Cryptography.kt`                 | Encryption backed by real platform keystores.                                      |
-| [Persisted storage](#persisted-storage)             | `appCore/.../data/storage/`                                 | Typed, optionally encrypted and cached files.                                      |
-| [HTTP stack](#http-stack)                           | `appCore/.../data/http/` · `shared/.../data/http/`          | A Ktor client whose interceptor ordering is load-bearing.                          |
-| [Telemetry hub](#telemetry-hub)                     | `shared/.../core/telemetry/`                                | One logging API over pluggable engines.                                            |
+| Piece                                             | Where                                                            | In one line                                                                    |
+|---------------------------------------------------|------------------------------------------------------------------|--------------------------------------------------------------------------------|
+| [Offline job scheduler](#offline-engine)          | `appCore/.../domain/scheduler/`                                  | Persistent job queue with chains, backoff, gating and zombie recovery.         |
+| [Clock trust service](#clock-trust)               | `appCore/.../domain/clock/`                                      | Can the device clock be trusted? Needed by any last-write-wins offline system. |
+| [Push suite](#push-notifications)                 | `appCore/.../domain/push/` · `server/.../domain/push/`           | FCM, WebSocket and SSE as one de-duplicated stream.                            |
+| [Instance signaling](#multi-instance-scaling)     | `server/.../data/signal/`                                        | Cross-instance wake-ups over Postgres `LISTEN`/`NOTIFY`.                       |
+| [MVI Store](#store)                               | `appCore/.../ui/store/Store.kt`                                  | MVI in one file, with keyed jobs and subscription-aware collection.            |
+| [Router & scenes](#navigation)                    | `appCore/.../ui/navigation/`                                     | Named backstack strategies and adaptive split layouts.                         |
+| [Translation pipeline](#translations)             | `design/.../data/translation/` · `ui/Translations.kt`            | Server-served, reactive, with a bundled fallback.                              |
+| [Permission manager](#permissions)                | `appCore/.../ui/permission/`                                     | Flag-aware, deduplicated permission requests.                                  |
+| [Flags & configs](#feature-flags--remote-configs) | `shared/.../core/config/`                                        | Typed, shared, hot-reloaded toggles with no third-party service.               |
+| [Test harness](#testing)                          | `sharedTest/.../test/SharedTestCase.kt`                          | Unit, Compose UI and Ktor server tests from `commonTest`.                      |
+| [LazyData](#lazydata)                             | `shared/.../core/flow/LazyData.kt`                               | A suspending `lazy {}`.                                                        |
+| [Mock HTTP engine](#mock-http-engine)             | `sharedTest/.../data/http/MockHttp.kt`                           | A `MockEngine` that supports WebSocket, SSE and timeouts.                      |
+| [Media, NFC & location](#media-nfc--location)     | `appCore/.../core/media/` · `core/nfc/` · `core/devicelocation/` | Hardware state machines that degrade instead of crashing.                      |
+| [Cryptography](#cryptography)                     | `appCore/.../core/security/Cryptography.kt`                      | Encryption backed by real platform keystores.                                  |
+| [Persisted storage](#persisted-storage)           | `appCore/.../data/storage/`                                      | Typed, optionally encrypted and cached files.                                  |
+| [HTTP stack](#http-stack)                         | `appCore/.../data/http/` · `shared/.../data/http/`               | A Ktor client whose interceptor ordering is load-bearing.                      |
+| [Telemetry hub](#telemetry-hub)                   | `shared/.../core/telemetry/`                                     | One logging API over pluggable engines.                                        |
 
 `...` stands for `src/commonMain/kotlin/com/app/builder` (or `src/main/kotlin/com/app/builder` on the server).
 
@@ -801,12 +801,12 @@ The entire push stack, reconnection loops included, is tested with no server and
 Each is an `open class` holding a state machine in common code, exposed as a `StateFlow`. Every entry point checks a feature flag and an `available` hardware flag (plus a runtime permission where relevant), and wraps the platform call so a failure is reported to `Telemetry` instead of thrown.
 Construction falls back to the inert base class if the platform factory throws, and one `remember…()`/`Provide…()` composable creates the instance and registers its foreground/background lifecycle.
 
-| Controller                 | States                                | Flag             | Android                     | Apple                    | Desktop                  | Web                           |
-|----------------------------|---------------------------------------|------------------|-----------------------------|--------------------------|--------------------------|-------------------------------|
-| **`AudioPlayer`**          | `Idle` / `Playing` / `Paused`         | `music`          | ExoPlayer                   | `AVPlayer`               | JavaFX `MediaPlayer`     | `HTMLAudioElement`            |
-| **`Camera`**               | `Idle` / `Previewing` / `Recording`   | `camera`         | CameraX + `ImageCapture`    | `AVCaptureSession`       | Unavailable              | `getUserMedia` + canvas grab  |
-| **`NfcController`**        | `Idle` / `Scanning` / `Writing`       | `nfc`            | `NfcAdapter` reader mode    | `NFCNDEFReaderSession`   | Unavailable              | Unavailable                   |
-| **`DeviceLocationProvider`** | `Idle` / `Active`                   | `locationCapture`| Fused Location Provider, or `LocationManager` | `CLLocationManager` | Unavailable    | `navigator.geolocation`       |
+| Controller                   | States                              | Flag              | Android                                       | Apple                  | Desktop              | Web                          |
+|------------------------------|-------------------------------------|-------------------|-----------------------------------------------|------------------------|----------------------|------------------------------|
+| **`AudioPlayer`**            | `Idle` / `Playing` / `Paused`       | `music`           | ExoPlayer                                     | `AVPlayer`             | JavaFX `MediaPlayer` | `HTMLAudioElement`           |
+| **`Camera`**                 | `Idle` / `Previewing` / `Recording` | `camera`          | CameraX + `ImageCapture`                      | `AVCaptureSession`     | Unavailable          | `getUserMedia` + canvas grab |
+| **`NfcController`**          | `Idle` / `Scanning` / `Writing`     | `nfc`             | `NfcAdapter` reader mode                      | `NFCNDEFReaderSession` | Unavailable          | Unavailable                  |
+| **`DeviceLocationProvider`** | `Idle` / `Active`                   | `locationCapture` | Fused Location Provider, or `LocationManager` | `CLLocationManager`    | Unavailable          | `navigator.geolocation`      |
 
 * **Audio**: `setPlaylist(playlist, loop, shuffle)` always stops and reloads, so set it once rather than on every recomposition. Pauses on background, resumes on foreground.
 * **Camera**: `capturePhoto(onResult)` and `startRecording(onResult)` return the capture's location (a file path, or a data URL on Web) or `null`, so each caller gets exactly the capture it asked for. Illegal transitions are dropped by the base class. On Desktop there is no standard JVM webcam API, so `CameraPreview` renders a visible "not supported" placeholder.
@@ -902,30 +902,30 @@ Every route shares a global rate limit; those marked *rate-limited* have a stric
 
 Declarations that resolve to a distinct implementation per source set:
 
-| Declaration              | What it does                                                                     |
-|--------------------------|----------------------------------------------------------------------------------|
-| `SqlDriver`              | SQLDelight async database driver                                                 |
-| `HttpClientEngine`       | Ktor HTTP engine                                                                 |
-| `NetworkClientEngine`    | Ktor engine for the design module's image loader                                 |
-| `Network`                | Connectivity check plus a `Flow<Boolean>` of changes                             |
-| `File`                   | Local filesystem IO                                                              |
-| `AppPath`                | Absolute data and cache directory paths                                          |
-| `Development`            | Debug mode flag                                                                  |
-| `Cryptography`           | Encrypt, decrypt, hash and key derivation                                        |
-| `PlatformLogger`         | `TelemetryEngine` writing to the native console                                  |
-| `AudioPlayer`            | Platform audio player                                                            |
-| `Camera` / `CameraPreview` | Platform camera controller and preview surface                                 |
-| `NfcController`          | Platform NFC reader/writer and its lifecycle                                     |
-| `DeviceLocationProvider` | Platform location capture                                                        |
-| `Locale`                 | System language, local-time formatting and a `Flow` of locale changes            |
-| `Clock`                  | Emits when the OS reports a system clock change                                  |
-| `NotificationProvider`   | Renders a push payload as a native notification                                  |
-| `Lifecycle`              | Foreground/background callbacks                                                  |
-| `PermissionManager`      | Platform permission manager                                                      |
-| `Platform`               | OS name, version, brand and model                                                |
-| `Dispatcher`             | The IO `CoroutineDispatcher`                                                     |
-| `VerticalScrollBar`      | Styled scrollbar for a `LazyList`                                                |
-| `PlatformTestCase`       | Platform-specific test setup                                                     |
+| Declaration                | What it does                                                          |
+|----------------------------|-----------------------------------------------------------------------|
+| `SqlDriver`                | SQLDelight async database driver                                      |
+| `HttpClientEngine`         | Ktor HTTP engine                                                      |
+| `NetworkClientEngine`      | Ktor engine for the design module's image loader                      |
+| `Network`                  | Connectivity check plus a `Flow<Boolean>` of changes                  |
+| `File`                     | Local filesystem IO                                                   |
+| `AppPath`                  | Absolute data and cache directory paths                               |
+| `Development`              | Debug mode flag                                                       |
+| `Cryptography`             | Encrypt, decrypt, hash and key derivation                             |
+| `PlatformLogger`           | `TelemetryEngine` writing to the native console                       |
+| `AudioPlayer`              | Platform audio player                                                 |
+| `Camera` / `CameraPreview` | Platform camera controller and preview surface                        |
+| `NfcController`            | Platform NFC reader/writer and its lifecycle                          |
+| `DeviceLocationProvider`   | Platform location capture                                             |
+| `Locale`                   | System language, local-time formatting and a `Flow` of locale changes |
+| `Clock`                    | Emits when the OS reports a system clock change                       |
+| `NotificationProvider`     | Renders a push payload as a native notification                       |
+| `Lifecycle`                | Foreground/background callbacks                                       |
+| `PermissionManager`        | Platform permission manager                                           |
+| `Platform`                 | OS name, version, brand and model                                     |
+| `Dispatcher`               | The IO `CoroutineDispatcher`                                          |
+| `VerticalScrollBar`        | Styled scrollbar for a `LazyList`                                     |
+| `PlatformTestCase`         | Platform-specific test setup                                          |
 
 ## Package Index
 
