@@ -1,15 +1,14 @@
 # Managed Container Deployment
 
 Runs the backend as a single container on a managed host, with the database on Neon's free tier.
-Neither sleeps when idle — the property that matters here, since the push suite holds WebSocket
-and SSE connections open and a sleeping instance drops them.
+Neither sleeps when idle — the property that matters here, since the push suite holds WebSocket and SSE connections open and a sleeping instance drops them.
 
 ```
   internet ──► host (TLS, provider domain) ──► server ──► neon postgres
                                                ~512 MB     (public internet, TLS required)
 ```
 
-Unlike [the VPS setup](../vps/README.md) there is no Caddy and no Postgres container.
+Unlike a self-managed VPS, there is no reverse proxy and no Postgres container.
 The host terminates TLS and hands you a domain; Neon runs the database. What remains is one container.
 
 The walkthrough below is written for **Northflank**, but nothing in this directory is specific to it.
@@ -105,6 +104,13 @@ Prefer a **TCP** check over HTTP. `/api/probe` only answers `HEAD` and rejects a
 even with a `GET` handler it would still fail, because probes arrive every second during startup
 while `rateLimiterProbeLimit` allows 5 requests per 30 seconds — shared across every caller once the
 proxy collapses them to one address.
+
+Keep the database out of the checks. `GET /` answers without touching Neon, so a database outage
+does not restart a server that a restart cannot fix, and probes do not keep Neon's compute awake.
+Once there is more than one instance, a readiness check that does query the database becomes
+worthwhile: it pulls a single instance that has lost its connection out of the load balancer while
+the others keep serving. Add it as a separate `GET /ready` endpoint and point only the readiness
+probe at it, leaving liveness on `/`.
 
 ## Pointing the apps at it
 

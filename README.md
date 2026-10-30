@@ -403,7 +403,7 @@ Annotations used to exclude tests from coverage reports.
 * **showcase**: The catalog of the module, mirroring the package it documents one to one.
 
 The split is what keeps the module reusable: `core` could be lifted into an unrelated project unchanged, while `component` is where the app's shapes appear. 
-Neither holds a state or talks to a gateway. A component takes its data and its callbacks as parameters, which is why the whole module is previewable.
+Neither holds a state nor talks to a gateway. A component takes its data and its callbacks as parameters, which is why the whole module is previewable.
 
 ### App Core
 
