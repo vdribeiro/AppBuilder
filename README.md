@@ -816,12 +816,12 @@ The entire push stack, reconnection loops included, is tested with no server and
 Each is an `open class` holding a state machine in common code, exposed as a `StateFlow`. Every entry point checks a feature flag and an `available` hardware flag (plus a runtime permission where relevant), and wraps the platform call so a failure is reported to `Telemetry` instead of thrown.
 Construction falls back to the inert base class if the platform factory throws, and one `remember…()`/`Provide…()` composable creates the instance and registers its foreground/background lifecycle.
 
-| Controller                   | States                              | Flag              | Android                                       | Apple                  | Desktop              | Web                          |
-|------------------------------|-------------------------------------|-------------------|-----------------------------------------------|------------------------|----------------------|------------------------------|
-| **`AudioPlayer`**            | `Idle` / `Playing` / `Paused`       | `music`           | ExoPlayer                                     | `AVPlayer`             | JavaFX `MediaPlayer` | `HTMLAudioElement`           |
-| **`Camera`**                 | `Idle` / `Previewing` / `Recording` | `camera`          | CameraX + `ImageCapture`                      | `AVCaptureSession`     | Unavailable          | `getUserMedia` + canvas grab |
-| **`NfcController`**          | `Idle` / `Scanning` / `Writing`     | `nfc`             | `NfcAdapter` reader mode                      | `NFCNDEFReaderSession` | Unavailable          | Unavailable                  |
-| **`DeviceLocationProvider`** | `Idle` / `Active`                   | `locationCapture` | Fused Location Provider, or `LocationManager` | `CLLocationManager`    | Unavailable          | `navigator.geolocation`      |
+| Controller                   | Android                                    | Apple                | Desktop            | Web                        |
+|------------------------------|--------------------------------------------|----------------------|--------------------|----------------------------|
+| **`AudioPlayer`**            | ExoPlayer                                  | AVPlayer             | JavaFX MediaPlayer | HTMLAudioElement           |
+| **`Camera`**                 | CameraX                                    | AVCaptureSession     | Unavailable        | getUserMedia + canvas grab |
+| **`NfcController`**          | NfcAdapter                                 | NFCNDEFReaderSession | Unavailable        | Unavailable                |
+| **`DeviceLocationProvider`** | Fused Location Provider or LocationManager | CLLocationManager    | Unavailable        | navigator.geolocation      |
 
 * **Audio**: `setPlaylist(playlist, loop, shuffle)` always stops and reloads, so set it once rather than on every recomposition. Pauses on background, resumes on foreground.
 * **Camera**: `capturePhoto(onResult)` and `startRecording(onResult)` return the capture's location (a file path, or a data URL on Web) or `null`, so each caller gets exactly the capture it asked for. Illegal transitions are dropped by the base class. On Desktop there is no standard JVM webcam API, so `CameraPreview` renders a visible "not supported" placeholder.
