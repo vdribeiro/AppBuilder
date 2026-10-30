@@ -41,4 +41,27 @@ data class Registry(
     val entityUuid: Uuid?,
     val entityType: EntityType?,
     val payload: String?,
-)
+) {
+    /**
+     * Enumerates the [Registry] fields that map to a localized display label.
+     *
+     * @property translationKey The [Translation.key] used to look up the localized label for this field.
+     */
+    @Serializable
+    enum class Property(val translationKey: String) {
+        REQUEST_TYPE(translationKey = "registry_request_type"),
+        REQUEST_UTC(translationKey = "registry_request_utc"),
+        REQUEST_SENT_UTC(translationKey = "registry_request_sent_utc"),
+        DELETED_AT(translationKey = "registry_deleted_at"),
+        USER_UUID(translationKey = "registry_user_uuid"),
+        APP_VERSION(translationKey = "registry_app_version"),
+        OS(translationKey = "registry_os"),
+        OS_VERSION(translationKey = "registry_os_version"),
+        BRAND(translationKey = "registry_brand"),
+        MODEL(translationKey = "registry_model"),
+        DEVICE_UUID(translationKey = "registry_device_uuid"),
+        ENTITY_UUID(translationKey = "registry_entity_uuid"),
+        ENTITY_TYPE(translationKey = "registry_entity_type"),
+        PAYLOAD(translationKey = "registry_payload")
+    }
+}

@@ -371,6 +371,76 @@
   },
   {
     "languageIso": "en",
+    "key": "registry_request_utc",
+    "value": "Request At"
+  },
+  {
+    "languageIso": "en",
+    "key": "registry_request_sent_utc",
+    "value": "Sent At"
+  },
+  {
+    "languageIso": "en",
+    "key": "registry_deleted_at",
+    "value": "Deleted At"
+  },
+  {
+    "languageIso": "en",
+    "key": "registry_request_type",
+    "value": "Request Type"
+  },
+  {
+    "languageIso": "en",
+    "key": "registry_entity_type",
+    "value": "Entity Type"
+  },
+  {
+    "languageIso": "en",
+    "key": "registry_entity_uuid",
+    "value": "Entity UUID"
+  },
+  {
+    "languageIso": "en",
+    "key": "registry_user_uuid",
+    "value": "User UUID"
+  },
+  {
+    "languageIso": "en",
+    "key": "registry_device_uuid",
+    "value": "Device UUID"
+  },
+  {
+    "languageIso": "en",
+    "key": "registry_app_version",
+    "value": "App Version"
+  },
+  {
+    "languageIso": "en",
+    "key": "registry_os",
+    "value": "OS"
+  },
+  {
+    "languageIso": "en",
+    "key": "registry_os_version",
+    "value": "OS Version"
+  },
+  {
+    "languageIso": "en",
+    "key": "registry_brand",
+    "value": "Brand"
+  },
+  {
+    "languageIso": "en",
+    "key": "registry_model",
+    "value": "Model"
+  },
+  {
+    "languageIso": "en",
+    "key": "registry_payload",
+    "value": "Payload"
+  },
+  {
+    "languageIso": "en",
     "key": "scan_nfc_tag",
     "value": "Hold your device near an NFC tag."
   },
