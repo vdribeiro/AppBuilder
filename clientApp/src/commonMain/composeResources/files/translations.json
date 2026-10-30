@@ -371,6 +371,11 @@
   },
   {
     "languageIso": "en",
+    "key": "registry_request_type",
+    "value": "Request Type"
+  },
+  {
+    "languageIso": "en",
     "key": "registry_request_utc",
     "value": "Request At"
   },
@@ -386,28 +391,8 @@
   },
   {
     "languageIso": "en",
-    "key": "registry_request_type",
-    "value": "Request Type"
-  },
-  {
-    "languageIso": "en",
-    "key": "registry_entity_type",
-    "value": "Entity Type"
-  },
-  {
-    "languageIso": "en",
-    "key": "registry_entity_uuid",
-    "value": "Entity UUID"
-  },
-  {
-    "languageIso": "en",
     "key": "registry_user_uuid",
     "value": "User UUID"
-  },
-  {
-    "languageIso": "en",
-    "key": "registry_device_uuid",
-    "value": "Device UUID"
   },
   {
     "languageIso": "en",
@@ -433,6 +418,21 @@
     "languageIso": "en",
     "key": "registry_model",
     "value": "Model"
+  },
+  {
+    "languageIso": "en",
+    "key": "registry_device_uuid",
+    "value": "Device UUID"
+  },
+  {
+    "languageIso": "en",
+    "key": "registry_entity_uuid",
+    "value": "Entity UUID"
+  },
+  {
+    "languageIso": "en",
+    "key": "registry_entity_type",
+    "value": "Entity Type"
   },
   {
     "languageIso": "en",
