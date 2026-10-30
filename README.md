@@ -1256,31 +1256,40 @@ Declarations that resolve to a distinct implementation per source set:
 
 # FAQ
 
-**Do I need Postgres or Firebase to develop locally?**
+### Do I need Postgres or Firebase to develop locally?
+
 No. `./gradlew :server:run` uses in-memory H2, an in-process signal, a no-op FCM service and a seeded admin. See [Development vs Production](#development-vs-production).
 
-**Can I use the client without the bundled server?**
+### Can I use the client without the bundled server?
+
 Yes: point it at your own backend, or run it [fully disconnected](#turning-the-engine-off).
 
-**How do I add offline support for a new operation?**
+### How do I add offline support for a new operation?
+
 Write the local change first, then queue a `Job` handled in `JobProvider`. See [Adding a Feature](#adding-a-feature) and [Offline Engine](#offline-engine).
 
-**How are sync conflicts resolved?**
+### How are sync conflicts resolved?
+
 Last write wins on `modifiedAt`: a remote copy is saved only if `remote.modifiedAt >= local.modifiedAt`, which is why [clock trust](#clock-trust) gates every dispatch. Queue-level duplicates follow the [conflict policies](#conflict-policies).
 
-**What happens to a deleted user's un-synced work?**
+### What happens to a deleted user's un-synced work?
+
 It still syncs. See [Account Deletion](#account-deletion).
 
-**How do I turn a feature off, or roll one out gradually?**
+### How do I turn a feature off, or roll one out gradually?
+
 Flip its flag server-side; clients hot-reload it. See [Feature Flags & Remote Configs](#feature-flags--remote-configs).
 
-**Why does the build fail on coverage?**
+### Why does the build fail on coverage?
+
 A module dropped below 90%. See [Testing](#testing).
 
-**Why does Desktop never use FCM?**
+### Why does Desktop never use FCM?
+
 There is no FCM client SDK for JVM desktop apps. See [Client Connection Lifecycle](#client-connection-lifecycle).
 
-**Why are tickets and connection presence in the database instead of memory?**
+### Why are tickets and connection presence in the database instead of memory?
+
 So any instance can serve any client. See [Multi-Instance Scaling](#multi-instance-scaling).
 
 # About
