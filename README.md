@@ -775,25 +775,28 @@ Always module-qualify tasks: several modules share the same unqualified task nam
 Most of this repository is scaffolding for the app it builds, but some pieces are self-contained enough to publish as standalone libraries, or drop into another Kotlin project with little more than a package rename.
 They follow the [platform convention](#platform-specific-code), which is why they travel well.
 
-| Piece                                             | Where                                                            | In one line                                                                    |
-|---------------------------------------------------|------------------------------------------------------------------|--------------------------------------------------------------------------------|
-| [Offline job scheduler](#offline-engine)          | `appCore/.../domain/scheduler/`                                  | Persistent job queue with chains, backoff, gating and zombie recovery.         |
-| [Clock trust service](#clock-trust)               | `appCore/.../domain/clock/`                                      | Can the device clock be trusted? Needed by any last-write-wins offline system. |
-| [Push suite](#push-notifications)                 | `appCore/.../domain/push/` · `server/.../domain/push/`           | FCM, WebSocket and SSE as one de-duplicated stream.                            |
-| [Instance signaling](#multi-instance-scaling)     | `server/.../data/signal/`                                        | Cross-instance wake-ups over Postgres `LISTEN`/`NOTIFY`.                       |
-| [MVI Store](#store)                               | `appCore/.../ui/store/Store.kt`                                  | MVI in one file, with keyed jobs and subscription-aware collection.            |
-| [Router & scenes](#navigation)                    | `appCore/.../ui/navigation/`                                     | Named backstack strategies and adaptive split layouts.                         |
-| [Translation pipeline](#translations)             | `design/.../data/translation/` · `ui/Translations.kt`            | Server-served, reactive, with a bundled fallback.                              |
-| [Permission manager](#permissions)                | `appCore/.../ui/permission/`                                     | Flag-aware, deduplicated permission requests.                                  |
-| [Flags & configs](#feature-flags--remote-configs) | `shared/.../core/config/`                                        | Typed, shared, hot-reloaded toggles with no third-party service.               |
-| [Test harness](#testing)                          | `sharedTest/.../test/SharedTestCase.kt`                          | Unit, Compose UI and Ktor server tests from `commonTest`.                      |
-| [LazyData](#lazydata)                             | `shared/.../core/flow/LazyData.kt`                               | A suspending `lazy {}`.                                                        |
-| [Mock HTTP engine](#mock-http-engine)             | `sharedTest/.../data/http/MockHttp.kt`                           | A `MockEngine` that supports WebSocket, SSE and timeouts.                      |
-| [Media, NFC & location](#media-nfc--location)     | `appCore/.../core/media/` · `core/nfc/` · `core/devicelocation/` | Hardware state machines that degrade instead of crashing.                      |
-| [Cryptography](#cryptography)                     | `appCore/.../core/security/Cryptography.kt`                      | Encryption backed by real platform keystores.                                  |
-| [Persisted storage](#persisted-storage)           | `appCore/.../data/storage/`                                      | Typed, optionally encrypted and cached files.                                  |
-| [HTTP stack](#http-stack)                         | `appCore/.../data/http/` · `shared/.../data/http/`               | A Ktor client whose interceptor ordering is load-bearing.                      |
-| [Telemetry hub](#telemetry-hub)                   | `shared/.../core/telemetry/`                                     | One logging API over pluggable engines.                                        |
+| Piece                                             | Where                                                  | In one line                                                                    |
+|---------------------------------------------------|--------------------------------------------------------|--------------------------------------------------------------------------------|
+| [Offline job scheduler](#offline-engine)          | `appCore/.../domain/scheduler/`                        | Persistent job queue with chains, backoff, gating and zombie recovery.         |
+| [Clock trust service](#clock-trust)               | `appCore/.../domain/clock/`                            | Can the device clock be trusted? Needed by any last-write-wins offline system. |
+| [Push suite](#push-notifications)                 | `appCore/.../domain/push/` · `server/.../domain/push/` | FCM, WebSocket and SSE as one de-duplicated stream.                            |
+| [Instance signaling](#multi-instance-scaling)     | `server/.../data/signal/`                              | Cross-instance wake-ups over Postgres `LISTEN`/`NOTIFY`.                       |
+| [MVI Store](#store)                               | `appCore/.../ui/store/Store.kt`                        | MVI in one file, with keyed jobs and subscription-aware collection.            |
+| [Router & scenes](#navigation)                    | `appCore/.../ui/navigation/`                           | Named backstack strategies and adaptive split layouts.                         |
+| [Translation pipeline](#translations)             | `design/.../data/translation/` · `ui/Translations.kt`  | Server-served, reactive, with a bundled fallback.                              |
+| [Permission manager](#permissions)                | `appCore/.../ui/permission/`                           | Flag-aware, deduplicated permission requests.                                  |
+| [Flags & configs](#feature-flags--remote-configs) | `shared/.../core/config/`                              | Typed, shared, hot-reloaded toggles with no third-party service.               |
+| [Test harness](#testing)                          | `sharedTest/.../test/SharedTestCase.kt`                | Unit, Compose UI and Ktor server tests from `commonTest`.                      |
+| [LazyData](#lazydata)                             | `shared/.../core/flow/LazyData.kt`                     | A suspending `lazy {}`.                                                        |
+| [Mock HTTP engine](#mock-http-engine)             | `sharedTest/.../data/http/MockHttp.kt`                 | A `MockEngine` that supports WebSocket, SSE and timeouts.                      |
+| [Audio player](#audio-player)                     | `appCore/.../core/media/AudioPlayer.kt`                | Playlist playback with loop and shuffle, paused with the app.                  |
+| [Camera](#camera)                                 | `appCore/.../core/media/Camera.kt`                     | Preview, photo and video capture, with per-call results.                       |
+| [NFC](#nfc)                                       | `appCore/.../core/nfc/NfcController.kt`                | NDEF read and write, including tags delivered while backgrounded.              |
+| [Device location](#device-location)               | `appCore/.../core/devicelocation/`                     | Location fixes answered instantly from a warm cache.                           |
+| [Cryptography](#cryptography)                     | `appCore/.../core/security/Cryptography.kt`            | Encryption backed by real platform keystores.                                  |
+| [Persisted storage](#persisted-storage)           | `appCore/.../data/storage/`                            | Typed, optionally encrypted and cached files.                                  |
+| [HTTP stack](#http-stack)                         | `appCore/.../data/http/` · `shared/.../data/http/`     | A Ktor client whose interceptor ordering is load-bearing.                      |
+| [Telemetry hub](#telemetry-hub)                   | `shared/.../core/telemetry/`                           | One logging API over pluggable engines.                                        |
 
 `...` stands for `src/commonMain/kotlin/com/app/builder` (or `src/main/kotlin/com/app/builder` on the server).
 
@@ -811,22 +814,54 @@ Ktor's stock `MockEngine` declares no capabilities, so code that opens a WebSock
 On top sit `respondMock`, `badRequest`, `notFound`, `respondSse`, and a hand-rolled `respondWebSocket` that fabricates a session over channels.
 The entire push stack, reconnection loops included, is tested with no server and no sockets.
 
-## Media, NFC & Location
+## Hardware Controllers
 
-Each is an `open class` holding a state machine in common code, exposed as a `StateFlow`. Every entry point checks a feature flag and an `available` hardware flag (plus a runtime permission where relevant), and wraps the platform call so a failure is reported to `Telemetry` instead of thrown.
-Construction falls back to the inert base class if the platform factory throws, and one `remember…()`/`Provide…()` composable creates the instance and registers its foreground/background lifecycle.
+Audio, camera, NFC and location share one shape. Each is an `open class` holding its state machine in common code, exposed as a `StateFlow`.
+Every entry point checks a feature flag and an `available` hardware flag (plus a runtime permission where relevant), and wraps the platform call so a failure is reported to `Telemetry` instead of thrown.
+Construction falls back to the inert base class if the platform factory throws, and a single composable creates the instance and registers its foreground/background lifecycle.
 
-| Controller                   | Android                                    | Apple                | Desktop            | Web                        |
-|------------------------------|--------------------------------------------|----------------------|--------------------|----------------------------|
-| **`AudioPlayer`**            | ExoPlayer                                  | AVPlayer             | JavaFX MediaPlayer | HTMLAudioElement           |
-| **`Camera`**                 | CameraX                                    | AVCaptureSession     | Unavailable        | getUserMedia + canvas grab |
-| **`NfcController`**          | NfcAdapter                                 | NFCNDEFReaderSession | Unavailable        | Unavailable                |
-| **`DeviceLocationProvider`** | Fused Location Provider or LocationManager | CLLocationManager    | Unavailable        | navigator.geolocation      |
+### Audio Player
 
-* **Audio**: `setPlaylist(playlist, loop, shuffle)` always stops and reloads, so set it once rather than on every recomposition. Pauses on background, resumes on foreground.
-* **Camera**: `capturePhoto(onResult)` and `startRecording(onResult)` return the capture's location (a file path, or a data URL on Web) or `null`, so each caller gets exactly the capture it asked for. Illegal transitions are dropped by the base class. On Desktop there is no standard JVM webcam API, so `CameraPreview` renders a visible "not supported" placeholder.
-* **NFC**: reads don't arrive on the controller's `state`. They are pushed to the module-level `TagProvider.tags` flow, because Android can deliver a tag while the app is backgrounded, through the transparent `NfcActivity`, with no controller alive. `TagManager` turns each tag's `NfcRecord`s into a deep link or a use case.
-* **Location**: the update loop only keeps the platform's location cache warm. `getLastKnownLocation()` prefers a fresh platform query and falls back to the loop's last fix, so callers get an answer immediately instead of waiting on a cold GPS fix. Capture restarts on foreground only if it was `Active` before.
+`appCore/.../core/media/AudioPlayer.kt` · `ui/media/AudioPlayer.kt`
+
+An `Idle`/`Playing`/`Paused` state machine driven by `setPlaylist(playlist, loop, shuffle)`, `play()`, `pause()`, `stop()` and `dispose()`, gated by the `music` flag.
+Setting a playlist always stops and reloads, so set it once rather than on every recomposition.
+`rememberAudioPlayer()` pauses playback on background and resumes it on foreground, and a device without a usable audio stack degrades to silence instead of taking down the composition.
+
+**Platforms**: ExoPlayer on Android, `AVPlayer` on Apple, JavaFX `MediaPlayer` on Desktop, `HTMLAudioElement` on Web.
+
+### Camera
+
+`appCore/.../core/media/Camera.kt` · `ui/media/Camera.kt`
+
+An `Idle`/`Previewing`/`Recording` state machine driven by `startPreview()`, `stopPreview()`, `capturePhoto(onResult)`, `startRecording(onResult)`, `stopRecording()`, `toggleFacing()` and `dispose()`, gated by the `camera` flag and the camera permission.
+Captures come back through the `onResult` passed at the call site, carrying the capture's location (a file path, or a data URL on Web) or `null`, so each caller receives exactly the capture it asked for.
+Illegal transitions are dropped by the base class, so no platform has to re-derive what is valid from where.
+`CameraPreview` is an `expect` composable, so the preview surface is the only piece of UI that varies.
+
+**Platforms**: CameraX with `ImageCapture` on Android, `AVCaptureSession` on Apple, `getUserMedia` with a canvas grab on Web.
+Desktop is unavailable, since there is no standard JVM webcam API without native libraries. Its `CameraPreview` renders a "not supported" placeholder, so the degradation is visible rather than a blank surface.
+
+### NFC
+
+`appCore/.../core/nfc/NfcController.kt` · `ui/nfc/NfcController.kt`
+
+An `Idle`/`Scanning`/`Writing` state machine driven by `read()`, `write(records)` and `stop()`, gated by the `nfc` flag.
+Reads don't arrive on the controller's own `state`. They are pushed to the module-level `TagProvider.tags` flow, because Android can hand a tag to the app while it is backgrounded, with no live controller to receive it.
+`TagManager` collects that flow and turns each tag's `NfcRecord`s into a deep link or a use case.
+
+**Platforms**: `NfcAdapter` reader mode with NDEF read/write on Android, backed by a transparent `NfcActivity` that catches tag intents when the app isn't in the foreground; `NFCNDEFReaderSession` on Apple.
+Desktop and Web expose no generic NFC API, so the controller honestly reports itself unavailable.
+
+### Device Location
+
+`appCore/.../core/devicelocation/DeviceLocationProvider.kt` · `ui/devicelocation/DeviceLocationProvider.kt`
+
+An `Idle`/`Active` state machine driven by `startUpdate()` and `stopUpdate()`, with the latest fix in `deviceLocation: StateFlow<DeviceLocation?>`, gated by the `locationCapture` flag and the location permission.
+The update loop exists only to keep the platform's location cache warm: `getLastKnownLocation()` prefers a fresh platform query and falls back to the loop's last fix, so a caller gets an answer immediately instead of waiting on a cold GPS fix.
+`ProvideDeviceLocationProvider()` stops capture on background and restarts it on foreground only if it was `Active` before, so backgrounding never promotes an idle provider into a running one.
+
+**Platforms**: the Fused Location Provider on Android, falling back to `LocationManager` without Google Play Services; `CLLocationManager` on Apple; `navigator.geolocation` on Web. Desktop is unavailable.
 
 ## Cryptography
 
