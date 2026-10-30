@@ -405,12 +405,27 @@ Signals are fire-and-forget. Anything that must survive a missed delivery, like 
 > The one exception is moving an FCM token between users on a shared device, matched on the token alone because it is the only value an attacker cannot guess.
 
 <details>
-<summary>Why Postgres <code>LISTEN</code>/<code>NOTIFY</code> instead of Redis or a message broker?</summary>
+<summary>Why Postgres <code>LISTEN</code>/<code>NOTIFY</code> is the default signal</summary>
 
-The project already requires Postgres, so `LISTEN`/`NOTIFY` covers "wake whichever instance holds this socket" without another piece of infrastructure to run, monitor and pay for.
-If you outgrow it (very high fan-out, cross-region, durable ordered delivery), that is when a real broker earns its keep.
+Postgres is the default database, so `LISTEN`/`NOTIFY` covers "wake whichever instance holds this socket" without another piece of infrastructure to run, monitor and pay for.
+If you outgrow it (very high fan-out, cross-region, durable ordered delivery), that is when a real broker earns its keep: implement `InstanceSignal` on top of it.
 
 </details>
+
+### Using Another Database
+
+Postgres can be swapped for another engine supported by Exposed's R2DBC driver. Three places need to change:
+
+1. **Connection factory**: replace `DatabaseFactory.getPostgresConnectionFactory()`.
+2. **Dialect**: add the engine to `DatabaseFactory.dialect()`, which only knows H2 and PostgreSQL and refuses to boot on anything else.
+3. **Signal**: add the engine to the `instanceSignal` selection in `Application.kt`, with an `InstanceSignal` implementation for it.
+
+> [!WARNING]
+> Step 3 fails **silently**. Any connection factory other than Postgres falls back to `LocalSignal`, so the server boots fine but loses cross-instance delivery as soon as it runs on more than one instance.
+
+Not every engine has built-in pub/sub. Oracle has `DBMS_ALERT` and Advanced Queuing, and SQL Server has Service Broker, but MySQL and MariaDB have nothing equivalent.
+For those, poll a small signal table (at the cost of the poll interval in latency), or back `InstanceSignal` with an external broker such as Redis or NATS.
+A single-instance deployment can keep `LocalSignal`.
 
 # Development Guide
 
@@ -721,7 +736,7 @@ The switch is `Env.developmentMode`, from the `DEVELOPMENT` variable.
 > [!NOTE]
 > FCM needs **all** of: production mode, the `firebase` server flag, Google Application Default Credentials, and `GCP_PROJECT_ID`.
 > If any is missing the server falls back to `NoOpFcmService` instead of failing to boot, so a misconfigured deployment silently delivers over WebSocket and SSE only.
-> The signal, by contrast, follows the database: a Postgres connection factory yields `PostgresSignal`, anything else `LocalSignal`.
+> The signal, by contrast, follows the database: a Postgres connection factory yields `PostgresSignal`, anything else `LocalSignal`. See [Using Another Database](#using-another-database).
 
 ## Firebase Setup
 
