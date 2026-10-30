@@ -8,7 +8,7 @@ Everything is pre-wired so you can skip the boilerplate and go straight to shipp
 | Area                                                                           | What it means                                                                                    |
 |--------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------|
 | **[Kotlin Multiplatform at full breadth](#platform-specific-implementations)** | One Compose Multiplatform client for Android, iOS, Windows, macOS, Linux and Web.                |
-| **[Backend and scaling](#multi-instance-scaling)**                             | A Ktor server with no per-instance state, coordinated through Postgres LISTEN/NOTIFY.            |
+| **[Backend and scaling](#multi-instance-scaling)**                             | A Ktor server with no per-instance state, coordinated through a pluggable cross-instance signal. |
 | **[Offline-first architecture](#offline-engine)**                              | A persistent job queue with per-entity chains, backoff and zombie recovery.                      |
 | **[Sync correctness](#delta-sync)**                                            | Keyset-paginated delta sync, with push routed through the job scheduler.                         |
 | **[Distributed time](#clock-trust)**                                           | Detection of untrustworthy device clock from NTP-style offset measurements and OS clock changes. |
