@@ -19,6 +19,7 @@ import com.app.builder.ui.navigation.provider.errorProvider
 import com.app.builder.ui.navigation.provider.homeProvider
 import com.app.builder.ui.navigation.provider.nfcProvider
 import com.app.builder.ui.navigation.provider.pushProvider
+import com.app.builder.ui.navigation.provider.registryProvider
 import com.app.builder.ui.navigation.provider.taskProvider
 import com.app.builder.ui.navigation.provider.userProfileProvider
 import com.app.builder.ui.navigation.provider.userProvider
@@ -114,6 +115,7 @@ fun AuthenticatedNavigation(
             if (ClientFlags.flags.deviceFiles) deviceFilesProvider(useCases = useCases)
             if (ClientFlags.flags.music) audioProvider(useCases = useCases)
             if (ClientFlags.flags.notifications) pushProvider(useCases = useCases)
+            if (ClientFlags.flags.registries) registryProvider(useCases = useCases)
             if (ClientFlags.flags.tasks) taskProvider(useCases = useCases)
         }
     )

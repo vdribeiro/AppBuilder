@@ -277,7 +277,7 @@ object Application {
     private suspend fun Dependency.UserGraph.sync() {
         Telemetry.info(tag = TAG, message = "Requesting sync for user ${user.uuid}")
         repositories.userRepository.syncUsers()
-        repositories.registryRepository.syncRegistries()
+        if (ClientFlags.flags.registries) repositories.registryRepository.syncRegistries()
         if (ClientFlags.flags.tasks) repositories.taskRepository.syncTasks()
     }
 

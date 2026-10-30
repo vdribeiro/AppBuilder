@@ -15,8 +15,9 @@ class AppFileTest: TestCase() {
         assertEquals(expected = "client_configs", actual = AppFile.ClientRemoteConfigs.path)
         assertEquals(expected = "server_flags", actual = AppFile.ServerFeatureFlags.path)
         assertEquals(expected = "server_configs", actual = AppFile.ServerRemoteConfigs.path)
+        assertEquals(expected = "registry_preferences", actual = AppFile.RegistryPreferences.path)
         assertEquals(expected = "task_preferences", actual = AppFile.TaskPreferences.path)
 
-        assertEquals(expected = 7, actual = AppFile.all.size)
+        assertEquals(expected = 8, actual = AppFile.all.size)
     }
 }

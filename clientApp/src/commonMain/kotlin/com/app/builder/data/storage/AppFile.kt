@@ -80,9 +80,13 @@ object AppFile {
         val visibleProperties: List<String> = emptyList(),
     )
 
+    /** Registry preferences. */
+    data object RegistryPreferences: StorageFile<ActionBarData>(path = "registry_preferences", encrypted = false) {
+        override val serializer: KSerializer<ActionBarData> = ActionBarData.serializer()
+    }
+
     /** Task preferences. */
     data object TaskPreferences: StorageFile<ActionBarData>(path = "task_preferences", encrypted = false) {
-
         override val serializer: KSerializer<ActionBarData> = ActionBarData.serializer()
     }
 
@@ -94,6 +98,7 @@ object AppFile {
         ClientRemoteConfigs,
         ServerFeatureFlags,
         ServerRemoteConfigs,
-        TaskPreferences
+        RegistryPreferences,
+        TaskPreferences,
     )
 }

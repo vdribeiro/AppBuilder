@@ -85,7 +85,7 @@ class NavigationStore(
                         onClick = { router.navigate(screen = Screen.UserList, option = Router.NavOption.CLEAR) },
                     )
                 )
-                if (permissions[EntityType.REGISTRY] != null) add(
+                if (ClientFlags.flags.registries && permissions[EntityType.REGISTRY] != null) add(
                     NavigationItem(
                         selected = state.selected == NavigationRoute.REGISTRY,
                         text = "registry",

@@ -43,6 +43,8 @@ data class ClientFlags(
     val userProfile: Boolean,
     /** Toggles the user screens. When false, falls back to the error screen. */
     val users: Boolean,
+    /** Toggles the registry screens and whether registry entities are queued for background sync. When false, registry screens fall back to the error screen, their navigation item is hidden, and registry data is excluded from sync even if the user has permission to read it. */
+    val registries: Boolean,
     /** Toggles the task screens and whether task entities are queued for background sync. When false, task screens fall back to the error screen and task data is excluded from sync even if the user has permission to read it. */
     val tasks: Boolean,
 ) {
@@ -68,6 +70,7 @@ data class ClientFlags(
             deviceFiles = true,
             userProfile = true,
             users = true,
+            registries = true,
             tasks = true,
         )
 
