@@ -370,6 +370,7 @@ The server orders by `modifiedAt DESC, uuid DESC`. The uuid is a tiebreaker: row
 Newest-first means the freshest changes arrive in the very first page of a large backlog. The page size is clamped server-side.
 
 Each page is committed in its own transaction before the next is requested, and paging stops on the first short page.
+Within a page, the `modifiedAt` comparison runs in memory against the local rows, fetched in chunks of `batchSize` to stay under SQLite's bound-parameter limit, and only the rows that are actually outdated are written, in one atomic transaction.
 
 The new watermark is **captured before the first request** and **persisted only after every page succeeds**.
 Capturing it afterwards would let a write landing mid-sync fall between the old and new watermark and be skipped forever; capturing it up front only risks re-fetching a row.
@@ -391,7 +392,7 @@ The follow-up fetch is gated by the `pushSync` flag, separately from `push`, so 
 ## Turning the Engine Off
 
 * **`scheduler` flag disabled**: `queue(job)` stops queueing and runs the job immediately on a background coroutine. Everything still executes, but eagerly, once, with no persistence, retries, ordering or gating. Work issued offline simply fails. Useful for debugging a misbehaving queue, or for a build with no offline requirement.
-* **Running fully disconnected**: swap `HttpClientEngine` for `NoOpHttpClientEngine` (answers every request with `204`), or disable the `http` client flag (every request fails immediately). The first exercises the success path, the second the failure path. Neither keeps the engine useful: the no-op engine's responses carry no server time, so the clock is never trusted and jobs wait forever, while the disabled flag fails every job.
+* **Running fully disconnected**: swap `HttpClientEngine` for `NoOpHttpClientEngine` (answers every request with `204`), or disable the `http` client flag (every request fails immediately). The first exercises the success path, the second the failure path. Neither keeps the engine useful: the no-op engine's responses carry no server time, so the clock is never trusted and jobs wait forever, while the disabled flag fails every job. The client test harness uses the same seam, substituting `createMockHttpEngine()` for scripted responses.
 
 # Push Notifications
 
@@ -454,7 +455,7 @@ A ticket request and its WebSocket upgrade can land on different instances, and 
 
 * **Connection tickets** (`TicketTable`): persisted, not held in memory, so a ticket minted by one instance is redeemable on any other. Consumption is atomic, so a ticket can never be redeemed twice.
 * **Connection presence** (`ConnectionTable`): which device is connected to which instance lives in the database. Each instance heartbeats its own rows and sweeps rows left by crashed instances, so the "skip FCM, it's connected" decision is correct globally.
-* **Cross-instance signaling** (`InstanceSignal`): a `notify`/`observe` abstraction that wakes the instance holding the socket. Production uses `PostgresSignal` (`LISTEN`/`NOTIFY`), with one shared self-healing connection per channel and a separate connection for publishing; development uses the in-process `LocalSignal`. An instance delivers to its own SSE sessions directly and skips its own echo, so a signal failure never blacks out the sessions it holds.
+* **Cross-instance signaling** (`InstanceSignal`): a `notify`/`observe` abstraction that wakes the instance holding the socket. Production uses `PostgresSignal` (`LISTEN`/`NOTIFY`), with dedicated connections outside the regular pool: one self-healing connection per observed channel, shared by all of its observers, plus one for publishing; development uses the in-process `LocalSignal`. An instance delivers to its own SSE sessions directly and skips its own echo, so a signal failure never blacks out the sessions it holds.
 
 Signals are fire-and-forget. Anything that must survive a missed delivery, like the notification or connection presence, is already in the database.
 
@@ -614,8 +615,13 @@ The `design` module splits into:
 
 Nothing in the module holds state or talks to a gateway: components take data and callbacks as parameters, which is why the whole module is previewable.
 
-The showcase is a section of the app rather than a separate target, so it runs on every platform. `ui/screen/design/DesignScreen` in `clientApp` hosts it, with one `Screen.Design{Section}` key per section mapped by `designProvider`.
-Inside it, the app's navigation bar is replaced by the showcase's own, whose `App` entry returns to the app. The whole section is behind the `design` client flag.
+The showcase is a section of the app rather than a separate target, so it runs on every platform. `ui/screen/design/DesignScreen` in `clientApp` hosts it like any other screen.
+
+* `DesignScreen` takes the `DesignSection` to render plus `onSectionClick` and `onAppClick` callbacks, and handles only its own back action, which clears the stack to `Screen.Home`.
+* Each section has its own `Screen.Design{Section}` key. `designProvider` maps each key to its section and routes both callbacks through the `Router`.
+* Inside the showcase, the app's navigation bar is replaced by the showcase's own, whose `App` entry returns to the app's landing screen. Both directions use `NavOption.CLEAR`, like every navigation bar entry.
+
+The whole showcase is behind the `design` client flag.
 
 ## Translations
 
@@ -647,7 +653,7 @@ Always go through `Translations` rather than `TranslationCache` directly: it res
 `ClientFlags`, `ServerFlags`, `ClientConfigs` and `ServerConfigs` are plain data classes, each with a `default` instance, an atomic `set { }` and a `reset()`, read through a synchronous snapshot.
 
 * They are shared types: the server serves exactly what the client consumes.
-* The client persists them as encrypted files and hot-reloads them, so flipping a flag server-side takes effect without a release.
+* The client persists them as encrypted files and hot-reloads them, so flipping a flag server-side takes effect without a release. A push payload can also trigger an immediate re-sync.
 * Turning a flag off disables the whole vertical slice: navigation entry, screen, background jobs and server routes.
 * Tunable numbers live in the configs rather than as constants: `clockDriftTolerance`, `schedulerMaxAttempts`, retry backoff, HTTP timeouts, push backoff, sync `batchSize` and so on.
 
@@ -689,6 +695,9 @@ Each module's `TestCase` (built on `SharedTestCase` and `PlatformTestCase`) prov
 * `runServerTest { }`: Ktor routes end to end, against in-memory H2 with the same injected environment as `./gradlew :server:run`.
 
 All three point `Dispatcher.Main`, `Default` and `IO` at one `UnconfinedTestDispatcher`, reset every flag and config to its default, and swap telemetry for a `MockLogger`, so no test inherits state from another.
+Each runs `beforeTest()`, the test body, then `afterTest()`, cancelling the scope and restoring the dispatchers even when the test fails.
+
+`PlatformTestCase` is an `expect abstract class` between `SharedTestCase` and each module's `TestCase`. Its Android actual runs under `RobolectricTestRunner` and stubs connectivity, while the other targets are one-liners, which is what lets Android tests live in `commonTest` too.
 
 | Module     | Command                                 |
 |------------|-----------------------------------------|
@@ -803,7 +812,8 @@ The commands assume the [Firebase CLI](https://firebase.google.com/docs/cli) is 
 
 1. Create or reuse a Firebase project and register one app per platform: `firebase apps:create ANDROID <appId>`, `firebase apps:create IOS <appId>`, `firebase apps:create WEB "<appName>"`.
 2. **Android**: save `firebase apps:sdkconfig ANDROID <appId>` as `clientApp/google-services.json`.
-3. **iOS**: save `firebase apps:sdkconfig IOS <appId>` as `iosApp/iosApp/GoogleService-Info.plist`. Then in Xcode, open `iosApp.xcworkspace` → `iosApp` target → **Signing & Capabilities** → pick a Team → **+ Capability** → **Push Notifications**. `Info.plist` already declares `UIBackgroundModes: remote-notification` for silent payloads.
+3. **iOS**: save `firebase apps:sdkconfig IOS <appId>` as `iosApp/iosApp/GoogleService-Info.plist`. Then in Xcode, open `iosApp.xcworkspace` → `iosApp` target → **Signing & Capabilities** → pick a Team → **+ Capability** → **Push Notifications**. Adding the capability registers it on the App ID and wires the existing `iosApp.entitlements` through the `CODE_SIGN_ENTITLEMENTS` build setting.
+ `Info.plist` already declares `UIBackgroundModes: remote-notification`, which silent payloads need to reach a backgrounded app. Visible payloads are rendered by iOS itself from the APNs `alert` field and don't need it.
 4. **Web**: set `firebase apps:sdkconfig WEB <appId>`, minified to one line, as `web.firebaseConfig` in `local.properties`. Then generate a VAPID key in Firebase Console → Project Settings → Cloud Messaging → Web configuration → **Generate key pair** (there is no CLI for this) and set it as `web.vapidKey`.
 
 ## Versioning & Release Builds
@@ -936,6 +946,7 @@ The update loop exists only to keep the platform's location cache warm: `getLast
 Without a secret store it falls back to the machine identity (`machine-id`, `MachineGuid` or `IOPlatformUUID`), and a keystore opened that way is re-locked under the stored secret once one exists.
 
 In development, a failure returns the input instead of `null`, so a machine without a usable keystore can't brick the app.
+This is the layer [`StorageFile`](#persisted-storage) builds on to make encryption at rest a per-file boolean.
 
 **Offline login** uses `deriveKey`, a PBKDF2-HMAC-SHA256 derivation. The local `Session` table stores a `username`, a random per-session `salt` and a `verifier = deriveKey(password, salt)`.
 The username ties a match to one user, so two accounts with the same password can't log each other in; the per-session salt means identical passwords look different on disk and no precomputed table breaks every install.
@@ -945,7 +956,7 @@ The verifier only authenticates the offline login and is never used as a key.
 
 A `StorageFile<T>` declares a file as a typed object: path, serializer, `encrypted`, and `cache`. `save` and `load` serialize, encrypt and touch the file system in one step.
 
-* With `cache = true`, it lazily hydrates a mutex-guarded `StateFlow` and rolls the cached value back if a disk write fails, so the cache never holds a payload the file system rejected.
+* With `cache = true`, it lazily hydrates a mutex-guarded `StateFlow` and rolls the cached value back if a disk write fails, so the cache never holds a payload the file system rejected. Use `cache = false` for files that are read rarely or written from outside the app.
 * **Saving `null` deletes the file**, so absence has one representation on disk and `reset()` and "save null" converge.
 
 ## HTTP Stack
@@ -976,7 +987,7 @@ Any component can report a failure without knowing where logs go, and tests capt
 
 ## API Routes
 
-Every route shares a global rate limit; those marked *rate-limited* have a stricter one. Most groups are also gated by a `ServerFlags` flag. Paths come from the shared `URL` registry.
+Every route shares a global rate limit; those marked *rate-limited* have a stricter one. Most groups are also gated by a `ServerFlags` flag; the flags/configs and `Registry` routes are installed unconditionally. Paths come from the shared `URL` registry.
 
 | Method & Path                                                | Purpose                                                       | Auth                                              | Flag             |
 |--------------------------------------------------------------|---------------------------------------------------------------|---------------------------------------------------|------------------|
