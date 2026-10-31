@@ -85,6 +85,10 @@ Everything is pre-wired, so you can skip the boilerplate and ship to every platf
     * [Package Index](#package-index)
     * [Module Index](#module-index)
 * [FAQ](#faq)
+    * [Getting Going](#getting-going)
+    * [Building Features](#building-features)
+    * [Design Decisions](#design-decisions)
+    * [Push & Scaling](#push--scaling)
 * [About](#about)
     * [Shameless Plug](#shameless-plug)
     * [Do You Use AI?](#do-you-use-ai)
@@ -1310,6 +1314,8 @@ Declarations that resolve to a distinct implementation per source set:
 
 # FAQ
 
+## Getting Going
+
 ### Do I need Postgres or Firebase to develop locally?
 
 No. `./gradlew :server:run` uses in-memory H2, an in-process signal, a no-op FCM service and a seeded admin. See [Development vs Production](#development-vs-production).
@@ -1318,9 +1324,53 @@ No. `./gradlew :server:run` uses in-memory H2, an in-process signal, a no-op FCM
 
 Yes: point it at your own backend, or run it [fully disconnected](#turning-the-engine-off).
 
+### Where do I change the production server host?
+
+Set `server.host` in `local.properties`, and list the same host in the server's `CORS_HOSTS`. Dev builds ignore it and always target `localhost:8080`. See [Environment](#environment).
+
+### Do I need user and session management?
+
+Not necessarily, but it is easier to strip auth out than to build it. Remove the routes and screens, or grant every permission to the `guest` user. See [Accounts & Sessions](#accounts--sessions).
+
+## Building Features
+
 ### How do I add offline support for a new operation?
 
 Write the local change first, then queue a `Job` handled in `JobProvider`. See [Adding a Feature](#adding-a-feature) and [Offline Engine](#offline-engine).
+
+### Where are the Splash, Home and Error screens?
+
+Already in `clientApp`'s `ui/screen/` as thin placeholders (`splash`, `home`, `error`), so replacing one means editing its composable. See [Navigation](#navigation).
+
+### How do I handle platform-specific permissions?
+
+Call `grantPermission(permission)` from `LocalPermissionManager`. It checks the owning flag, skips held permissions and deduplicates concurrent prompts. Manifest entries are still yours. See [Permissions](#permissions).
+
+### How do I add a new translation or language?
+
+Add `languageIso`/`key`/`value` entries to the server's `translations.json` and mirror them into the client's bundled copy. A new language is the same keys under a new ISO code. See [Translations](#translations).
+
+### How do I turn a feature off, or roll one out gradually?
+
+Flip its flag server-side; clients hot-reload it. See [Feature Flags & Remote Configs](#feature-flags--remote-configs).
+
+### Can I drop down to native platform code if KMP lacks a feature?
+
+Yes. Declare it with `expect` in `commonMain` and implement it per source set. Keep the state machine in common code and let platforms supply only the primitives. See [Platform-Specific Code](#platform-specific-code).
+
+### Why does the build fail on coverage?
+
+A module dropped below 90%. See [Testing](#testing).
+
+## Design Decisions
+
+### Why is dependency injection done by hand instead of with a framework?
+
+KMP support in DI frameworks adds complexity and limitations on every target, and generated code is especially troublesome on WASM. Manual wiring keeps the initialization path explicit. See [Dependency Injection](#dependency-injection).
+
+### Why share domain models with the server instead of using DTOs?
+
+One `@Serializable` model in `shared` is the API contract for both sides, so adding a field is one change plus the two persistence mappers. See [Sharing Models with the Server](#sharing-models-with-the-server).
 
 ### How are sync conflicts resolved?
 
@@ -1330,21 +1380,27 @@ Last write wins on `modifiedAt`: a remote copy is saved only if `remote.modified
 
 It still syncs. See [Account Deletion](#account-deletion).
 
-### How do I turn a feature off, or roll one out gradually?
+## Push & Scaling
 
-Flip its flag server-side; clients hot-reload it. See [Feature Flags & Remote Configs](#feature-flags--remote-configs).
+### Why do Android and iOS close their WebSocket/SSE connections in the background?
 
-### Why does the build fail on coverage?
-
-A module dropped below 90%. See [Testing](#testing).
+The OS suspends idle sockets soon after backgrounding anyway, and FCM/APNs already wake a backgrounded or killed app far more efficiently. See [Client Connection Lifecycle](#client-connection-lifecycle).
 
 ### Why does Desktop never use FCM?
 
 There is no FCM client SDK for JVM desktop apps. See [Client Connection Lifecycle](#client-connection-lifecycle).
 
+### Why doesn't a failed WebSocket send fall back to FCM?
+
+It would need coordinated per-device resends for a gap the client lifecycle already keeps rare and short-lived. Entity notifications are persisted and redelivered anyway. See [Delivery Guarantees](#delivery-guarantees).
+
 ### Why are tickets and connection presence in the database instead of memory?
 
 So any instance can serve any client. See [Multi-Instance Scaling](#multi-instance-scaling).
+
+### Why Postgres `LISTEN`/`NOTIFY` instead of Redis or a message broker?
+
+Postgres is already the database, so it needs no extra infrastructure. `InstanceSignal` is pluggable if you outgrow it or use another engine. See [Multi-Instance Scaling](#multi-instance-scaling) and [Using Another Database](#using-another-database).
 
 # About
 
