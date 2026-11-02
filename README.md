@@ -1423,16 +1423,21 @@ This project is a labor of love, and I would deeply appreciate any feedback you 
 
 ## Do You Use AI?
 
-Autonomously in the code? Only on tests.
-As an assistant to write documentation? Sure.
-As an advanced search engine? Also yes.
+Yes, as an assistant, not as the author.
 
-I am not against AI in code, but I support a strict boundary between human-authored and AI-generated code, especially in the foundational layer. In my experience, this prevents architectural drift.
-I strongly advocate placing AI-generated code in completely separate modules, so the boundary between human-crafted and AI output is clear and undeniable.
+Most of the code in this project is written by me. Some of it was written by AI, but none of it went in unread.
+My usual loop is iterative. I write the baseline, have AI review it, adjust, have it review again, and repeat until I'm happy with the result.
+Sometimes the roles flip: AI drafts a piece, and I read it, rework it and make it fit the project's patterns.
+The same loop applies to the documentation.
 
-In this project, the foundational code is human-authored. That does not mean AI wasn't used as a helper to reach a solution or as a productivity multiplier.
-I recommend using AI to generate isolated, repeatable features and their tests, provided they follow the project's established patterns and are always human-reviewed.
-The design module is a great candidate for AI-assisted development, as an isolated design system where all UI components live.
+How strictly I review depends on where the code lives:
+
+* **Foundational code** (`appCore`, `server` and the core modules): every AI-assisted line gets a meticulous review. Nothing goes in that I can't explain or wouldn't have written myself.
+* **Tests**: this is where AI works most autonomously. Generated tests are still reviewed, just less strictly, because they check the code rather than shape it.
+
+The architecture, the trade-offs and the decisions documented here are mine. AI helped me get there faster, and sometimes it pointed out something I had missed. It never chose the direction.
+
+I keep a clear boundary between what is foundational and what is repeatable. AI does well on isolated, pattern-following work like UI components or feature boilerplate, as long as the patterns already exist and a human reviews the result. The foundational layer is where I think human ownership matters most, because that's where drift starts.
 
 ## License
 
@@ -1442,6 +1447,6 @@ Licensed under the **GNU Affero General Public License v3.0**. See [LICENSE](LIC
 
 You are free to use, modify and distribute this project, but derivative works must be distributed under the same license with source available, and you must keep the copyright notice and credit the original author.
 The Affero clause extends this to network use: if you run a modified version as a hosted or networked service, you must offer its source to that service's users.
-If that doesn't fit your use case, treat the project as a reference architecture, or [get in touch](#shameless-plug) about a commercial license.
+If that doesn't fit your use case, treat the project as a reference architecture, or get in touch about a commercial license.
 
 As the sole copyright holder, I retain the right to license this code under other terms.
