@@ -1423,22 +1423,20 @@ This project is a labor of love, and I would deeply appreciate any feedback you 
 
 ## Do You Use AI?
 
-Yes, as an assistant, not as the author. 
-Most of the code in this project is written by me and some of it by AI, but outside of tests, nothing goes in that I can't explain or wouldn't have written myself.
+As an assistant, not as the author.
+Most of the code in this project is written by me, and some of it by AI.
+Outside of tests, nothing goes in that I can't explain or wouldn't have written myself.
 
 My usual loop is iterative. I write the baseline, have AI review it, adjust, have it review again, and repeat until I'm happy with the result.
 Sometimes the roles flip: AI drafts a piece, and I read it, rework it and make it fit the project's patterns.
 The same loop applies to the documentation.
 
-How strictly I review depends on where the code lives:
-
-* **Foundational code** (`appCore`, `server` and the core modules): every AI-assisted line gets a meticulous review.
-* **Tests**: this is where AI works most autonomously. Generated tests are still reviewed, just less strictly, because they check the code rather than shape it.
+Tests are where AI works most autonomously. They are still reviewed, just less strictly, because they check the code rather than shape it.
 
 The architecture, the trade-offs and the decisions documented here are mine. AI helped me get there faster, and sometimes it pointed out something I had missed. It never chose the direction.
 
-I keep a clear boundary between what is foundational and what is repeatable. AI does well on isolated, pattern-following work like UI components or feature boilerplate, as long as the patterns already exist and a human reviews the result. 
-The foundational layer is where I think human ownership matters most, because that's where the architectural drifts can start.
+I keep a clear boundary between what is foundational and what is repeatable. AI does well on isolated, pattern-following work like UI components or feature boilerplate, as long as the patterns already exist and a human reviews the result.
+The foundational layer is where I think human ownership matters most, because that's where architectural drift starts.
 
 ## License
 
