@@ -23,6 +23,15 @@ object ThemeCache {
         _cacheState.update { customTheme }
 
     /**
+     * Replaces which color scheme the theme displays.
+     *
+     * @param mode The mode to apply.
+     * @return The updated theme.
+     */
+    fun setMode(mode: ThemeMode): CustomTheme =
+        _cacheState.updateAndGet { theme -> theme.copy(mode = mode) }
+
+    /**
      * Replaces a single role's color in one color scheme.
      *
      * @param dark Whether to change the dark color scheme.
