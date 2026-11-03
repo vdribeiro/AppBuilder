@@ -10,21 +10,21 @@ import androidx.compose.ui.unit.Dp
 import com.app.builder.ui.ColorRole
 import com.app.builder.ui.ShapeRole
 
-/** In-memory cache for the theme's color and shape overrides. */
+/** In-memory cache for the theme's color and shape. */
 object ThemeCache {
 
-    /** Backing mutable state flow holding the current overrides. */
+    /** Backing mutable state flow holding the current theme. */
     private val _cacheState = MutableStateFlow(value = CustomTheme())
-    /** Read-only state flow emitting the current overrides. */
+    /** Read-only state flow emitting the current theme. */
     val cacheState: StateFlow<CustomTheme> = _cacheState.asStateFlow()
 
     /**
-     * Replaces the current overrides.
+     * Replaces the current theme.
      *
-     * @param overrides The new overrides to apply.
+     * @param customTheme The new theme to apply.
      */
-    fun set(overrides: CustomTheme) =
-        _cacheState.update { overrides }
+    fun set(customTheme: CustomTheme) =
+        _cacheState.update { customTheme }
 
     /**
      * Replaces a single role's color in one color scheme.
@@ -32,12 +32,12 @@ object ThemeCache {
      * @param dark Whether to change the dark color scheme.
      * @param role The role to change.
      * @param color The color to assign, or `null` to restore the default one.
-     * @return The updated overrides.
+     * @return The updated theme.
      */
     fun setColor(dark: Boolean, role: ColorRole, color: Color?): CustomTheme =
-        _cacheState.updateAndGet { overrides ->
-            val colors = overrides.colors(dark = dark).let { if (color == null) it - role else it + (role to color) }
-            if (dark) overrides.copy(dark = colors) else overrides.copy(light = colors)
+        _cacheState.updateAndGet { theme ->
+            val colors = theme.colors(dark = dark).let { if (color == null) it - role else it + (role to color) }
+            if (dark) theme.copy(dark = colors) else theme.copy(light = colors)
         }
 
     /**
@@ -45,10 +45,10 @@ object ThemeCache {
      *
      * @param role The shape to change.
      * @param radius The corner radius to assign, or `null` to restore the default one.
-     * @return The updated overrides.
+     * @return The updated theme.
      */
     fun setShape(role: ShapeRole, radius: Dp?): CustomTheme =
-        _cacheState.updateAndGet { overrides ->
-            overrides.copy(shapes = if (radius == null) overrides.shapes - role else overrides.shapes + (role to radius))
+        _cacheState.updateAndGet { theme ->
+            theme.copy(shapes = if (radius == null) theme.shapes - role else theme.shapes + (role to radius))
         }
 }

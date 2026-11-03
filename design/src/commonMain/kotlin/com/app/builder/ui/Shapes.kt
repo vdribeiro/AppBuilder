@@ -58,6 +58,6 @@ private fun shapes(radii: Map<ShapeRole, Dp> = emptyMap()): Shapes {
  */
 @Composable
 internal fun getShapes(): Shapes {
-    val overrides by ThemeCache.cacheState.collectAsStateWithLifecycle()
-    return remember(overrides.shapes) { shapes(radii = overrides.shapes) }
+    val customTheme by ThemeCache.cacheState.collectAsStateWithLifecycle()
+    return remember(key1 = customTheme.shapes) { shapes(radii = customTheme.shapes) }
 }

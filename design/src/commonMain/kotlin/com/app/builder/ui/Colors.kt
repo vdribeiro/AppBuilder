@@ -448,8 +448,8 @@ fun String.toColorOrNull(): Color? {
 @Composable
 internal fun getColorScheme(): ColorScheme {
     val dark = isSystemInDarkTheme()
-    val overrides by ThemeCache.cacheState.collectAsStateWithLifecycle()
-    return remember(dark, overrides) {
-        (if (dark) darkColorScheme else lightColorScheme).override(colors = overrides.colors(dark = dark))
+    val customTheme by ThemeCache.cacheState.collectAsStateWithLifecycle()
+    return remember(dark, customTheme) {
+        (if (dark) darkColorScheme else lightColorScheme).override(colors = customTheme.colors(dark = dark))
     }
 }

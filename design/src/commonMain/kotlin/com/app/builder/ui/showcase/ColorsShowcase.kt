@@ -34,7 +34,7 @@ import com.app.builder.ui.toHex
  * Displays every color role of the current color scheme as a grid of labeled swatches.
  * Clicking a swatch opens a [ColorPickerDialog] that replaces the role's color in the [ThemeCache], for the color scheme currently in use.
  *
- * @param onThemeChange Invoked with the updated overrides whenever a color is applied or reset.
+ * @param onThemeChange Invoked with the updated theme whenever a color is applied or reset.
  */
 @Composable
 fun ColorsShowcase(onThemeChange: (CustomTheme) -> Unit = {}) {

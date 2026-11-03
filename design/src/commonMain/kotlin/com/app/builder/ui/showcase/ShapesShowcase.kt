@@ -34,12 +34,12 @@ import com.app.builder.ui.core.text.Text
  * Displays every corner shape scale as a labeled list of filled swatches.
  * Clicking a swatch opens a [ShapePickerDialog] that replaces the shape's corner radius in the [ThemeCache].
  *
- * @param onThemeChange Invoked with the updated overrides whenever a corner radius is applied or reset.
+ * @param onThemeChange Invoked with the updated theme whenever a corner radius is applied or reset.
  */
 @Composable
 fun ShapesShowcase(onThemeChange: (CustomTheme) -> Unit = {}) {
     val colorScheme = LocalColorScheme.current
-    val overrides by ThemeCache.cacheState.collectAsStateWithLifecycle()
+    val customTheme by ThemeCache.cacheState.collectAsStateWithLifecycle()
     var editing by remember { mutableStateOf<ShapeRole?>(value = null) }
 
     LazyColumn(
@@ -47,7 +47,7 @@ fun ShapesShowcase(onThemeChange: (CustomTheme) -> Unit = {}) {
         verticalArrangement = Arrangement.spacedBy(space = 20.dp)
     ) {
         items(items = ShapeRole.entries) { role ->
-            val radius = overrides.shapes[role] ?: role.radius
+            val radius = customTheme.shapes[role] ?: role.radius
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -69,7 +69,7 @@ fun ShapesShowcase(onThemeChange: (CustomTheme) -> Unit = {}) {
     editing?.let { role ->
         ShapePickerDialog(
             title = role.text,
-            radius = overrides.shapes[role] ?: role.radius,
+            radius = customTheme.shapes[role] ?: role.radius,
             onConfirm = { radius ->
                 editing = null
                 onThemeChange(ThemeCache.setShape(role = role, radius = radius))
