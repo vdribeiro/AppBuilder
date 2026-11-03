@@ -1424,8 +1424,7 @@ This project is a labor of love, and I would deeply appreciate any feedback you 
 ## Do You Use AI?
 
 As an assistant, not as the author.
-Most of the code in this project is written by me, and some of it by AI.
-Outside of tests, nothing goes in that I can't explain or wouldn't have written myself.
+Nothing goes in that I can't explain or wouldn't have written myself.
 
 My usual loop is iterative. I write the baseline, have AI review it, adjust, have it review again, and repeat until I'm happy with the result.
 Sometimes the roles flip: AI drafts a piece, and I read it, rework it and make it fit the project's patterns.
