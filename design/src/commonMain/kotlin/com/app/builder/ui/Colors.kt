@@ -406,13 +406,15 @@ enum class ColorRole(val text: String) {
 }
 
 /**
- * Copies a color scheme with every given role's color replaced.
+ * Copies a color scheme with every given role's color replaced, ignoring names matching no role and malformed colors.
  *
- * @param colors The colors to assign, keyed by role.
+ * @param colors The hexadecimal colors to assign, keyed by color role name.
  * @return The copied color scheme, or this one when [colors] is empty.
  */
-private fun ColorScheme.override(colors: Map<ColorRole, Color>): ColorScheme =
-    colors.entries.fold(initial = this) { colorScheme, (role, color) -> role.set(colorScheme = colorScheme, color = color) }
+private fun ColorScheme.override(colors: Map<String, String>): ColorScheme =
+    ColorRole.entries.fold(initial = this) { colorScheme, role ->
+        colors[role.name]?.toColorOrNull()?.let { role.set(colorScheme = colorScheme, color = it) } ?: colorScheme
+    }
 
 /**
  * Converts a color to its hexadecimal representation.

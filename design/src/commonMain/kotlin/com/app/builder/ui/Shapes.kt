@@ -37,11 +37,11 @@ enum class ShapeRole(val text: String, val radius: Dp) {
 /**
  * Builds the [Shapes] scale, rounding each shape's corners by its replaced radius or its default one.
  *
- * @param radii The corner radii replacing the default ones, keyed by role.
+ * @param radii The corner radii in dp replacing the default ones, keyed by shape role name.
  * @return The shapes scale.
  */
-private fun shapes(radii: Map<ShapeRole, Dp> = emptyMap()): Shapes {
-    fun shape(role: ShapeRole) = RoundedCornerShape(size = radii[role] ?: role.radius)
+private fun shapes(radii: Map<String, Float> = emptyMap()): Shapes {
+    fun shape(role: ShapeRole) = RoundedCornerShape(size = radii[role.name]?.dp ?: role.radius)
     return Shapes(
         extraSmall = shape(role = ShapeRole.EXTRA_SMALL),
         small = shape(role = ShapeRole.SMALL),
