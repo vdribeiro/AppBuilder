@@ -12,6 +12,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.app.builder.data.theme.ThemeCache
+import com.app.builder.data.theme.ThemeMode
 
 /** The primary color for the light color scheme. */
 private val primaryLight = Color(0xFF36618E)
@@ -443,13 +444,28 @@ fun String.toColorOrNull(): Color? {
 }
 
 /**
- * Resolves the current [ColorScheme] based on the system theme, with the [ThemeCache] overrides applied.
+ * Resolves whether the dark color scheme is displayed, from the [ThemeCache] mode.
  *
- * @return [darkColorScheme] if the system is in dark theme, [lightColorScheme] otherwise, each with its overrides applied.
+ * @return `true` for [ThemeMode.DARK], `false` for [ThemeMode.LIGHT], and the device's setting for [ThemeMode.SYSTEM].
+ */
+@Composable
+fun isDarkTheme(): Boolean {
+    val customTheme by ThemeCache.cacheState.collectAsStateWithLifecycle()
+    return when (customTheme.mode) {
+        ThemeMode.SYSTEM -> isSystemInDarkTheme()
+        ThemeMode.LIGHT -> false
+        ThemeMode.DARK -> true
+    }
+}
+
+/**
+ * Resolves the current [ColorScheme] based on [isDarkTheme], with the [ThemeCache] overrides applied.
+ *
+ * @return [darkColorScheme] if the dark color scheme is displayed, [lightColorScheme] otherwise, each with its overrides applied.
  */
 @Composable
 internal fun getColorScheme(): ColorScheme {
-    val dark = isSystemInDarkTheme()
+    val dark = isDarkTheme()
     val customTheme by ThemeCache.cacheState.collectAsStateWithLifecycle()
     return remember(dark, customTheme) {
         (if (dark) darkColorScheme else lightColorScheme).override(colors = customTheme.colors(dark = dark))
