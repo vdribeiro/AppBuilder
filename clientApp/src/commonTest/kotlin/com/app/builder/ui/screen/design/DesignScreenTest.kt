@@ -2,18 +2,29 @@ package com.app.builder.ui.screen.design
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.SemanticsActions
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performSemanticsAction
+import androidx.compose.ui.test.performTextReplacement
+import com.app.builder.data.theme.ThemeCache
+import com.app.builder.data.theme.CustomTheme
 import com.app.builder.test.TestCase
+import com.app.builder.ui.ColorRole
+import com.app.builder.ui.ShapeRole
 import com.app.builder.ui.showcase.core.bar.TopBarShowcase
 import com.app.builder.ui.showcase.core.card.CardShowcase
 import com.app.builder.ui.showcase.core.divider.DividerShowcase
@@ -85,6 +96,59 @@ class DesignScreenTest: TestCase() {
         onNodeWithText(text = "Primary").assertIsDisplayed()
     }
 
+    /** Verifies that applying a typed color from the color picker updates the theme and reports it. */
+    @Test
+    fun designColorsApplyColor() = runUITest {
+        var changed: CustomTheme? = null
+        setShowcase { DesignScreen(section = DesignSection.COLORS, onThemeChange = { changed = it }) }
+        waitForIdle()
+
+        onNodeWithTag(testTag = "color_swatch_${ColorRole.PRIMARY.name}").performClick()
+        mainClock.advanceTimeByFrame()
+        onNodeWithTag(testTag = "color_picker_dialog").assertIsDisplayed()
+
+        onNodeWithTag(testTag = "color_picker_hex").performTextReplacement(text = "#123456")
+        mainClock.advanceTimeByFrame()
+        onNodeWithText(text = "apply").performClick()
+        mainClock.advanceTimeByFrame()
+
+        val expected = CustomTheme(light = mapOf(ColorRole.PRIMARY to Color(color = 0xFF123456)))
+        assertEquals(expected = expected, actual = changed)
+        assertEquals(expected = expected, actual = ThemeCache.cacheState.value)
+        onNodeWithText(text = "#123456").assertIsDisplayed()
+    }
+
+    /** Verifies that a malformed hexadecimal color cannot be applied. */
+    @Test
+    fun designColorsInvalidHex() = runUITest {
+        setShowcase { DesignScreen(section = DesignSection.COLORS) }
+        waitForIdle()
+
+        onNodeWithTag(testTag = "color_swatch_${ColorRole.PRIMARY.name}").performClick()
+        mainClock.advanceTimeByFrame()
+        onNodeWithTag(testTag = "color_picker_hex").performTextReplacement(text = "#12")
+        mainClock.advanceTimeByFrame()
+
+        onNodeWithText(text = "apply").assertIsNotEnabled()
+    }
+
+    /** Verifies that resetting a color from the color picker restores its default. */
+    @Test
+    fun designColorsResetColor() = runUITest {
+        ThemeCache.setColor(dark = false, role = ColorRole.PRIMARY, color = Color.Red)
+        var changed: CustomTheme? = null
+        setShowcase { DesignScreen(section = DesignSection.COLORS, onThemeChange = { changed = it }) }
+        waitForIdle()
+
+        onNodeWithTag(testTag = "color_swatch_${ColorRole.PRIMARY.name}").performClick()
+        mainClock.advanceTimeByFrame()
+        onNodeWithText(text = "reset").performClick()
+        mainClock.advanceTimeByFrame()
+
+        assertEquals(expected = CustomTheme(), actual = changed)
+        assertNull(actual = ThemeCache.cacheState.value.light[ColorRole.PRIMARY])
+    }
+
     /** Verifies that the shapes section displays the corner shape scale. */
     @Test
     fun designShapesSection() = runUITest {
@@ -92,6 +156,46 @@ class DesignScreenTest: TestCase() {
         waitForIdle()
 
         onNodeWithText(text = "Extra small (4dp)").assertIsDisplayed()
+    }
+
+    /** Verifies that applying a corner radius from the shape picker updates the theme and reports it. */
+    @Test
+    fun designShapesApplyRadius() = runUITest {
+        var changed: CustomTheme? = null
+        setShowcase { DesignScreen(section = DesignSection.SHAPES, onThemeChange = { changed = it }) }
+        waitForIdle()
+
+        onNodeWithTag(testTag = "shape_swatch_${ShapeRole.MEDIUM.name}").performClick()
+        mainClock.advanceTimeByFrame()
+        onNodeWithTag(testTag = "shape_picker_dialog").assertIsDisplayed()
+
+        onNodeWithTag(testTag = "shape_picker_radius").performSemanticsAction(key = SemanticsActions.SetProgress) { it(20f) }
+        mainClock.advanceTimeByFrame()
+        onNodeWithText(text = "20dp").assertIsDisplayed()
+        onNodeWithText(text = "apply").performClick()
+        mainClock.advanceTimeByFrame()
+
+        val expected = CustomTheme(shapes = mapOf(ShapeRole.MEDIUM to 20.dp))
+        assertEquals(expected = expected, actual = changed)
+        assertEquals(expected = expected, actual = ThemeCache.cacheState.value)
+        onNodeWithText(text = "Medium (20dp)").assertIsDisplayed()
+    }
+
+    /** Verifies that resetting a corner radius from the shape picker restores its default. */
+    @Test
+    fun designShapesResetRadius() = runUITest {
+        ThemeCache.setShape(role = ShapeRole.MEDIUM, radius = 0.dp)
+        var changed: CustomTheme? = null
+        setShowcase { DesignScreen(section = DesignSection.SHAPES, onThemeChange = { changed = it }) }
+        waitForIdle()
+
+        onNodeWithTag(testTag = "shape_swatch_${ShapeRole.MEDIUM.name}").performClick()
+        mainClock.advanceTimeByFrame()
+        onNodeWithText(text = "reset").performClick()
+        mainClock.advanceTimeByFrame()
+
+        assertEquals(expected = CustomTheme(), actual = changed)
+        onNodeWithText(text = "Medium (12dp)").assertIsDisplayed()
     }
 
     /** Verifies that the typography section displays the text style scale. */

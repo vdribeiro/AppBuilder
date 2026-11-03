@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.PreviewLightDark
+import com.app.builder.data.theme.CustomTheme
 import com.app.builder.ui.Preview
 import com.app.builder.ui.core.bar.TopBar
 import com.app.builder.ui.core.navigation.NavigationBar
@@ -46,6 +47,7 @@ enum class DesignSection(val text: String, val icon: ImageVector) {
  * @param section The section to display.
  * @param onSectionClick Invoked with the section to navigate to when another section is selected.
  * @param onAppClick Invoked when the user leaves the design showcase and returns to the app.
+ * @param onThemeChange Invoked with the updated theme overrides whenever a color or shape is changed in the colors or shapes section.
  */
 @Composable
 fun DesignScreen(
@@ -53,13 +55,14 @@ fun DesignScreen(
     section: DesignSection,
     onSectionClick: (DesignSection) -> Unit = {},
     onAppClick: () -> Unit = {},
+    onThemeChange: (CustomTheme) -> Unit = {},
 ) {
     val router = LocalRouter.current
 
     Screen(
         modifier = modifier,
         onBackClick = { router.navigate(screen = Screen.Home, option = Router.NavOption.CLEAR) },
-        topBar = { TopBar(title = { Text(text = "Design Showcase", translate = false) }) },
+        topBar = { TopBar(title = { Text(text = section.text, translate = false) }) },
         bottomBar = {
             DesignNavigation(
                 section = section,
@@ -70,8 +73,8 @@ fun DesignScreen(
     ) {
         when (section) {
             DesignSection.COMPONENTS -> ComponentsShowcase()
-            DesignSection.COLORS -> ColorsShowcase()
-            DesignSection.SHAPES -> ShapesShowcase()
+            DesignSection.COLORS -> ColorsShowcase(onThemeChange = onThemeChange)
+            DesignSection.SHAPES -> ShapesShowcase(onThemeChange = onThemeChange)
             DesignSection.TYPOGRAPHY -> TypographyShowcase()
         }
     }
