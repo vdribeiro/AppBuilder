@@ -211,6 +211,7 @@ sharedtest-android = [
 ]
 design-common = [
     "kotlinx-collections-immutable",
+    "kotlinx-serialization",
     "compose-runtime",
     "compose-ui",
     "compose-foundation",
