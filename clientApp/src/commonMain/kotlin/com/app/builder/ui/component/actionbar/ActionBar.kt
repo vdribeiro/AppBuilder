@@ -48,15 +48,25 @@ fun ActionBar(store: Store<ActionBarState, ActionBarAction>) {
         onLoginClick = if (state.showLogin) {
             { store.send(action = ActionBarAction.Login) }
         } else null,
-        onSearch = { store.send(action = ActionBarAction.Search(search = it)) },
+        onSearch = if (state.showFilters) {
+            { store.send(action = ActionBarAction.Search(search = it)) }
+        } else null,
         searchableProperties = state.searchableProperties,
-        onSearchablePropertiesChange = { store.send(action = ActionBarAction.ToggleSearchableProperty(property = it)) },
+        onSearchablePropertiesChange = if (state.showFilters) {
+            { store.send(action = ActionBarAction.ToggleSearchableProperty(property = it)) }
+        } else null,
         sortAscending = state.sortAscending,
-        onSortAscendingClick = { store.send(action = ActionBarAction.SelectSortOrder(ascending = it)) },
+        onSortAscendingClick = if (state.showFilters) {
+            { store.send(action = ActionBarAction.SelectSortOrder(ascending = it)) }
+        } else null,
         sortProperty = state.sortProperty,
-        onSelectSortProperty = { store.send(action = ActionBarAction.SelectSortProperty(property = it)) },
+        onSelectSortProperty = if (state.showFilters) {
+            { store.send(action = ActionBarAction.SelectSortProperty(property = it)) }
+        } else null,
         visibleProperties = state.visibleProperties,
-        onVisiblePropertiesChange = { store.send(action = ActionBarAction.ToggleVisibleProperty(property = it)) },
+        onVisiblePropertiesChange = if (state.showFilters) {
+            { store.send(action = ActionBarAction.ToggleVisibleProperty(property = it)) }
+        } else null,
     )
 }
 
