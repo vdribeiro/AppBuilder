@@ -306,6 +306,16 @@
   },
   {
     "languageIso": "en",
+    "key": "apply",
+    "value": "Apply"
+  },
+  {
+    "languageIso": "en",
+    "key": "cancel",
+    "value": "Cancel"
+  },
+  {
+    "languageIso": "en",
     "key": "about",
     "value": "About"
   },

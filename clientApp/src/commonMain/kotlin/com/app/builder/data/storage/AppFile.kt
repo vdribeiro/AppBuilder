@@ -12,6 +12,23 @@ import com.app.builder.core.config.ServerFlags
 /** The index of every file in this module. */
 object AppFile {
 
+    /**
+     * Theme customizations, layered over the default color schemes.
+     *
+     * @property light Hexadecimal colors replacing the light color scheme's, keyed by color role name.
+     * @property dark Hexadecimal colors replacing the dark color scheme's, keyed by color role name.
+     */
+    @Serializable
+    data class ThemeData(
+        val light: Map<String, String> = emptyMap(),
+        val dark: Map<String, String> = emptyMap(),
+    )
+
+    /** Theme preferences. */
+    data object Theme: StorageFile<ThemeData>(path = "theme", encrypted = false) {
+        override val serializer: KSerializer<ThemeData> = ThemeData.serializer()
+    }
+
     /** User scoped preferences. */
     data object Preferences: StorageFile<Map<Preferences.Key, String>>(path = "preferences") {
 
@@ -92,6 +109,7 @@ object AppFile {
 
     /** Every file in this module. */
     val all: List<StorageFile<*>> = listOf(
+        Theme,
         Preferences,
         Sync,
         ClientFeatureFlags,
