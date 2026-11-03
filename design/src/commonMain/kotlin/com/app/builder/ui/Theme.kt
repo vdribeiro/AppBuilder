@@ -27,28 +27,31 @@ fun AppTheme(
     RegisterImageLoader()
     val splitScreen = maxWidth >= ClientConfigs.configs.splitScreenMaximumWidth.dp
     val translationMap = getTranslationState()
-    val typography = getTypography()
     val colorScheme = getColorScheme()
+    val shapes = getShapes()
+    val typography = getTypography()
     val providers = remember(
         compositionValues,
         splitScreen,
         translationMap,
+        colorScheme,
+        shapes,
         typography,
-        colorScheme
     ) {
         buildList {
             addAll(elements = compositionValues)
             add(element = LocalSplitScreen provides splitScreen)
             add(element = LocalTranslationState provides translationMap)
-            add(element = LocalTypography provides typography)
             add(element = LocalColorScheme provides colorScheme)
+            add(element = LocalShapes provides shapes)
+            add(element = LocalTypography provides typography)
         }.toTypedArray()
     }
 
     CompositionLocalProvider(values = providers) {
         MaterialTheme(
             colorScheme = colorScheme,
-            shapes = LocalShapes.current,
+            shapes = shapes,
             typography = typography,
             content = content
         )

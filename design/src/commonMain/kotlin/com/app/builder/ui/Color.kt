@@ -14,149 +14,149 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.app.builder.data.theme.ThemeCache
 
 /** The primary color for the light color scheme. */
-internal val primaryLight = Color(0xFF36618E)
+private val primaryLight = Color(0xFF36618E)
 /** The on primary color for the light color scheme. */
-internal val onPrimaryLight = Color(0xFFFFFFFF)
+private val onPrimaryLight = Color(0xFFFFFFFF)
 /** The primary container color for the light color scheme. */
-internal val primaryContainerLight = Color(0xFFD1E4FF)
+private val primaryContainerLight = Color(0xFFD1E4FF)
 /** The on primary container color for the light color scheme. */
-internal val onPrimaryContainerLight = Color(0xFF1A4975)
+private val onPrimaryContainerLight = Color(0xFF1A4975)
 /** The secondary color for the light color scheme. */
-internal val secondaryLight = Color(0xFF535F70)
+private val secondaryLight = Color(0xFF535F70)
 /** The on secondary color for the light color scheme. */
-internal val onSecondaryLight = Color(0xFFFFFFFF)
+private val onSecondaryLight = Color(0xFFFFFFFF)
 /** The secondary container color for the light color scheme. */
-internal val secondaryContainerLight = Color(0xFFD7E3F8)
+private val secondaryContainerLight = Color(0xFFD7E3F8)
 /** The on secondary container color for the light color scheme. */
-internal val onSecondaryContainerLight = Color(0xFF3B4858)
+private val onSecondaryContainerLight = Color(0xFF3B4858)
 /** The tertiary color for the light color scheme. */
-internal val tertiaryLight = Color(0xFF6B5778)
+private val tertiaryLight = Color(0xFF6B5778)
 /** The on tertiary color for the light color scheme. */
-internal val onTertiaryLight = Color(0xFFFFFFFF)
+private val onTertiaryLight = Color(0xFFFFFFFF)
 /** The tertiary container color for the light color scheme. */
-internal val tertiaryContainerLight = Color(0xFFF3DAFF)
+private val tertiaryContainerLight = Color(0xFFF3DAFF)
 /** The on tertiary container color for the light color scheme. */
-internal val onTertiaryContainerLight = Color(0xFF523F5F)
+private val onTertiaryContainerLight = Color(0xFF523F5F)
 /** The error color for the light color scheme. */
-internal val errorLight = Color(0xFFBA1A1A)
+private val errorLight = Color(0xFFBA1A1A)
 /** The on error color for the light color scheme. */
-internal val onErrorLight = Color(0xFFFFFFFF)
+private val onErrorLight = Color(0xFFFFFFFF)
 /** The error container color for the light color scheme. */
-internal val errorContainerLight = Color(0xFFFFDAD6)
+private val errorContainerLight = Color(0xFFFFDAD6)
 /** The on error container color for the light color scheme. */
-internal val onErrorContainerLight = Color(0xFF93000A)
+private val onErrorContainerLight = Color(0xFF93000A)
 /** The background color for the light color scheme. */
-internal val backgroundLight = Color(0xFFF8F9FF)
+private val backgroundLight = Color(0xFFF8F9FF)
 /** The on background color for the light color scheme. */
-internal val onBackgroundLight = Color(0xFF191C20)
+private val onBackgroundLight = Color(0xFF191C20)
 /** The surface color for the light color scheme. */
-internal val surfaceLight = Color(0xFFF8F9FF)
+private val surfaceLight = Color(0xFFF8F9FF)
 /** The on surface color for the light color scheme. */
-internal val onSurfaceLight = Color(0xFF191C20)
+private val onSurfaceLight = Color(0xFF191C20)
 /** The surface variant color for the light color scheme. */
-internal val surfaceVariantLight = Color(0xFFDFE2EB)
+private val surfaceVariantLight = Color(0xFFDFE2EB)
 /** The on surface variant color for the light color scheme. */
-internal val onSurfaceVariantLight = Color(0xFF43474E)
+private val onSurfaceVariantLight = Color(0xFF43474E)
 /** The outline color for the light color scheme. */
-internal val outlineLight = Color(0xFF73777F)
+private val outlineLight = Color(0xFF73777F)
 /** The outline variant color for the light color scheme. */
-internal val outlineVariantLight = Color(0xFFC3C6CF)
+private val outlineVariantLight = Color(0xFFC3C6CF)
 /** The scrim color for the light color scheme. */
-internal val scrimLight = Color(0xFF000000)
+private val scrimLight = Color(0xFF000000)
 /** The inverse surface color for the light color scheme. */
-internal val inverseSurfaceLight = Color(0xFF2E3135)
+private val inverseSurfaceLight = Color(0xFF2E3135)
 /** The inverse on surface color for the light color scheme. */
-internal val inverseOnSurfaceLight = Color(0xFFEFF0F7)
+private val inverseOnSurfaceLight = Color(0xFFEFF0F7)
 /** The inverse primary color for the light color scheme. */
-internal val inversePrimaryLight = Color(0xFFA0CAFD)
+private val inversePrimaryLight = Color(0xFFA0CAFD)
 /** The surface dim color for the light color scheme. */
-internal val surfaceDimLight = Color(0xFFD8DAE0)
+private val surfaceDimLight = Color(0xFFD8DAE0)
 /** The surface bright color for the light color scheme. */
-internal val surfaceBrightLight = Color(0xFFF8F9FF)
+private val surfaceBrightLight = Color(0xFFF8F9FF)
 /** The surface container lowest color for the light color scheme. */
-internal val surfaceContainerLowestLight = Color(0xFFFFFFFF)
+private val surfaceContainerLowestLight = Color(0xFFFFFFFF)
 /** The surface container low color for the light color scheme. */
-internal val surfaceContainerLowLight = Color(0xFFF2F3FA)
+private val surfaceContainerLowLight = Color(0xFFF2F3FA)
 /** The surface container color for the light color scheme. */
-internal val surfaceContainerLight = Color(0xFFECEEF4)
+private val surfaceContainerLight = Color(0xFFECEEF4)
 /** The surface container high color for the light color scheme. */
-internal val surfaceContainerHighLight = Color(0xFFE6E8EE)
+private val surfaceContainerHighLight = Color(0xFFE6E8EE)
 /** The surface container highest color for the light color scheme. */
-internal val surfaceContainerHighestLight = Color(0xFFE1E2E8)
+private val surfaceContainerHighestLight = Color(0xFFE1E2E8)
 
 /** The primary color for the dark color scheme. */
-internal val primaryDark = Color(0xFFA0CAFD)
+private val primaryDark = Color(0xFFA0CAFD)
 /** The on primary color for the dark color scheme. */
-internal val onPrimaryDark = Color(0xFF003258)
+private val onPrimaryDark = Color(0xFF003258)
 /** The primary container color for the dark color scheme. */
-internal val primaryContainerDark = Color(0xFF1A4975)
+private val primaryContainerDark = Color(0xFF1A4975)
 /** The on primary container color for the dark color scheme. */
-internal val onPrimaryContainerDark = Color(0xFFD1E4FF)
+private val onPrimaryContainerDark = Color(0xFFD1E4FF)
 /** The secondary color for the dark color scheme. */
-internal val secondaryDark = Color(0xFFBBC7DB)
+private val secondaryDark = Color(0xFFBBC7DB)
 /** The on secondary color for the dark color scheme. */
-internal val onSecondaryDark = Color(0xFF253140)
+private val onSecondaryDark = Color(0xFF253140)
 /** The secondary container color for the dark color scheme. */
-internal val secondaryContainerDark = Color(0xFF3B4858)
+private val secondaryContainerDark = Color(0xFF3B4858)
 /** The on secondary container color for the dark color scheme. */
-internal val onSecondaryContainerDark = Color(0xFFD7E3F8)
+private val onSecondaryContainerDark = Color(0xFFD7E3F8)
 /** The tertiary color for the dark color scheme. */
-internal val tertiaryDark = Color(0xFFD7BEE4)
+private val tertiaryDark = Color(0xFFD7BEE4)
 /** The on tertiary color for the dark color scheme. */
-internal val onTertiaryDark = Color(0xFF3B2948)
+private val onTertiaryDark = Color(0xFF3B2948)
 /** The tertiary container color for the dark color scheme. */
-internal val tertiaryContainerDark = Color(0xFF523F5F)
+private val tertiaryContainerDark = Color(0xFF523F5F)
 /** The on tertiary container color for the dark color scheme. */
-internal val onTertiaryContainerDark = Color(0xFFF3DAFF)
+private val onTertiaryContainerDark = Color(0xFFF3DAFF)
 /** The error color for the dark color scheme. */
-internal val errorDark = Color(0xFFFFB4AB)
+private val errorDark = Color(0xFFFFB4AB)
 /** The on error color for the dark color scheme. */
-internal val onErrorDark = Color(0xFF690005)
+private val onErrorDark = Color(0xFF690005)
 /** The error container color for the dark color scheme. */
-internal val errorContainerDark = Color(0xFF93000A)
+private val errorContainerDark = Color(0xFF93000A)
 /** The on error container color for the dark color scheme. */
-internal val onErrorContainerDark = Color(0xFFFFDAD6)
+private val onErrorContainerDark = Color(0xFFFFDAD6)
 /** The background color for the dark color scheme. */
-internal val backgroundDark = Color(0xFF111418)
+private val backgroundDark = Color(0xFF111418)
 /** The on background color for the dark color scheme. */
-internal val onBackgroundDark = Color(0xFFE1E2E8)
+private val onBackgroundDark = Color(0xFFE1E2E8)
 /** The surface color for the dark color scheme. */
-internal val surfaceDark = Color(0xFF111418)
+private val surfaceDark = Color(0xFF111418)
 /** The on surface color for the dark color scheme. */
-internal val onSurfaceDark = Color(0xFFE1E2E8)
+private val onSurfaceDark = Color(0xFFE1E2E8)
 /** The surface variant color for the dark color scheme. */
-internal val surfaceVariantDark = Color(0xFF43474E)
+private val surfaceVariantDark = Color(0xFF43474E)
 /** The on surface variant color for the dark color scheme. */
-internal val onSurfaceVariantDark = Color(0xFFC3C6CF)
+private val onSurfaceVariantDark = Color(0xFFC3C6CF)
 /** The outline color for the dark color scheme. */
-internal val outlineDark = Color(0xFF8D9199)
+private val outlineDark = Color(0xFF8D9199)
 /** The outline variant color for the dark color scheme. */
-internal val outlineVariantDark = Color(0xFF43474E)
+private val outlineVariantDark = Color(0xFF43474E)
 /** The scrim color for the dark color scheme. */
-internal val scrimDark = Color(0xFF000000)
+private val scrimDark = Color(0xFF000000)
 /** The inverse surface color for the dark color scheme. */
-internal val inverseSurfaceDark = Color(0xFFE1E2E8)
+private val inverseSurfaceDark = Color(0xFFE1E2E8)
 /** The inverse on surface color for the dark color scheme. */
-internal val inverseOnSurfaceDark = Color(0xFF2E3135)
+private val inverseOnSurfaceDark = Color(0xFF2E3135)
 /** The inverse primary color for the dark color scheme. */
-internal val inversePrimaryDark = Color(0xFF36618E)
+private val inversePrimaryDark = Color(0xFF36618E)
 /** The surface dim color for the dark color scheme. */
-internal val surfaceDimDark = Color(0xFF111418)
+private val surfaceDimDark = Color(0xFF111418)
 /** The surface bright color for the dark color scheme. */
-internal val surfaceBrightDark = Color(0xFF36393E)
+private val surfaceBrightDark = Color(0xFF36393E)
 /** The surface container lowest color for the dark color scheme. */
-internal val surfaceContainerLowestDark = Color(0xFF0B0E13)
+private val surfaceContainerLowestDark = Color(0xFF0B0E13)
 /** The surface container low color for the dark color scheme. */
-internal val surfaceContainerLowDark = Color(0xFF191C20)
+private val surfaceContainerLowDark = Color(0xFF191C20)
 /** The surface container color for the dark color scheme. */
-internal val surfaceContainerDark = Color(0xFF1D2024)
+private val surfaceContainerDark = Color(0xFF1D2024)
 /** The surface container high color for the dark color scheme. */
-internal val surfaceContainerHighDark = Color(0xFF272A2F)
+private val surfaceContainerHighDark = Color(0xFF272A2F)
 /** The surface container highest color for the dark color scheme. */
-internal val surfaceContainerHighestDark = Color(0xFF32353A)
+private val surfaceContainerHighestDark = Color(0xFF32353A)
 
 /** The [ColorScheme] used when the app is displayed with a light theme. */
-internal val lightColorScheme = lightColorScheme(
+private val lightColorScheme = lightColorScheme(
     primary = primaryLight,
     onPrimary = onPrimaryLight,
     primaryContainer = primaryContainerLight,
@@ -195,7 +195,7 @@ internal val lightColorScheme = lightColorScheme(
 )
 
 /** The [ColorScheme] used when the app is displayed with a dark theme. */
-internal val darkColorScheme = darkColorScheme(
+private val darkColorScheme = darkColorScheme(
     primary = primaryDark,
     onPrimary = onPrimaryDark,
     primaryContainer = primaryContainerDark,
@@ -411,7 +411,7 @@ enum class ColorRole(val text: String) {
  * @param colors The colors to assign, keyed by role.
  * @return The copied color scheme, or this one when [colors] is empty.
  */
-internal fun ColorScheme.override(colors: Map<ColorRole, Color>): ColorScheme =
+private fun ColorScheme.override(colors: Map<ColorRole, Color>): ColorScheme =
     colors.entries.fold(initial = this) { colorScheme, (role, color) -> role.set(colorScheme = colorScheme, color = color) }
 
 /**
