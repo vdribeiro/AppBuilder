@@ -12,7 +12,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.PreviewLightDark
-import com.app.builder.data.theme.CustomTheme
 import com.app.builder.ui.Preview
 import com.app.builder.ui.core.bar.TopBar
 import com.app.builder.ui.core.navigation.NavigationBar
@@ -26,6 +25,8 @@ import com.app.builder.ui.showcase.ColorsShowcase
 import com.app.builder.ui.showcase.ComponentsShowcase
 import com.app.builder.ui.showcase.ShapesShowcase
 import com.app.builder.ui.showcase.TypographyShowcase
+import com.app.builder.ui.store.Store
+import com.app.builder.ui.store.previewStore
 
 /**
  * The sections of the design showcase, in display order.
@@ -47,7 +48,7 @@ enum class DesignSection(val text: String, val icon: ImageVector) {
  * @param section The section to display.
  * @param onSectionClick Invoked with the section to navigate to when another section is selected.
  * @param onAppClick Invoked when the user leaves the design showcase and returns to the app.
- * @param onThemeChange Invoked with the updated theme overrides whenever a color or shape is changed in the colors or shapes section.
+ * @param store The store persisting the theme customized in the colors and shapes sections.
  */
 @Composable
 fun DesignScreen(
@@ -55,7 +56,7 @@ fun DesignScreen(
     section: DesignSection,
     onSectionClick: (DesignSection) -> Unit = {},
     onAppClick: () -> Unit = {},
-    onThemeChange: (CustomTheme) -> Unit = {},
+    store: Store<Unit, DesignScreenAction>,
 ) {
     val router = LocalRouter.current
 
@@ -73,8 +74,8 @@ fun DesignScreen(
     ) {
         when (section) {
             DesignSection.COMPONENTS -> ComponentsShowcase()
-            DesignSection.COLORS -> ColorsShowcase(onThemeChange = onThemeChange)
-            DesignSection.SHAPES -> ShapesShowcase(onThemeChange = onThemeChange)
+            DesignSection.COLORS -> ColorsShowcase(onThemeChange = { store.send(action = DesignScreenAction.SaveTheme(customTheme = it)) })
+            DesignSection.SHAPES -> ShapesShowcase(onThemeChange = { store.send(action = DesignScreenAction.SaveTheme(customTheme = it)) })
             DesignSection.TYPOGRAPHY -> TypographyShowcase()
         }
     }
@@ -125,5 +126,5 @@ fun DesignNavigation(
 @PreviewLightDark
 @Composable
 private fun DesignScreenPreview() = Preview {
-    DesignScreen(section = DesignSection.TYPOGRAPHY)
+    DesignScreen(section = DesignSection.TYPOGRAPHY, store = previewStore(initialState = Unit))
 }

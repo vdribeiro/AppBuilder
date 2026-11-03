@@ -9,9 +9,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.SemanticsActions
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotEnabled
@@ -22,6 +20,7 @@ import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.test.performTextReplacement
 import com.app.builder.data.theme.ThemeCache
 import com.app.builder.data.theme.CustomTheme
+import com.app.builder.data.theme.ThemeMode
 import com.app.builder.test.TestCase
 import com.app.builder.ui.ColorRole
 import com.app.builder.ui.ShapeRole
@@ -34,8 +33,21 @@ import com.app.builder.ui.showcase.core.navigation.NavigationShowcase
 import com.app.builder.ui.showcase.core.overlay.OverlayShowcase
 import com.app.builder.ui.showcase.core.progress.ProgressShowcase
 import com.app.builder.ui.showcase.core.text.TextShowcase
+import com.app.builder.ui.store.Store
 
 class DesignScreenTest: TestCase() {
+
+    /** Store recording every action the screen sends, without acting on them. */
+    private class RecordingStore: Store<Unit, DesignScreenAction>(initialState = Unit) {
+        /** The actions received so far, in order. */
+        val actions = mutableListOf<DesignScreenAction>()
+        /** The theme of the last save received, or `null` when none was. */
+        val savedTheme: CustomTheme? get() = actions.filterIsInstance<DesignScreenAction.SaveTheme>().lastOrNull()?.customTheme
+
+        override fun reducer(state: Unit, action: DesignScreenAction) {
+            actions.add(element = action)
+        }
+    }
 
     /**
      * Renders showcase content with the test clock held still.
@@ -51,7 +63,7 @@ class DesignScreenTest: TestCase() {
     /** Verifies that every [DesignSection] is rendered in the design navigation bar. */
     @Test
     fun designNavigationItems() = runUITest {
-        setShowcase { DesignScreen(section = DesignSection.COMPONENTS) }
+        setShowcase { DesignScreen(section = DesignSection.COMPONENTS, store = RecordingStore()) }
         waitForIdle()
 
         onNodeWithTag(testTag = "design_navigation_bar").assertIsDisplayed()
@@ -65,7 +77,7 @@ class DesignScreenTest: TestCase() {
     @Test
     fun designNavigationSectionClick() = runUITest {
         var clicked: DesignSection? = null
-        setShowcase { DesignScreen(section = DesignSection.COMPONENTS, onSectionClick = { clicked = it }) }
+        setShowcase { DesignScreen(section = DesignSection.COMPONENTS, onSectionClick = { clicked = it }, store = RecordingStore()) }
         waitForIdle()
 
         onNodeWithText(text = DesignSection.COLORS.text).performClick()
@@ -78,7 +90,7 @@ class DesignScreenTest: TestCase() {
     @Test
     fun designNavigationAppClick() = runUITest {
         var clicked = false
-        setShowcase { DesignScreen(section = DesignSection.COMPONENTS, onAppClick = { clicked = true }) }
+        setShowcase { DesignScreen(section = DesignSection.COMPONENTS, onAppClick = { clicked = true }, store = RecordingStore()) }
         waitForIdle()
 
         onNodeWithText(text = "App").performClick()
@@ -90,17 +102,51 @@ class DesignScreenTest: TestCase() {
     /** Verifies that the colors section displays the color scheme's swatches. */
     @Test
     fun designColorsSection() = runUITest {
-        setShowcase { DesignScreen(section = DesignSection.COLORS) }
+        setShowcase { DesignScreen(section = DesignSection.COLORS, store = RecordingStore()) }
         waitForIdle()
 
         onNodeWithText(text = "Primary").assertIsDisplayed()
     }
 
+    /** Verifies that selecting a theme mode updates the theme and reports it. */
+    @Test
+    fun designColorsThemeMode() = runUITest {
+        val store = RecordingStore()
+        setShowcase { DesignScreen(section = DesignSection.COLORS, store = store) }
+        waitForIdle()
+
+        onNodeWithText(text = "Dark").performClick()
+        mainClock.advanceTimeByFrame()
+
+        val expected = CustomTheme(mode = ThemeMode.DARK)
+        assertEquals(expected = expected, actual = store.savedTheme)
+        assertEquals(expected = expected, actual = ThemeCache.cacheState.value)
+    }
+
+    /** Verifies that applying a color in dark mode replaces the dark color scheme's color. */
+    @Test
+    fun designColorsApplyDarkColor() = runUITest {
+        ThemeCache.setMode(mode = ThemeMode.DARK)
+        val store = RecordingStore()
+        setShowcase { DesignScreen(section = DesignSection.COLORS, store = store) }
+        waitForIdle()
+
+        onNodeWithTag(testTag = "color_swatch_${ColorRole.PRIMARY.name}").performClick()
+        mainClock.advanceTimeByFrame()
+        onNodeWithTag(testTag = "color_picker_hex").performTextReplacement(text = "#123456")
+        mainClock.advanceTimeByFrame()
+        onNodeWithText(text = "apply").performClick()
+        mainClock.advanceTimeByFrame()
+
+        assertEquals(expected = CustomTheme(mode = ThemeMode.DARK, dark = mapOf(ColorRole.PRIMARY.name to "#123456")), actual = store.savedTheme)
+    }
+
     /** Verifies that applying a typed color from the color picker updates the theme and reports it. */
     @Test
     fun designColorsApplyColor() = runUITest {
-        var changed: CustomTheme? = null
-        setShowcase { DesignScreen(section = DesignSection.COLORS, onThemeChange = { changed = it }) }
+        ThemeCache.setMode(mode = ThemeMode.LIGHT)
+        val store = RecordingStore()
+        setShowcase { DesignScreen(section = DesignSection.COLORS, store = store) }
         waitForIdle()
 
         onNodeWithTag(testTag = "color_swatch_${ColorRole.PRIMARY.name}").performClick()
@@ -112,8 +158,8 @@ class DesignScreenTest: TestCase() {
         onNodeWithText(text = "apply").performClick()
         mainClock.advanceTimeByFrame()
 
-        val expected = CustomTheme(light = mapOf(ColorRole.PRIMARY to Color(color = 0xFF123456)))
-        assertEquals(expected = expected, actual = changed)
+        val expected = CustomTheme(mode = ThemeMode.LIGHT, light = mapOf(ColorRole.PRIMARY.name to "#123456"))
+        assertEquals(expected = expected, actual = store.savedTheme)
         assertEquals(expected = expected, actual = ThemeCache.cacheState.value)
         onNodeWithText(text = "#123456").assertIsDisplayed()
     }
@@ -121,7 +167,7 @@ class DesignScreenTest: TestCase() {
     /** Verifies that a malformed hexadecimal color cannot be applied. */
     @Test
     fun designColorsInvalidHex() = runUITest {
-        setShowcase { DesignScreen(section = DesignSection.COLORS) }
+        setShowcase { DesignScreen(section = DesignSection.COLORS, store = RecordingStore()) }
         waitForIdle()
 
         onNodeWithTag(testTag = "color_swatch_${ColorRole.PRIMARY.name}").performClick()
@@ -135,9 +181,10 @@ class DesignScreenTest: TestCase() {
     /** Verifies that resetting a color from the color picker restores its default. */
     @Test
     fun designColorsResetColor() = runUITest {
-        ThemeCache.setColor(dark = false, role = ColorRole.PRIMARY, color = Color.Red)
-        var changed: CustomTheme? = null
-        setShowcase { DesignScreen(section = DesignSection.COLORS, onThemeChange = { changed = it }) }
+        ThemeCache.setMode(mode = ThemeMode.LIGHT)
+        ThemeCache.setColor(dark = false, role = ColorRole.PRIMARY.name, hex = "#FF0000")
+        val store = RecordingStore()
+        setShowcase { DesignScreen(section = DesignSection.COLORS, store = store) }
         waitForIdle()
 
         onNodeWithTag(testTag = "color_swatch_${ColorRole.PRIMARY.name}").performClick()
@@ -145,14 +192,14 @@ class DesignScreenTest: TestCase() {
         onNodeWithText(text = "reset").performClick()
         mainClock.advanceTimeByFrame()
 
-        assertEquals(expected = CustomTheme(), actual = changed)
-        assertNull(actual = ThemeCache.cacheState.value.light[ColorRole.PRIMARY])
+        assertEquals(expected = CustomTheme(mode = ThemeMode.LIGHT), actual = store.savedTheme)
+        assertNull(actual = ThemeCache.cacheState.value.light[ColorRole.PRIMARY.name])
     }
 
     /** Verifies that the shapes section displays the corner shape scale. */
     @Test
     fun designShapesSection() = runUITest {
-        setShowcase { DesignScreen(section = DesignSection.SHAPES) }
+        setShowcase { DesignScreen(section = DesignSection.SHAPES, store = RecordingStore()) }
         waitForIdle()
 
         onNodeWithText(text = "Extra small (4dp)").assertIsDisplayed()
@@ -161,8 +208,8 @@ class DesignScreenTest: TestCase() {
     /** Verifies that applying a corner radius from the shape picker updates the theme and reports it. */
     @Test
     fun designShapesApplyRadius() = runUITest {
-        var changed: CustomTheme? = null
-        setShowcase { DesignScreen(section = DesignSection.SHAPES, onThemeChange = { changed = it }) }
+        val store = RecordingStore()
+        setShowcase { DesignScreen(section = DesignSection.SHAPES, store = store) }
         waitForIdle()
 
         onNodeWithTag(testTag = "shape_swatch_${ShapeRole.MEDIUM.name}").performClick()
@@ -175,8 +222,8 @@ class DesignScreenTest: TestCase() {
         onNodeWithText(text = "apply").performClick()
         mainClock.advanceTimeByFrame()
 
-        val expected = CustomTheme(shapes = mapOf(ShapeRole.MEDIUM to 20.dp))
-        assertEquals(expected = expected, actual = changed)
+        val expected = CustomTheme(shapes = mapOf(ShapeRole.MEDIUM.name to 20f))
+        assertEquals(expected = expected, actual = store.savedTheme)
         assertEquals(expected = expected, actual = ThemeCache.cacheState.value)
         onNodeWithText(text = "Medium (20dp)").assertIsDisplayed()
     }
@@ -184,9 +231,9 @@ class DesignScreenTest: TestCase() {
     /** Verifies that resetting a corner radius from the shape picker restores its default. */
     @Test
     fun designShapesResetRadius() = runUITest {
-        ThemeCache.setShape(role = ShapeRole.MEDIUM, radius = 0.dp)
-        var changed: CustomTheme? = null
-        setShowcase { DesignScreen(section = DesignSection.SHAPES, onThemeChange = { changed = it }) }
+        ThemeCache.setShape(role = ShapeRole.MEDIUM.name, radius = 0f)
+        val store = RecordingStore()
+        setShowcase { DesignScreen(section = DesignSection.SHAPES, store = store) }
         waitForIdle()
 
         onNodeWithTag(testTag = "shape_swatch_${ShapeRole.MEDIUM.name}").performClick()
@@ -194,14 +241,14 @@ class DesignScreenTest: TestCase() {
         onNodeWithText(text = "reset").performClick()
         mainClock.advanceTimeByFrame()
 
-        assertEquals(expected = CustomTheme(), actual = changed)
+        assertEquals(expected = CustomTheme(), actual = store.savedTheme)
         onNodeWithText(text = "Medium (12dp)").assertIsDisplayed()
     }
 
     /** Verifies that the typography section displays the text style scale. */
     @Test
     fun designTypographySection() = runUITest {
-        setShowcase { DesignScreen(section = DesignSection.TYPOGRAPHY) }
+        setShowcase { DesignScreen(section = DesignSection.TYPOGRAPHY, store = RecordingStore()) }
         waitForIdle()
 
         onNodeWithText(text = "Display large").assertIsDisplayed()

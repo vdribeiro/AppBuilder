@@ -1,6 +1,7 @@
 package com.app.builder.ui.navigation.provider
 
 import androidx.compose.runtime.Composable
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
 import com.app.builder.ui.navigation.LocalRouter
@@ -8,6 +9,7 @@ import com.app.builder.ui.navigation.Router
 import com.app.builder.ui.navigation.Screen
 import com.app.builder.ui.navigation.authenticatedScreen
 import com.app.builder.ui.screen.design.DesignScreen
+import com.app.builder.ui.screen.design.DesignScreenStore
 import com.app.builder.ui.screen.design.DesignSection
 
 /** The design section routes, one per [DesignSection]. */
@@ -19,7 +21,7 @@ fun EntryProviderScope<NavKey>.designProvider() {
 }
 
 /**
- * Renders a [DesignScreen], routing its navigation bar back into the app's router.
+ * Renders a [DesignScreen] backed by a [DesignScreenStore], routing its navigation bar back into the app's router.
  *
  * @param section The section to display.
  */
@@ -30,6 +32,7 @@ private fun Design(section: DesignSection) {
         section = section,
         onSectionClick = { router.navigate(screen = it.toScreen(), option = Router.NavOption.CLEAR) },
         onAppClick = { router.navigate(screen = authenticatedScreen, option = Router.NavOption.CLEAR) },
+        store = viewModel { DesignScreenStore() },
     )
 }
 
