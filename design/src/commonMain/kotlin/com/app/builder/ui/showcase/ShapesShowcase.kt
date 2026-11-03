@@ -47,7 +47,7 @@ fun ShapesShowcase(onThemeChange: (CustomTheme) -> Unit = {}) {
         verticalArrangement = Arrangement.spacedBy(space = 20.dp)
     ) {
         items(items = ShapeRole.entries) { role ->
-            val radius = customTheme.shapes[role] ?: role.radius
+            val radius = customTheme.shapes[role.name]?.dp ?: role.radius
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -69,14 +69,14 @@ fun ShapesShowcase(onThemeChange: (CustomTheme) -> Unit = {}) {
     editing?.let { role ->
         ShapePickerDialog(
             title = role.text,
-            radius = customTheme.shapes[role] ?: role.radius,
+            radius = customTheme.shapes[role.name]?.dp ?: role.radius,
             onConfirm = { radius ->
                 editing = null
-                onThemeChange(ThemeCache.setShape(role = role, radius = radius))
+                onThemeChange(ThemeCache.setShape(role = role.name, radius = radius.value))
             },
             onReset = {
                 editing = null
-                onThemeChange(ThemeCache.setShape(role = role, radius = null))
+                onThemeChange(ThemeCache.setShape(role = role.name, radius = null))
             },
             onDismiss = { editing = null }
         )

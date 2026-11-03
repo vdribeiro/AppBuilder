@@ -74,11 +74,11 @@ fun ColorsShowcase(onThemeChange: (CustomTheme) -> Unit = {}) {
             color = role.get(colorScheme = colorScheme),
             onConfirm = { color ->
                 editing = null
-                onThemeChange(ThemeCache.setColor(dark = dark, role = role, color = color))
+                onThemeChange(ThemeCache.setColor(dark = dark, role = role.name, hex = color.toHex()))
             },
             onReset = {
                 editing = null
-                onThemeChange(ThemeCache.setColor(dark = dark, role = role, color = null))
+                onThemeChange(ThemeCache.setColor(dark = dark, role = role.name, hex = null))
             },
             onDismiss = { editing = null }
         )
