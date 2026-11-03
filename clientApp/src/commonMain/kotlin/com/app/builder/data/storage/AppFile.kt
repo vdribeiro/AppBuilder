@@ -8,27 +8,14 @@ import com.app.builder.core.config.ClientConfigs
 import com.app.builder.core.config.ClientFlags
 import com.app.builder.core.config.ServerConfigs
 import com.app.builder.core.config.ServerFlags
+import com.app.builder.data.theme.CustomTheme
 
 /** The index of every file in this module. */
 object AppFile {
 
-    /**
-     * Theme customizations, layered over the default color schemes and shapes scale.
-     *
-     * @property light Hexadecimal colors replacing the light color scheme's, keyed by color role name.
-     * @property dark Hexadecimal colors replacing the dark color scheme's, keyed by color role name.
-     * @property shapes Corner radii in dp replacing the shapes scale's, keyed by shape role name.
-     */
-    @Serializable
-    data class ThemeData(
-        val light: Map<String, String> = emptyMap(),
-        val dark: Map<String, String> = emptyMap(),
-        val shapes: Map<String, Float> = emptyMap(),
-    )
-
     /** Theme preferences. */
-    data object Theme: StorageFile<ThemeData>(path = "theme", encrypted = false) {
-        override val serializer: KSerializer<ThemeData> = ThemeData.serializer()
+    data object Theme: StorageFile<CustomTheme>(path = "theme", encrypted = false) {
+        override val serializer: KSerializer<CustomTheme> = CustomTheme.serializer()
     }
 
     /** User scoped preferences. */

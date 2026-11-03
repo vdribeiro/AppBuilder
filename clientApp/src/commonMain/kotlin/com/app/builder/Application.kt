@@ -43,9 +43,12 @@ import com.app.builder.data.database.createSqlDriver
 import com.app.builder.data.database.reset
 import com.app.builder.data.http.NoOpHttpClientEngine
 import com.app.builder.data.http.createHttpEngine
+import com.app.builder.data.storage.AppFile
 import com.app.builder.data.storage.clearCache
 import com.app.builder.data.storage.files
 import com.app.builder.data.storage.logFiles
+import com.app.builder.data.theme.ThemeCache
+import com.app.builder.data.theme.CustomTheme
 import com.app.builder.data.translation.TranslationCache
 import com.app.builder.domain.deeplink.DeepLink
 import com.app.builder.domain.push.PushProvider
@@ -132,6 +135,7 @@ object Application {
         clearImageCache()
         clearCache()
         TranslationCache.set(translations = emptyMap())
+        ThemeCache.set(customTheme = CustomTheme())
     }
 
     /** Stops all application services, suspending until they have fully canceled. */
@@ -182,6 +186,8 @@ object Application {
             Telemetry.info(tag = TAG, message = "Platform: $platform")
             Telemetry.info(tag = TAG, message = "Setting app path: $appDataPath")
             Telemetry.info(tag = TAG, message = logFiles())
+            Telemetry.info(tag = TAG, message = "Loading theme")
+            ThemeCache.set(customTheme = AppFile.Theme.load() ?: CustomTheme())
 
             Telemetry.info(tag = TAG, message = "Initializing dependencies")
             val dependency = appGraph.get().apply { start(); observeCurrentUser(scope = this@launch) }

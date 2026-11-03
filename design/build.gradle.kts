@@ -1,6 +1,7 @@
 plugins {
     id(id = "shared")
     alias(notation = libs.plugins.kotlin.multiplatform)
+    alias(notation = libs.plugins.kotlin.serialization)
     alias(notation = libs.plugins.compose.multiplatform)
     alias(notation = libs.plugins.compose.compiler)
     alias(notation = libs.plugins.android.library)
