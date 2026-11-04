@@ -185,42 +185,42 @@ class ActionBarStoreTest: TestCase() {
         assertEquals(expected = 1, actual = added)
         assertEquals(expected = 0, actual = deleted)
 
-        store.send(action = ActionBarAction.Delete(deleted = true))
+        store.send(action = ActionBarAction.Delete)
         testScheduler.advanceUntilIdle()
         assertEquals(expected = 1, actual = added)
         assertEquals(expected = 1, actual = deleted)
     }
 
-    /** Verifies that a deleted entity hides edit but keeps the delete toggle, which is called with the new deletion value, and that undeleting it shows edit again. */
+    /** Verifies that delete invokes its callback and marks the entity deleted, hiding edit but keeping the delete toggle, and that restore invokes its callback and shows edit again. */
     @Test
-    fun deletedToggle() = runUnitTest {
+    fun deleteAndRestore() = runUnitTest {
         val authenticationUseCases = authenticationUseCases()
         authenticationUseCases.login(credentials = FakeData.adminCredentials)
-        val deleted = MutableStateFlow(value = true)
-        val toggled = mutableListOf<Boolean>()
+        var deleted = 0
+        var restored = 0
         val store = ActionBarStore(
             state = ActionBarState(),
             router = router,
             authenticationUseCases = authenticationUseCases,
             entityType = EntityType.TASK,
-            deletedFlow = deleted,
             onEditClick = {},
-            onDeleteClick = { toggled += it },
+            onDeleteClick = { deleted++ },
+            onRestoreClick = { restored++ },
         )
         subscribe(store = store)
+        store.stateFlow.first { it.showEdit }
 
-        val deletedState = store.stateFlow.first { it.writable && it.deleted }
+        store.send(action = ActionBarAction.Delete)
+        val deletedState = store.stateFlow.first { it.deleted }
+        assertEquals(expected = 1, actual = deleted)
         assertFalse(actual = deletedState.showEdit)
         assertTrue(actual = deletedState.showDelete)
 
-        store.send(action = ActionBarAction.Delete(deleted = false))
-        testScheduler.advanceUntilIdle()
-        assertEquals(expected = listOf(false), actual = toggled)
-
-        deleted.value = false
-        val activeState = store.stateFlow.first { !it.deleted }
-        assertTrue(actual = activeState.showEdit)
-        assertTrue(actual = activeState.showDelete)
+        store.send(action = ActionBarAction.Restore)
+        val restoredState = store.stateFlow.first { !it.deleted }
+        assertEquals(expected = 1, actual = restored)
+        assertTrue(actual = restoredState.showEdit)
+        assertTrue(actual = restoredState.showDelete)
     }
 
     /** Verifies that edit switches to save and cancel, and that save and cancel switch back to add, edit and delete, invoking their callbacks. */
