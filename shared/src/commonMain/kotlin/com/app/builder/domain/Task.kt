@@ -43,6 +43,7 @@ data class Task(
      */
     @Serializable
     enum class Property(val translationKey: String) {
+        UUID(translationKey = "task_uuid"),
         MODIFIED_AT(translationKey = "task_modified_at"),
         DELETED_AT(translationKey = "task_deleted_at"),
         TITLE(translationKey = "task_title"),

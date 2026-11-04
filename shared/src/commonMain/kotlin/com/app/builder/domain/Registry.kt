@@ -47,6 +47,7 @@ data class Registry(
      */
     @Serializable
     enum class Property(val translationKey: String) {
+        REQUEST_UUID(translationKey = "registry_request_uuid"),
         REQUEST_TYPE(translationKey = "registry_request_type"),
         REQUEST_UTC(translationKey = "registry_request_utc"),
         REQUEST_SENT_UTC(translationKey = "registry_request_sent_utc"),

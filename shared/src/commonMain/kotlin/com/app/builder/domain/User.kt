@@ -45,6 +45,7 @@ data class User(
      */
     @Serializable
     enum class Property(val translationKey: String) {
+        UUID(translationKey = "user_uuid"),
         MODIFIED_AT(translationKey = "user_modified_at"),
         DELETED_AT(translationKey = "user_deleted_at"),
         NAME(translationKey = "user_name")
