@@ -1,6 +1,8 @@
 package com.app.builder.core.config
 
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.updateAndGet
 import kotlinx.serialization.Serializable
 
@@ -88,6 +90,8 @@ data class ServerConfigs(
 
         /** Backing state flow tracking config changes. */
         private val _configsFlow: MutableStateFlow<ServerConfigs> = MutableStateFlow(value = default)
+        /** Read only stream, emitting the current value on collection and every change after. */
+        val configsFlow: StateFlow<ServerConfigs> = _configsFlow.asStateFlow()
         /** Current synchronous snapshot of the configs. */
         val configs: ServerConfigs get() = _configsFlow.value
 

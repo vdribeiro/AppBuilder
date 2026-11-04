@@ -1,6 +1,8 @@
 package com.app.builder.core.config
 
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.updateAndGet
 import kotlinx.serialization.Serializable
 
@@ -24,9 +26,11 @@ data class ClientConfigs(
     /** Maximum number of attempts before a job is marked permanently as failed instead of retried. */
     val schedulerMaxAttempts: Int,
     /** Initial delay in milliseconds before a retried job becomes eligible to run again, doubling on each subsequent attempt up to [schedulerMaxRetryDelay]. */
-    val schedulerRetryDelay: Long = 5_000L,
+    val schedulerRetryDelay: Long,
     /** Ceiling in milliseconds for the job retry backoff described in [schedulerRetryDelay]. */
-    val schedulerMaxRetryDelay: Long = 30_000L,
+    val schedulerMaxRetryDelay: Long,
+    /** Time in milliseconds a job may stay pending or running, counted from when it was queued, before the client is reported as not synced. */
+    val schedulerSyncTolerance: Long,
     /** The maximum number of push payloads to remember. */
     val maxHandledPayloads: Int,
     /** Initial delay in milliseconds before the first broadcast reconnect attempt, and the value the backoff resets to after a successful reconnect. Doubles on each subsequent failure up to [broadcastMaxRetryDelay]. */
@@ -62,6 +66,7 @@ data class ClientConfigs(
             schedulerMaxAttempts = 5,
             schedulerRetryDelay = 5_000L,
             schedulerMaxRetryDelay = 30_000L,
+            schedulerSyncTolerance = 30_000L,
             maxHandledPayloads = 500,
             broadcastRetryDelay = 2_000L,
             broadcastMaxRetryDelay = 30_000L,
@@ -76,6 +81,8 @@ data class ClientConfigs(
 
         /** Backing state flow tracking config changes. */
         private val _configsFlow: MutableStateFlow<ClientConfigs> = MutableStateFlow(value = default)
+        /** Read only stream, emitting the current value on collection and every change after. */
+        val configsFlow: StateFlow<ClientConfigs> = _configsFlow.asStateFlow()
         /** Current synchronous snapshot of the configs. */
         val configs: ClientConfigs get() = _configsFlow.value
 

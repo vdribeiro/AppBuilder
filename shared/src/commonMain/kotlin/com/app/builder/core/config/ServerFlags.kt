@@ -1,6 +1,8 @@
 package com.app.builder.core.config
 
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.updateAndGet
 import kotlinx.serialization.Serializable
 
@@ -43,6 +45,8 @@ data class ServerFlags(
 
         /** Backing state flow tracking feature flag changes. */
         private val _flagsFlow: MutableStateFlow<ServerFlags> = MutableStateFlow(value = default)
+        /** Read only stream, emitting the current value on collection and every change after. */
+        val flagsFlow: StateFlow<ServerFlags> = _flagsFlow.asStateFlow()
         /** Current synchronous snapshot of the feature flags. */
         val flags: ServerFlags get() = _flagsFlow.value
 

@@ -47,7 +47,7 @@ open class Store<State, Action>(initialState: State): ViewModel() {
     /** A read-only [StateFlow] that the UI observes to render its elements. */
     val stateFlow: StateFlow<State> = _stateFlow.asStateFlow()
     /** Provides the current, non-reactive snapshot of the [State]. */
-    val state: State get() = stateFlow.value
+    val state: State get() = _stateFlow.value
 
     /** Registry of active background [Job]s, keyed by a unique identifier to prevent leaks or redundant executions. */
     private val activeJobs = mutableMapOf<String, Job>()
