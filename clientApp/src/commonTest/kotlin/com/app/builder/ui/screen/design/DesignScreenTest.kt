@@ -21,8 +21,8 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.test.performTextReplacement
-import com.app.builder.data.theme.ThemeCache
 import com.app.builder.data.theme.CustomTheme
+import com.app.builder.data.theme.ThemeCache
 import com.app.builder.data.theme.ThemeMode
 import com.app.builder.test.TestCase
 import com.app.builder.ui.ColorRole

@@ -2,7 +2,6 @@ package com.app.builder.ui.component.actionbar
 
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.debounce
 import com.app.builder.core.telemetry.Telemetry
 import com.app.builder.data.resource.ImageResource
 import com.app.builder.data.storage.AppFile
@@ -47,6 +46,7 @@ class ActionBarStore(
     private val onSaveClick: (suspend () -> Unit)? = null,
     private val onCancelClick: (suspend () -> Unit)? = null,
     private val onDeleteClick: (suspend () -> Unit)? = null,
+    private val onRestoreClick: (suspend () -> Unit)? = null,
 ): Store<ActionBarState, ActionBarAction>(initialState = state) {
     init {
         setup()
@@ -61,6 +61,7 @@ class ActionBarStore(
             ActionBarAction.Save -> save()
             ActionBarAction.Cancel -> cancel()
             ActionBarAction.Delete -> delete()
+            ActionBarAction.Restore -> restore()
             ActionBarAction.Login -> router.navigate(screen = Screen.Login)
             is ActionBarAction.Search -> search(action = action)
             is ActionBarAction.ToggleSearchableProperty -> toggleSearchableProperty(state = state, action = action)
@@ -139,18 +140,24 @@ class ActionBarStore(
     }
 
     /**
-     * Resolves which buttons are shown for the given write permission and mode.
-     * Editing shows only save and cancel, viewing shows add, edit and delete.
+     * Resolves which buttons are shown for the given write permission, mode and deletion.
+     * Editing shows only save and cancel, viewing shows add, edit and delete, or only add and delete when the domain is deleted.
      *
      * @param writable Whether the current user has write permission on the entity.
      * @param editing Whether the current domain is being edited.
-     * @return This state with the permission, the mode and the buttons updated.
+     * @param deleted Whether the current domain is deleted.
+     * @return This state with the permission, the mode, the deletion and the buttons updated.
      */
-    private fun ActionBarState.withButtons(writable: Boolean = this.writable, editing: Boolean = this.editing): ActionBarState = copy(
+    private fun ActionBarState.withButtons(
+        writable: Boolean = this.writable,
+        editing: Boolean = this.editing,
+        deleted: Boolean = this.deleted,
+    ): ActionBarState = copy(
         writable = writable,
         editing = editing,
+        deleted = deleted,
         showAdd = onAddClick != null && writable && !editing,
-        showEdit = onEditClick != null && writable && !editing,
+        showEdit = onEditClick != null && writable && !editing && !deleted,
         showSave = onSaveClick != null && writable && editing,
         showCancel = onCancelClick != null && writable && editing,
         showDelete = onDeleteClick != null && writable && !editing,
@@ -202,6 +209,17 @@ class ActionBarStore(
      */
     private fun delete(): Job = launch(id = "delete") {
         onDeleteClick?.invoke()
+        updateState { it.withButtons(deleted = true) }
+    }
+
+    /**
+     * Call restore callback.
+     *
+     * @return The [Job] representing this execution.
+     */
+    private fun restore(): Job = launch(id = "restore") {
+        onRestoreClick?.invoke()
+        updateState { it.withButtons(deleted = false) }
     }
 
     /**

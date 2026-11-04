@@ -2,6 +2,9 @@ package com.app.builder.ui.navigation.provider
 
 import kotlinx.collections.immutable.toImmutableMap
 import kotlinx.collections.immutable.toPersistentList
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
@@ -48,7 +51,8 @@ fun EntryProviderScope<NavKey>.taskProvider(useCases: UseCases) {
                     onEditClick = null,
                     onSaveClick = null,
                     onCancelClick = null,
-                    onDeleteClick = null
+                    onDeleteClick = null,
+                    onRestoreClick = null
                 )
             },
             navigationStore = viewModel { NavigationStore(state = NavigationState(selected = NavigationRoute.TASK), router = router, authenticationUseCases = useCases.authenticationUseCases) },
@@ -70,7 +74,8 @@ fun EntryProviderScope<NavKey>.taskProvider(useCases: UseCases) {
                     onEditClick = { store.send(action = TaskDetailScreenAction.Edit) },
                     onSaveClick = { store.send(action = TaskDetailScreenAction.Save) },
                     onCancelClick = { store.send(action = TaskDetailScreenAction.Cancel) },
-                    onDeleteClick = { store.send(action = TaskDetailScreenAction.Delete) }
+                    onDeleteClick = { store.send(action = TaskDetailScreenAction.Delete) },
+                    onRestoreClick = { store.send(action = TaskDetailScreenAction.Restore) },
                 )
             },
             navigationStore = viewModel { NavigationStore(state = NavigationState(selected = NavigationRoute.TASK), router = router, authenticationUseCases = useCases.authenticationUseCases) },
@@ -112,6 +117,7 @@ private val actionBarState = ActionBarState(
  * @param onSaveClick The save click callback, or null to hide the save action.
  * @param onCancelClick The cancel click callback, or null to hide the cancel action.
  * @param onDeleteClick The delete click callback, or null to hide the delete action.
+ * @param onRestoreClick The restore click callback, or null to hide the delete action.
  * @return The action bar store.
  */
 private fun getActionBarStore(
@@ -123,7 +129,8 @@ private fun getActionBarStore(
     onEditClick: (suspend () -> Unit)?,
     onSaveClick: (suspend () -> Unit)?,
     onCancelClick: (suspend () -> Unit)?,
-    onDeleteClick: (suspend () -> Unit)?
+    onDeleteClick: (suspend () -> Unit)?,
+    onRestoreClick: (suspend () -> Unit)?
 ): ActionBarStore = ActionBarStore(
     state = actionBarState.copy(editing = editing, showFilters = showFilters),
     router = router,
@@ -138,5 +145,6 @@ private fun getActionBarStore(
     onEditClick = onEditClick,
     onSaveClick = onSaveClick,
     onCancelClick = onCancelClick,
-    onDeleteClick = onDeleteClick
+    onDeleteClick = onDeleteClick,
+    onRestoreClick = onRestoreClick
 )

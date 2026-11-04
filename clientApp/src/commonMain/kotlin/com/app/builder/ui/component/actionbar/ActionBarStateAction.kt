@@ -20,6 +20,8 @@ sealed interface ActionBarAction {
     data object Cancel: ActionBarAction
     /** Delete the current domain. */
     data object Delete: ActionBarAction
+    /** Restore the current domain. */
+    data object Restore: ActionBarAction
     /** Opens the login screen. */
     data object Login: ActionBarAction
     /**
@@ -70,11 +72,12 @@ sealed interface ActionBarAction {
  * @property clockTrusted Whether the device clock can be trusted.
  * @property writable Whether the current user has write permission on the entity.
  * @property editing Whether the current domain is being edited.
+ * @property deleted Whether the current domain is deleted.
  * @property showAdd Whether the add button should be shown.
  * @property showEdit Whether the edit button should be shown.
  * @property showSave Whether the save button should be shown.
  * @property showCancel Whether the cancel button should be shown.
- * @property showDelete Whether the delete button should be shown.
+ * @property showDelete Whether the delete toggle button should be shown.
  * @property showLogin Whether the login button should be shown.
  * @property showFilters Whether the filters button should be shown.
  * @property searchableProperties Property keys currently included when searching.
@@ -92,6 +95,7 @@ data class ActionBarState(
     val clockTrusted: Boolean = true,
     val writable: Boolean = false,
     val editing: Boolean = false,
+    val deleted: Boolean = false,
     val showAdd: Boolean = false,
     val showEdit: Boolean = false,
     val showSave: Boolean = false,

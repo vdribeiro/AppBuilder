@@ -42,8 +42,9 @@ fun ActionBar(store: Store<ActionBarState, ActionBarAction>) {
         onCancelClick = if (state.showCancel) {
             { store.send(action = ActionBarAction.Cancel) }
         } else null,
+        deleted = state.deleted,
         onDeleteClick = if (state.showDelete) {
-            { store.send(action = ActionBarAction.Delete) }
+            { store.send(action = if (it) ActionBarAction.Delete else ActionBarAction.Restore) }
         } else null,
         onLoginClick = if (state.showLogin) {
             { store.send(action = ActionBarAction.Login) }

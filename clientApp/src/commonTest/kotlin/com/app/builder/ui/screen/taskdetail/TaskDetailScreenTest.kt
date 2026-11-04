@@ -7,7 +7,9 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlin.uuid.Uuid
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
@@ -19,7 +21,9 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextReplacement
 import com.app.builder.Dependency.getUserDependency
+import com.app.builder.core.locale.now
 import com.app.builder.core.security.uuid
+import com.app.builder.data.storage.AppFile
 import com.app.builder.domain.EntityType
 import com.app.builder.domain.Task
 import com.app.builder.domain.UserCredentials
@@ -68,10 +72,11 @@ class TaskDetailScreenTest: TestCase() {
             router = router,
             authenticationUseCases = useCases.authenticationUseCases,
             entityType = EntityType.TASK,
+            deletedFlow = store.stateFlow.map { state -> state.task?.deletedAt != null }.distinctUntilChanged(),
             onEditClick = { store.send(action = TaskDetailScreenAction.Edit) },
             onSaveClick = { store.send(action = TaskDetailScreenAction.Save) },
             onCancelClick = { store.send(action = TaskDetailScreenAction.Cancel) },
-            onDeleteClick = { store.send(action = TaskDetailScreenAction.Delete) }
+            onDeleteClick = { store.send(action = TaskDetailScreenAction.Delete(deleted = it)) }
         )
 
         setUI {
@@ -228,7 +233,7 @@ class TaskDetailScreenTest: TestCase() {
         assertEquals(expected = FakeData.task.title, actual = stored?.title)
     }
 
-    /** Verifies that the delete action soft deletes the task and navigates back. */
+    /** Verifies that the delete action soft deletes the task, bumping its modification time, and navigates back when deleted tasks are hidden. */
     @Test
     fun deleteTask() = runUITest {
         val useCases = storedTaskUseCases()
@@ -245,6 +250,50 @@ class TaskDetailScreenTest: TestCase() {
         assertEquals(expected = listOf<Any>(Screen.TaskList), actual = router.backStack.toList())
         val deleted = useCases.taskUseCases.observeTask(uuid = FakeData.task.uuid).first()
         assertNotNull(actual = deleted?.deletedAt)
+        assertEquals(expected = deleted.deletedAt, actual = deleted.modifiedAt)
+    }
+
+    /** Verifies that the delete action soft deletes the task and keeps viewing it, now offering restore, when deleted tasks are shown. */
+    @Test
+    fun deleteTaskWhileShowingDeleted() = runUITest {
+        val useCases = storedTaskUseCases()
+        AppFile.TaskPreferences.save { AppFile.ActionBarData(showDeleted = true) }
+
+        router.navigate(screen = Screen.TaskList, option = Router.NavOption.ADD)
+        router.navigate(screen = Screen.TaskDetail(uuid = FakeData.task.uuid.toString()), option = Router.NavOption.ADD)
+
+        val (store, actionBarStore) = setTaskDetailScreen(useCases = useCases)
+
+        waitUntil { store.state.task != null && store.state.showDeleted }
+        onNodeWithTag(testTag = "action_delete").assertIsDisplayed().performClick()
+        waitUntil { actionBarStore.state.deleted }
+
+        assertEquals(expected = listOf<Any>(Screen.TaskList, Screen.TaskDetail(uuid = FakeData.task.uuid.toString())), actual = router.backStack.toList())
+        val deleted = useCases.taskUseCases.observeTask(uuid = FakeData.task.uuid).first()
+        assertNotNull(actual = deleted?.deletedAt)
+        onNodeWithTag(testTag = "action_edit").assertDoesNotExist()
+        onNodeWithTag(testTag = "action_delete").assertIsDisplayed()
+    }
+
+    /** Verifies that the delete toggle on a deleted task restores it, clearing its deletion, bumping its modification time and keeping viewing it. */
+    @Test
+    fun restoreTask() = runUITest {
+        val useCases = storedTaskUseCases()
+        val deletedTask = FakeData.task.copy(deletedAt = now())
+        useCases.taskUseCases.upsertTask(task = deletedTask)
+        val (store, actionBarStore) = setTaskDetailScreen(useCases = useCases)
+
+        waitUntil { actionBarStore.state.deleted }
+        onNodeWithTag(testTag = "action_edit").assertDoesNotExist()
+        onNodeWithTag(testTag = "action_delete").assertIsDisplayed().performClick()
+        waitUntil { store.state.task?.deletedAt == null }
+
+        val restored = useCases.taskUseCases.observeTask(uuid = FakeData.task.uuid).first { it?.deletedAt == null }
+        assertTrue(actual = restored!!.modifiedAt > deletedTask.modifiedAt)
+        assertTrue(actual = router.backStack.isEmpty())
+        waitUntil { !actionBarStore.state.deleted }
+        onNodeWithTag(testTag = "action_edit").assertIsDisplayed()
+        onNodeWithTag(testTag = "action_delete").assertIsDisplayed()
     }
 
     /** Verifies that a new task opens in edit mode, with only the save and cancel buttons, and is not stored yet. */

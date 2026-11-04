@@ -76,8 +76,8 @@ import com.app.builder.ui.core.text.Text
  * @param onEditClick Shows an edit button when not null and executes this callback when clicked.
  * @param onSaveClick Shows a save button when not null and executes this callback when clicked.
  * @param onCancelClick Shows a cancel button when not null and executes this callback when clicked.
- * @param onDeleteClick Shows a delete button when not null and executes this callback when clicked.
- * @param onRestoreClick Shows a restore button when not null and executes this callback when clicked.
+ * @param deleted Whether the current domain is deleted.
+ * @param onDeleteClick Shows a delete toggle button when not null and is called with the new deletion value when it is clicked.
  * @param onLoginClick Shows a login button when not null and executes this callback when clicked.
  * @param onSearch Shows a search button when not null and is called with the debounced search query as the user types in search mode.
  * @param searchableProperties Property keys currently included when searching.
@@ -106,8 +106,8 @@ fun TopActionBar(
     onEditClick: (() -> Unit)? = null,
     onSaveClick: (() -> Unit)? = null,
     onCancelClick: (() -> Unit)? = null,
-    onDeleteClick: (() -> Unit)? = null,
-    onRestoreClick: (() -> Unit)? = null,
+    deleted: Boolean = false,
+    onDeleteClick: ((Boolean) -> Unit)? = null,
     onLoginClick: (() -> Unit)? = null,
     onSearch: ((String) -> Unit)? = null,
     searchableProperties: ImmutableList<String> = properties.keys.toPersistentList(),
@@ -253,14 +253,8 @@ fun TopActionBar(
 
             if (onDeleteClick != null) Button(
                 modifier = Modifier.testTag(tag = "action_delete"),
-                onClick = { onDeleteClick() },
-                content = { Icon(imageVector = Icons.Default.Delete) }
-            )
-
-            if (onRestoreClick != null) Button(
-                modifier = Modifier.testTag(tag = "action_restore"),
-                onClick = { onRestoreClick() },
-                content = { Icon(imageVector = Icons.Default.Restore) }
+                onClick = { onDeleteClick(!deleted) },
+                content = { Icon(imageVector = if (deleted) Icons.Default.Restore else Icons.Default.Delete) }
             )
 
             if (onSearch != null || onSortAscendingClick != null || onSelectSortProperty != null || onVisiblePropertiesChange != null || onShowDeletedClick != null) Button(
