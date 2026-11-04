@@ -3,23 +3,24 @@
 A ready-to-go, **offline-first Compose Multiplatform** starter kit for building full-stack apps fast.
 Everything is pre-wired, so you can skip the boilerplate and ship to every platform from a single codebase.
 
-| Area                                                          | What you get                                                                                      |
-|---------------------------------------------------------------|---------------------------------------------------------------------------------------------------|
-| **[Kotlin Multiplatform](#how-it-works)**                     | One Compose Multiplatform client for Android, iOS, Windows, macOS, Linux and Web.                 |
-| **[Offline-first](#offline-engine)**                          | A persistent job queue with per-entity chains, backoff and zombie recovery.                       |
-| **[Sync correctness](#delta-sync)**                           | Keyset-paginated delta sync, with push routed through the job scheduler.                          |
-| **[Distributed time](#clock-trust)**                          | Detection of untrustworthy device clocks from NTP-style offset measurements and OS clock changes. |
-| **[Real-time delivery](#push-notifications)**                 | FCM, WebSocket and SSE push merged into one de-duplicated stream.                                 |
-| **[Backend and scaling](#multi-instance-scaling)**            | A Ktor server with no per-instance state, coordinated through a pluggable cross-instance signal.  |
-| **[Security](#cryptography)**                                 | Encryption backed by each platform's native cryptography.                                         |
-| **[Accounts and sessions](#accounts--sessions)**              | Accounts, sessions and per-entity permissions.                                                    |
-| **[Design system](#design-system--showcase)**                 | A configurable design system with an in-app catalog of every component.                           |
-| **[Translations](#translations)**                             | Server-served translations that update live, with a bundled offline fallback.                     |
-| **[Feature flags](#feature-flags--remote-configs)**           | Typed flags and remote configs shared by client and server, with no third-party service.          |
-| **[Telemetry](#telemetry-hub)**                               | One logging API fanning out to pluggable engines, so any telemetry service can be added.          |
-| **[UI architecture](#ui-store--navigation)**                  | An MVI Store plus Navigation scene strategies.                                                    |
-| **[Testing](#testing)**                                       | Unit, UI and server tests from one hermetic harness.                                              |
-| **[Build and release](#versioning--release-builds)**          | Convention plugins, one-command version bumps and notarised desktop packaging.                    |
+| Area                                                 | What you get                                                                                                                        |
+|------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------|
+| **[Kotlin Multiplatform](#how-it-works)**            | One Compose Multiplatform client for Android, iOS, Windows, macOS, Linux and Web, with native platform APIs wherever you need them. |
+| **[Offline-first](#offline-engine)**                 | A persistent job queue with per-entity chains, backoff and zombie recovery.                                                         |
+| **[Sync correctness](#delta-sync)**                  | Keyset-paginated delta sync, with push routed through the job scheduler.                                                            |
+| **[Distributed time](#clock-trust)**                 | Detection of untrustworthy device clocks from NTP-style offset measurements and OS clock changes.                                   |
+| **[Real-time delivery](#push-notifications)**        | FCM, WebSocket and SSE push merged into one de-duplicated stream.                                                                   |
+| **[Backend and scaling](#multi-instance-scaling)**   | A Ktor server with no per-instance state, coordinated through a pluggable cross-instance signal.                                    |
+| **[Security](#cryptography)**                        | Encryption backed by each platform's native cryptography.                                                                           |
+| **[Device hardware](#hardware-controllers)**         | Audio, camera, NFC and location controllers, flag-gated and failing safe on every platform.                                         |
+| **[Accounts and sessions](#accounts--sessions)**     | Accounts, sessions and per-entity permissions.                                                                                      |
+| **[Design system](#design-system--showcase)**        | A configurable design system with an in-app catalog of every component.                                                             |
+| **[Translations](#translations)**                    | Server-served translations that update live, with a bundled offline fallback.                                                       |
+| **[Feature flags](#feature-flags--remote-configs)**  | Typed flags and remote configs shared by client and server, with no third-party service.                                            |
+| **[Telemetry](#telemetry-hub)**                      | One logging API fanning out to pluggable engines, so any telemetry service can be added.                                            |
+| **[UI architecture](#ui-store--navigation)**         | An MVI Store plus Navigation scene strategies.                                                                                      |
+| **[Testing](#testing)**                              | Unit, UI and server tests from one hermetic harness.                                                                                |
+| **[Build and release](#versioning--release-builds)** | Convention plugins, one-command version bumps and notarised desktop packaging.                                                      |
 
 > [!IMPORTANT]
 > The project is licensed **AGPL-3.0**. Derivative works must be distributed under the same license with source available, and that applies to network services too, not just distributed binaries.
@@ -647,15 +648,24 @@ getTranslation(key = "translation_with_arguments", args = *arrayOf("one", "two")
 
 Always go through `Translations` rather than `TranslationCache` directly: it resolves against the cache's *state*, so a language change or a fresh fetch recomposes every string with no restart.
 `InjectTranslations(translations)` seeds the cache directly, which is handy for previews and tests.
+`TranslationCache` and `ThemeCache` extend `StateHolder`, so they can be observed through `flow` and restored to their default with `reset()`, like between tests.
 
 ## Feature Flags & Remote Configs
 
-`ClientFlags`, `ServerFlags`, `ClientConfigs` and `ServerConfigs` are plain data classes, each with a `default` instance, an atomic `set { }` and a `reset()`, read through a synchronous snapshot.
+**Flags** are `Boolean` on/off switches; **configs** are tunable numbers. **Client** variants govern the app, **Server** variants govern the backend:
+
+* `ClientFlags`: features and screens, plus kill switches such as `http` and `scheduler`.
+* `ClientConfigs`: layout, HTTP timeouts, clock drift, scheduler retries, push and broadcast backoff, etc.
+* `ServerFlags`: route groups, which return 404 when off.
+* `ServerConfigs`: token lifetimes, rate limits, connection caps, ping intervals, etc.
+
+`ClientFlags`, `ServerFlags`, `ClientConfigs`, `ServerConfigs` are plain data classes whose companions extend `StateHolder`, 
+that allows you to read synchronously through `value`, observe as a `StateFlow` through `flow`, update atomically with `set { }` and restore to their default with `reset()`.
 
 * They are shared types: the server serves exactly what the client consumes.
 * The client persists them as encrypted files and hot-reloads them, so flipping a flag server-side takes effect without a release. A push payload can also trigger an immediate re-sync.
-* Turning a flag off disables the whole vertical slice: navigation entry, screen, background jobs and server routes.
-* Tunable numbers live in the configs rather than as constants: `clockDriftTolerance`, `schedulerMaxAttempts`, retry backoff, HTTP timeouts, push backoff, sync `batchSize` and so on.
+* Turning a feature off across the whole vertical slice takes its `ClientFlags` entry (navigation entry, screen, background jobs) and its `ServerFlags` entry (routes) together.
+* Tunable numbers live in the configs rather than as constants.
 
 Adding a toggle is one field plus its default. No schema, no console, no third-party service.
 
