@@ -77,7 +77,8 @@ class TranslationManager(
                     if (translations.isEmpty()) Telemetry.info(tag = TAG, message = "Clearing language cache") else {
                         Telemetry.info(tag = TAG, message = "Setting translations for language: ${translations.firstOrNull()?.languageIso}")
                     }
-                    TranslationCache.set(translations = translations.associate { it.key to it.value })
+                    val translationMap = translations.associate { it.key to it.value }
+                    TranslationCache.set { translationMap }
                 }
         }
     }
