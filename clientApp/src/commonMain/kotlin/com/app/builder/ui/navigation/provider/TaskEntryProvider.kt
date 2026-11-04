@@ -66,7 +66,7 @@ fun EntryProviderScope<NavKey>.taskProvider(useCases: UseCases) {
                     router = router,
                     useCases = useCases,
                     showAdd = splitScreen,
-                    showFilters = false,
+                    showFilters = splitScreen,
                     editing = it.new,
                     onEditClick = { store.send(action = TaskDetailScreenAction.Edit) },
                     onSaveClick = { store.send(action = TaskDetailScreenAction.Save) },
