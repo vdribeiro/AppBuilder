@@ -2,7 +2,6 @@ package com.app.builder.domain.scheduler
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 import kotlin.time.Duration.Companion.milliseconds
@@ -291,31 +290,31 @@ class JobSchedulerTest: TestCase() {
         scheduler.queue(job = job.copy(conflictPolicy = Job.ConflictPolicy.IGNORE))
     }
 
-    /** Verifies that syncing is reported while a job is pending or running, and stops once no job is left. */
+    /** Verifies that active jobs include pending and running jobs, and drop them once they complete. */
     @Test
-    fun observeSyncingFollowsActiveJobs() = runUnitTest {
+    fun observeActiveJobsFollowsJobStates() = runUnitTest {
         val jobStore = LocalJobStore()
         val scheduler = JobScheduler(jobStore = jobStore, jobFactory = FakeJobFactory(), clockService = FakeClockService())
         val job = Job(userUuid = Uuid.NIL, entityType = EntityType.CLIENT_FLAG, type = Job.Type.GET)
 
-        assertFalse(actual = scheduler.observeSyncing().first())
+        assertTrue(actual = scheduler.observeActiveJobs().first().isEmpty())
 
         scheduler.queue(job = job)
-        assertTrue(actual = scheduler.observeSyncing().first())
+        assertEquals(expected = listOf(job.uuid), actual = scheduler.observeActiveJobs().first().map { it.uuid })
 
         jobStore.updateJobStateAndAttempt(job = job.copy(state = Job.State.RUNNING))
-        assertTrue(actual = scheduler.observeSyncing().first())
+        assertEquals(expected = listOf(job.uuid), actual = scheduler.observeActiveJobs().first().map { it.uuid })
 
         jobStore.updateJobStateAndAttempt(job = job.copy(state = Job.State.COMPLETE))
-        assertFalse(actual = scheduler.observeSyncing().first())
+        assertTrue(actual = scheduler.observeActiveJobs().first().isEmpty())
     }
 
-    /** Verifies that a job store failure while observing active jobs is reported as not syncing. */
+    /** Verifies that a job store failure while observing active jobs is reported as no active jobs. */
     @Test
-    fun observeSyncingSwallowsJobStoreFailures() = runUnitTest {
+    fun observeActiveJobsSwallowsJobStoreFailures() = runUnitTest {
         val scheduler = JobScheduler(jobStore = ThrowingJobStore(), jobFactory = FakeJobFactory(), clockService = FakeClockService())
 
-        assertFalse(actual = scheduler.observeSyncing().first())
+        assertTrue(actual = scheduler.observeActiveJobs().first().isEmpty())
     }
 
     /** Verifies job store failures during start are swallowed. */

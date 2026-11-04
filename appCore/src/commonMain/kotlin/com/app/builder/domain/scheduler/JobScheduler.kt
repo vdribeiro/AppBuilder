@@ -13,8 +13,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
@@ -149,13 +147,11 @@ class JobScheduler(
         }
     }
 
-    override fun observeSyncing(): Flow<Boolean> =
+    override fun observeActiveJobs(): Flow<List<Job>> =
         jobStore.observeActiveJobs()
-            .map { it.isNotEmpty() }
-            .distinctUntilChanged()
             .catch {
                 Telemetry.error(tag = TAG, message = "Unable to observe active jobs", throwable = it)
-                emit(value = false)
+                emit(value = emptyList())
             }
 
     /**

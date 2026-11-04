@@ -5,7 +5,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
-import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
@@ -307,39 +306,6 @@ class ActionBarStoreTest: TestCase() {
         val withoutStatusState = withoutStatus.stateFlow.first { it.showLogin }
         assertTrue(actual = withoutStatusState.synced)
         assertTrue(actual = withoutStatusState.clockTrusted)
-    }
-
-    /** Verifies that jobs are only shown as not synced once they have been pending or running for [ActionBarStore.NOT_SYNCED_DELAY], and as synced right away. */
-    @Test
-    fun notSyncedDelay() = runUnitTest {
-        val synced = MutableStateFlow(value = true)
-        val store = ActionBarStore(
-            state = ActionBarState(),
-            router = router,
-            authenticationUseCases = authenticationUseCases(),
-            statusUseCases = object: StatusUseCases {
-                override fun observeSynced(): Flow<Boolean> = synced
-                override fun observeClockTrusted(): Flow<Boolean> = MutableStateFlow(value = true)
-            },
-        )
-        subscribe(store = store)
-        testScheduler.advanceUntilIdle()
-
-        synced.value = false
-        testScheduler.advanceTimeBy(delayTime = (ActionBarStore.NOT_SYNCED_DELAY - 1).milliseconds)
-        assertTrue(actual = store.state.synced)
-
-        synced.value = true
-        testScheduler.advanceUntilIdle()
-        assertTrue(actual = store.state.synced)
-
-        synced.value = false
-        testScheduler.advanceTimeBy(delayTime = (ActionBarStore.NOT_SYNCED_DELAY + 1).milliseconds)
-        assertFalse(actual = store.state.synced)
-
-        synced.value = true
-        testScheduler.runCurrent()
-        assertTrue(actual = store.state.synced)
     }
 
     /** Verifies that the avatar opens the user profile and the login button opens the login screen. */

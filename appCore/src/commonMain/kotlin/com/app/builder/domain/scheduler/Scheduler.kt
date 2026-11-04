@@ -29,9 +29,9 @@ interface Scheduler {
     suspend fun queue(job: Job)
 
     /**
-     * Observes whether any job is pending or running.
+     * Observes the jobs that are pending or running.
      *
-     * @return A flow emitting `true` while there are pending or running jobs, `false` otherwise.
+     * @return A flow emitting the pending and running jobs, or an empty list when the job store fails.
      */
-    fun observeSyncing(): Flow<Boolean>
+    fun observeActiveJobs(): Flow<List<Job>>
 }
