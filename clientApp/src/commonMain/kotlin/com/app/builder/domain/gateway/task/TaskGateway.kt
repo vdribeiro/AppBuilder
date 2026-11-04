@@ -66,8 +66,8 @@ class TaskGateway(
         Telemetry.error(tag = TAG, message = "Invalid permissions", throwable = throwable)
         return emptyFlow()
     } else when (filter) {
+        TaskFilter.All -> taskDao.getTasks(userUuid = user.uuid, mapper = ::TaskSchema)
         TaskFilter.Active -> taskDao.getActiveTasks(userUuid = user.uuid)
-        TaskFilter.Deleted -> taskDao.getDeletedTasks(userUuid = user.uuid, mapper = ::TaskSchema)
     }.asFlow { it.toTask() }
         .onStart {
             val job = Job(

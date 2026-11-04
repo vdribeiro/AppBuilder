@@ -26,7 +26,7 @@ class TaskUseCasesTest: TestCase() {
         assertEquals(expected = FakeData.task, actual = taskUseCases.observeTask(uuid = FakeData.task.uuid).firstOrNull())
     }
 
-    /** Verifies that the active filter observes only the tasks that are not deleted, and the deleted filter only the deleted ones. */
+    /** Verifies that the active filter observes only the tasks that are not deleted, and the all filter every task. */
     @Test
     fun filterTasks() = runUnitTest {
         val taskUseCases = dependency.get()
@@ -39,6 +39,6 @@ class TaskUseCasesTest: TestCase() {
         taskUseCases.upsertTask(task = deletedTask)
 
         assertEquals(expected = listOf(element = FakeData.task), actual = taskUseCases.observeTasks(filter = TaskFilter.Active).firstOrNull().orEmpty())
-        assertEquals(expected = listOf(element = deletedTask), actual = taskUseCases.observeTasks(filter = TaskFilter.Deleted).firstOrNull().orEmpty())
+        assertEquals(expected = setOf(FakeData.task, deletedTask), actual = taskUseCases.observeTasks(filter = TaskFilter.All).firstOrNull().orEmpty().toSet())
     }
 }
