@@ -24,18 +24,17 @@ import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.Restore
-import androidx.compose.material.icons.filled.RestoreFromTrash
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.SyncDisabled
 import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -339,8 +338,9 @@ fun TopActionBar(
                     }
                     if (onShowDeletedClick != null) Button(
                         modifier = Modifier.testTag(tag = "action_show_deleted"),
-                        onClick = { onShowDeletedClick(!showDeleted) },
-                        content = { Icon(imageVector = if (showDeleted) Icons.Default.DeleteOutline else Icons.Default.RestoreFromTrash) }
+                        checked = showDeleted,
+                        onClick = { onShowDeletedClick(it) },
+                        content = { Icon(imageVector = Icons.Outlined.Delete) }
                     )
                 } else {
                     Input(
