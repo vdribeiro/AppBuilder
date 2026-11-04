@@ -62,6 +62,7 @@ class TaskDetailScreenStore(
             TaskDetailScreenAction.Save -> save(state = state)
             TaskDetailScreenAction.Cancel -> cancel(state = state)
             TaskDetailScreenAction.Delete -> delete(state = state)
+            TaskDetailScreenAction.Restore -> restore(state = state)
         }
     }
 
@@ -92,9 +93,27 @@ class TaskDetailScreenStore(
         updateState { it.copy(task = task, editing = false) }
     }
 
+    /**
+     * Soft deletes the task by setting its deletion time, then leaves the screen.
+     *
+     * @param state Task Detail Screen state at the time the delete was requested.
+     * @return The [Job] representing this execution.
+     */
     private fun delete(state: TaskDetailScreenState): Job = launch(id = "delete") {
         state.task?.copy(deletedAt = now())?.let { taskUseCases.upsertTask(task = it) }
         router.back()
+    }
+
+    /**
+     * Clears the deletion of the task, so it is active again, and keeps viewing it.
+     *
+     * @param state Task Detail Screen state at the time the restore was requested.
+     * @return The [Job] representing this execution.
+     */
+    private fun restore(state: TaskDetailScreenState): Job = launch(id = "restore") {
+        val task = state.task?.copy(deletedAt = null, modifiedAt = now()) ?: return@launch
+        taskUseCases.upsertTask(task = task)
+        updateState { it.copy(task = task) }
     }
 
     companion object {

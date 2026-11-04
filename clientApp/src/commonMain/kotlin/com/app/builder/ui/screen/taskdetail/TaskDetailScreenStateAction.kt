@@ -32,6 +32,8 @@ sealed interface TaskDetailScreenAction {
     data object Cancel: TaskDetailScreenAction
     /** Delete the current task. */
     data object Delete: TaskDetailScreenAction
+    /** Restore the current deleted task. */
+    data object Restore: TaskDetailScreenAction
 }
 
 /**
