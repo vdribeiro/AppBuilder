@@ -476,6 +476,43 @@ class ActionBarStoreTest: TestCase() {
         assertFalse(actual = store.state.filtersExpanded)
     }
 
+    /** Verifies that the search query and opening the search input persist and that another action bar on the same file follows them. */
+    @Test
+    fun searchFollowsFile() = runUnitTest {
+        val store = ActionBarStore(
+            state = ActionBarState(),
+            router = router,
+            authenticationUseCases = authenticationUseCases(),
+            storageFile = AppFile.TaskPreferences,
+            defaults = defaults,
+        )
+        val otherStore = ActionBarStore(
+            state = ActionBarState(),
+            router = router,
+            authenticationUseCases = authenticationUseCases(),
+            storageFile = AppFile.TaskPreferences,
+            defaults = defaults,
+        )
+        subscribe(store = store)
+        subscribe(store = otherStore)
+        testScheduler.advanceUntilIdle()
+
+        store.send(action = ActionBarAction.ExpandSearch(expanded = true))
+        store.send(action = ActionBarAction.Search(search = "query"))
+        testScheduler.advanceUntilIdle()
+        assertTrue(actual = store.state.searchExpanded)
+        assertEquals(expected = "query", actual = store.state.search)
+        assertEquals(expected = true, actual = AppFile.TaskPreferences.load()?.searchExpanded)
+        assertTrue(actual = otherStore.state.searchExpanded)
+        assertEquals(expected = "query", actual = otherStore.state.search)
+
+        otherStore.send(action = ActionBarAction.ExpandSearch(expanded = false))
+        otherStore.send(action = ActionBarAction.Search(search = ""))
+        testScheduler.advanceUntilIdle()
+        assertFalse(actual = store.state.searchExpanded)
+        assertEquals(expected = "", actual = store.state.search)
+    }
+
     /** Verifies that without a storage file the sorting and property filters still apply to the state. */
     @Test
     fun inMemory() = runUnitTest {

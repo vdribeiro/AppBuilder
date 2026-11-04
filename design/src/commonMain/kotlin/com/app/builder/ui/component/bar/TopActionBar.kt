@@ -6,6 +6,7 @@ import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.drop
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -23,7 +24,7 @@ import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.DeleteSweep
+import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
@@ -80,6 +81,11 @@ import com.app.builder.ui.core.text.Text
  * @param onDeleteClick Shows a delete toggle button when not null and is called with the new deletion value when it is clicked.
  * @param onLoginClick Shows a login button when not null and executes this callback when clicked.
  * @param onSearch Shows a search button when not null and is called with the debounced search query as the user types in search mode.
+ * @param filtersExpanded Whether the filters start expanded.
+ * @param onFiltersExpandClick Called with the new expansion when the filters are expanded or collapsed.
+ * @param search The search query the search input starts with, and follows when it changes from outside.
+ * @param searchExpanded Whether the search input starts open.
+ * @param onSearchExpandClick Called with the new value when the search input is opened or closed.
  * @param searchableProperties Property keys currently included when searching.
  * @param onSearchablePropertiesChange Shows a searchable properties selection button when not null and is called with the updated set of searchable property keys when one is toggled.
  * @param sortAscending Whether the list is currently sorted in ascending order.
@@ -110,6 +116,11 @@ fun TopActionBar(
     onDeleteClick: ((Boolean) -> Unit)? = null,
     onLoginClick: (() -> Unit)? = null,
     onSearch: ((String) -> Unit)? = null,
+    filtersExpanded: Boolean = false,
+    onFiltersExpandClick: ((Boolean) -> Unit)? = null,
+    search: String = "",
+    searchExpanded: Boolean = false,
+    onSearchExpandClick: ((Boolean) -> Unit)? = null,
     searchableProperties: ImmutableList<String> = properties.keys.toPersistentList(),
     onSearchablePropertiesChange: ((String) -> Unit)? = null,
     sortAscending: Boolean = true,
@@ -123,19 +134,30 @@ fun TopActionBar(
 ) {
     val color = LocalColorScheme.current
 
-    var actionsExpanded by remember { mutableStateOf(value = false) }
-    var searchMenuExpanded by remember { mutableStateOf(value = false) }
+    var actionsExpanded by remember(key1 = filtersExpanded) { mutableStateOf(value = filtersExpanded) }
+    var searchMenuExpanded by remember(key1 = searchExpanded) { mutableStateOf(value = searchExpanded) }
     var searchableMenuExpanded by remember { mutableStateOf(value = false) }
-    var searchQuery by remember { mutableStateOf(value = "") }
+    var searchQuery by remember { mutableStateOf(value = search) }
+    var sentSearch by remember { mutableStateOf(value = search) }
     var sortingMenuExpanded by remember { mutableStateOf(value = false) }
     var visibilityMenuExpanded by remember { mutableStateOf(value = false) }
 
+    LaunchedEffect(key1 = search) {
+        if (search != sentSearch) {
+            sentSearch = search
+            searchQuery = search
+        }
+    }
     onSearch?.let {
         LaunchedEffect(key1 = Unit) {
             snapshotFlow { searchQuery }
+                .drop(count = 1)
                 .debounce(timeoutMillis = 300L)
                 .distinctUntilChanged()
-                .collect { onSearch(it) }
+                .collect {
+                    sentSearch = it
+                    onSearch(it)
+                }
         }
     }
 
@@ -259,7 +281,10 @@ fun TopActionBar(
 
             if (onSearch != null || onSortAscendingClick != null || onSelectSortProperty != null || onVisiblePropertiesChange != null || onShowDeletedClick != null) Button(
                 modifier = Modifier.testTag(tag = "action_expand"),
-                onClick = { actionsExpanded = !actionsExpanded },
+                onClick = {
+                    actionsExpanded = !actionsExpanded
+                    onFiltersExpandClick?.invoke(actionsExpanded)
+                },
                 content = { Icon(imageVector = if (actionsExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore) }
             )
 
@@ -277,6 +302,7 @@ fun TopActionBar(
                         onClick = {
                             searchQuery = ""
                             searchMenuExpanded = true
+                            onSearchExpandClick?.invoke(true)
                         },
                         content = { Icon(imageVector = Icons.Default.Search) }
                     )
@@ -314,7 +340,7 @@ fun TopActionBar(
                     if (onShowDeletedClick != null) Button(
                         modifier = Modifier.testTag(tag = "action_show_deleted"),
                         onClick = { onShowDeletedClick(!showDeleted) },
-                        content = { Icon(imageVector = if (showDeleted) Icons.Default.RestoreFromTrash else Icons.Default.DeleteSweep) }
+                        content = { Icon(imageVector = if (showDeleted) Icons.Default.DeleteOutline else Icons.Default.RestoreFromTrash) }
                     )
                 } else {
                     Input(
@@ -344,6 +370,7 @@ fun TopActionBar(
                         onClick = {
                             searchMenuExpanded = false
                             searchQuery = ""
+                            onSearchExpandClick?.invoke(false)
                         },
                         content = { Icon(imageVector = Icons.Default.Close) }
                     )

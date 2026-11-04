@@ -72,6 +72,7 @@ object AppFile {
      * Action bar data mainly used to filter, sort, and shape a list-detail view.
      *
      * @property filtersExpanded Whether the filters are expanded in the action bar.
+     * @property searchExpanded Whether the search input is open in the action bar.
      * @property search Search query text.
      * @property searchableProperties Names of the property values included when searching.
      * @property sortAscending Whether the list is sorted in ascending order.
@@ -82,6 +83,7 @@ object AppFile {
     @Serializable
     data class ActionBarData(
         val filtersExpanded: Boolean = false,
+        val searchExpanded: Boolean = false,
         val search: String = "",
         val searchableProperties: List<String> = emptyList(),
         val sortAscending: Boolean = false,

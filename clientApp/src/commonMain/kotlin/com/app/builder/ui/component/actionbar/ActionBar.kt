@@ -53,6 +53,11 @@ fun ActionBar(store: Store<ActionBarState, ActionBarAction>, deleted: Boolean? =
         onSearch = if (state.showFilters) {
             { store.send(action = ActionBarAction.Search(search = it)) }
         } else null,
+        filtersExpanded = state.filtersExpanded,
+        onFiltersExpandClick = { store.send(action = ActionBarAction.ExpandFilters(expanded = it)) },
+        search = state.search,
+        searchExpanded = state.searchExpanded,
+        onSearchExpandClick = { store.send(action = ActionBarAction.ExpandSearch(expanded = it)) },
         searchableProperties = state.searchableProperties,
         onSearchablePropertiesChange = if (state.showFilters) {
             { store.send(action = ActionBarAction.ToggleSearchableProperty(property = it)) }

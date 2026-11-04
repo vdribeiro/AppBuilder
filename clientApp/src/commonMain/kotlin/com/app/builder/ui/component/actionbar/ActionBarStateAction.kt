@@ -25,6 +25,18 @@ sealed interface ActionBarAction {
     /** Opens the login screen. */
     data object Login: ActionBarAction
     /**
+     * Expands or collapses the filters.
+     *
+     * @param expanded true to expand the filters, false to collapse them.
+     */
+    data class ExpandFilters(val expanded: Boolean): ActionBarAction
+    /**
+     * Opens or closes the search input.
+     *
+     * @param expanded true to open the search input, false to close it.
+     */
+    data class ExpandSearch(val expanded: Boolean): ActionBarAction
+    /**
      * Updates the current search query.
      *
      * @param search New search query text.
@@ -79,6 +91,9 @@ sealed interface ActionBarAction {
  * @property showDelete Whether the delete toggle button should be shown.
  * @property showLogin Whether the login button should be shown.
  * @property showFilters Whether the filters button should be shown.
+ * @property filtersExpanded Whether the filters are currently expanded.
+ * @property search Current search query text.
+ * @property searchExpanded Whether the search input is currently open.
  * @property searchableProperties Property keys currently included when searching.
  * @property sortAscending Whether the list is currently sorted in ascending order.
  * @property sortProperty Key of the property currently used to sort the list.
@@ -101,6 +116,9 @@ data class ActionBarState(
     val showDelete: Boolean = false,
     val showLogin: Boolean = false,
     val showFilters: Boolean = false,
+    val filtersExpanded: Boolean = false,
+    val search: String = "",
+    val searchExpanded: Boolean = false,
     val searchableProperties: ImmutableList<String> = persistentListOf(),
     val sortAscending: Boolean = true,
     val sortProperty: String = "",

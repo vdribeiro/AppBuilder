@@ -8,6 +8,7 @@ import kotlin.uuid.Uuid
 import kotlinx.coroutines.flow.first
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertTextContains
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
@@ -15,6 +16,7 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
 import com.app.builder.Dependency.getUserDependency
 import com.app.builder.core.config.ClientFlags
+import com.app.builder.data.storage.AppFile
 import com.app.builder.domain.EntityType
 import com.app.builder.domain.deeplink.DeepLink
 import com.app.builder.domain.gateway.registry.toRegistrySchema
@@ -223,6 +225,40 @@ class NavigationTest: TestCase() {
         waitForIdle()
         onNodeWithTag(testTag = "action_expand").assertIsDisplayed()
         onNodeWithTag(testTag = "action_search").assertDoesNotExist()
+    }
+
+    /** Verifies that, on a split screen, a search typed on the task detail stays open with its query on the list once the detail is closed. */
+    @Test
+    fun splitTaskSearchStaysOpen() = runUITest {
+        val authenticatedUseCases = dependency.get()
+            .getUserDependency(user = FakeData.adminUser)
+            .useCases
+        authenticatedUseCases.authenticationUseCases.login(credentials = FakeData.adminCredentials)
+        authenticatedUseCases.taskUseCases.upsertTask(task = FakeData.task)
+        router.navigate(screen = Screen.TaskList)
+        router.navigate(screen = Screen.TaskDetail(uuid = FakeData.task.uuid.toString()))
+        val taskPreferences = AppFile.TaskPreferences.cache()
+
+        setUI {
+            CompositionLocalProvider(value = LocalSplitScreen provides true) {
+                AuthenticatedNavigation(useCases = authenticatedUseCases)
+            }
+        }
+        waitForIdle()
+
+        onNodeWithTag(testTag = "action_expand").performClick()
+        onNodeWithTag(testTag = "action_search").performClick()
+        onNodeWithTag(testTag = "action_search_input").performTextInput(text = "query")
+        waitUntil { taskPreferences.value?.search == "query" }
+
+        router.back()
+        waitForIdle()
+        assertEquals(expected = listOf(Screen.TaskList), actual = router.backStack.toList())
+        onNodeWithTag(testTag = "action_search_input").assertTextContains(value = "query")
+
+        onNodeWithTag(testTag = "action_search_close").performClick()
+        onNodeWithTag(testTag = "action_search").assertIsDisplayed()
+        waitUntil { taskPreferences.value?.search == "" }
     }
 
     /** Verifies that, on a split screen, the registry detail's top bar keeps the list filters and that they apply to the list beside it. */

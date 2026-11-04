@@ -2,6 +2,8 @@ package com.app.builder.ui.component.actionbar
 
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.mapNotNull
 import com.app.builder.core.telemetry.Telemetry
 import com.app.builder.data.resource.ImageResource
 import com.app.builder.data.storage.AppFile
@@ -64,6 +66,8 @@ class ActionBarStore(
             ActionBarAction.Delete -> delete()
             ActionBarAction.Restore -> restore()
             ActionBarAction.Login -> router.navigate(screen = Screen.Login)
+            is ActionBarAction.ExpandFilters -> expandFilters(action = action)
+            is ActionBarAction.ExpandSearch -> expandSearch(action = action)
             is ActionBarAction.Search -> search(action = action)
             is ActionBarAction.ToggleSearchableProperty -> toggleSearchableProperty(state = state, action = action)
             is ActionBarAction.SelectSortOrder -> selectSortOrder(action = action)
@@ -74,7 +78,7 @@ class ActionBarStore(
     }
 
     /**
-     * Loads the persisted action bar data, keeps the avatar and write permission in sync with the current user and follows the application status.
+     * Follows the persisted action bar data, so every action bar on the same file stays in step, keeps the avatar and write permission in sync with the current user and follows the application status.
      *
      * @return The [Job] representing this execution.
      */
@@ -86,15 +90,10 @@ class ActionBarStore(
             val persisted = load()
             val data = persisted.withDefaults()
             if (data != persisted) save { data }
+            updateState { it.withData(data = data) }
 
-            updateState {
-                it.copy(
-                    searchableProperties = data.searchableProperties.toPersistentList(),
-                    sortAscending = data.sortAscending,
-                    sortProperty = data.sortProperty,
-                    visibleProperties = data.visibleProperties.toPersistentList(),
-                    showDeleted = data.showDeleted
-                )
+            cache().mapNotNull { it }.distinctUntilChanged().observe(id = "action_bar_data") { data ->
+                updateState { it.withData(data = data) }
             }
         }
 
@@ -139,6 +138,23 @@ class ActionBarStore(
             visibleProperties = visibleProperties.ifEmpty { defaults.visibleProperties }
         )
     }
+
+    /**
+     * Applies the persisted action bar data.
+     *
+     * @param data The persisted action bar data.
+     * @return This state with the search, sorting, property filters and expansions of [data].
+     */
+    private fun ActionBarState.withData(data: AppFile.ActionBarData): ActionBarState = copy(
+        search = data.search,
+        searchExpanded = data.searchExpanded,
+        searchableProperties = data.searchableProperties.toPersistentList(),
+        sortAscending = data.sortAscending,
+        sortProperty = data.sortProperty,
+        visibleProperties = data.visibleProperties.toPersistentList(),
+        showDeleted = data.showDeleted,
+        filtersExpanded = data.filtersExpanded,
+    )
 
     /**
      * Resolves which buttons are shown for the given write permission and mode.
@@ -216,12 +232,35 @@ class ActionBarStore(
     }
 
     /**
-     * Persists the current search query.
+     * Applies and persists whether the filters are expanded.
+     *
+     * @param action Action carrying whether the filters are expanded.
+     * @return The [Job] representing this execution.
+     */
+    private fun expandFilters(action: ActionBarAction.ExpandFilters): Job = launch(id = "expandFilters") {
+        updateState { it.copy(filtersExpanded = action.expanded) }
+        storageFile?.save { (it ?: defaults).copy(filtersExpanded = action.expanded) }
+    }
+
+    /**
+     * Applies and persists whether the search input is open.
+     *
+     * @param action Action carrying whether the search input is open.
+     * @return The [Job] representing this execution.
+     */
+    private fun expandSearch(action: ActionBarAction.ExpandSearch): Job = launch(id = "expandSearch") {
+        updateState { it.copy(searchExpanded = action.expanded) }
+        storageFile?.save { (it ?: defaults).copy(searchExpanded = action.expanded) }
+    }
+
+    /**
+     * Applies and persists the current search query.
      *
      * @param action Action carrying the new search query text.
      * @return The [Job] representing this execution.
      */
     private fun search(action: ActionBarAction.Search): Job = launch(id = "search") {
+        updateState { it.copy(search = action.search) }
         storageFile?.save { (it ?: defaults).copy(search = action.search) }
     }
 
