@@ -231,7 +231,6 @@ fun ApplicationCall.toRegistry(
         requestType = request.httpMethod.value,
         requestUtc = headerMap[Header.RequestUtc.header]?.toInstant() ?: error("Request time is missing"),
         requestSentUtc = headerMap[Header.RequestSentUtc.header]?.toInstant() ?: error("Request sent time is missing"),
-        deletedAt = null,
         userUuid = userUuid ?: getJwtPayload()?.subject?.toUuid() ?: error("User uuid is missing"),
         appVersion = headerMap[Header.AppVersion.header] ?: error("App version is missing"),
         os = headerMap[Header.Os.header]?.let { OS.fromString(value = it) } ?: error("Os is missing"),

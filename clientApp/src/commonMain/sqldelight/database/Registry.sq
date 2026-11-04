@@ -7,7 +7,6 @@ CREATE TABLE IF NOT EXISTS Registry (
     requestType TEXT NOT NULL,
     requestUtc TEXT AS Instant NOT NULL,
     requestSentUtc TEXT AS Instant NOT NULL,
-    deletedAt TEXT AS Instant,
     userUuid TEXT AS Uuid NOT NULL,
     appVersion TEXT NOT NULL,
     os TEXT NOT NULL,
@@ -22,11 +21,6 @@ CREATE TABLE IF NOT EXISTS Registry (
 
 truncateRegistry:
 DELETE FROM Registry;
-
-deleteRegistry:
-UPDATE Registry
-SET deletedAt = :utc
-WHERE requestUuid = :requestUuid;
 
 upsertRegistry:
 INSERT OR REPLACE INTO Registry VALUES ?;

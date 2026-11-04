@@ -47,7 +47,6 @@ fun RegistryList(
                 requestType = item.requestType,
                 requestUtc = item.requestUtc,
                 requestSentUtc = item.requestSentUtc,
-                deletedAt = item.deletedAt,
                 userUuid = item.userUuid,
                 appVersion = item.appVersion,
                 os = item.os,
@@ -71,7 +70,6 @@ fun RegistryList(
  * @property requestType The HTTP method of the request.
  * @property requestUtc When the request was made on the client.
  * @property requestSentUtc When the request was sent by the client.
- * @property deletedAt The deletion timestamp of the registry.
  * @property userUuid The UUID of the user that made the request.
  * @property appVersion The client application version.
  * @property os The operating system of the client device.
@@ -90,7 +88,6 @@ data class RegistryItem(
     val requestType: String? = null,
     val requestUtc: String? = null,
     val requestSentUtc: String? = null,
-    val deletedAt: String? = null,
     val userUuid: String? = null,
     val appVersion: String? = null,
     val os: String? = null,

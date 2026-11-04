@@ -22,7 +22,6 @@ import com.app.builder.ui.core.card.Card
  * @param requestType The HTTP method of the request.
  * @param requestUtc When the request was made on the client.
  * @param requestSentUtc When the request was sent by the client.
- * @param deletedAt The deletion timestamp of the registry.
  * @param userUuid The UUID of the user that made the request.
  * @param appVersion The client application version.
  * @param os The operating system of the client device.
@@ -41,7 +40,6 @@ fun RegistryCard(
     requestType: String? = null,
     requestUtc: String? = null,
     requestSentUtc: String? = null,
-    deletedAt: String? = null,
     userUuid: String? = null,
     appVersion: String? = null,
     os: String? = null,
@@ -57,7 +55,6 @@ fun RegistryCard(
         "registry_request_type" to requestType,
         "registry_request_utc" to requestUtc,
         "registry_request_sent_utc" to requestSentUtc,
-        "registry_deleted_at" to deletedAt,
         "registry_user_uuid" to userUuid,
         "registry_app_version" to appVersion,
         "registry_os" to os,

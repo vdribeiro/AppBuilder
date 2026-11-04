@@ -40,7 +40,6 @@ class DatabaseFactory(driver: SqlDriver) {
             requestUuidAdapter = UuidColumnAdapter,
             requestUtcAdapter = InstantColumnAdapter,
             requestSentUtcAdapter = InstantColumnAdapter,
-            deletedAtAdapter = InstantColumnAdapter,
             userUuidAdapter = UuidColumnAdapter,
             deviceUuidAdapter = UuidColumnAdapter,
             entityUuidAdapter = UuidColumnAdapter,

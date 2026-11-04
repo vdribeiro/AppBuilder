@@ -13,8 +13,6 @@ object RegistryTable: Table(name = "registry") {
     val requestUtc = timestamp(name = "request_utc")
     /** The UTC timestamp of when the request was sent by the client. */
     val requestSentUtc = timestamp(name = "request_sent_utc")
-    /** The timestamp indicating when this registry was last deleted. */
-    val deletedAt = timestamp(name = "deleted_at").nullable()
     /** The unique identifier of the authenticated user who made the request. */
     val userUuid = uuid(name = "user_uuid")
     /** The client application version. */

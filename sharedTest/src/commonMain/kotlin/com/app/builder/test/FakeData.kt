@@ -151,7 +151,6 @@ object FakeData {
         requestType = "POST",
         requestUtc = now(),
         requestSentUtc = now(),
-        deletedAt = null,
         userUuid = adminUser.uuid,
         appVersion = "1.0.0",
         os = OS.Android,

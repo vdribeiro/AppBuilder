@@ -92,7 +92,6 @@ class RegistryGateway(
         requestType = this[RegistryTable.requestType],
         requestUtc = this[RegistryTable.requestUtc],
         requestSentUtc = this[RegistryTable.requestSentUtc],
-        deletedAt = this[RegistryTable.deletedAt],
         userUuid = this[RegistryTable.userUuid],
         appVersion = this[RegistryTable.appVersion],
         os = OS.fromString(value = this[RegistryTable.os]),

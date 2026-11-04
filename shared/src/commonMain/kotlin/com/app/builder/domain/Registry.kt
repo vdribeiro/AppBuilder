@@ -12,7 +12,6 @@ import com.app.builder.core.platform.OS
  * @property requestType The HTTP method used for the request.
  * @property requestUtc The UTC timestamp of when the request was made on the client.
  * @property requestSentUtc The UTC timestamp of when the request was sent by the client.
- * @property deletedAt The timestamp indicating when this registry was last deleted.
  * @property userUuid The unique identifier of the authenticated user.
  * @property appVersion The client application version.
  * @property os The operating system family of the client device.
@@ -30,7 +29,6 @@ data class Registry(
     val requestType: String,
     val requestUtc: Instant,
     val requestSentUtc: Instant,
-    val deletedAt: Instant?,
     val userUuid: Uuid,
     val appVersion: String,
     val os: OS,
@@ -52,7 +50,6 @@ data class Registry(
         REQUEST_TYPE(translationKey = "registry_request_type"),
         REQUEST_UTC(translationKey = "registry_request_utc"),
         REQUEST_SENT_UTC(translationKey = "registry_request_sent_utc"),
-        DELETED_AT(translationKey = "registry_deleted_at"),
         USER_UUID(translationKey = "registry_user_uuid"),
         APP_VERSION(translationKey = "registry_app_version"),
         OS(translationKey = "registry_os"),
