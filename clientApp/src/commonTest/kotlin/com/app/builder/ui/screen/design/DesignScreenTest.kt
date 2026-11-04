@@ -13,6 +13,9 @@ import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.hasAnyAncestor
+import androidx.compose.ui.test.hasTestTag
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -63,13 +66,14 @@ class DesignScreenTest: TestCase() {
     /** Verifies that every [DesignSection] is rendered in the design navigation bar. */
     @Test
     fun designNavigationItems() = runUITest {
-        setShowcase { DesignScreen(section = DesignSection.COMPONENTS, store = RecordingStore()) }
+        val store = RecordingStore()
+        setShowcase { DesignScreen(section = DesignSection.COMPONENTS, store = store) }
         waitForIdle()
 
         onNodeWithTag(testTag = "design_navigation_bar").assertIsDisplayed()
         onNodeWithText(text = "App").assertIsDisplayed()
         DesignSection.entries.forEach { section ->
-            onNodeWithText(text = section.text).assertIsDisplayed()
+            onNode(matcher = hasText(text = section.text) and hasAnyAncestor(matcher = hasTestTag(testTag = "design_navigation_bar"))).assertIsDisplayed()
         }
     }
 
@@ -77,7 +81,8 @@ class DesignScreenTest: TestCase() {
     @Test
     fun designNavigationSectionClick() = runUITest {
         var clicked: DesignSection? = null
-        setShowcase { DesignScreen(section = DesignSection.COMPONENTS, onSectionClick = { clicked = it }, store = RecordingStore()) }
+        val store = RecordingStore()
+        setShowcase { DesignScreen(section = DesignSection.COMPONENTS, onSectionClick = { clicked = it }, store = store) }
         waitForIdle()
 
         onNodeWithText(text = DesignSection.COLORS.text).performClick()
@@ -90,7 +95,8 @@ class DesignScreenTest: TestCase() {
     @Test
     fun designNavigationAppClick() = runUITest {
         var clicked = false
-        setShowcase { DesignScreen(section = DesignSection.COMPONENTS, onAppClick = { clicked = true }, store = RecordingStore()) }
+        val store = RecordingStore()
+        setShowcase { DesignScreen(section = DesignSection.COMPONENTS, onAppClick = { clicked = true }, store = store) }
         waitForIdle()
 
         onNodeWithText(text = "App").performClick()
@@ -102,7 +108,8 @@ class DesignScreenTest: TestCase() {
     /** Verifies that the colors section displays the color scheme's swatches. */
     @Test
     fun designColorsSection() = runUITest {
-        setShowcase { DesignScreen(section = DesignSection.COLORS, store = RecordingStore()) }
+        val store = RecordingStore()
+        setShowcase { DesignScreen(section = DesignSection.COLORS, store = store) }
         waitForIdle()
 
         onNodeWithText(text = "Primary").assertIsDisplayed()
@@ -120,7 +127,7 @@ class DesignScreenTest: TestCase() {
 
         val expected = CustomTheme(mode = ThemeMode.DARK)
         assertEquals(expected = expected, actual = store.savedTheme)
-        assertEquals(expected = expected, actual = ThemeCache.cacheState.value)
+        assertEquals(expected = expected, actual = ThemeCache.value)
     }
 
     /** Verifies that applying a color in dark mode replaces the dark color scheme's color. */
@@ -160,14 +167,15 @@ class DesignScreenTest: TestCase() {
 
         val expected = CustomTheme(mode = ThemeMode.LIGHT, light = mapOf(ColorRole.PRIMARY.name to "#123456"))
         assertEquals(expected = expected, actual = store.savedTheme)
-        assertEquals(expected = expected, actual = ThemeCache.cacheState.value)
+        assertEquals(expected = expected, actual = ThemeCache.value)
         onNodeWithText(text = "#123456").assertIsDisplayed()
     }
 
     /** Verifies that a malformed hexadecimal color cannot be applied. */
     @Test
     fun designColorsInvalidHex() = runUITest {
-        setShowcase { DesignScreen(section = DesignSection.COLORS, store = RecordingStore()) }
+        val store = RecordingStore()
+        setShowcase { DesignScreen(section = DesignSection.COLORS, store = store) }
         waitForIdle()
 
         onNodeWithTag(testTag = "color_swatch_${ColorRole.PRIMARY.name}").performClick()
@@ -193,13 +201,14 @@ class DesignScreenTest: TestCase() {
         mainClock.advanceTimeByFrame()
 
         assertEquals(expected = CustomTheme(mode = ThemeMode.LIGHT), actual = store.savedTheme)
-        assertNull(actual = ThemeCache.cacheState.value.light[ColorRole.PRIMARY.name])
+        assertNull(actual = ThemeCache.value.light[ColorRole.PRIMARY.name])
     }
 
     /** Verifies that the shapes section displays the corner shape scale. */
     @Test
     fun designShapesSection() = runUITest {
-        setShowcase { DesignScreen(section = DesignSection.SHAPES, store = RecordingStore()) }
+        val store = RecordingStore()
+        setShowcase { DesignScreen(section = DesignSection.SHAPES, store = store) }
         waitForIdle()
 
         onNodeWithText(text = "Extra small (4dp)").assertIsDisplayed()
@@ -224,7 +233,7 @@ class DesignScreenTest: TestCase() {
 
         val expected = CustomTheme(shapes = mapOf(ShapeRole.MEDIUM.name to 20f))
         assertEquals(expected = expected, actual = store.savedTheme)
-        assertEquals(expected = expected, actual = ThemeCache.cacheState.value)
+        assertEquals(expected = expected, actual = ThemeCache.value)
         onNodeWithText(text = "Medium (20dp)").assertIsDisplayed()
     }
 
@@ -248,7 +257,8 @@ class DesignScreenTest: TestCase() {
     /** Verifies that the typography section displays the text style scale. */
     @Test
     fun designTypographySection() = runUITest {
-        setShowcase { DesignScreen(section = DesignSection.TYPOGRAPHY, store = RecordingStore()) }
+        val store = RecordingStore()
+        setShowcase { DesignScreen(section = DesignSection.TYPOGRAPHY, store = store) }
         waitForIdle()
 
         onNodeWithText(text = "Display large").assertIsDisplayed()
