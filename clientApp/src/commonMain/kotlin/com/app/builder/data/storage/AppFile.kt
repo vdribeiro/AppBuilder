@@ -76,6 +76,7 @@ object AppFile {
      * @property sortAscending Whether the list is sorted in ascending order.
      * @property sortProperty Name of the property used to sort the list.
      * @property visibleProperties Names of the property values shown as visible columns.
+     * @property showDeleted Whether deleted items are shown in the list.
      */
     @Serializable
     data class ActionBarData(
@@ -84,6 +85,7 @@ object AppFile {
         val sortAscending: Boolean = false,
         val sortProperty: String = "",
         val visibleProperties: List<String> = emptyList(),
+        val showDeleted: Boolean = false,
     )
 
     /** Registry preferences. */

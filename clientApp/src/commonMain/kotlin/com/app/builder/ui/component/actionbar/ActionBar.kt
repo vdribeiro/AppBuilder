@@ -67,6 +67,10 @@ fun ActionBar(store: Store<ActionBarState, ActionBarAction>) {
         onVisiblePropertiesChange = if (state.showFilters) {
             { store.send(action = ActionBarAction.ToggleVisibleProperty(property = it)) }
         } else null,
+        showDeleted = state.showDeleted,
+        onShowDeletedClick = if (state.showFilters) {
+            { store.send(action = ActionBarAction.ShowDeleted(showDeleted = it)) }
+        } else null,
     )
 }
 

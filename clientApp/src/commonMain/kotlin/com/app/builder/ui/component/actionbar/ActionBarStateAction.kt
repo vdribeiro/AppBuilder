@@ -52,6 +52,12 @@ sealed interface ActionBarAction {
      * @param property Key of the property to toggle visibility.
      */
     data class ToggleVisibleProperty(val property: String): ActionBarAction
+    /**
+     * Shows or hides the deleted items.
+     *
+     * @param showDeleted true to show deleted items, false to hide them.
+     */
+    data class ShowDeleted(val showDeleted: Boolean): ActionBarAction
 }
 
 /**
@@ -75,6 +81,7 @@ sealed interface ActionBarAction {
  * @property sortAscending Whether the list is currently sorted in ascending order.
  * @property sortProperty Key of the property currently used to sort the list.
  * @property visibleProperties Property keys currently shown as visible columns.
+ * @property showDeleted Whether deleted items are currently shown.
  */
 data class ActionBarState(
     val properties: ImmutableMap<String, String> = persistentMapOf(),
@@ -95,4 +102,5 @@ data class ActionBarState(
     val sortAscending: Boolean = true,
     val sortProperty: String = "",
     val visibleProperties: ImmutableList<String> = persistentListOf(),
+    val showDeleted: Boolean = false,
 )

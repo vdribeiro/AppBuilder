@@ -23,10 +23,12 @@ import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.DeleteSweep
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.FilterList
+import androidx.compose.material.icons.filled.RestoreFromTrash
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Search
@@ -84,6 +86,8 @@ import com.app.builder.ui.core.text.Text
  * @param onSelectSortProperty Shows a sort properties selection button when not null and is called with the selected property key when a sort-property menu item is clicked.
  * @param visibleProperties Property keys currently shown as visible columns.
  * @param onVisiblePropertiesChange Shows a visible properties selection button when not null and is called with the updated set of visible property keys when one is toggled.
+ * @param showDeleted Whether deleted items are currently shown.
+ * @param onShowDeletedClick Shows a deleted items toggle button when not null and is called with the new value when it is clicked.
  */
 @Composable
 fun TopActionBar(
@@ -111,6 +115,8 @@ fun TopActionBar(
     onSelectSortProperty: ((String) -> Unit)? = null,
     visibleProperties: ImmutableList<String> = properties.keys.toPersistentList(),
     onVisiblePropertiesChange: ((String) -> Unit)? = null,
+    showDeleted: Boolean = false,
+    onShowDeletedClick: ((Boolean) -> Unit)? = null,
 ) {
     val color = LocalColorScheme.current
 
@@ -248,7 +254,7 @@ fun TopActionBar(
                 content = { Icon(imageVector = Icons.Default.Delete) }
             )
 
-            if (onSearch != null || onSortAscendingClick != null || onSelectSortProperty != null || onVisiblePropertiesChange != null) Button(
+            if (onSearch != null || onSortAscendingClick != null || onSelectSortProperty != null || onVisiblePropertiesChange != null || onShowDeletedClick != null) Button(
                 modifier = Modifier.testTag(tag = "action_expand"),
                 onClick = { actionsExpanded = !actionsExpanded },
                 content = { Icon(imageVector = if (actionsExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore) }
@@ -302,6 +308,11 @@ fun TopActionBar(
                             items = visibilityProperties
                         )
                     }
+                    if (onShowDeletedClick != null) Button(
+                        modifier = Modifier.testTag(tag = "action_show_deleted"),
+                        onClick = { onShowDeletedClick(!showDeleted) },
+                        content = { Icon(imageVector = if (showDeleted) Icons.Default.RestoreFromTrash else Icons.Default.DeleteSweep) }
+                    )
                 } else {
                     Input(
                         modifier = Modifier
@@ -376,7 +387,8 @@ private fun TopActionBarWritePreview() = Preview {
         onSortAscendingClick = {},
         sortProperty = "name",
         onSelectSortProperty = {},
-        onVisiblePropertiesChange = {}
+        onVisiblePropertiesChange = {},
+        onShowDeletedClick = {}
     )
 }
 
@@ -398,6 +410,7 @@ private fun TopActionBarEditPreview() = Preview {
         onSortAscendingClick = {},
         sortProperty = "name",
         onSelectSortProperty = {},
-        onVisiblePropertiesChange = {}
+        onVisiblePropertiesChange = {},
+        onShowDeletedClick = {}
     )
 }

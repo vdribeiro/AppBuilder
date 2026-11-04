@@ -67,6 +67,7 @@ class ActionBarStore(
             is ActionBarAction.SelectSortOrder -> selectSortOrder(action = action)
             is ActionBarAction.SelectSortProperty -> selectSortProperty(action = action)
             is ActionBarAction.ToggleVisibleProperty -> toggleVisibleProperty(state = state, action = action)
+            is ActionBarAction.ShowDeleted -> showDeleted(action = action)
         }
     }
 
@@ -89,7 +90,8 @@ class ActionBarStore(
                     searchableProperties = data.searchableProperties.toPersistentList(),
                     sortAscending = data.sortAscending,
                     sortProperty = data.sortProperty,
-                    visibleProperties = data.visibleProperties.toPersistentList()
+                    visibleProperties = data.visibleProperties.toPersistentList(),
+                    showDeleted = data.showDeleted
                 )
             }
         }
@@ -258,6 +260,17 @@ class ActionBarStore(
         val visibilityProperties = state.visibleProperties.plusOrMinus(element = action.property).toPersistentList()
         updateState { it.copy(visibleProperties = visibilityProperties) }
         storageFile?.save { (it ?: defaults).copy(visibleProperties = visibilityProperties) }
+    }
+
+    /**
+     * Applies and persists whether deleted items are shown.
+     *
+     * @param action Action carrying whether deleted items are shown.
+     * @return The [Job] representing this execution.
+     */
+    private fun showDeleted(action: ActionBarAction.ShowDeleted): Job = launch(id = "showDeleted") {
+        updateState { it.copy(showDeleted = action.showDeleted) }
+        storageFile?.save { (it ?: defaults).copy(showDeleted = action.showDeleted) }
     }
 
     companion object {
