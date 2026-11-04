@@ -102,6 +102,7 @@ class RegistryListScreenStore(
      * @return The property's text, or `null` if it's unset or doesn't match a known [Property].
      */
     private fun Registry.text(property: String): String? = when (property) {
+        Property.REQUEST_UUID.name -> requestUuid.toString()
         Property.REQUEST_TYPE.name -> requestType
         Property.REQUEST_UTC.name -> requestUtc.toString()
         Property.REQUEST_SENT_UTC.name -> requestSentUtc.toString()
@@ -160,6 +161,7 @@ class RegistryListScreenStore(
         return RegistryItem(
             uuid = requestUuid.toString(),
             selected = requestUuid.toString() == selectedUuid,
+            uuidVisible = Property.REQUEST_UUID.name in visibilityProperties,
             requestType = visible(property = Property.REQUEST_TYPE),
             requestUtc = visible(property = Property.REQUEST_UTC),
             requestSentUtc = visible(property = Property.REQUEST_SENT_UTC),

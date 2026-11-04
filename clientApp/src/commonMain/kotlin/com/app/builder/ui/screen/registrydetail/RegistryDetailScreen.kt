@@ -46,6 +46,7 @@ fun RegistryDetailScreen(
         bottomBar = { Navigation(store = navigationStore) },
     ) {
         RegistryCard(
+            requestUuid = registry?.requestUuid?.toString(),
             requestType = registry?.requestType,
             requestUtc = registry?.requestUtc?.toString(),
             requestSentUtc = registry?.requestSentUtc?.toString(),

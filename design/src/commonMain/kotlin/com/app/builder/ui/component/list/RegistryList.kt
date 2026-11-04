@@ -44,6 +44,7 @@ fun RegistryList(
                     .testTag(tag = "registry_card_$index")
                     .clickable { onClick(item) },
                 selected = item.selected,
+                requestUuid = item.uuid.takeIf { item.uuidVisible },
                 requestType = item.requestType,
                 requestUtc = item.requestUtc,
                 requestSentUtc = item.requestSentUtc,
@@ -67,6 +68,7 @@ fun RegistryList(
  *
  * @property uuid The request UUID of the registry. Defaults to a random UUID.
  * @property selected The visual emphasis state of the card.
+ * @property uuidVisible Whether the request UUID is shown on the card.
  * @property requestType The HTTP method of the request.
  * @property requestUtc When the request was made on the client.
  * @property requestSentUtc When the request was sent by the client.
@@ -85,6 +87,7 @@ fun RegistryList(
 data class RegistryItem(
     val uuid: String = uuid().toString(),
     val selected: Boolean = false,
+    val uuidVisible: Boolean = false,
     val requestType: String? = null,
     val requestUtc: String? = null,
     val requestSentUtc: String? = null,

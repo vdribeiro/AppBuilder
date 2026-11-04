@@ -19,6 +19,7 @@ import com.app.builder.ui.core.card.Card
  *
  * @param modifier The [Modifier] to be applied to the root layout.
  * @param selected The visual emphasis state of the card.
+ * @param requestUuid The UUID of the request.
  * @param requestType The HTTP method of the request.
  * @param requestUtc When the request was made on the client.
  * @param requestSentUtc When the request was sent by the client.
@@ -37,6 +38,7 @@ import com.app.builder.ui.core.card.Card
 fun RegistryCard(
     modifier: Modifier = Modifier,
     selected: Boolean = false,
+    requestUuid: String? = null,
     requestType: String? = null,
     requestUtc: String? = null,
     requestSentUtc: String? = null,
@@ -52,6 +54,7 @@ fun RegistryCard(
     payload: String? = null,
 ) {
     val fields = listOf(
+        "registry_request_uuid" to requestUuid,
         "registry_request_type" to requestType,
         "registry_request_utc" to requestUtc,
         "registry_request_sent_utc" to requestSentUtc,
