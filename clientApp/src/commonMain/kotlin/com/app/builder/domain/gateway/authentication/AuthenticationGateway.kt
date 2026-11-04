@@ -82,8 +82,8 @@ class AuthenticationGateway(
             }
 
     override suspend fun register(registrationForm: RegistrationForm): User? = withContext(context = Dispatcher.IO) {
-        if (!user.hasPermission(entityType = EntityType.SESSION, permission = Permission.WRITE)) {
-            val throwable = Throwable(message = "User does not have ${Permission.WRITE} permission for ${EntityType.SESSION}")
+        if (!user.hasPermission(entityType = EntityType.USER, permission = Permission.WRITE)) {
+            val throwable = Throwable(message = "User does not have ${Permission.WRITE} permission for ${EntityType.USER}")
             Telemetry.error(tag = TAG, message = "Invalid permissions", throwable = throwable)
             return@withContext null
         }
