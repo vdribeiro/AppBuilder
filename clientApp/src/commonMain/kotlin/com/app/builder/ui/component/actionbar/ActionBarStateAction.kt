@@ -77,11 +77,11 @@ sealed interface ActionBarAction {
  * @property showDelete Whether the delete button should be shown.
  * @property showLogin Whether the login button should be shown.
  * @property showFilters Whether the filters button should be shown.
- * @property showDeletedToggle Whether the deleted items toggle should be shown among the filters.
  * @property searchableProperties Property keys currently included when searching.
  * @property sortAscending Whether the list is currently sorted in ascending order.
  * @property sortProperty Key of the property currently used to sort the list.
  * @property visibleProperties Property keys currently shown as visible columns.
+ * @property showDeletedToggle Whether the deleted items toggle should be shown among the filters.
  * @property showDeleted Whether deleted items are currently shown.
  */
 data class ActionBarState(
@@ -99,10 +99,10 @@ data class ActionBarState(
     val showDelete: Boolean = false,
     val showLogin: Boolean = false,
     val showFilters: Boolean = false,
-    val showDeletedToggle: Boolean = false,
     val searchableProperties: ImmutableList<String> = persistentListOf(),
     val sortAscending: Boolean = true,
     val sortProperty: String = "",
     val visibleProperties: ImmutableList<String> = persistentListOf(),
+    val showDeletedToggle: Boolean = false,
     val showDeleted: Boolean = false,
 )

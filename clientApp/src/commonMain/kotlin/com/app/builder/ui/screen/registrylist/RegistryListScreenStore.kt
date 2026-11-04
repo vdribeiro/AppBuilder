@@ -43,7 +43,7 @@ class RegistryListScreenStore(
     }
 
     /**
-     * Observes the registries that are not deleted and keeps the displayed list in sync, selecting the registry whose detail screen is in the backstack.
+     * Observes the registries and keeps the displayed list in sync.
      *
      * @return The [Job] representing this execution.
      */
@@ -65,7 +65,6 @@ class RegistryListScreenStore(
         }.mapLatest { (registries, actionBarData) ->
             val comparator = registryComparator(sortProperty = actionBarData.sortProperty, sortAscending = actionBarData.sortAscending)
             registries
-                .filter { it.deletedAt == null }
                 .filter { it.matchesSearch(search = actionBarData.search, searchableProperties = actionBarData.searchableProperties) }
                 .let { if (comparator == null) it else it.sortedWith(comparator = comparator) } to actionBarData
         }
@@ -106,7 +105,6 @@ class RegistryListScreenStore(
         Property.REQUEST_TYPE.name -> requestType
         Property.REQUEST_UTC.name -> requestUtc.toString()
         Property.REQUEST_SENT_UTC.name -> requestSentUtc.toString()
-        Property.DELETED_AT.name -> deletedAt?.toString()
         Property.USER_UUID.name -> userUuid.toString()
         Property.APP_VERSION.name -> appVersion
         Property.OS.name -> os.toString()
@@ -144,7 +142,6 @@ class RegistryListScreenStore(
         val comparator = when (sortProperty) {
             Property.REQUEST_UTC.name -> compareBy<Registry> { it.requestUtc }
             Property.REQUEST_SENT_UTC.name -> compareBy { it.requestSentUtc }
-            Property.DELETED_AT.name -> compareBy { it.deletedAt }
             in Property.entries.map { it.name } -> compareBy { it.text(property = sortProperty) }
             else -> return null
         }
@@ -166,7 +163,6 @@ class RegistryListScreenStore(
             requestType = visible(property = Property.REQUEST_TYPE),
             requestUtc = visible(property = Property.REQUEST_UTC),
             requestSentUtc = visible(property = Property.REQUEST_SENT_UTC),
-            deletedAt = visible(property = Property.DELETED_AT),
             userUuid = visible(property = Property.USER_UUID),
             appVersion = visible(property = Property.APP_VERSION),
             os = visible(property = Property.OS),
