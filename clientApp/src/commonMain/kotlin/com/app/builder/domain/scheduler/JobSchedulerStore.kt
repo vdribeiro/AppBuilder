@@ -1,7 +1,9 @@
 package com.app.builder.domain.scheduler
 
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOn
 import app.cash.sqldelight.async.coroutines.awaitAsOneOrNull
+import com.app.builder.core.flow.Dispatcher
 import com.app.builder.data.database.asFlow
 import database.AppDatabase
 
@@ -16,10 +18,14 @@ class JobSchedulerStore(database: AppDatabase): JobStore {
     private val jobDao = database.jobQueries
 
     override fun observePendingJobs(): Flow<List<Job>> =
-        jobDao.getJobsByState(states = listOf(Job.State.PENDING)).asFlow { it.toJob() }
+        jobDao.getJobsByState(states = listOf(Job.State.PENDING))
+            .asFlow { it.toJob() }
+            .flowOn(context = Dispatcher.IO)
 
     override fun observeActiveJobs(): Flow<List<Job>> =
-        jobDao.getJobsByState(states = listOf(Job.State.PENDING, Job.State.RUNNING)).asFlow { it.toJob() }
+        jobDao.getJobsByState(states = listOf(Job.State.PENDING, Job.State.RUNNING))
+            .asFlow { it.toJob() }
+            .flowOn(context = Dispatcher.IO)
 
     override suspend fun upsertJob(job: Job): Boolean =
         jobDao.upsertJob(Job = job.toJobSchema()) > 0

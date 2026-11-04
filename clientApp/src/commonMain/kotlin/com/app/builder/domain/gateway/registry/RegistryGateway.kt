@@ -77,6 +77,7 @@ class RegistryGateway(
     } else registryDao.getRegistry(requestUuid = uuid)
         .asFlow { it.toRegistry() }
         .map { it.firstOrNull() }
+        .flowOn(context = Dispatcher.IO)
         .catch {
             Telemetry.error(tag = TAG, message = "Unable to observe registry", throwable = it)
             emit(value = null)

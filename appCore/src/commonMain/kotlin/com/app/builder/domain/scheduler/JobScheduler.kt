@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
@@ -149,6 +150,7 @@ class JobScheduler(
 
     override fun observeActiveJobs(): Flow<List<Job>> =
         jobStore.observeActiveJobs()
+            .flowOn(context = Dispatcher.IO)
             .catch {
                 Telemetry.error(tag = TAG, message = "Unable to observe active jobs", throwable = it)
                 emit(value = emptyList())
@@ -325,6 +327,7 @@ class JobScheduler(
      */
     private fun observePendingJobs(): Flow<List<Job>> =
         jobStore.observePendingJobs()
+            .flowOn(context = Dispatcher.IO)
             .catch {
                 Telemetry.error(tag = TAG, message = "Unable to observe pending jobs", throwable = it)
                 emit(value = emptyList())

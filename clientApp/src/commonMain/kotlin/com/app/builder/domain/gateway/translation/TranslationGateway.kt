@@ -3,6 +3,7 @@ package com.app.builder.domain.gateway.translation
 import kotlin.uuid.Uuid
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.withContext
 import io.ktor.client.HttpClient
 import app.cash.sqldelight.async.coroutines.awaitAsList
@@ -44,6 +45,7 @@ class TranslationGateway(
     override fun observeTranslations(languageIso: String): Flow<List<Translation>> =
         translationDao.getTranslations(languageIso = languageIso)
             .asFlow { it.toTranslation() }
+            .flowOn(context = Dispatcher.IO)
             .catch {
                 Telemetry.error(tag = TAG, message = "Unable to observe translations", throwable = it)
                 emit(value = emptyList())

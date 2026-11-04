@@ -86,6 +86,7 @@ class UserGateway(
     } else userDao.getUser(userUuid = uuid)
         .asFlow { it.toUser() }
         .map { it.firstOrNull() }
+        .flowOn(context = Dispatcher.IO)
         .catch {
             Telemetry.error(tag = TAG, message = "Unable to observe user", throwable = it)
             emit(value = null)

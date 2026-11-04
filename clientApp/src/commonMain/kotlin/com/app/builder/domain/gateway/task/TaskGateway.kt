@@ -90,6 +90,7 @@ class TaskGateway(
     } else taskDao.getTask(userUuid = user.uuid, taskUuid = uuid)
         .asFlow { it.toTask() }
         .map { it.firstOrNull() }
+        .flowOn(context = Dispatcher.IO)
         .catch {
             Telemetry.error(tag = TAG, message = "Unable to observe task", throwable = it)
             emit(value = null)
