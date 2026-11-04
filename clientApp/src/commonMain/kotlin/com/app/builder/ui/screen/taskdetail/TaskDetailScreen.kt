@@ -40,7 +40,7 @@ fun TaskDetailScreen(
 
     Screen(
         onBackClick = { router.back() },
-        topBar = { ActionBar(store = actionBarStore, deleted = task?.deletedAt != null) },
+        topBar = { ActionBar(store = actionBarStore, deleted = task?.let { it.deletedAt != null }) },
         bottomBar = { Navigation(store = navigationStore) },
     ) {
         TaskCard(

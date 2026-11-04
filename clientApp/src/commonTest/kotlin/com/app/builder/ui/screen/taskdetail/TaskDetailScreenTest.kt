@@ -270,6 +270,19 @@ class TaskDetailScreenTest: TestCase() {
         onNodeWithTag(testTag = "action_delete").assertIsDisplayed()
     }
 
+    /** Verifies that the edit and delete buttons stay hidden while the task is not loaded, here because it does not exist. */
+    @Test
+    fun missingTask() = runUITest {
+        val useCases = storedTaskUseCases()
+        val (store, actionBarStore) = setTaskDetailScreen(useCases = useCases, taskUuid = uuid())
+
+        waitUntil { actionBarStore.state.writable }
+        waitForIdle()
+        assertNull(actual = store.state.task)
+        onNodeWithTag(testTag = "action_edit").assertDoesNotExist()
+        onNodeWithTag(testTag = "action_delete").assertDoesNotExist()
+    }
+
     /** Verifies that a new task opens in edit mode, with only the save and cancel buttons, and is not stored yet. */
     @Test
     fun newTask() = runUITest {
