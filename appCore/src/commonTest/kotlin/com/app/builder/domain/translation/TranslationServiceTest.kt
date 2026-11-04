@@ -47,10 +47,10 @@ class TranslationServiceTest: TestCase() {
         store.setTranslations(translations = listOf(Translation(languageIso = DEFAULT_LANGUAGE, key = "hello", value = "Hello")))
         val translationService: TranslationService = TranslationManager(translationStore = store)
 
-        assertTrue(actual = TranslationCache.isEmpty())
+        assertTrue(actual = TranslationCache.value.isEmpty())
         translationService.start()
         translationService.stop()
-        assertTrue(actual = !TranslationCache.isEmpty())
+        assertTrue(actual = TranslationCache.value.isNotEmpty())
     }
 
     /** Verifies that when the store has no translations for the current locale, the cache falls back to the [DEFAULT_LANGUAGE] data. */

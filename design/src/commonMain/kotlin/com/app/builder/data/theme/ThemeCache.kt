@@ -1,26 +1,9 @@
 package com.app.builder.data.theme
 
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.flow.updateAndGet
+import com.app.builder.core.flow.StateHolder
 
 /** In-memory cache for the theme's color and shape. */
-object ThemeCache {
-
-    /** Backing mutable state flow holding the current theme. */
-    private val _cacheState = MutableStateFlow(value = CustomTheme())
-    /** Read-only state flow emitting the current theme. */
-    val cacheState: StateFlow<CustomTheme> = _cacheState.asStateFlow()
-
-    /**
-     * Replaces the current theme.
-     *
-     * @param customTheme The new theme to apply.
-     */
-    fun set(customTheme: CustomTheme) =
-        _cacheState.update { customTheme }
+object ThemeCache: StateHolder<CustomTheme>(default = CustomTheme()) {
 
     /**
      * Replaces which color scheme the theme displays.
@@ -29,7 +12,7 @@ object ThemeCache {
      * @return The updated theme.
      */
     fun setMode(mode: ThemeMode): CustomTheme =
-        _cacheState.updateAndGet { theme -> theme.copy(mode = mode) }
+        set { theme -> theme.copy(mode = mode) }
 
     /**
      * Replaces a single role's color in one color scheme.
@@ -40,7 +23,7 @@ object ThemeCache {
      * @return The updated theme.
      */
     fun setColor(dark: Boolean, role: String, hex: String?): CustomTheme =
-        _cacheState.updateAndGet { theme ->
+        set { theme ->
             val colors = theme.colors(dark = dark).let { if (hex == null) it - role else it + (role to hex) }
             if (dark) theme.copy(dark = colors) else theme.copy(light = colors)
         }
@@ -53,7 +36,5 @@ object ThemeCache {
      * @return The updated theme.
      */
     fun setShape(role: String, radius: Float?): CustomTheme =
-        _cacheState.updateAndGet { theme ->
-            theme.copy(shapes = if (radius == null) theme.shapes - role else theme.shapes + (role to radius))
-        }
+        set { theme -> theme.copy(shapes = if (radius == null) theme.shapes - role else theme.shapes + (role to radius)) }
 }
