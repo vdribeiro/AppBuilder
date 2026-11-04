@@ -624,6 +624,9 @@ The showcase is a section of the app rather than a separate target, so it runs o
 
 The whole showcase is behind the `design` client flag.
 
+The theme is configurable at runtime. `ThemeCache` holds a `CustomTheme`: a `ThemeMode` (`SYSTEM`, `LIGHT` or `DARK`) plus per-role color overrides for each scheme and per-role corner radius overrides, applied on top of the defaults by `Colors.kt` and `Shapes.kt`.
+The colors and shapes showcases edit it in place, `DesignScreenStore` saves each change to the `AppFile.Theme` file, and `Application` loads it back on startup, so the whole app restyles live and keeps the result.
+
 ## Translations
 
 * **Source of truth**: the server's `main/resources/static/translations.json`, fetched at runtime by `TranslationService` and cached in `TranslationCache`.
@@ -648,7 +651,6 @@ getTranslation(key = "translation_with_arguments", args = *arrayOf("one", "two")
 
 Always go through `Translations` rather than `TranslationCache` directly: it resolves against the cache's *state*, so a language change or a fresh fetch recomposes every string with no restart.
 `InjectTranslations(translations)` seeds the cache directly, which is handy for previews and tests.
-`TranslationCache` and `ThemeCache` extend `StateHolder`, so they can be observed through `flow` and restored to their default with `reset()`, like between tests.
 
 ## Feature Flags & Remote Configs
 
@@ -659,8 +661,7 @@ Always go through `Translations` rather than `TranslationCache` directly: it res
 * `ServerFlags`: route groups, which return 404 when off.
 * `ServerConfigs`: token lifetimes, rate limits, connection caps, ping intervals, etc.
 
-`ClientFlags`, `ServerFlags`, `ClientConfigs`, `ServerConfigs` are plain data classes whose companions extend `StateHolder`, 
-that allows you to read synchronously through `value`, observe as a `StateFlow` through `flow`, update atomically with `set { }` and restore to their default with `reset()`.
+`ClientFlags`, `ServerFlags`, `ClientConfigs`, `ServerConfigs` are plain data classes whose companions extend `StateHolder`.
 
 * They are shared types: the server serves exactly what the client consumes.
 * The client persists them as encrypted files and hot-reloads them, so flipping a flag server-side takes effect without a release. A push payload can also trigger an immediate re-sync.
@@ -989,6 +990,7 @@ Any component can report a failure without knowing where logs go, and tests capt
 ## Honourable Mentions
 
 * **`Dispatcher`**: mutable `Main`/`Default`/`IO`, the one change that lets the whole codebase run on a test dispatcher without injecting scopes everywhere.
+* **`StateHolder`**: a value read synchronously, observed as a `StateFlow`, mutated atomically and reset to a default. The base of the flags, configs and caches, and why tests can reset them all.
 * **`loop`**: a suspending interval loop, so polling code stops open-coding `while (true) { …; delay() }` and stays cancellable.
 * **`platform`**: OS, version, brand and model as one data object, for request headers and platform branching.
 * **No-op implementations**: `NoOpRouter`, `NoOpJobFactory`, `NoOpTranslationStore`, `NoOpSqlDriver`, `NoOpHttpClientEngine`, `NoOpFcmService`. Optional subsystems without nullability spreading through their callers.
@@ -1083,6 +1085,7 @@ Declarations that resolve to a distinct implementation per source set:
 * **resource**: Resource index.
 * **signal**: Cross-instance signaling for push delivery.
 * **storage**: File system access.
+* **theme**: Runtime theme overrides.
 * **translation**: Translation tools.
 
 **domain** (also holds the domain models at the package root)
@@ -1129,6 +1132,7 @@ Declarations that resolve to a distinct implementation per source set:
 * **flow**
     * `Dispatcher`: `Main`, `Default` and `IO` as mutable properties so tests can substitute them.
     * `LazyData`: Suspending, mutex-protected, compute-once lazy loader.
+    * `StateHolder`: Synchronous, observable, atomically mutable value with a restorable default.
 * **locale**
     * `DateTime`: Time utilities, e.g. the current time in UTC/ISO 8601.
 * **platform**
@@ -1189,6 +1193,7 @@ Declarations that resolve to a distinct implementation per source set:
 **data**
 
 * **http** `createNetworkEngine`: Engine factory for the module's own `HttpClient`, used by `ImageLoader`.
+* **theme** `ThemeCache`, `CustomTheme`, `ThemeMode`: The runtime theme overrides.
 * **translation** `TranslationCache`: The translation cache.
 
 **ui**
@@ -1372,7 +1377,7 @@ Call `grantPermission(permission)` from `LocalPermissionManager`. It checks the 
 
 Add `languageIso`/`key`/`value` entries to the server's `translations.json` and mirror them into the client's bundled copy. A new language is the same keys under a new ISO code. See [Translations](#translations).
 
-### How do I turn a feature off, or roll one out gradually?
+### How do I turn a feature off?
 
 Flip its flag server-side; clients hot-reload it. See [Feature Flags & Remote Configs](#feature-flags--remote-configs).
 
