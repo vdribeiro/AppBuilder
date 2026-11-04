@@ -745,7 +745,7 @@ Keeping the session alive and judging each write by when it was created preserve
 <details>
 <summary>Enforcement details and trust assumptions</summary>
 
-* Clearing `deletedAt` is treated like changing permissions: only `SESSION` `WRITE` may do it, and a self-update carries the stored value over. Otherwise a deleted account could backdate a write to its own record and lift every restriction.
+* Clearing `deletedAt` is treated like changing permissions: only `USER` `WRITE` may do it, and a self-update carries the stored value over. Otherwise a deleted account could backdate a write to its own record and lift every restriction.
 * Enforcement is served from a permission cache, so it applies on every instance at once, and is written into the access token at the next refresh.
 * An instance restarting before that first refresh falls back to the token minted while the account was live, so the account is unrestricted until that token expires and the next refresh closes it.
 * Header timestamps are client-supplied and only bounded against the future, so a tampered client can backdate. It is the same trust assumption as [Clock Trust](#clock-trust).
@@ -1012,7 +1012,7 @@ Every route shares a global rate limit; those marked *rate-limited* have a stric
 | `GET /api/registry`                                          | Delta-sync the request audit log                              | JWT, `REGISTRY` `READ`                            | —                |
 | `POST /api/registry`                                         | Record an audit entry                                         | JWT, `REGISTRY` `WRITE`                           | —                |
 | `GET /api/data/*`                                            | Static resources                                              | —                                                 | `resources`      |
-| `POST /api/register`                                         | Create an account                                             | JWT, `SESSION` `WRITE`                            | `authentication` |
+| `POST /api/register`                                         | Create an account                                             | JWT, `USER` `WRITE`                               | `authentication` |
 | `POST /api/login`                                            | Log in                                                        | —                                                 | `authentication` |
 | `POST /api/logout` · `/api/refresh-tokens`                   | Log out / rotate tokens                                       | Refresh token                                     | `authentication` |
 | `GET (SSE) /api/broadcast` · `POST /api/broadcast/subscribe` | Broadcast stream / FCM topic subscribe                        | — (rate-limited)                                  | `broadcast`      |
@@ -1028,7 +1028,7 @@ Every route shares a global rate limit; those marked *rate-limited* have a stric
 | `GET /api/[feature]` · `/api/[feature]/{uuid}`               | Delta-sync a feature / fetch one                              | JWT, `ENTITY` `READ`                              | Feature flag     |
 | `POST /api/[feature]`                                        | Upsert a feature entity                                       | JWT, `ENTITY` `WRITE`                             | Feature flag     |
 
-(*) A user may always update itself. Only `SESSION` `WRITE` may modify another user, change permissions or change `deletedAt`. Deleted accounts are narrowed further, see [Account Deletion](#account-deletion).
+(*) `USER` `WRITE` may upsert any user. `USER` `READ` may only update itself, except its permissions. Deleted accounts are narrowed further, see [Account Deletion](#account-deletion).
 
 ## Platform Implementations
 
