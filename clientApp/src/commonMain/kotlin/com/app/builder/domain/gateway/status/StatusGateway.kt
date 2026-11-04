@@ -6,9 +6,11 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.transformLatest
 import com.app.builder.core.config.ClientConfigs
 import com.app.builder.core.config.ClientFlags
+import com.app.builder.core.flow.Dispatcher
 import com.app.builder.core.locale.now
 import com.app.builder.domain.clock.ClockService
 import com.app.builder.domain.scheduler.Scheduler
@@ -25,7 +27,10 @@ class StatusGateway(
 ): StatusUseCases {
 
     override fun observeSynced(): Flow<Boolean> =
-        combine(flow = scheduler.observeActiveJobs(), flow2 = ClientFlags.flow) { jobs, flags ->
+        combine(
+            flow = scheduler.observeActiveJobs(),
+            flow2 = ClientFlags.flow
+        ) { jobs, flags ->
             if (flags.scheduler && flags.http) jobs else emptyList()
         }.transformLatest { jobs ->
             val oldest = jobs.minOfOrNull { it.utc }
@@ -41,6 +46,7 @@ class StatusGateway(
             }
             emit(value = false)
         }.distinctUntilChanged()
+            .flowOn(context = Dispatcher.Default)
 
     override fun observeClockTrusted(): Flow<Boolean> = clockService.trusted
 }
