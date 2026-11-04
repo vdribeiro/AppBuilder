@@ -97,6 +97,11 @@ object AppFile {
         override val serializer: KSerializer<ActionBarData> = ActionBarData.serializer()
     }
 
+    /** User preferences. */
+    data object UserPreferences: StorageFile<ActionBarData>(path = "user_preferences", encrypted = false) {
+        override val serializer: KSerializer<ActionBarData> = ActionBarData.serializer()
+    }
+
     /** Task preferences. */
     data object TaskPreferences: StorageFile<ActionBarData>(path = "task_preferences", encrypted = false) {
         override val serializer: KSerializer<ActionBarData> = ActionBarData.serializer()
@@ -112,6 +117,7 @@ object AppFile {
         ServerFeatureFlags,
         ServerRemoteConfigs,
         RegistryPreferences,
+        UserPreferences,
         TaskPreferences,
     )
 }
