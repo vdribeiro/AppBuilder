@@ -41,7 +41,7 @@ abstract class TestCase: PlatformTestCase() {
         DeepLink.reset()
         CoreFile.all.forEach { it.reset() }
         TestFile.all.forEach { it.reset() }
-        TranslationCache.set(translations = emptyMap())
+        TranslationCache.reset()
         router.backStack.clear()
     }
 
