@@ -101,8 +101,8 @@ class UserGateway(
     }
 
     override suspend fun upsertUser(user: User) = withContext(context = Dispatcher.IO) {
-        if (!this@UserGateway.user.hasPermission(entityType = EntityType.USER, permission = Permission.WRITE)) {
-            val throwable = Throwable(message = "User does not have ${Permission.WRITE} permission for ${EntityType.USER}")
+        if (!canUpsert(user = user)) {
+            val throwable = Throwable(message = "User does not have permission to upsert user ${user.uuid}")
             Telemetry.error(tag = TAG, message = "Invalid permissions", throwable = throwable)
             return@withContext
         }
@@ -229,15 +229,15 @@ class UserGateway(
     }
 
     override suspend fun executeUpsertUser(job: Job): JobResult = withContext(context = Dispatcher.IO) {
-        if (!user.hasPermission(entityType = EntityType.USER, permission = Permission.WRITE)) {
-            val throwable = Throwable(message = "User does not have ${Permission.WRITE} permission for ${EntityType.USER}")
-            Telemetry.error(tag = TAG, message = "Invalid permissions", throwable = throwable)
-            return@withContext throwable.toJobResult()
-        }
-
         val user = job.payload?.let { decode<User>(value = it) } ?: run {
             val throwable = Throwable(message = "Unable to decode user")
             Telemetry.error(tag = TAG, message = "Invalid user payload", throwable = throwable)
+            return@withContext throwable.toJobResult()
+        }
+
+        if (!canUpsert(user = user)) {
+            val throwable = Throwable(message = "User does not have permission to upsert user ${user.uuid}")
+            Telemetry.error(tag = TAG, message = "Invalid permissions", throwable = throwable)
             return@withContext throwable.toJobResult()
         }
 
@@ -265,6 +265,17 @@ class UserGateway(
             }
         }
     }
+
+    /**
+     * Checks whether the current user can upsert the given [user].
+     * A [Permission.WRITE] permission allows upserting any user, while a [Permission.READ] permission only allows upserting the current user.
+     *
+     * @param user The user to upsert.
+     * @return true if the current user can upsert [user], false otherwise.
+     */
+    private fun canUpsert(user: User): Boolean =
+        this.user.hasPermission(entityType = EntityType.USER, permission = Permission.WRITE) ||
+            (user.uuid == this.user.uuid && this.user.hasPermission(entityType = EntityType.USER, permission = Permission.READ))
 
     /**
      * Synchronizes a single remote user with the local database.
