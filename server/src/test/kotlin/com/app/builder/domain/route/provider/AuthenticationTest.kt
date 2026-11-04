@@ -29,9 +29,9 @@ class AuthenticationTest: TestCase() {
         assertEquals(expected = FakeData.user, actual = response.body<Authentication>().user)
     }
 
-    /** Verifies that registering without session permission is forbidden. */
+    /** Verifies that registering without user write permission is forbidden. */
     @Test
-    fun registerWithoutSessionPermission() = runServerTest {
+    fun registerWithoutUserWritePermission() = runServerTest {
         installRouting()
         val client = createClient(token = bearerToken.accessToken)
 
