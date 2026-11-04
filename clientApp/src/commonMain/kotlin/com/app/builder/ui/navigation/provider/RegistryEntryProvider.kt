@@ -69,7 +69,8 @@ private val actionBarState = ActionBarState(
     searchableProperties = properties,
     sortAscending = defaults.sortAscending,
     sortProperty = defaults.sortProperty,
-    visibleProperties = properties
+    visibleProperties = properties,
+    showDeletedToggle = false
 )
 
 /**

@@ -391,11 +391,6 @@
   },
   {
     "languageIso": "en",
-    "key": "registry_deleted_at",
-    "value": "Deleted At"
-  },
-  {
-    "languageIso": "en",
     "key": "registry_user_uuid",
     "value": "User UUID"
   },
