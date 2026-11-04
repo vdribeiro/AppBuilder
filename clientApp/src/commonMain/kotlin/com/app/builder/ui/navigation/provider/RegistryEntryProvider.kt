@@ -9,6 +9,7 @@ import com.app.builder.data.storage.AppFile
 import com.app.builder.domain.EntityType
 import com.app.builder.domain.Registry
 import com.app.builder.domain.gateway.UseCases
+import com.app.builder.ui.LocalSplitScreen
 import com.app.builder.ui.component.actionbar.ActionBarState
 import com.app.builder.ui.component.actionbar.ActionBarStore
 import com.app.builder.ui.component.navigation.NavigationRoute
@@ -42,9 +43,10 @@ fun EntryProviderScope<NavKey>.registryProvider(useCases: UseCases) {
     }
     entry<Screen.RegistryDetail>(metadata = split()) {
         val router = LocalRouter.current
+        val splitScreen = LocalSplitScreen.current
         val store = viewModel { RegistryDetailScreenStore(state = RegistryDetailScreenState(), registryUseCases = useCases.registryUseCases, registryUuid = it.uuid) }
         RegistryDetailScreen(
-            actionBarStore = viewModel { getActionBarStore(router = router, useCases = useCases, showFilters = false) },
+            actionBarStore = viewModel { getActionBarStore(router = router, useCases = useCases, showFilters = splitScreen) },
             navigationStore = viewModel { NavigationStore(state = NavigationState(selected = NavigationRoute.REGISTRY), router = router, authenticationUseCases = useCases.authenticationUseCases) },
             store = store
         )
