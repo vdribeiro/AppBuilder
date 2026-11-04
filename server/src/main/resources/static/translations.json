@@ -376,6 +376,21 @@
   },
   {
     "languageIso": "en",
+    "key": "user_name",
+    "value": "Name"
+  },
+  {
+    "languageIso": "en",
+    "key": "user_modified_at",
+    "value": "Modified At"
+  },
+  {
+    "languageIso": "en",
+    "key": "user_deleted_at",
+    "value": "Deleted At"
+  },
+  {
+    "languageIso": "en",
     "key": "registry_request_type",
     "value": "Request Type"
   },

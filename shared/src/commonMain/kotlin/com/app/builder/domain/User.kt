@@ -37,4 +37,16 @@ data class User(
             Permission.READ -> permission == Permission.READ
             else -> false
         }
+
+    /**
+     * Enumerates the [User] fields that map to a localized display label.
+     *
+     * @property translationKey The [Translation.key] used to look up the localized label for this field.
+     */
+    @Serializable
+    enum class Property(val translationKey: String) {
+        MODIFIED_AT(translationKey = "user_modified_at"),
+        DELETED_AT(translationKey = "user_deleted_at"),
+        NAME(translationKey = "user_name")
+    }
 }
