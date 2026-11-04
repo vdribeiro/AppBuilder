@@ -62,7 +62,7 @@ data class ClientConfigs(
             schedulerMaxAttempts = 5,
             schedulerRetryDelay = 5_000L,
             schedulerMaxRetryDelay = 30_000L,
-            schedulerSyncTolerance = 30_000L,
+            schedulerSyncTolerance = 15_000L,
             maxHandledPayloads = 500,
             broadcastRetryDelay = 2_000L,
             broadcastMaxRetryDelay = 30_000L,

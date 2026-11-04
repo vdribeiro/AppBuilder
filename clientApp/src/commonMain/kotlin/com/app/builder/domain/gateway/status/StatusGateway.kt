@@ -38,7 +38,6 @@ class StatusGateway(
                 emit(value = true)
                 return@transformLatest
             }
-            // The oldest job is not late yet, so report synced and wait until it would be
             val remaining = oldest + ClientConfigs.value.schedulerSyncTolerance.milliseconds - now()
             if (remaining > Duration.ZERO) {
                 emit(value = true)
