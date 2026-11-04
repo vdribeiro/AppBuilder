@@ -13,12 +13,6 @@ CREATE TABLE IF NOT EXISTS User (
 truncateUser:
 DELETE FROM User;
 
-deleteUser:
-UPDATE User
-SET modifiedAt = :utc,
-    deletedAt = :utc
-WHERE uuid = :userUuid;
-
 upsertUser:
 INSERT OR REPLACE INTO User VALUES ?;
 

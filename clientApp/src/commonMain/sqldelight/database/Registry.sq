@@ -29,11 +29,6 @@ getRegistries:
 SELECT Registry.*
 FROM Registry;
 
-getRegistriesByUuids:
-SELECT Registry.*
-FROM Registry
-WHERE Registry.requestUuid IN :requestUuids;
-
 getRegistry:
 SELECT Registry.*
 FROM Registry
