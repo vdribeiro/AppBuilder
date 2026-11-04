@@ -42,7 +42,8 @@ class UserTest: TestCase() {
         EntityType.entries.forEach { type ->
             assertTrue(actual = FakeData.adminUser.hasPermission(entityType = type, permission = Permission.WRITE))
         }
-        assertTrue(actual = FakeData.user.hasPermission(entityType = EntityType.USER, permission = Permission.WRITE))
+        assertTrue(actual = FakeData.user.hasPermission(entityType = EntityType.USER, permission = Permission.READ))
+        assertFalse(actual = FakeData.user.hasPermission(entityType = EntityType.USER, permission = Permission.WRITE))
         assertTrue(actual = FakeData.user.hasPermission(entityType = EntityType.TASK, permission = Permission.READ))
         assertFalse(actual = FakeData.user.hasPermission(entityType = EntityType.TASK, permission = Permission.WRITE))
         assertFalse(actual = FakeData.user.hasPermission(entityType = EntityType.SERVER_FLAG, permission = Permission.READ))

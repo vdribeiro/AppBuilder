@@ -97,7 +97,7 @@ class UserTest: TestCase() {
         assertEquals(expected = FakeData.adminUser, actual = response.body<User>())
     }
 
-    /** Verifies that a user with session write permission can update another user's record, including their permissions. */
+    /** Verifies that a user with user write permission can update another user's record, including their permissions. */
     @Test
     fun upsertUserPrivilegedCrossUserUpdate() = runServerTest {
         installRouting()
@@ -115,7 +115,7 @@ class UserTest: TestCase() {
         assertEquals(expected = updatedUser, actual = fetched.body<User>())
     }
 
-    /** Verifies that a user without session write permission cannot clear its own deletedAt, which would otherwise resurrect the account and lift the restrictions on the session it still holds. */
+    /** Verifies that a user without user write permission cannot clear its own deletedAt, which would otherwise resurrect the account and lift the restrictions on the session it still holds. */
     @Test
     fun upsertUserCannotResurrectItself() = runServerTest {
         installRouting()
@@ -138,7 +138,7 @@ class UserTest: TestCase() {
         assertNotNull(actual = fetched.body<User>().deletedAt)
     }
 
-    /** Verifies that fetching a single user requires authentication, and that reading or writing users requires the matching user permission. */
+    /** Verifies that fetching a single user requires authentication, that reading users requires the user read permission, and that a user with only that permission can change itself but not others. */
     @Test
     fun userRoutesRequireAuthenticationAndPermission() = runServerTest {
         installRouting()
@@ -156,6 +156,7 @@ class UserTest: TestCase() {
         val noUserPermissionClient = createClient(token = noUserPermissionAuth.bearer.accessToken)
         assertEquals(expected = HttpStatusCode.Forbidden, actual = noUserPermissionClient.get(request = HttpRequest(url = URL.Users)).status)
         assertEquals(expected = HttpStatusCode.Forbidden, actual = noUserPermissionClient.ktorGet(urlString = "${URL.Users.path}/${FakeData.user.uuid}").status)
+        assertEquals(expected = HttpStatusCode.Forbidden, actual = noUserPermissionClient.post(request = HttpRequest(url = URL.Users), body = noUserPermission.copy(name = "Renamed")).status)
 
         val readOnly = FakeData.user.copy(uuid = uuid(), permissions = mapOf(EntityType.USER to Permission.READ))
         val readOnlyAuth = seedUser(
@@ -166,10 +167,11 @@ class UserTest: TestCase() {
         )
         val readOnlyClient = createClient(token = readOnlyAuth.bearer.accessToken)
         assertEquals(expected = HttpStatusCode.OK, actual = readOnlyClient.get(request = HttpRequest(url = URL.Users)).status)
-        assertEquals(expected = HttpStatusCode.Forbidden, actual = readOnlyClient.post(request = HttpRequest(url = URL.Users), body = readOnly.copy(name = "Renamed")).status)
+        assertEquals(expected = HttpStatusCode.OK, actual = readOnlyClient.post(request = HttpRequest(url = URL.Users), body = readOnly.copy(name = "Renamed")).status)
+        assertEquals(expected = HttpStatusCode.Forbidden, actual = readOnlyClient.post(request = HttpRequest(url = URL.Users), body = FakeData.user.copy(name = "Renamed")).status)
     }
 
-    /** Verifies that a user without session write permission cannot grant itself extra permissions, as the stored permissions are carried over. */
+    /** Verifies that a user without user write permission cannot grant itself extra permissions, as the stored permissions are carried over. */
     @Test
     fun upsertUserCannotEscalateOwnPermissions() = runServerTest {
         installRouting()
