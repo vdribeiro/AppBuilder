@@ -52,14 +52,18 @@ class TranslationGateway(
             }
 
     override suspend fun syncTranslations() = withContext(context = Dispatcher.IO) {
-        database.safeTransaction {
-            if (isTranslationEmpty()) {
-                val translations: List<Translation> = loadResource<Translation>(json = JsonResource.Translations)
+        val isEmpty = runCatching { isTranslationEmpty() }
+            .onFailure { Telemetry.error(tag = TAG, message = "Unable to check translations", throwable = it) }
+            .getOrDefault(defaultValue = false)
+        if (isEmpty) {
+            val translations: List<Translation> = loadResource<Translation>(json = JsonResource.Translations)
+            database.safeTransaction {
                 rewriteTranslations(translations = translations)
+            }.onSuccess {
                 Telemetry.info(tag = TAG, message = "Prepopulated translations")
+            }.onFailure {
+                Telemetry.error(tag = TAG, message = "Unable to rewrite translations", throwable = it)
             }
-        }.onFailure {
-            Telemetry.error(tag = TAG, message = "Unable to rewrite translations", throwable = it)
         }
         val job = Job(
             userUuid = Uuid.NIL,
