@@ -72,7 +72,6 @@ sealed interface ActionBarAction {
  * @property clockTrusted Whether the device clock can be trusted.
  * @property writable Whether the current user has write permission on the entity.
  * @property editing Whether the current domain is being edited.
- * @property deleted Whether the current domain is deleted.
  * @property showAdd Whether the add button should be shown.
  * @property showEdit Whether the edit button should be shown.
  * @property showSave Whether the save button should be shown.
@@ -95,7 +94,6 @@ data class ActionBarState(
     val clockTrusted: Boolean = true,
     val writable: Boolean = false,
     val editing: Boolean = false,
-    val deleted: Boolean = false,
     val showAdd: Boolean = false,
     val showEdit: Boolean = false,
     val showSave: Boolean = false,

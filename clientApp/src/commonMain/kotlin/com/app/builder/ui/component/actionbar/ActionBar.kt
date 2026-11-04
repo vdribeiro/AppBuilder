@@ -16,9 +16,10 @@ import com.app.builder.ui.store.previewStore
  * Renders a [TopActionBar] driven by [store], forwarding every user interaction back to it as an [ActionBarAction].
  *
  * @param store Store holding the [ActionBarState] to render and receiving the dispatched actions.
+ * @param deleted Whether the current domain is deleted, which hides the edit button and turns the delete toggle into restore.
  */
 @Composable
-fun ActionBar(store: Store<ActionBarState, ActionBarAction>) {
+fun ActionBar(store: Store<ActionBarState, ActionBarAction>, deleted: Boolean = false) {
     val state by store.stateFlow.collectAsStateWithLifecycle()
     TopActionBar(
         modifier = Modifier
@@ -33,7 +34,7 @@ fun ActionBar(store: Store<ActionBarState, ActionBarAction>) {
         onAddClick = if (state.showAdd) {
             { store.send(action = ActionBarAction.Add) }
         } else null,
-        onEditClick = if (state.showEdit) {
+        onEditClick = if (state.showEdit && !deleted) {
             { store.send(action = ActionBarAction.Edit) }
         } else null,
         onSaveClick = if (state.showSave) {
@@ -42,7 +43,7 @@ fun ActionBar(store: Store<ActionBarState, ActionBarAction>) {
         onCancelClick = if (state.showCancel) {
             { store.send(action = ActionBarAction.Cancel) }
         } else null,
-        deleted = state.deleted,
+        deleted = deleted,
         onDeleteClick = if (state.showDelete) {
             { store.send(action = if (it) ActionBarAction.Delete else ActionBarAction.Restore) }
         } else null,

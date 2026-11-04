@@ -94,7 +94,7 @@ class TaskDetailScreenStore(
     }
 
     /**
-     * Soft deletes the task by setting its deletion and modification times, then keeps viewing it when deleted tasks are shown, or leaves the screen otherwise.
+     * Soft deletes the task by setting its deletion and modification times, then leaves the screen.
      *
      * @param state Task Detail Screen state at the time the delete was requested.
      * @return The [Job] representing this execution.
@@ -113,9 +113,8 @@ class TaskDetailScreenStore(
      * @return The [Job] representing this execution.
      */
     private fun restore(state: TaskDetailScreenState): Job = launch(id = "restore") {
-        val now = now()
-        val task = state.task?.copy(deletedAt = null, modifiedAt = now)
-        task?.let { taskUseCases.upsertTask(task = it) }
+        val task = state.task?.copy(deletedAt = null, modifiedAt = now()) ?: return@launch
+        taskUseCases.upsertTask(task = task)
         updateState { it.copy(task = task) }
     }
 

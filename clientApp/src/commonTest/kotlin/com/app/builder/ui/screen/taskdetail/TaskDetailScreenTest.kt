@@ -250,7 +250,7 @@ class TaskDetailScreenTest: TestCase() {
         assertEquals(expected = deleted.deletedAt, actual = deleted.modifiedAt)
     }
 
-    /** Verifies that restoring a deleted task clears its deletion, bumps its modification time and keeps viewing it. */
+    /** Verifies that a deleted task hides edit, and that its delete toggle restores it, clearing its deletion, bumping its modification time, keeping viewing it and showing edit again. */
     @Test
     fun restoreTask() = runUITest {
         val useCases = storedTaskUseCases()
@@ -259,12 +259,15 @@ class TaskDetailScreenTest: TestCase() {
         val (store, _) = setTaskDetailScreen(useCases = useCases)
 
         waitUntil { store.state.task?.deletedAt != null }
-        store.send(action = TaskDetailScreenAction.Restore)
+        onNodeWithTag(testTag = "action_edit").assertDoesNotExist()
+        onNodeWithTag(testTag = "action_delete").assertIsDisplayed().performClick()
         waitUntil { store.state.task?.deletedAt == null }
 
         val restored = useCases.taskUseCases.observeTask(uuid = FakeData.task.uuid).first { it?.deletedAt == null }
         assertTrue(actual = restored!!.modifiedAt > deletedTask.modifiedAt)
         assertTrue(actual = router.backStack.isEmpty())
+        onNodeWithTag(testTag = "action_edit").assertIsDisplayed()
+        onNodeWithTag(testTag = "action_delete").assertIsDisplayed()
     }
 
     /** Verifies that a new task opens in edit mode, with only the save and cancel buttons, and is not stored yet. */

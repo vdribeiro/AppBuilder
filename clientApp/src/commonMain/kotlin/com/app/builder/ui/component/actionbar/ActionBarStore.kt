@@ -31,7 +31,8 @@ import com.app.builder.ui.store.Store
  * @property onEditClick Called when the edit button is clicked.
  * @property onSaveClick Called when the save button is clicked.
  * @property onCancelClick Called when the cancel button is clicked, or when the write permission is lost while editing.
- * @property onDeleteClick Called when the delete button is clicked.
+ * @property onDeleteClick Called when the delete toggle button is clicked on a domain that is not deleted.
+ * @property onRestoreClick Called when the delete toggle button is clicked on a deleted domain.
  */
 class ActionBarStore(
     state: ActionBarState,
@@ -140,24 +141,18 @@ class ActionBarStore(
     }
 
     /**
-     * Resolves which buttons are shown for the given write permission, mode and deletion.
-     * Editing shows only save and cancel, viewing shows add, edit and delete, or only add and delete when the domain is deleted.
+     * Resolves which buttons are shown for the given write permission and mode.
+     * Editing shows only save and cancel, viewing shows add, edit and delete.
      *
      * @param writable Whether the current user has write permission on the entity.
      * @param editing Whether the current domain is being edited.
-     * @param deleted Whether the current domain is deleted.
-     * @return This state with the permission, the mode, the deletion and the buttons updated.
+     * @return This state with the permission, the mode and the buttons updated.
      */
-    private fun ActionBarState.withButtons(
-        writable: Boolean = this.writable,
-        editing: Boolean = this.editing,
-        deleted: Boolean = this.deleted,
-    ): ActionBarState = copy(
+    private fun ActionBarState.withButtons(writable: Boolean = this.writable, editing: Boolean = this.editing): ActionBarState = copy(
         writable = writable,
         editing = editing,
-        deleted = deleted,
         showAdd = onAddClick != null && writable && !editing,
-        showEdit = onEditClick != null && writable && !editing && !deleted,
+        showEdit = onEditClick != null && writable && !editing,
         showSave = onSaveClick != null && writable && editing,
         showCancel = onCancelClick != null && writable && editing,
         showDelete = onDeleteClick != null && writable && !editing,
@@ -209,7 +204,6 @@ class ActionBarStore(
      */
     private fun delete(): Job = launch(id = "delete") {
         onDeleteClick?.invoke()
-        updateState { it.withButtons(deleted = true) }
     }
 
     /**
@@ -219,7 +213,6 @@ class ActionBarStore(
      */
     private fun restore(): Job = launch(id = "restore") {
         onRestoreClick?.invoke()
-        updateState { it.withButtons(deleted = false) }
     }
 
     /**
