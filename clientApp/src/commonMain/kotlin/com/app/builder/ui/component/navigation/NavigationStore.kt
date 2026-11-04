@@ -3,12 +3,12 @@ package com.app.builder.ui.component.navigation
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.Job
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.AppRegistration
 import androidx.compose.material.icons.filled.Camera
 import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.GpsFixed
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.ManageAccounts
 import androidx.compose.material.icons.filled.MusicNote
 import androidx.compose.material.icons.filled.Nfc
 import androidx.compose.material.icons.filled.Notifications
@@ -72,7 +72,7 @@ class NavigationStore(
                     NavigationItem(
                         selected = state.selected == NavigationRoute.USER,
                         text = "user",
-                        icon = Icons.Filled.ManageAccounts,
+                        icon = Icons.Filled.AccountCircle,
                         onClick = { router.navigate(screen = Screen.UserList, option = Router.NavOption.CLEAR) },
                     )
                 )
@@ -82,6 +82,14 @@ class NavigationStore(
                         text = "registry",
                         icon = Icons.Filled.AppRegistration,
                         onClick = { router.navigate(screen = Screen.RegistryList, option = Router.NavOption.CLEAR) },
+                    )
+                )
+                if (ClientFlags.value.notifications && permissions[EntityType.NOTIFICATION] != null) add(
+                    NavigationItem(
+                        selected = state.selected == NavigationRoute.NOTIFICATION,
+                        text = "push",
+                        icon = Icons.Filled.Notifications,
+                        onClick = { router.navigate(screen = Screen.Push, option = Router.NavOption.CLEAR) },
                     )
                 )
                 if (ClientFlags.value.locationCapture && permissions[EntityType.DEVICE_LOCATION] != null) add(
@@ -122,14 +130,6 @@ class NavigationStore(
                         text = "audio",
                         icon = Icons.Filled.MusicNote,
                         onClick = { router.navigate(screen = Screen.Audio, option = Router.NavOption.CLEAR) },
-                    )
-                )
-                if (ClientFlags.value.notifications && permissions[EntityType.NOTIFICATION] != null) add(
-                    NavigationItem(
-                        selected = state.selected == NavigationRoute.NOTIFICATION,
-                        text = "push",
-                        icon = Icons.Filled.Notifications,
-                        onClick = { router.navigate(screen = Screen.Push, option = Router.NavOption.CLEAR) },
                     )
                 )
                 if (listOf(
