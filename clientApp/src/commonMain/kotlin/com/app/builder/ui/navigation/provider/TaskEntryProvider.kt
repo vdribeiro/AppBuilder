@@ -43,6 +43,7 @@ fun EntryProviderScope<NavKey>.taskProvider(useCases: UseCases) {
                     router = router,
                     useCases = useCases,
                     showAdd = true,
+                    showFilters = true,
                     editing = false,
                     onEditClick = null,
                     onSaveClick = null,
@@ -64,6 +65,7 @@ fun EntryProviderScope<NavKey>.taskProvider(useCases: UseCases) {
                     router = router,
                     useCases = useCases,
                     showAdd = splitScreen,
+                    showFilters = false,
                     editing = it.new,
                     onEditClick = { store.send(action = TaskDetailScreenAction.Edit) },
                     onSaveClick = { store.send(action = TaskDetailScreenAction.Save) },
@@ -104,6 +106,7 @@ private val actionBarState = ActionBarState(
  * @param router The router.
  * @param useCases The use cases.
  * @param showAdd true to show add button, false otherwise.
+ * @param showFilters true to show the filters button, false otherwise.
  * @param editing true to start in edit mode, false to start in view mode.
  * @param onEditClick The edit click callback, or null to hide the edit action.
  * @param onSaveClick The save click callback, or null to hide the save action.
@@ -115,13 +118,14 @@ private fun getActionBarStore(
     router: Router,
     useCases: UseCases,
     showAdd: Boolean,
+    showFilters: Boolean,
     editing: Boolean,
     onEditClick: (suspend () -> Unit)?,
     onSaveClick: (suspend () -> Unit)?,
     onCancelClick: (suspend () -> Unit)?,
     onDeleteClick: (suspend () -> Unit)?
 ): ActionBarStore = ActionBarStore(
-    state = actionBarState.copy(editing = editing),
+    state = actionBarState.copy(editing = editing, showFilters = showFilters),
     router = router,
     authenticationUseCases = useCases.authenticationUseCases,
     statusUseCases = useCases.statusUseCases,

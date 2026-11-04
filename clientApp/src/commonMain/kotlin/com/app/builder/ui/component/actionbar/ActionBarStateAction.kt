@@ -103,6 +103,6 @@ data class ActionBarState(
     val sortAscending: Boolean = true,
     val sortProperty: String = "",
     val visibleProperties: ImmutableList<String> = persistentListOf(),
-    val showDeletedToggle: Boolean = false,
+    val showDeletedToggle: Boolean = true,
     val showDeleted: Boolean = false,
 )

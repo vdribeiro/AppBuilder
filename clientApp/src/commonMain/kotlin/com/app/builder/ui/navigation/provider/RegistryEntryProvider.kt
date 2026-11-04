@@ -35,7 +35,7 @@ fun EntryProviderScope<NavKey>.registryProvider(useCases: UseCases) {
         val router = LocalRouter.current
         val store = viewModel { RegistryListScreenStore(router = router, state = RegistryListScreenState(), registryUseCases = useCases.registryUseCases) }
         RegistryListScreen(
-            actionBarStore = viewModel { getActionBarStore(router = router, useCases = useCases) },
+            actionBarStore = viewModel { getActionBarStore(router = router, useCases = useCases, showFilters = true) },
             navigationStore = viewModel { NavigationStore(state = NavigationState(selected = NavigationRoute.REGISTRY), router = router, authenticationUseCases = useCases.authenticationUseCases) },
             store = store
         )
@@ -44,7 +44,7 @@ fun EntryProviderScope<NavKey>.registryProvider(useCases: UseCases) {
         val router = LocalRouter.current
         val store = viewModel { RegistryDetailScreenStore(state = RegistryDetailScreenState(), registryUseCases = useCases.registryUseCases, registryUuid = it.uuid) }
         RegistryDetailScreen(
-            actionBarStore = viewModel { getActionBarStore(router = router, useCases = useCases) },
+            actionBarStore = viewModel { getActionBarStore(router = router, useCases = useCases, showFilters = false) },
             navigationStore = viewModel { NavigationStore(state = NavigationState(selected = NavigationRoute.REGISTRY), router = router, authenticationUseCases = useCases.authenticationUseCases) },
             store = store
         )
@@ -78,13 +78,15 @@ private val actionBarState = ActionBarState(
  *
  * @param router The router.
  * @param useCases The use cases.
+ * @param showFilters true to show the filters button, false otherwise.
  * @return The action bar store.
  */
 private fun getActionBarStore(
     router: Router,
     useCases: UseCases,
+    showFilters: Boolean,
 ): ActionBarStore = ActionBarStore(
-    state = actionBarState,
+    state = actionBarState.copy(showFilters = showFilters),
     router = router,
     authenticationUseCases = useCases.authenticationUseCases,
     statusUseCases = useCases.statusUseCases,
