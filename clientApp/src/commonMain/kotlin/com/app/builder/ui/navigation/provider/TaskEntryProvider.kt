@@ -38,20 +38,7 @@ fun EntryProviderScope<NavKey>.taskProvider(useCases: UseCases) {
         val router = LocalRouter.current
         val store = viewModel { TaskListScreenStore(router = router, state = TaskListScreenState(), taskUseCases = useCases.taskUseCases) }
         TaskListScreen(
-            actionBarStore = viewModel {
-                getActionBarStore(
-                    router = router,
-                    useCases = useCases,
-                    showAdd = true,
-                    showFilters = true,
-                    editing = false,
-                    onEditClick = null,
-                    onSaveClick = null,
-                    onCancelClick = null,
-                    onDeleteClick = null,
-                    onRestoreClick = null
-                )
-            },
+            actionBarStore = viewModel { getActionBarStore(router = router, useCases = useCases) },
             navigationStore = viewModel { NavigationStore(state = NavigationState(selected = NavigationRoute.TASK), router = router, authenticationUseCases = useCases.authenticationUseCases) },
             store = store
         )
@@ -120,14 +107,14 @@ private val actionBarState = ActionBarState(
 private fun getActionBarStore(
     router: Router,
     useCases: UseCases,
-    showAdd: Boolean,
-    showFilters: Boolean,
-    editing: Boolean,
-    onEditClick: (suspend () -> Unit)?,
-    onSaveClick: (suspend () -> Unit)?,
-    onCancelClick: (suspend () -> Unit)?,
-    onDeleteClick: (suspend () -> Unit)?,
-    onRestoreClick: (suspend () -> Unit)?
+    showAdd: Boolean = true,
+    showFilters: Boolean = true,
+    editing: Boolean = false,
+    onEditClick: (suspend () -> Unit)? = null,
+    onSaveClick: (suspend () -> Unit)? = null,
+    onCancelClick: (suspend () -> Unit)? = null,
+    onDeleteClick: (suspend () -> Unit)? = null,
+    onRestoreClick: (suspend () -> Unit)? = null
 ): ActionBarStore = ActionBarStore(
     state = actionBarState.copy(editing = editing, showFilters = showFilters),
     router = router,

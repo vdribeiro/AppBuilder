@@ -36,7 +36,7 @@ fun EntryProviderScope<NavKey>.registryProvider(useCases: UseCases) {
         val router = LocalRouter.current
         val store = viewModel { RegistryListScreenStore(router = router, state = RegistryListScreenState(), registryUseCases = useCases.registryUseCases) }
         RegistryListScreen(
-            actionBarStore = viewModel { getActionBarStore(router = router, useCases = useCases, showFilters = true) },
+            actionBarStore = viewModel { getActionBarStore(router = router, useCases = useCases) },
             navigationStore = viewModel { NavigationStore(state = NavigationState(selected = NavigationRoute.REGISTRY), router = router, authenticationUseCases = useCases.authenticationUseCases) },
             store = store
         )
@@ -86,7 +86,7 @@ private val actionBarState = ActionBarState(
 private fun getActionBarStore(
     router: Router,
     useCases: UseCases,
-    showFilters: Boolean,
+    showFilters: Boolean = true,
 ): ActionBarStore = ActionBarStore(
     state = actionBarState.copy(showFilters = showFilters),
     router = router,
