@@ -2,6 +2,7 @@ package com.app.builder.domain.scheduler
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.withContext
 import app.cash.sqldelight.async.coroutines.awaitAsOneOrNull
 import com.app.builder.core.flow.Dispatcher
 import com.app.builder.data.database.asFlow
@@ -27,10 +28,11 @@ class JobSchedulerStore(database: AppDatabase): JobStore {
             .asFlow { it.toJob() }
             .flowOn(context = Dispatcher.IO)
 
-    override suspend fun upsertJob(job: Job): Boolean =
+    override suspend fun upsertJob(job: Job): Boolean = withContext(context = Dispatcher.IO) {
         jobDao.upsertJob(Job = job.toJobSchema()) > 0
+    }
 
-    override suspend fun cancelPendingJobs(job: Job): Boolean =
+    override suspend fun cancelPendingJobs(job: Job): Boolean = withContext(context = Dispatcher.IO) {
         jobDao.updateJobs(
             userUuid = job.userUuid,
             entityUuid = job.entityUuid,
@@ -39,8 +41,9 @@ class JobSchedulerStore(database: AppDatabase): JobStore {
             oldState = Job.State.PENDING,
             newState = Job.State.CANCELED,
         ) > 0
+    }
 
-    override suspend fun getDuplicateJobsCount(job: Job): Long =
+    override suspend fun getDuplicateJobsCount(job: Job): Long = withContext(context = Dispatcher.IO) {
         jobDao.getDuplicateJobsCount(
             userUuid = job.userUuid,
             entityUuid = job.entityUuid,
@@ -48,10 +51,13 @@ class JobSchedulerStore(database: AppDatabase): JobStore {
             type = job.type,
             state = Job.State.PENDING,
         ).awaitAsOneOrNull() ?: 0L
+    }
 
-    override suspend fun resetZombieJobs(): Long =
+    override suspend fun resetZombieJobs(): Long = withContext(context = Dispatcher.IO) {
         jobDao.resetJobsState(oldState = Job.State.RUNNING, newState = Job.State.PENDING)
+    }
 
-    override suspend fun updateJobStateAndAttempt(job: Job): Boolean =
+    override suspend fun updateJobStateAndAttempt(job: Job): Boolean = withContext(context = Dispatcher.IO) {
         jobDao.updateJobStateAndAttempt(uuid = job.uuid, state = job.state, attempt = job.attempt, nextAttemptAt = job.nextAttemptAt) > 0
+    }
 }

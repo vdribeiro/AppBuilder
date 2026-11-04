@@ -450,7 +450,7 @@ fun String.toColorOrNull(): Color? {
  */
 @Composable
 fun isDarkTheme(): Boolean {
-    val customTheme by ThemeCache.cacheState.collectAsStateWithLifecycle()
+    val customTheme by ThemeCache.flow.collectAsStateWithLifecycle()
     return when (customTheme.mode) {
         ThemeMode.SYSTEM -> isSystemInDarkTheme()
         ThemeMode.LIGHT -> false
@@ -466,7 +466,7 @@ fun isDarkTheme(): Boolean {
 @Composable
 internal fun getColorScheme(): ColorScheme {
     val dark = isDarkTheme()
-    val customTheme by ThemeCache.cacheState.collectAsStateWithLifecycle()
+    val customTheme by ThemeCache.flow.collectAsStateWithLifecycle()
     return remember(dark, customTheme) {
         (if (dark) darkColorScheme else lightColorScheme).override(colors = customTheme.colors(dark = dark))
     }

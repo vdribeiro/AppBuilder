@@ -134,8 +134,8 @@ object Application {
         DeepLink.reset()
         clearImageCache()
         clearCache()
-        TranslationCache.set(translations = emptyMap())
-        ThemeCache.set(customTheme = CustomTheme())
+        TranslationCache.reset()
+        ThemeCache.reset()
     }
 
     /** Stops all application services, suspending until they have fully canceled. */
@@ -187,7 +187,8 @@ object Application {
             Telemetry.info(tag = TAG, message = "Setting app path: $appDataPath")
             Telemetry.info(tag = TAG, message = logFiles())
             Telemetry.info(tag = TAG, message = "Loading theme")
-            ThemeCache.set(customTheme = AppFile.Theme.load() ?: CustomTheme())
+            val customTheme = AppFile.Theme.load() ?: CustomTheme()
+            ThemeCache.set { customTheme }
 
             Telemetry.info(tag = TAG, message = "Initializing dependencies")
             val dependency = appGraph.get().apply { start(); observeCurrentUser(scope = this@launch) }

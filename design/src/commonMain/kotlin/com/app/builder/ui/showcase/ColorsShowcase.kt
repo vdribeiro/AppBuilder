@@ -46,7 +46,7 @@ import com.app.builder.ui.toHex
 fun ColorsShowcase(onThemeChange: (CustomTheme) -> Unit = {}) {
     val colorScheme = LocalColorScheme.current
     val shapes = LocalShapes.current
-    val customTheme by ThemeCache.cacheState.collectAsStateWithLifecycle()
+    val customTheme by ThemeCache.flow.collectAsStateWithLifecycle()
     val dark = isDarkTheme()
     var editing by remember { mutableStateOf<ColorRole?>(value = null) }
 

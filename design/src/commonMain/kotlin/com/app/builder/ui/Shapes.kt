@@ -58,6 +58,6 @@ private fun shapes(radii: Map<String, Float> = emptyMap()): Shapes {
  */
 @Composable
 internal fun getShapes(): Shapes {
-    val customTheme by ThemeCache.cacheState.collectAsStateWithLifecycle()
+    val customTheme by ThemeCache.flow.collectAsStateWithLifecycle()
     return remember(key1 = customTheme.shapes) { shapes(radii = customTheme.shapes) }
 }

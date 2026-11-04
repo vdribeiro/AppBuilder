@@ -39,7 +39,7 @@ import com.app.builder.ui.core.text.Text
 @Composable
 fun ShapesShowcase(onThemeChange: (CustomTheme) -> Unit = {}) {
     val colorScheme = LocalColorScheme.current
-    val customTheme by ThemeCache.cacheState.collectAsStateWithLifecycle()
+    val customTheme by ThemeCache.flow.collectAsStateWithLifecycle()
     var editing by remember { mutableStateOf<ShapeRole?>(value = null) }
 
     LazyColumn(

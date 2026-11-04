@@ -12,7 +12,7 @@ import com.app.builder.data.translation.TranslationCache
  * CompositionLocal providing the current map of localized keys and values.
  * Uses [staticCompositionLocalOf] because translations are updated as a complete batch rather than frequent individual node changes.
  */
-val LocalTranslationState: ProvidableCompositionLocal<Map<String, String>> = staticCompositionLocalOf { TranslationCache.cacheState.value }
+val LocalTranslationState: ProvidableCompositionLocal<Map<String, String>> = staticCompositionLocalOf { TranslationCache.value }
 
 /**
  * Collects the translation cache state as a Compose state following the host lifecycle.
@@ -21,7 +21,7 @@ val LocalTranslationState: ProvidableCompositionLocal<Map<String, String>> = sta
  */
 @Composable
 fun getTranslationState(): Map<String, String> {
-    val state by TranslationCache.cacheState.collectAsStateWithLifecycle()
+    val state by TranslationCache.flow.collectAsStateWithLifecycle()
     return state
 }
 
@@ -46,5 +46,5 @@ fun getTranslation(key: String, default: String = key, vararg args: String): Str
  */
 @Composable
 fun InjectTranslations(translations: Map<String, String>) {
-    TranslationCache.set(translations = translations)
+    TranslationCache.set { translations }
 }
