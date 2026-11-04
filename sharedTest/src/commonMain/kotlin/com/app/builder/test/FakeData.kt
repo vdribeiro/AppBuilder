@@ -82,7 +82,7 @@ object FakeData {
                 EntityType.NOTIFICATION -> null
                 EntityType.TRANSLATION -> Permission.READ
                 EntityType.SESSION -> Permission.READ
-                EntityType.USER -> Permission.WRITE
+                EntityType.USER -> Permission.READ
                 EntityType.DEVICE_LOCATION -> Permission.WRITE
                 EntityType.TASK -> Permission.READ
             }?.let { type to it }
