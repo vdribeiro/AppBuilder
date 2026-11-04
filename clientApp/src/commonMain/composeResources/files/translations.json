@@ -391,6 +391,21 @@
   },
   {
     "languageIso": "en",
+    "key": "task_uuid",
+    "value": "UUID"
+  },
+  {
+    "languageIso": "en",
+    "key": "user_uuid",
+    "value": "UUID"
+  },
+  {
+    "languageIso": "en",
+    "key": "registry_request_uuid",
+    "value": "Request UUID"
+  },
+  {
+    "languageIso": "en",
     "key": "registry_request_type",
     "value": "Request Type"
   },

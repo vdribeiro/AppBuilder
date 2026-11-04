@@ -106,6 +106,7 @@ class TaskListScreenStore(
     private fun Task.matchesSearch(search: String, searchableProperties: List<String>): Boolean {
         return search.isBlank() || searchableProperties.any { property ->
             when (property) {
+                Property.UUID.name -> uuid.toString()
                 Property.TITLE.name -> title
                 Property.DESCRIPTION.name -> description
                 Property.MODIFIED_AT.name -> modifiedAt.toString()
@@ -124,7 +125,8 @@ class TaskListScreenStore(
      */
     private fun taskComparator(sortProperty: String, sortAscending: Boolean): Comparator<Task>? {
         val comparator = when (sortProperty) {
-            Property.MODIFIED_AT.name -> compareBy<Task> { it.modifiedAt }
+            Property.UUID.name -> compareBy<Task> { it.uuid.toString() }
+            Property.MODIFIED_AT.name -> compareBy { it.modifiedAt }
             Property.DELETED_AT.name -> compareBy { it.deletedAt }
             Property.TITLE.name -> compareBy { it.title }
             Property.DESCRIPTION.name -> compareBy { it.description }
@@ -143,6 +145,7 @@ class TaskListScreenStore(
     private fun Task.toTaskItem(visibilityProperties: List<String>, selectedUuid: String?): TaskItem = TaskItem(
         uuid = uuid.toString(),
         selected = uuid.toString() == selectedUuid,
+        uuidVisible = Property.UUID.name in visibilityProperties,
         modifiedAt = modifiedAt.takeIf { Property.MODIFIED_AT.name in visibilityProperties }?.toString(),
         deletedAt = deletedAt.takeIf { Property.DELETED_AT.name in visibilityProperties }?.toString(),
         title = title.takeIf { Property.TITLE.name in visibilityProperties },
