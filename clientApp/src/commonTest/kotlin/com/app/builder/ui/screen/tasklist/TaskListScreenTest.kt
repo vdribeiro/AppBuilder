@@ -16,7 +16,6 @@ import com.app.builder.core.security.uuid
 import com.app.builder.data.storage.AppFile
 import com.app.builder.domain.EntityType
 import com.app.builder.domain.Task
-import com.app.builder.domain.gateway.task.TaskFilter
 import com.app.builder.test.FakeData
 import com.app.builder.test.TestCase
 import com.app.builder.test.count
@@ -181,6 +180,6 @@ class TaskListScreenTest: TestCase() {
 
         val screen = assertIs<Screen.TaskDetail>(value = router.backStack.single())
         assertTrue(actual = screen.new)
-        assertTrue(actual = authenticatedUseCases.taskUseCases.observeTasks(filter = TaskFilter.Active).first().isEmpty())
+        assertTrue(actual = authenticatedUseCases.taskUseCases.observeTasks().first().isEmpty())
     }
 }

@@ -13,7 +13,6 @@ import com.app.builder.core.telemetry.Telemetry
 import com.app.builder.data.storage.AppFile
 import com.app.builder.domain.Task
 import com.app.builder.domain.Task.Property
-import com.app.builder.domain.gateway.task.TaskFilter
 import com.app.builder.domain.gateway.task.TaskUseCases
 import com.app.builder.ui.component.list.TaskItem
 import com.app.builder.ui.navigation.Router
@@ -44,14 +43,14 @@ class TaskListScreenStore(
     }
 
     /**
-     * Observes tasks and keeps the displayed list in sync, selecting the task whose detail screen is in the backstack.
+     * Observes tasks and keeps the displayed list in sync.
      *
      * @return The [Job] representing this execution.
      */
     private fun setup(): Job = launch(id = "setup") {
         Telemetry.info(tag = TAG, message = "Setup")
 
-        val tasksFlow = taskUseCases.observeTasks(filter = TaskFilter.Active).toStateFlow(initialValue = emptyList())
+        val tasksFlow = taskUseCases.observeTasks().toStateFlow(initialValue = emptyList())
         val actionBarDataFlow = AppFile.TaskPreferences.cache()
             .mapNotNull { it }
             .distinctUntilChanged()
@@ -66,6 +65,7 @@ class TaskListScreenStore(
         }.mapLatest { (tasks, actionBarData) ->
             val comparator = taskComparator(sortProperty = actionBarData.sortProperty, sortAscending = actionBarData.sortAscending)
             tasks
+                .filter { actionBarData.showDeleted || it.deletedAt == null }
                 .filter { it.matchesSearch(search = actionBarData.search, searchableProperties = actionBarData.searchableProperties) }
                 .let { if (comparator == null) it else it.sortedWith(comparator = comparator) } to actionBarData
         }

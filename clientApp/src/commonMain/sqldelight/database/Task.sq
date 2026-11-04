@@ -34,13 +34,6 @@ FROM Task
 INNER JOIN TaskUserJoin ON Task.uuid = TaskUserJoin.taskUuid
 WHERE TaskUserJoin.userUuid = :userUuid;
 
-getActiveTasks:
-SELECT Task.*
-FROM Task
-INNER JOIN TaskUserJoin ON Task.uuid = TaskUserJoin.taskUuid
-WHERE TaskUserJoin.userUuid = :userUuid
-AND Task.deletedAt IS NULL;
-
 getTasksByUuids:
 SELECT Task.*
 FROM Task

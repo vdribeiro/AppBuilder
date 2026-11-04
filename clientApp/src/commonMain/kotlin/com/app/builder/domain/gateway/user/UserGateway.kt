@@ -59,38 +59,46 @@ class UserGateway(
     /** Query interface for the users table. */
     private val userDao = database.userQueries
 
-    override fun observeUsers(): Flow<List<User>> = if (!user.hasPermission(entityType = EntityType.USER, permission = Permission.READ)) {
-        val throwable = Throwable(message = "User does not have ${Permission.READ} permission for ${EntityType.USER}")
-        Telemetry.error(tag = TAG, message = "Invalid permissions", throwable = throwable)
-        return emptyFlow()
-    } else userDao.getUsers()
-        .asFlow { it.toUser() }
-        .onStart {
-            val job = Job(
-                userUuid = user.uuid,
-                entityType = EntityType.USER,
-                type = Job.Type.GET,
-            )
-            scheduler.queue(job = job)
-        }
-        .flowOn(context = Dispatcher.IO)
-        .catch {
-            Telemetry.error(tag = TAG, message = "Unable to observe users", throwable = it)
-            emit(value = emptyList())
+    override fun observeUsers(): Flow<List<User>> {
+        if (!user.hasPermission(entityType = EntityType.USER, permission = Permission.READ)) {
+            val throwable = Throwable(message = "User does not have ${Permission.READ} permission for ${EntityType.USER}")
+            Telemetry.error(tag = TAG, message = "Invalid permissions", throwable = throwable)
+            return emptyFlow()
         }
 
-    override fun observeUser(uuid: Uuid): Flow<User?> = if (!user.hasPermission(entityType = EntityType.USER, permission = Permission.READ)) {
-        val throwable = Throwable(message = "User does not have ${Permission.READ} permission for ${EntityType.USER}")
-        Telemetry.error(tag = TAG, message = "Invalid permissions", throwable = throwable)
-        return emptyFlow()
-    } else userDao.getUser(userUuid = uuid)
-        .asFlow { it.toUser() }
-        .map { it.firstOrNull() }
-        .flowOn(context = Dispatcher.IO)
-        .catch {
-            Telemetry.error(tag = TAG, message = "Unable to observe user", throwable = it)
-            emit(value = null)
+        return userDao.getUsers()
+            .asFlow { it.toUser() }
+            .onStart {
+                val job = Job(
+                    userUuid = user.uuid,
+                    entityType = EntityType.USER,
+                    type = Job.Type.GET,
+                )
+                scheduler.queue(job = job)
+            }
+            .flowOn(context = Dispatcher.IO)
+            .catch {
+                Telemetry.error(tag = TAG, message = "Unable to observe users", throwable = it)
+                emit(value = emptyList())
+            }
+    }
+
+    override fun observeUser(uuid: Uuid): Flow<User?> {
+        if (!user.hasPermission(entityType = EntityType.USER, permission = Permission.READ)) {
+            val throwable = Throwable(message = "User does not have ${Permission.READ} permission for ${EntityType.USER}")
+            Telemetry.error(tag = TAG, message = "Invalid permissions", throwable = throwable)
+            return emptyFlow()
         }
+
+        return userDao.getUser(userUuid = uuid)
+            .asFlow { it.toUser() }
+            .map { it.firstOrNull() }
+            .flowOn(context = Dispatcher.IO)
+            .catch {
+                Telemetry.error(tag = TAG, message = "Unable to observe user", throwable = it)
+                emit(value = null)
+            }
+    }
 
     override suspend fun upsertUser(user: User) = withContext(context = Dispatcher.IO) {
         if (!this@UserGateway.user.hasPermission(entityType = EntityType.USER, permission = Permission.WRITE)) {

@@ -61,40 +61,46 @@ class TaskGateway(
     /** Query interface for the task-user join table. */
     private val taskUserJoinDao = database.taskUserJoinQueries
 
-    override fun observeTasks(filter: TaskFilter): Flow<List<Task>> = if (!user.hasPermission(entityType = EntityType.TASK, permission = Permission.READ)) {
-        val throwable = Throwable(message = "User does not have ${Permission.READ} permission for ${EntityType.TASK}")
-        Telemetry.error(tag = TAG, message = "Invalid permissions", throwable = throwable)
-        return emptyFlow()
-    } else when (filter) {
-        TaskFilter.All -> taskDao.getTasks(userUuid = user.uuid, mapper = ::TaskSchema)
-        TaskFilter.Active -> taskDao.getActiveTasks(userUuid = user.uuid)
-    }.asFlow { it.toTask() }
-        .onStart {
-            val job = Job(
-                userUuid = user.uuid,
-                entityType = EntityType.TASK,
-                type = Job.Type.GET,
-            )
-            scheduler.queue(job = job)
-        }
-        .flowOn(context = Dispatcher.IO)
-        .catch {
-            Telemetry.error(tag = TAG, message = "Unable to observe tasks", throwable = it)
-            emit(value = emptyList())
+    override fun observeTasks(): Flow<List<Task>> {
+        if (!user.hasPermission(entityType = EntityType.TASK, permission = Permission.READ)) {
+            val throwable = Throwable(message = "User does not have ${Permission.READ} permission for ${EntityType.TASK}")
+            Telemetry.error(tag = TAG, message = "Invalid permissions", throwable = throwable)
+            return emptyFlow()
         }
 
-    override fun observeTask(uuid: Uuid): Flow<Task?> = if (!user.hasPermission(entityType = EntityType.TASK, permission = Permission.READ)) {
-        val throwable = Throwable(message = "User does not have ${Permission.READ} permission for ${EntityType.TASK}")
-        Telemetry.error(tag = TAG, message = "Invalid permissions", throwable = throwable)
-        return emptyFlow()
-    } else taskDao.getTask(userUuid = user.uuid, taskUuid = uuid)
-        .asFlow { it.toTask() }
-        .map { it.firstOrNull() }
-        .flowOn(context = Dispatcher.IO)
-        .catch {
-            Telemetry.error(tag = TAG, message = "Unable to observe task", throwable = it)
-            emit(value = null)
+        return taskDao.getTasks(userUuid = user.uuid, mapper = ::TaskSchema)
+            .asFlow { it.toTask() }
+            .onStart {
+                val job = Job(
+                    userUuid = user.uuid,
+                    entityType = EntityType.TASK,
+                    type = Job.Type.GET,
+                )
+                scheduler.queue(job = job)
+            }
+            .flowOn(context = Dispatcher.IO)
+            .catch {
+                Telemetry.error(tag = TAG, message = "Unable to observe tasks", throwable = it)
+                emit(value = emptyList())
+            }
+    }
+
+    override fun observeTask(uuid: Uuid): Flow<Task?> {
+        if (!user.hasPermission(entityType = EntityType.TASK, permission = Permission.READ)) {
+            val throwable = Throwable(message = "User does not have ${Permission.READ} permission for ${EntityType.TASK}")
+            Telemetry.error(tag = TAG, message = "Invalid permissions", throwable = throwable)
+            return emptyFlow()
         }
+
+        return taskDao.getTask(userUuid = user.uuid, taskUuid = uuid)
+            .asFlow { it.toTask() }
+            .map { it.firstOrNull() }
+            .flowOn(context = Dispatcher.IO)
+            .catch {
+                Telemetry.error(tag = TAG, message = "Unable to observe task", throwable = it)
+                emit(value = null)
+            }
+    }
 
     override suspend fun upsertTask(task: Task) = withContext(context = Dispatcher.IO) {
         if (!user.hasPermission(entityType = EntityType.TASK, permission = Permission.WRITE)) {

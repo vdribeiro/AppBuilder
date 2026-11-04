@@ -50,38 +50,46 @@ class RegistryGateway(
     /** Query interface for the registries table. */
     private val registryDao = database.registryQueries
 
-    override fun observeRegistries(): Flow<List<Registry>> = if (!user.hasPermission(entityType = EntityType.REGISTRY, permission = Permission.READ)) {
-        val throwable = Throwable(message = "User does not have ${Permission.READ} permission for ${EntityType.REGISTRY}")
-        Telemetry.error(tag = TAG, message = "Invalid permissions", throwable = throwable)
-        return emptyFlow()
-    } else registryDao.getRegistries()
-        .asFlow { it.toRegistry() }
-        .onStart {
-            val job = Job(
-                userUuid = user.uuid,
-                entityType = EntityType.REGISTRY,
-                type = Job.Type.GET,
-            )
-            scheduler.queue(job = job)
-        }
-        .flowOn(context = Dispatcher.IO)
-        .catch {
-            Telemetry.error(tag = TAG, message = "Unable to observe registries", throwable = it)
-            emit(value = emptyList())
+    override fun observeRegistries(): Flow<List<Registry>> {
+        if (!user.hasPermission(entityType = EntityType.REGISTRY, permission = Permission.READ)) {
+            val throwable = Throwable(message = "User does not have ${Permission.READ} permission for ${EntityType.REGISTRY}")
+            Telemetry.error(tag = TAG, message = "Invalid permissions", throwable = throwable)
+            return emptyFlow()
         }
 
-    override fun observeRegistry(uuid: Uuid): Flow<Registry?> = if (!user.hasPermission(entityType = EntityType.REGISTRY, permission = Permission.READ)) {
-        val throwable = Throwable(message = "User does not have ${Permission.READ} permission for ${EntityType.REGISTRY}")
-        Telemetry.error(tag = TAG, message = "Invalid permissions", throwable = throwable)
-        return emptyFlow()
-    } else registryDao.getRegistry(requestUuid = uuid)
-        .asFlow { it.toRegistry() }
-        .map { it.firstOrNull() }
-        .flowOn(context = Dispatcher.IO)
-        .catch {
-            Telemetry.error(tag = TAG, message = "Unable to observe registry", throwable = it)
-            emit(value = null)
+        return registryDao.getRegistries()
+            .asFlow { it.toRegistry() }
+            .onStart {
+                val job = Job(
+                    userUuid = user.uuid,
+                    entityType = EntityType.REGISTRY,
+                    type = Job.Type.GET,
+                )
+                scheduler.queue(job = job)
+            }
+            .flowOn(context = Dispatcher.IO)
+            .catch {
+                Telemetry.error(tag = TAG, message = "Unable to observe registries", throwable = it)
+                emit(value = emptyList())
+            }
+    }
+
+    override fun observeRegistry(uuid: Uuid): Flow<Registry?> {
+        if (!user.hasPermission(entityType = EntityType.REGISTRY, permission = Permission.READ)) {
+            val throwable = Throwable(message = "User does not have ${Permission.READ} permission for ${EntityType.REGISTRY}")
+            Telemetry.error(tag = TAG, message = "Invalid permissions", throwable = throwable)
+            return emptyFlow()
         }
+
+        return registryDao.getRegistry(requestUuid = uuid)
+            .asFlow { it.toRegistry() }
+            .map { it.firstOrNull() }
+            .flowOn(context = Dispatcher.IO)
+            .catch {
+                Telemetry.error(tag = TAG, message = "Unable to observe registry", throwable = it)
+                emit(value = null)
+            }
+    }
 
     override suspend fun syncRegistries() = withContext(context = Dispatcher.IO) {
         if (!user.hasPermission(entityType = EntityType.REGISTRY, permission = Permission.READ)) {

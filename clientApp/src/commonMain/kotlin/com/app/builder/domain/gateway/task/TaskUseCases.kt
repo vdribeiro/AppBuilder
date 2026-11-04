@@ -8,12 +8,11 @@ import com.app.builder.domain.Task
 interface TaskUseCases {
 
     /**
-     * Observes the list of tasks selected by [filter].
+     * Observes the list of tasks.
      *
-     * @param filter Selects the tasks by their deletion.
      * @return [Flow] emitting the current list of [Task] objects.
      */
-    fun observeTasks(filter: TaskFilter): Flow<List<Task>>
+    fun observeTasks(): Flow<List<Task>>
 
     /**
      * Observes a specific application task by its unique identifier.
