@@ -103,7 +103,7 @@ object Application {
                 )
                 add(element = sentryLogger)
             }
-            if (ClientFlags.flags.console) add(element = Console)
+            if (ClientFlags.value.console) add(element = Console)
         }
         Telemetry.info(tag = TAG, message = "Telemetry set")
     }
@@ -262,8 +262,8 @@ object Application {
         userGraph.repositories.configRepository.load()
         userGraph.repositories.configRepository.syncFeatureFlags()
         userGraph.repositories.configRepository.syncConfigs()
-        Telemetry.info(tag = TAG, message = "Feature Flags: ${ClientFlags.flags}")
-        Telemetry.info(tag = TAG, message = "Configs: ${ClientConfigs.configs}")
+        Telemetry.info(tag = TAG, message = "Feature Flags: ${ClientFlags.value}")
+        Telemetry.info(tag = TAG, message = "Configs: ${ClientConfigs.value}")
     }
 
     /** Stops [Dependency.UserGraph] services. */
@@ -283,8 +283,8 @@ object Application {
     private suspend fun Dependency.UserGraph.sync() {
         Telemetry.info(tag = TAG, message = "Requesting sync for user ${user.uuid}")
         repositories.userRepository.syncUsers()
-        if (ClientFlags.flags.registries) repositories.registryRepository.syncRegistries()
-        if (ClientFlags.flags.tasks) repositories.taskRepository.syncTasks()
+        if (ClientFlags.value.registries) repositories.registryRepository.syncRegistries()
+        if (ClientFlags.value.tasks) repositories.taskRepository.syncTasks()
     }
 
     /** Register lifecycles of services. */

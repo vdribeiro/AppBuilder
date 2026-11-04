@@ -128,8 +128,7 @@ class TagManager(
             EntityType.NOTIFICATION,
             EntityType.TRANSLATION,
             EntityType.SESSION,
-            EntityType.DEVICE_LOCATION,
-            EntityType.FILE -> Unit
+            EntityType.DEVICE_LOCATION -> Unit
         }
     }
 

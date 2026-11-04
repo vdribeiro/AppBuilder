@@ -66,7 +66,7 @@ fun AudioScreen(
         topBar = { ActionBar(store = actionBarStore) },
         bottomBar = { Navigation(store = navigationStore) },
     ) {
-        if (!ClientFlags.flags.music || !audioPlayer.available) {
+        if (!ClientFlags.value.music || !audioPlayer.available) {
             Text(modifier = Modifier.align(alignment = Alignment.Center), text = "audio_unavailable")
             return@Screen
         }

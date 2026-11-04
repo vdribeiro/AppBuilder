@@ -77,7 +77,7 @@ class ClockServiceTest: TestCase() {
 
         clockService.stop()
         val probesAtStop = probes.value
-        testScheduler.advanceTimeBy(delayTimeMillis = ClientConfigs.configs.clockProbeInterval * 5)
+        testScheduler.advanceTimeBy(delayTimeMillis = ClientConfigs.value.clockProbeInterval * 5)
         assertEquals(expected = probesAtStop, actual = probes.value)
     }
 
@@ -117,7 +117,7 @@ class ClockServiceTest: TestCase() {
         clockService.start()
         clockService.trusted.first { it }
 
-        testScheduler.advanceTimeBy(delayTimeMillis = ClientConfigs.configs.clockProbeInterval * 5)
+        testScheduler.advanceTimeBy(delayTimeMillis = ClientConfigs.value.clockProbeInterval * 5)
         assertEquals(expected = 1, actual = probes.value)
         clockService.stop()
     }

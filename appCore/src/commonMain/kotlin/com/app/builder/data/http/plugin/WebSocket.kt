@@ -16,7 +16,7 @@ import com.app.builder.core.config.ClientConfigs
  * @param pingInterval The interval in milliseconds between ping frames sent to the server.
  */
 internal fun <T: HttpClientEngineConfig> HttpClientConfig<T>.installWebSocket(
-    pingInterval: Long = ClientConfigs.configs.pushPingInterval
+    pingInterval: Long = ClientConfigs.value.pushPingInterval
 ) {
     install(plugin = WebSockets) {
         contentConverter = KotlinxWebsocketSerializationConverter(format = Json)

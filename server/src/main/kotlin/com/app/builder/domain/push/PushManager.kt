@@ -76,7 +76,7 @@ class PushManager(
     }
 
     override fun start() {
-        if (!ServerFlags.flags.push) return
+        if (!ServerFlags.value.push) return
         if (!mutex.tryLock()) return
         try {
             if (isRunning) return
@@ -133,7 +133,7 @@ class PushManager(
         if (heartbeatJob?.isActive != true) heartbeatJob = scope.launch(context = Dispatcher.IO) {
             while (isActive) {
                 connectionUseCases.touchConnections(instanceId = instanceId)
-                delay(timeMillis = ServerConfigs.configs.presenceHeartbeatInterval)
+                delay(timeMillis = ServerConfigs.value.presenceHeartbeatInterval)
             }
         }
     }
@@ -161,8 +161,8 @@ class PushManager(
         userDevices.forEach { (deviceUuid, session) ->
             scope.launch(context = Dispatcher.IO) {
                 val delivered = session.isActive && sendWithRetry(
-                    maxAttempts = ServerConfigs.configs.pushMaxAttempts,
-                    retryDelay = ServerConfigs.configs.pushRetryDelay
+                    maxAttempts = ServerConfigs.value.pushMaxAttempts,
+                    retryDelay = ServerConfigs.value.pushRetryDelay
                 ) { session.send(frame = Frame.Text(text = encodedNotification)) }
 
                 if (!delivered) removeConnection(userUuid = userUuid, deviceUuid = deviceUuid, session = session)

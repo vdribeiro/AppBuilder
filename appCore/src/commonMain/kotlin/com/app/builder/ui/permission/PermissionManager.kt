@@ -44,9 +44,9 @@ open class PermissionManager {
      */
     suspend fun grantPermission(permission: Permission): Boolean {
         when (permission) {
-            Permission.NOTIFICATIONS -> if (!ClientFlags.flags.notifications) return false
-            Permission.CAMERA -> if (!ClientFlags.flags.camera) return false
-            Permission.LOCATION -> if (!ClientFlags.flags.locationCapture) return false
+            Permission.NOTIFICATIONS -> if (!ClientFlags.value.notifications) return false
+            Permission.CAMERA -> if (!ClientFlags.value.camera) return false
+            Permission.LOCATION -> if (!ClientFlags.value.locationCapture) return false
         }
         return hasPermission(permission = permission) || mutex.withLock {
             inFlightRequests.getOrPut(key = permission) {

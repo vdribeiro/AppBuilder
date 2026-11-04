@@ -57,7 +57,7 @@ class RateLimitTest: TestCase() {
             routing { get(path = "/test") { call.respondText(text = "ok") } }
         }
         val client = createClient(token = null)
-        val limit = ServerConfigs.configs.rateLimiterLimit
+        val limit = ServerConfigs.value.rateLimiterLimit
 
         repeat(times = limit) {
             assertEquals(expected = HttpStatusCode.OK, actual = client.get(urlString = "/test") { header(HttpHeaders.XForwardedFor, "1.1.1.1") }.status)

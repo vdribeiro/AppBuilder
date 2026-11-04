@@ -111,10 +111,10 @@ private suspend fun Dependency.stop() {
 private suspend fun Dependency.start() {
     Telemetry.info(tag = TAG, message = "Loading flags and configs")
     useCases.configUseCases.load()
-    Telemetry.info(tag = TAG, message = "Server Feature Flags: ${ServerFlags.flags}")
-    Telemetry.info(tag = TAG, message = "Server Configs: ${ServerConfigs.configs}")
-    Telemetry.info(tag = TAG, message = "Client Feature Flags: ${ClientFlags.flags}")
-    Telemetry.info(tag = TAG, message = "Client Configs: ${ClientConfigs.configs}")
+    Telemetry.info(tag = TAG, message = "Server Feature Flags: ${ServerFlags.value}")
+    Telemetry.info(tag = TAG, message = "Server Configs: ${ServerConfigs.value}")
+    Telemetry.info(tag = TAG, message = "Client Feature Flags: ${ClientFlags.value}")
+    Telemetry.info(tag = TAG, message = "Client Configs: ${ClientConfigs.value}")
 
     Telemetry.info(tag = TAG, message = "Starting user role cache")
     permissionService.start()
@@ -163,7 +163,7 @@ private suspend fun createDependency(): Dependency {
     }.getOrThrow()
 
     val firebaseApp = runCatching {
-        if (!Env.developmentMode && ServerFlags.flags.firebase) {
+        if (!Env.developmentMode && ServerFlags.value.firebase) {
             FirebaseApp.getApps().firstOrNull() ?: FirebaseApp.initializeApp(
                 FirebaseOptions.builder()
                     .setCredentials(GoogleCredentials.getApplicationDefault())

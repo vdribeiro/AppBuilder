@@ -157,7 +157,7 @@ class DeviceLocationProviderTest: TestCase() {
             override val available: Boolean = true
             override fun hasPermission(): Boolean = true
             override suspend fun platformGetLastKnownLocation(): DeviceLocation? {
-                delay(timeMillis = ClientConfigs.configs.locationQueryTimeoutMillis - 1)
+                delay(timeMillis = ClientConfigs.value.locationQueryTimeoutMillis - 1)
                 return fixture
             }
         }

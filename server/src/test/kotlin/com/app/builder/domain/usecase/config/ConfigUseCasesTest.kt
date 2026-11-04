@@ -21,10 +21,10 @@ class ConfigUseCasesTest: TestCase() {
 
         configUseCases.load()
 
-        assertEquals(expected = FakeData.clientFlags, actual = ClientFlags.flags)
-        assertEquals(expected = FakeData.clientConfigs, actual = ClientConfigs.configs)
-        assertEquals(expected = FakeData.serverFlags, actual = ServerFlags.flags)
-        assertEquals(expected = FakeData.serverConfigs, actual = ServerConfigs.configs)
+        assertEquals(expected = FakeData.clientFlags, actual = ClientFlags.value)
+        assertEquals(expected = FakeData.clientConfigs, actual = ClientConfigs.value)
+        assertEquals(expected = FakeData.serverFlags, actual = ServerFlags.value)
+        assertEquals(expected = FakeData.serverConfigs, actual = ServerConfigs.value)
     }
 
     /** Verifies that updating configs and flags persists the new values and reflects them after load. */
@@ -51,9 +51,9 @@ class ConfigUseCasesTest: TestCase() {
 
         configUseCases.load()
 
-        assertEquals(expected = clientFlags, actual = ClientFlags.flags)
-        assertEquals(expected = clientConfigs, actual = ClientConfigs.configs)
-        assertEquals(expected = serverFlags, actual = ServerFlags.flags)
-        assertEquals(expected = serverConfigs, actual = ServerConfigs.configs)
+        assertEquals(expected = clientFlags, actual = ClientFlags.value)
+        assertEquals(expected = clientConfigs, actual = ClientConfigs.value)
+        assertEquals(expected = serverFlags, actual = ServerFlags.value)
+        assertEquals(expected = serverConfigs, actual = ServerConfigs.value)
     }
 }

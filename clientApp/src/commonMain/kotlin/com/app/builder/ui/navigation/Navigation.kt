@@ -31,16 +31,16 @@ val loadingScreen: Screen = Screen.Splash
 /** The screen to land on once loaded, for a session that isn't authenticated yet. */
 val unauthenticatedScreen: Screen
     get() = when {
-        ClientFlags.flags.home -> Screen.Home
-        ClientFlags.flags.login -> Screen.Login
+        ClientFlags.value.home -> Screen.Home
+        ClientFlags.value.login -> Screen.Login
         else -> Screen.Error(error = true)
     }
 
 /** The screen to land on once loaded, for an authenticated session. */
 val authenticatedScreen: Screen
     get() = when {
-        ClientFlags.flags.home -> Screen.Home
-        ClientFlags.flags.userProfile -> Screen.UserProfile
+        ClientFlags.value.home -> Screen.Home
+        ClientFlags.value.userProfile -> Screen.UserProfile
         else -> Screen.Error(error = true)
     }
 
@@ -80,9 +80,9 @@ fun UnauthenticatedNavigation(
         entryProviderScope = {
             errorProvider()
             if (useCases == null) return@Navigation
-            if (ClientFlags.flags.home) homeProvider(useCases = useCases)
-            if (ClientFlags.flags.userProfile) userProfileProvider(useCases = useCases)
-            if (ClientFlags.flags.login) authenticationProvider(useCases = useCases)
+            if (ClientFlags.value.home) homeProvider(useCases = useCases)
+            if (ClientFlags.value.userProfile) userProfileProvider(useCases = useCases)
+            if (ClientFlags.value.login) authenticationProvider(useCases = useCases)
         }
     )
 }
@@ -105,18 +105,18 @@ fun AuthenticatedNavigation(
             errorProvider()
             if (useCases == null) return@Navigation
             configsProvider(useCases = useCases)
-            if (ClientFlags.flags.home) homeProvider(useCases = useCases)
-            if (ClientFlags.flags.design) designProvider()
-            if (ClientFlags.flags.userProfile) userProfileProvider(useCases = useCases)
-            if (ClientFlags.flags.users) userProvider(useCases = useCases)
-            if (ClientFlags.flags.locationCapture) deviceLocationProvider(useCases = useCases)
-            if (ClientFlags.flags.nfc) nfcProvider(useCases = useCases)
-            if (ClientFlags.flags.camera) cameraProvider(useCases = useCases)
-            if (ClientFlags.flags.deviceFiles) deviceFilesProvider(useCases = useCases)
-            if (ClientFlags.flags.music) audioProvider(useCases = useCases)
-            if (ClientFlags.flags.notifications) pushProvider(useCases = useCases)
-            if (ClientFlags.flags.registries) registryProvider(useCases = useCases)
-            if (ClientFlags.flags.tasks) taskProvider(useCases = useCases)
+            if (ClientFlags.value.home) homeProvider(useCases = useCases)
+            if (ClientFlags.value.design) designProvider()
+            if (ClientFlags.value.userProfile) userProfileProvider(useCases = useCases)
+            if (ClientFlags.value.users) userProvider(useCases = useCases)
+            if (ClientFlags.value.locationCapture) deviceLocationProvider(useCases = useCases)
+            if (ClientFlags.value.nfc) nfcProvider(useCases = useCases)
+            if (ClientFlags.value.camera) cameraProvider(useCases = useCases)
+            if (ClientFlags.value.deviceFiles) deviceFilesProvider(useCases = useCases)
+            if (ClientFlags.value.music) audioProvider(useCases = useCases)
+            if (ClientFlags.value.notifications) pushProvider(useCases = useCases)
+            if (ClientFlags.value.registries) registryProvider(useCases = useCases)
+            if (ClientFlags.value.tasks) taskProvider(useCases = useCases)
         }
     )
 }
@@ -163,7 +163,6 @@ private fun setBackStack(
         EntityType.USER -> buildList<Screen> { add(Screen.UserList); entityUuid?.let { add(Screen.UserDetail(uuid = it.toString())) } }
         EntityType.DEVICE_LOCATION -> listOf(Screen.DeviceLocation)
         EntityType.TASK -> buildList<Screen> { add(Screen.TaskList); entityUuid?.let { add(Screen.TaskDetail(uuid = it.toString())) } }
-        EntityType.FILE -> TODO()
     }
     if (backStack.isNotEmpty()) router.backStack.apply {
         clear()

@@ -38,7 +38,7 @@ internal fun <T: HttpClientEngineConfig> HttpClientConfig<T>.installInterceptor(
 ) {
     install(plugin = createClientPlugin(name = "Interceptor") {
         onRequest { request, _ ->
-            if (!ClientFlags.flags.http) throw NetworkDisabledException()
+            if (!ClientFlags.value.http) throw NetworkDisabledException()
             if (!isInternetAvailable()) throw InternetDisabledException()
 
             val now = now().toString()

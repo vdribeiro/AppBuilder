@@ -166,7 +166,7 @@ internal class AndroidNfcController: NfcController() {
     /** Resume scan so foreground taps are handled in-app instead of falling through to the system's NFC tag dispatch/notification. */
     internal fun onForeground() {
         runCatching {
-            if (!ClientFlags.flags.nfc || !available) return@runCatching stop()
+            if (!ClientFlags.value.nfc || !available) return@runCatching stop()
             scan()
         }.onFailure {
             Telemetry.error(tag = TAG, message = "Unable to resume NFC scan", throwable = it)

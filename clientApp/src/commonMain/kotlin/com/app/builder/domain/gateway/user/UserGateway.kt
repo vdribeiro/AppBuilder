@@ -163,7 +163,7 @@ class UserGateway(
                 headerMap = job.toHeaderMap(),
                 queryMap = queryMap
             ),
-            pageSize = ServerConfigs.configs.pageSize,
+            pageSize = ServerConfigs.value.pageSize,
             cursorOf = { it.modifiedAt.toString() to it.uuid.toString() }
         ) { users ->
             database.safeTransaction {
@@ -295,7 +295,7 @@ class UserGateway(
      * @return The matching [UserSchema] entities, merged across all chunks.
      */
     private suspend fun getUsersByUuidsFromDatabase(uuids: List<Uuid>): List<UserSchema> = buildList {
-        uuids.chunked(size = ClientConfigs.configs.batchSize).forEach { uuidChunk ->
+        uuids.chunked(size = ClientConfigs.value.batchSize).forEach { uuidChunk ->
             addAll(elements = userDao.getUsersByUuids(userUuids = uuidChunk).awaitAsList())
         }
     }

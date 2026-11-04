@@ -25,7 +25,7 @@ fun AppTheme(
     content: @Composable () -> Unit
 ) = BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
     RegisterImageLoader()
-    val splitScreen = maxWidth >= ClientConfigs.configs.splitScreenMaximumWidth.dp
+    val splitScreen = maxWidth >= ClientConfigs.value.splitScreenMaximumWidth.dp
     val translationMap = getTranslationState()
     val colorScheme = getColorScheme()
     val shapes = getShapes()

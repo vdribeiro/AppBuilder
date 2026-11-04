@@ -47,7 +47,7 @@ class TaskGateway(
         cursorUuid: Uuid?,
         pageSize: Int
     ): List<Task> = withContext(context = Dispatcher.IO) {
-        val effectivePageSize = pageSize.coerceIn(minimumValue = 1, maximumValue = ServerConfigs.configs.maxPageSize)
+        val effectivePageSize = pageSize.coerceIn(minimumValue = 1, maximumValue = ServerConfigs.value.maxPageSize)
         database.safeTransaction {
             TaskTable
                 .join(

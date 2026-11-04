@@ -30,7 +30,7 @@ class TicketGateway(
     override suspend fun createTicket(userUuid: Uuid): Uuid? = withContext(context = Dispatcher.IO) {
         val ticketUuid = uuid()
         val now = now()
-        val ticketTtl = ServerConfigs.configs.ticketTtl.milliseconds
+        val ticketTtl = ServerConfigs.value.ticketTtl.milliseconds
 
         database.safeTransaction {
             TicketTable.deleteWhere { TicketTable.expiresAt less now }

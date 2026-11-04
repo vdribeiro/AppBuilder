@@ -38,7 +38,7 @@ class RegistryGateway(
         cursorUuid: Uuid?,
         pageSize: Int
     ): List<Registry> = withContext(context = Dispatcher.IO) {
-        val effectivePageSize = pageSize.coerceIn(minimumValue = 1, maximumValue = ServerConfigs.configs.maxPageSize)
+        val effectivePageSize = pageSize.coerceIn(minimumValue = 1, maximumValue = ServerConfigs.value.maxPageSize)
         database.safeTransaction {
             RegistryTable
                 .selectAll()

@@ -120,16 +120,4 @@ sealed interface Screen: NavKey {
     @Serializable
     @SerialName(value = "screen_task_detail")
     data class TaskDetail(val uuid: String, val new: Boolean = false): Screen
-    /** The screen listing all files. */
-    @Serializable
-    @SerialName(value = "screen_file_list")
-    data object FileList: Screen
-    /**
-     * The screen showing the details of a single file.
-     *
-     * @property uuid The unique identifier of the file to display.
-     */
-    @Serializable
-    @SerialName(value = "screen_file_detail")
-    data class FileDetail(val uuid: String): Screen
 }

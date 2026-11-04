@@ -36,7 +36,7 @@ class ProbeTest: TestCase() {
         installRouting()
         val client = createClient(token = bearerToken.accessToken)
 
-        repeat(times = ServerConfigs.configs.rateLimiterProbeLimit) {
+        repeat(times = ServerConfigs.value.rateLimiterProbeLimit) {
             assertEquals(expected = HttpStatusCode.OK, actual = client.head(urlString = URL.Probe.path).status)
         }
 

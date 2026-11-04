@@ -15,9 +15,9 @@ import com.app.builder.core.config.ClientConfigs
  * @param requestTimeoutMillis The maximum time in milliseconds to wait for a complete response from the server.
  */
 internal fun <T: HttpClientEngineConfig> HttpClientConfig<T>.installHttpTimeout(
-    connectTimeoutMillis: Long = ClientConfigs.configs.httpConnectTimeoutMillis,
-    socketTimeoutMillis: Long = ClientConfigs.configs.httpSocketTimeoutMillis,
-    requestTimeoutMillis: Long = ClientConfigs.configs.httpRequestTimeoutMillis,
+    connectTimeoutMillis: Long = ClientConfigs.value.httpConnectTimeoutMillis,
+    socketTimeoutMillis: Long = ClientConfigs.value.httpSocketTimeoutMillis,
+    requestTimeoutMillis: Long = ClientConfigs.value.httpRequestTimeoutMillis,
 ) {
     install(plugin = HttpTimeout) {
         this.connectTimeoutMillis = connectTimeoutMillis

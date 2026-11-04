@@ -59,7 +59,7 @@ class BroadcastManager(
     }
 
     override fun start() {
-        if (!ClientFlags.flags.broadcast) return
+        if (!ClientFlags.value.broadcast) return
         if (!mutex.tryLock()) return
         try {
             startSubscribeJob()
@@ -92,16 +92,16 @@ class BroadcastManager(
             getInternetAvailabilityFlow().collectLatest { online ->
                 if (!online) return@collectLatest
 
-                var retryDelay = ClientConfigs.configs.broadcastRetryDelay
+                var retryDelay = ClientConfigs.value.broadcastRetryDelay
                 while (this@launch.isActive) {
                     listen(
-                        onConnected = { retryDelay = ClientConfigs.configs.broadcastRetryDelay }
+                        onConnected = { retryDelay = ClientConfigs.value.broadcastRetryDelay }
                     ) { pushPayload ->
                         Telemetry.info(tag = TAG, message = "Received push payload: ${pushPayload.uuid}")
                         PushProvider.handlePushPayload(pushPayload = pushPayload)
                     }
                     delay(timeMillis = retryDelay)
-                    retryDelay = (retryDelay * 2).coerceAtMost(maximumValue = ClientConfigs.configs.broadcastMaxRetryDelay)
+                    retryDelay = (retryDelay * 2).coerceAtMost(maximumValue = ClientConfigs.value.broadcastMaxRetryDelay)
                 }
             }
         }

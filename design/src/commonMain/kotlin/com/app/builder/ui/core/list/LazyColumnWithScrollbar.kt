@@ -54,7 +54,7 @@ import com.app.builder.ui.core.text.Text
 fun LazyColumn(
     modifier: Modifier = Modifier,
     state: LazyListState = rememberLazyListState(),
-    scrollBar: Boolean = ClientFlags.flags.scrollBar,
+    scrollBar: Boolean = ClientFlags.value.scrollBar,
     contentPadding: PaddingValues = PaddingValues(all = 0.dp),
     reverseLayout: Boolean = false,
     verticalArrangement: Arrangement.Vertical = if (!reverseLayout) Arrangement.Top else Arrangement.Bottom,

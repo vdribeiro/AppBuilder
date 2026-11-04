@@ -1,10 +1,7 @@
 package com.app.builder.core.config
 
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.updateAndGet
 import kotlinx.serialization.Serializable
+import com.app.builder.core.flow.StateHolder
 
 /** Centralized feature flag container to change system capabilities dynamically. */
 @Serializable
@@ -28,10 +25,9 @@ data class ServerFlags(
     /** Toggles task CRUD routes. When false, they return 404. */
     val tasks: Boolean
 ) {
-    companion object {
-
-        /** Default feature flags. */
-        private val default = ServerFlags(
+    /** Holds the server feature flags. */
+    companion object: StateHolder<ServerFlags>(
+        default = ServerFlags(
             resources = true,
             probe = true,
             authentication = true,
@@ -42,27 +38,5 @@ data class ServerFlags(
             deviceLocation = true,
             tasks = true
         )
-
-        /** Backing state flow tracking feature flag changes. */
-        private val _flagsFlow: MutableStateFlow<ServerFlags> = MutableStateFlow(value = default)
-        /** Read only stream, emitting the current value on collection and every change after. */
-        val flagsFlow: StateFlow<ServerFlags> = _flagsFlow.asStateFlow()
-        /** Current synchronous snapshot of the feature flags. */
-        val flags: ServerFlags get() = _flagsFlow.value
-
-        /**
-         * Atomically mutates the feature configuration state block and returns the freshly evaluated state.
-         *
-         * @param flags A lambda block receiving the current [ServerFlags] snapshot and returning a modified copy.
-         * @return The updated [ServerFlags] instance.
-         */
-        fun set(flags: (ServerFlags) -> ServerFlags): ServerFlags = _flagsFlow.updateAndGet(function = flags)
-
-        /**
-         * Restores the feature flags to their default values.
-         *
-         * @return The default [ServerFlags] instance.
-         */
-        fun reset(): ServerFlags = set { default }
-    }
+    )
 }

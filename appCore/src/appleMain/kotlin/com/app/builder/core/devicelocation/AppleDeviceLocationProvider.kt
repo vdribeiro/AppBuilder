@@ -76,7 +76,7 @@ internal class AppleDeviceLocationProvider: DeviceLocationProvider() {
 
         newManager.requestLocation()
         timer = NSTimer.scheduledTimerWithTimeInterval(
-            interval = ClientConfigs.configs.locationIntervalMillis / 1000.0,
+            interval = ClientConfigs.value.locationIntervalMillis / 1000.0,
             repeats = true
         ) { manager?.requestLocation() }
     }

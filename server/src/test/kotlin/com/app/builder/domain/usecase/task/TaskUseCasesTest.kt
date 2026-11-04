@@ -27,9 +27,9 @@ class TaskUseCasesTest: TestCase() {
         val lastSyncUtc = now() - 1.days
 
         assertTrue(actual = notificationsUseCases.observeNotifications(userUuid = FakeData.adminUser.uuid).firstOrNull().orEmpty().isEmpty())
-        assertTrue(actual = taskUseCases.getTasks(userUuid = FakeData.adminUser.uuid, lastSyncUtc = lastSyncUtc, cursorUtc = null, cursorUuid = null, pageSize = ServerConfigs.configs.pageSize).isEmpty())
+        assertTrue(actual = taskUseCases.getTasks(userUuid = FakeData.adminUser.uuid, lastSyncUtc = lastSyncUtc, cursorUtc = null, cursorUuid = null, pageSize = ServerConfigs.value.pageSize).isEmpty())
         assertTrue(actual = taskUseCases.upsertTask(userUuid = FakeData.adminUser.uuid, task = FakeData.task))
-        assertEquals(expected = listOf(element = FakeData.task), actual = taskUseCases.getTasks(userUuid = FakeData.adminUser.uuid, lastSyncUtc = lastSyncUtc, cursorUtc = null, cursorUuid = null, pageSize = ServerConfigs.configs.pageSize))
+        assertEquals(expected = listOf(element = FakeData.task), actual = taskUseCases.getTasks(userUuid = FakeData.adminUser.uuid, lastSyncUtc = lastSyncUtc, cursorUtc = null, cursorUuid = null, pageSize = ServerConfigs.value.pageSize))
         assertTrue(actual = notificationsUseCases.observeNotifications(userUuid = FakeData.adminUser.uuid).firstOrNull().orEmpty().isNotEmpty())
     }
 
@@ -69,7 +69,7 @@ class TaskUseCasesTest: TestCase() {
         assertTrue(actual = taskUseCases.upsertTask(userUuid = FakeData.adminUser.uuid, task = FakeData.task))
         assertTrue(actual = taskUseCases.upsertTask(userUuid = FakeData.user.uuid, task = userTask))
 
-        assertEquals(expected = listOf(element = FakeData.task), actual = taskUseCases.getTasks(userUuid = FakeData.adminUser.uuid, lastSyncUtc = lastSyncUtc, cursorUtc = null, cursorUuid = null, pageSize = ServerConfigs.configs.pageSize))
-        assertEquals(expected = listOf(element = userTask), actual = taskUseCases.getTasks(userUuid = FakeData.user.uuid, lastSyncUtc = lastSyncUtc, cursorUtc = null, cursorUuid = null, pageSize = ServerConfigs.configs.pageSize))
+        assertEquals(expected = listOf(element = FakeData.task), actual = taskUseCases.getTasks(userUuid = FakeData.adminUser.uuid, lastSyncUtc = lastSyncUtc, cursorUtc = null, cursorUuid = null, pageSize = ServerConfigs.value.pageSize))
+        assertEquals(expected = listOf(element = userTask), actual = taskUseCases.getTasks(userUuid = FakeData.user.uuid, lastSyncUtc = lastSyncUtc, cursorUtc = null, cursorUuid = null, pageSize = ServerConfigs.value.pageSize))
     }
 }

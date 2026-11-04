@@ -223,7 +223,7 @@ class JobSchedulerTest: TestCase() {
     fun retryResultFailsJobWhenMaxAttemptsExceeded() = runUnitTest {
         val jobStore = LocalJobStore()
         val scheduler = JobScheduler(jobStore = jobStore, jobFactory = FakeJobFactory(result = JobResult.Retry), clockService = FakeClockService())
-        val job = Job(userUuid = Uuid.NIL, entityType = EntityType.CLIENT_FLAG, type = Job.Type.GET, attempt = ClientConfigs.configs.schedulerMaxAttempts)
+        val job = Job(userUuid = Uuid.NIL, entityType = EntityType.CLIENT_FLAG, type = Job.Type.GET, attempt = ClientConfigs.value.schedulerMaxAttempts)
 
         scheduler.queue(job = job)
         scheduler.start()
@@ -424,7 +424,7 @@ class JobSchedulerTest: TestCase() {
         scheduler.start()
         val deferred = jobStore.jobs.first { jobs -> jobs.any { it.uuid == job.uuid && it.state == Job.State.PENDING && it.attempt == 1 } }.first { it.uuid == job.uuid }
         val deadline = assertNotNull(actual = deferred.nextAttemptAt)
-        assertEquals(expected = now() + ClientConfigs.configs.schedulerRetryDelay.milliseconds, actual = deadline)
+        assertEquals(expected = now() + ClientConfigs.value.schedulerRetryDelay.milliseconds, actual = deadline)
 
         jobStore.jobs.first { jobs -> jobs.any { it.uuid == job.uuid && it.state == Job.State.COMPLETE } }
         scheduler.stop()
@@ -438,7 +438,7 @@ class JobSchedulerTest: TestCase() {
         val jobFactory = SequencedJobFactory(results = listOf(JobResult.Retry, JobResult.Retry, JobResult.Success))
         val scheduler = JobScheduler(jobStore = jobStore, jobFactory = jobFactory, clockService = FakeClockService())
         val job = Job(userUuid = Uuid.NIL, entityType = EntityType.CLIENT_FLAG, type = Job.Type.GET)
-        val delay = ClientConfigs.configs.schedulerRetryDelay
+        val delay = ClientConfigs.value.schedulerRetryDelay
 
         val queuedAt = now()
 
@@ -460,7 +460,7 @@ class JobSchedulerTest: TestCase() {
         val jobFactory = FakeJobFactory()
         val scheduler = JobScheduler(jobStore = jobStore, jobFactory = jobFactory, clockService = FakeClockService())
         val entityUuid = uuid()
-        val deferred = Job(userUuid = Uuid.NIL, entityUuid = entityUuid, entityType = EntityType.TASK, type = Job.Type.POST, attempt = 1, nextAttemptAt = now() + ClientConfigs.configs.schedulerRetryDelay.milliseconds)
+        val deferred = Job(userUuid = Uuid.NIL, entityUuid = entityUuid, entityType = EntityType.TASK, type = Job.Type.POST, attempt = 1, nextAttemptAt = now() + ClientConfigs.value.schedulerRetryDelay.milliseconds)
         val newer = Job(userUuid = Uuid.NIL, utc = deferred.utc + 1.milliseconds, entityUuid = entityUuid, entityType = EntityType.TASK, type = Job.Type.POST)
 
         jobStore.upsertJob(job = deferred)
@@ -478,7 +478,7 @@ class JobSchedulerTest: TestCase() {
         val jobStore = LocalJobStore()
         val jobFactory = FakeJobFactory()
         val scheduler = JobScheduler(jobStore = jobStore, jobFactory = jobFactory, clockService = FakeClockService())
-        val deferred = Job(userUuid = Uuid.NIL, entityType = EntityType.TASK, type = Job.Type.GET, attempt = 1, nextAttemptAt = now() + ClientConfigs.configs.schedulerRetryDelay.milliseconds)
+        val deferred = Job(userUuid = Uuid.NIL, entityType = EntityType.TASK, type = Job.Type.GET, attempt = 1, nextAttemptAt = now() + ClientConfigs.value.schedulerRetryDelay.milliseconds)
         val newer = Job(userUuid = Uuid.NIL, utc = deferred.utc + 1.milliseconds, entityType = EntityType.TASK, type = Job.Type.GET)
 
         jobStore.upsertJob(job = deferred)
@@ -495,7 +495,7 @@ class JobSchedulerTest: TestCase() {
     fun deadlineBeyondTheCeilingIsTreatedAsDue() = runUnitTest {
         val jobStore = LocalJobStore()
         val scheduler = JobScheduler(jobStore = jobStore, jobFactory = FakeJobFactory(), clockService = FakeClockService())
-        val stranded = now() + (ClientConfigs.configs.schedulerMaxRetryDelay * 10).milliseconds
+        val stranded = now() + (ClientConfigs.value.schedulerMaxRetryDelay * 10).milliseconds
         val job = Job(userUuid = Uuid.NIL, entityType = EntityType.CLIENT_FLAG, type = Job.Type.GET, attempt = 1, nextAttemptAt = stranded)
 
         jobStore.upsertJob(job = job)

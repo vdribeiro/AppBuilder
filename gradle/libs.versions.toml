@@ -10,11 +10,11 @@ kotlinx-collections = "0.5.2"
 kotlinx-atomicfu = "0.33.0"
 
 # Ktor
-ktor = "3.5.2"
+ktor = "3.6.0"
 
 # SQLDelight
 sqldelight = "2.4.1"
-sqldelight-jdbc = "3.53.4.0"
+sqldelight-jdbc = "3.54.1.0"
 
 # UI & Lifecycle
 compose-multiplatform = "1.12.2"
@@ -22,7 +22,7 @@ compose-hotreload = "1.2.0"
 compose-material3 = "1.9.0"
 compose-icons = "1.7.3"
 lifecycle = "2.11.0"
-navigation3-ui = "1.1.2"
+navigation3-ui = "1.2.0"
 coil = "3.6.3"
 
 # Android

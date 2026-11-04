@@ -115,7 +115,7 @@ class RegistryGateway(
                 headerMap = job.toHeaderMap(),
                 queryMap = queryMap
             ),
-            pageSize = ServerConfigs.configs.pageSize,
+            pageSize = ServerConfigs.value.pageSize,
             cursorOf = { it.requestUtc.toString() to it.requestUuid.toString() }
         ) { registries ->
             database.safeTransaction {

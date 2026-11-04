@@ -1,10 +1,7 @@
 package com.app.builder.core.config
 
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.updateAndGet
 import kotlinx.serialization.Serializable
+import com.app.builder.core.flow.StateHolder
 
 /** Centralized config container to change system capabilities dynamically. */
 @Serializable
@@ -58,10 +55,9 @@ data class ServerConfigs(
     /** Upper bound on entries returned per page. */
     val maxPageSize: Int,
 ) {
-    companion object {
-
-        /** Default configs. */
-        private val default = ServerConfigs(
+    /** Holds the server configs. */
+    companion object: StateHolder<ServerConfigs>(
+        default = ServerConfigs(
             timestampFutureTolerance = 60_000L,
             accessTokenValidity = 3_600_000L,
             refreshTokenValidity = 2_592_000_000L,
@@ -87,27 +83,5 @@ data class ServerConfigs(
             pageSize = 200,
             maxPageSize = 100_000,
         )
-
-        /** Backing state flow tracking config changes. */
-        private val _configsFlow: MutableStateFlow<ServerConfigs> = MutableStateFlow(value = default)
-        /** Read only stream, emitting the current value on collection and every change after. */
-        val configsFlow: StateFlow<ServerConfigs> = _configsFlow.asStateFlow()
-        /** Current synchronous snapshot of the configs. */
-        val configs: ServerConfigs get() = _configsFlow.value
-
-        /**
-         * Atomically mutates the config configuration state block and returns the freshly evaluated state.
-         *
-         * @param configs A lambda block receiving the current [ServerConfigs] snapshot and returning a modified copy.
-         * @return The updated [ServerConfigs] instance.
-         */
-        fun set(configs: (ServerConfigs) -> ServerConfigs): ServerConfigs = _configsFlow.updateAndGet(function = configs)
-
-        /**
-         * Restores the configs to their default values.
-         *
-         * @return The default [ServerConfigs] instance.
-         */
-        fun reset(): ServerConfigs = set { default }
-    }
+    )
 }

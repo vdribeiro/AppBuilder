@@ -5,7 +5,6 @@ import kotlinx.coroutines.Job
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AppRegistration
 import androidx.compose.material.icons.filled.Camera
-import androidx.compose.material.icons.filled.FileOpen
 import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.GpsFixed
 import androidx.compose.material.icons.filled.Home
@@ -53,7 +52,7 @@ class NavigationStore(
         authenticationUseCases.observeCurrentUser().observe(id = "current_user") { user ->
             val permissions = user?.permissions ?: return@observe
             val items = buildList {
-                if (ClientFlags.flags.home) add(
+                if (ClientFlags.value.home) add(
                     NavigationItem(
                         selected = state.selected == NavigationRoute.HOME,
                         text = "home",
@@ -61,7 +60,7 @@ class NavigationStore(
                         onClick = { router.navigate(screen = Screen.Home, option = Router.NavOption.CLEAR) },
                     )
                 )
-                if (ClientFlags.flags.tasks && permissions[EntityType.TASK] != null) add(
+                if (ClientFlags.value.tasks && permissions[EntityType.TASK] != null) add(
                     NavigationItem(
                         selected = state.selected == NavigationRoute.TASK,
                         text = "task",
@@ -69,15 +68,7 @@ class NavigationStore(
                         onClick = { router.navigate(screen = Screen.TaskList, option = Router.NavOption.CLEAR) },
                     )
                 )
-                if (permissions[EntityType.FILE] != null) add(
-                    NavigationItem(
-                        selected = state.selected == NavigationRoute.FILE,
-                        text = "file",
-                        icon = Icons.Filled.FileOpen,
-                        onClick = { router.navigate(screen = Screen.FileList, option = Router.NavOption.CLEAR) },
-                    )
-                )
-                if (ClientFlags.flags.users && permissions[EntityType.USER] != null) add(
+                if (ClientFlags.value.users && permissions[EntityType.USER] != null) add(
                     NavigationItem(
                         selected = state.selected == NavigationRoute.USER,
                         text = "user",
@@ -85,7 +76,7 @@ class NavigationStore(
                         onClick = { router.navigate(screen = Screen.UserList, option = Router.NavOption.CLEAR) },
                     )
                 )
-                if (ClientFlags.flags.registries && permissions[EntityType.REGISTRY] != null) add(
+                if (ClientFlags.value.registries && permissions[EntityType.REGISTRY] != null) add(
                     NavigationItem(
                         selected = state.selected == NavigationRoute.REGISTRY,
                         text = "registry",
@@ -93,7 +84,7 @@ class NavigationStore(
                         onClick = { router.navigate(screen = Screen.RegistryList, option = Router.NavOption.CLEAR) },
                     )
                 )
-                if (ClientFlags.flags.locationCapture && permissions[EntityType.DEVICE_LOCATION] != null) add(
+                if (ClientFlags.value.locationCapture && permissions[EntityType.DEVICE_LOCATION] != null) add(
                     NavigationItem(
                         selected = state.selected == NavigationRoute.DEVICE_LOCATION,
                         text = "device_location",
@@ -101,7 +92,7 @@ class NavigationStore(
                         onClick = { router.navigate(screen = Screen.DeviceLocation, option = Router.NavOption.CLEAR) },
                     )
                 )
-                if (ClientFlags.flags.nfc) add(
+                if (ClientFlags.value.nfc) add(
                     NavigationItem(
                         selected = state.selected == NavigationRoute.NFC,
                         text = "nfc",
@@ -109,7 +100,7 @@ class NavigationStore(
                         onClick = { router.navigate(screen = Screen.NFC, option = Router.NavOption.CLEAR) },
                     )
                 )
-                if (ClientFlags.flags.camera) add(
+                if (ClientFlags.value.camera) add(
                     NavigationItem(
                         selected = state.selected == NavigationRoute.CAMERA,
                         text = "camera",
@@ -117,7 +108,7 @@ class NavigationStore(
                         onClick = { router.navigate(screen = Screen.Camera, option = Router.NavOption.CLEAR) },
                     )
                 )
-                if (ClientFlags.flags.deviceFiles) add(
+                if (ClientFlags.value.deviceFiles) add(
                     NavigationItem(
                         selected = state.selected == NavigationRoute.DEVICE_FILE,
                         text = "device_file",
@@ -125,7 +116,7 @@ class NavigationStore(
                         onClick = { router.navigate(screen = Screen.DeviceFiles, option = Router.NavOption.CLEAR) },
                     )
                 )
-                if (ClientFlags.flags.music) add(
+                if (ClientFlags.value.music) add(
                     NavigationItem(
                         selected = state.selected == NavigationRoute.AUDIO,
                         text = "audio",
@@ -133,7 +124,7 @@ class NavigationStore(
                         onClick = { router.navigate(screen = Screen.Audio, option = Router.NavOption.CLEAR) },
                     )
                 )
-                if (ClientFlags.flags.notifications && permissions[EntityType.NOTIFICATION] != null) add(
+                if (ClientFlags.value.notifications && permissions[EntityType.NOTIFICATION] != null) add(
                     NavigationItem(
                         selected = state.selected == NavigationRoute.NOTIFICATION,
                         text = "push",
@@ -163,7 +154,7 @@ class NavigationStore(
                         onClick = { router.navigate(screen = Screen.Translations, option = Router.NavOption.CLEAR) },
                     )
                 )
-                if (ClientFlags.flags.design) add(
+                if (ClientFlags.value.design) add(
                     NavigationItem(
                         text = "design",
                         icon = Icons.Filled.Palette,

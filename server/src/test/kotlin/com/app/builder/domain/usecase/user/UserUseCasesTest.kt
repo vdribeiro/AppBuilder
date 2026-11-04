@@ -72,7 +72,7 @@ class UserUseCasesTest: TestCase() {
             .useCases
             .userUseCases
 
-        assertTrue(actual = userUseCases.getUsers(lastSyncUtc = Instant.fromEpochSeconds(epochSeconds = 0), cursorUtc = null, cursorUuid = null, pageSize = ServerConfigs.configs.pageSize).isEmpty())
+        assertTrue(actual = userUseCases.getUsers(lastSyncUtc = Instant.fromEpochSeconds(epochSeconds = 0), cursorUtc = null, cursorUuid = null, pageSize = ServerConfigs.value.pageSize).isEmpty())
 
         val now = now()
         val old = FakeData.user.copy(uuid = uuid(), modifiedAt = now - 10.minutes, name = "Old")
@@ -81,9 +81,9 @@ class UserUseCasesTest: TestCase() {
         assertTrue(actual = userUseCases.upsertUser(user = old))
         assertTrue(actual = userUseCases.upsertUser(user = recent))
 
-        assertEquals(expected = 2, actual = userUseCases.getUsers(lastSyncUtc = Instant.fromEpochSeconds(epochSeconds = 0), cursorUtc = null, cursorUuid = null, pageSize = ServerConfigs.configs.pageSize).size)
-        assertEquals(expected = listOf(recent), actual = userUseCases.getUsers(lastSyncUtc = now - 1.minutes, cursorUtc = null, cursorUuid = null, pageSize = ServerConfigs.configs.pageSize))
-        assertTrue(actual = userUseCases.getUsers(lastSyncUtc = now + 1.minutes, cursorUtc = null, cursorUuid = null, pageSize = ServerConfigs.configs.pageSize).isEmpty())
+        assertEquals(expected = 2, actual = userUseCases.getUsers(lastSyncUtc = Instant.fromEpochSeconds(epochSeconds = 0), cursorUtc = null, cursorUuid = null, pageSize = ServerConfigs.value.pageSize).size)
+        assertEquals(expected = listOf(recent), actual = userUseCases.getUsers(lastSyncUtc = now - 1.minutes, cursorUtc = null, cursorUuid = null, pageSize = ServerConfigs.value.pageSize))
+        assertTrue(actual = userUseCases.getUsers(lastSyncUtc = now + 1.minutes, cursorUtc = null, cursorUuid = null, pageSize = ServerConfigs.value.pageSize).isEmpty())
     }
 
     /** Verifies that fetching users paginates results using the cursor timestamp and UUID. */

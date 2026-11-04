@@ -33,9 +33,9 @@ class ConnectionGateway(
 
     override suspend fun addConnection(userUuid: Uuid, deviceUuid: Uuid, instanceId: Uuid): Boolean = withContext(context = Dispatcher.IO) {
         val now = now()
-        val liveSince = now - ServerConfigs.configs.presenceTtl.milliseconds
-        val pushMaxConnections = ServerConfigs.configs.pushMaxConnections
-        val pushMaxUserConnections = ServerConfigs.configs.pushMaxUserConnections
+        val liveSince = now - ServerConfigs.value.presenceTtl.milliseconds
+        val pushMaxConnections = ServerConfigs.value.pushMaxConnections
+        val pushMaxUserConnections = ServerConfigs.value.pushMaxUserConnections
 
         database.safeTransaction {
             val liveConnections = ConnectionTable
@@ -73,7 +73,7 @@ class ConnectionGateway(
     }
 
     override suspend fun getConnectedDeviceUuids(userUuid: Uuid): List<Uuid> = withContext(context = Dispatcher.IO) {
-        val liveSince = now() - ServerConfigs.configs.presenceTtl.milliseconds
+        val liveSince = now() - ServerConfigs.value.presenceTtl.milliseconds
 
         database.safeTransaction {
             ConnectionTable
@@ -88,7 +88,7 @@ class ConnectionGateway(
 
     override suspend fun touchConnections(instanceId: Uuid): Unit = withContext(context = Dispatcher.IO) {
         val now = now()
-        val liveSince = now - ServerConfigs.configs.presenceTtl.milliseconds
+        val liveSince = now - ServerConfigs.value.presenceTtl.milliseconds
 
         database.safeTransaction {
             ConnectionTable.update(where = { ConnectionTable.instanceId eq instanceId }) {

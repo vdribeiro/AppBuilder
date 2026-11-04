@@ -55,7 +55,7 @@ class BroadcastManager(
     }
 
     override fun start() {
-        if (!ServerFlags.flags.broadcast) return
+        if (!ServerFlags.value.broadcast) return
         if (!mutex.tryLock()) return
         try {
             startListenJob()
@@ -65,7 +65,7 @@ class BroadcastManager(
     }
 
     override fun addConnection(session: ServerSSESession): Boolean {
-        val broadcastMaxConnections = ServerConfigs.configs.broadcastMaxConnections
+        val broadcastMaxConnections = ServerConfigs.value.broadcastMaxConnections
         if (connections.size >= broadcastMaxConnections) {
             Telemetry.error(tag = TAG, message = "Broadcast connection rejected: limit reached (${connections.size}/$broadcastMaxConnections)")
             return false
@@ -108,8 +108,8 @@ class BroadcastManager(
         connections.forEach { session ->
             scope.launch(context = Dispatcher.IO) {
                 val delivered = session.isActive && sendWithRetry(
-                    maxAttempts = ServerConfigs.configs.broadcastMaxAttempts,
-                    retryDelay = ServerConfigs.configs.broadcastRetryDelay
+                    maxAttempts = ServerConfigs.value.broadcastMaxAttempts,
+                    retryDelay = ServerConfigs.value.broadcastRetryDelay
                 ) { session.send(data = data) }
 
                 if (!delivered) removeConnection(session = session)

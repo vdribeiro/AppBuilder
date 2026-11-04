@@ -37,7 +37,7 @@ class DeviceLocationGateway(
         cursorUuid: Uuid?,
         pageSize: Int
     ): List<DeviceLocation> = withContext(context = Dispatcher.IO) {
-        val effectivePageSize = pageSize.coerceIn(minimumValue = 1, maximumValue = ServerConfigs.configs.maxPageSize)
+        val effectivePageSize = pageSize.coerceIn(minimumValue = 1, maximumValue = ServerConfigs.value.maxPageSize)
         database.safeTransaction {
             DeviceLocationTable
                 .selectAll()

@@ -43,7 +43,7 @@ fun createAccessToken(userUuid: Uuid, claimName: String, claimValue: String): St
         .withClaim(claimName, claimValue)
         .withAudience(Env.jwtAudience)
         .withIssuer(Env.jwtIssuer)
-        .withExpiresAt((now() + ServerConfigs.configs.accessTokenValidity.milliseconds).toJavaInstant())
+        .withExpiresAt((now() + ServerConfigs.value.accessTokenValidity.milliseconds).toJavaInstant())
         .sign(algorithm)
 }.onFailure {
     Telemetry.error(tag = TAG, message = "Unable to create access token", throwable = it)

@@ -23,15 +23,15 @@ fun Application.installRateLimit() {
 
     install(plugin = RateLimit) {
         global {
-            rateLimiter(limit = ServerConfigs.configs.rateLimiterLimit, refillPeriod = ServerConfigs.configs.rateLimiterRefillPeriod.milliseconds)
+            rateLimiter(limit = ServerConfigs.value.rateLimiterLimit, refillPeriod = ServerConfigs.value.rateLimiterRefillPeriod.milliseconds)
             requestKey { call -> call.getRequestKey(trustedProxyHops = trustedProxyHops) }
         }
         register(name = RateLimitName(name = RATE_LIMIT_PROBE)) {
-            rateLimiter(limit = ServerConfigs.configs.rateLimiterProbeLimit, refillPeriod = ServerConfigs.configs.rateLimiterProbeRefillPeriod.milliseconds)
+            rateLimiter(limit = ServerConfigs.value.rateLimiterProbeLimit, refillPeriod = ServerConfigs.value.rateLimiterProbeRefillPeriod.milliseconds)
             requestKey { call -> call.getRequestKey(trustedProxyHops = trustedProxyHops) }
         }
         register(name = RateLimitName(name = RATE_LIMIT_BROADCAST)) {
-            rateLimiter(limit = ServerConfigs.configs.rateLimiterBroadcastLimit, refillPeriod = ServerConfigs.configs.rateLimiterBroadcastRefillPeriod.milliseconds)
+            rateLimiter(limit = ServerConfigs.value.rateLimiterBroadcastLimit, refillPeriod = ServerConfigs.value.rateLimiterBroadcastRefillPeriod.milliseconds)
             requestKey { call -> call.getRequestKey(trustedProxyHops = trustedProxyHops) }
         }
     }

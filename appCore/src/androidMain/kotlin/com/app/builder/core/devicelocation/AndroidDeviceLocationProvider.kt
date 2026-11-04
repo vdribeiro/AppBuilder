@@ -109,16 +109,16 @@ internal class AndroidDeviceLocationProvider: DeviceLocationProvider() {
      */
     @RequiresPermission(anyOf = [Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION])
     private fun startFusedUpdates(fusedClient: FusedLocationProviderClient) {
-        val interval = ClientConfigs.configs.locationIntervalMillis
+        val interval = ClientConfigs.value.locationIntervalMillis
         val request = LocationRequest.Builder(interval)
             .setMinUpdateIntervalMillis(interval)
             .setMaxUpdateDelayMillis(interval)
-            .setMinUpdateDistanceMeters(ClientConfigs.configs.locationDisplacementMeters)
+            .setMinUpdateDistanceMeters(ClientConfigs.value.locationDisplacementMeters)
             .setPriority(Priority.PRIORITY_BALANCED_POWER_ACCURACY)
             .build()
         val callback = object: LocationCallback() {
             override fun onLocationResult(result: LocationResult) {
-                if (!ClientFlags.flags.locationCapture || !available || !hasPermission()) return platformStopUpdate()
+                if (!ClientFlags.value.locationCapture || !available || !hasPermission()) return platformStopUpdate()
                 result.locations.lastOrNull()?.let { setLastKnownLocation(deviceLocation = it.toDeviceLocation()) }
             }
         }
@@ -143,14 +143,14 @@ internal class AndroidDeviceLocationProvider: DeviceLocationProvider() {
             else -> return platformStopUpdate()
         }
         val listener = LocationListener { location ->
-            if (!ClientFlags.flags.locationCapture || !available || !hasPermission()) return@LocationListener platformStopUpdate()
+            if (!ClientFlags.value.locationCapture || !available || !hasPermission()) return@LocationListener platformStopUpdate()
             setLastKnownLocation(deviceLocation = location.toDeviceLocation())
         }
         platformListener = listener
         locationManager.requestLocationUpdates(
             provider,
-            ClientConfigs.configs.locationIntervalMillis,
-            ClientConfigs.configs.locationDisplacementMeters,
+            ClientConfigs.value.locationIntervalMillis,
+            ClientConfigs.value.locationDisplacementMeters,
             listener,
             Looper.getMainLooper()
         )

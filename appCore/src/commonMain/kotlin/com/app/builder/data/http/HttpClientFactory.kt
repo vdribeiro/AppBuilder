@@ -59,8 +59,8 @@ data class Configurations(
     val logLevel: LogLevel = LogLevel.HEADERS,
     val loadTokens: suspend () -> BearerTokens? = { null },
     val refreshTokens: suspend (BearerTokens?) -> BearerTokens? = { null },
-    val connectTimeoutMillis: Long = ClientConfigs.configs.httpConnectTimeoutMillis,
-    val socketTimeoutMillis: Long = ClientConfigs.configs.httpSocketTimeoutMillis,
-    val requestTimeoutMillis: Long = ClientConfigs.configs.httpRequestTimeoutMillis,
-    val pingInterval: Long = ClientConfigs.configs.pushPingInterval
+    val connectTimeoutMillis: Long = ClientConfigs.value.httpConnectTimeoutMillis,
+    val socketTimeoutMillis: Long = ClientConfigs.value.httpSocketTimeoutMillis,
+    val requestTimeoutMillis: Long = ClientConfigs.value.httpRequestTimeoutMillis,
+    val pingInterval: Long = ClientConfigs.value.pushPingInterval
 )

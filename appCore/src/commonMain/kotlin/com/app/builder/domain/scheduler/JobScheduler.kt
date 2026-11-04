@@ -111,7 +111,7 @@ class JobScheduler(
     }
 
     override fun start() {
-        if (!ClientFlags.flags.scheduler) return
+        if (!ClientFlags.value.scheduler) return
         if (!mutex.tryLock()) return
 
         try {
@@ -122,7 +122,7 @@ class JobScheduler(
     }
 
     override suspend fun queue(job: Job) = withContext(context = Dispatcher.IO) {
-        if (!ClientFlags.flags.scheduler) {
+        if (!ClientFlags.value.scheduler) {
             // Execute jobs when scheduler is disabled
             scope.launch(context = Dispatcher.IO) { jobFactory.resolve(job = job).invoke() }
             return@withContext
@@ -265,7 +265,7 @@ class JobScheduler(
      */
     private fun applyRetry(job: Job): Job {
         val nextAttempt = job.attempt + 1
-        return if (nextAttempt >= ClientConfigs.configs.schedulerMaxAttempts) {
+        return if (nextAttempt >= ClientConfigs.value.schedulerMaxAttempts) {
             job.copy(state = Job.State.FAILED, attempt = nextAttempt)
         } else job.copy(state = Job.State.PENDING, attempt = nextAttempt, nextAttemptAt = now() + backoff(attempt = nextAttempt))
     }
@@ -278,7 +278,7 @@ class JobScheduler(
      * @return The delay to wait.
      */
     private fun backoff(attempt: Int): Duration {
-        val configs = ClientConfigs.configs
+        val configs = ClientConfigs.value
         val ceiling = configs.schedulerMaxRetryDelay
         var delay = configs.schedulerRetryDelay.coerceAtMost(maximumValue = ceiling)
         var newAttempt = (attempt - 1).coerceAtLeast(minimumValue = 0)
@@ -299,7 +299,7 @@ class JobScheduler(
      */
     private fun Job.isDue(now: Instant): Boolean {
         val deadline = nextAttemptAt ?: return true
-        return deadline <= now || deadline - now > ClientConfigs.configs.schedulerMaxRetryDelay.milliseconds
+        return deadline <= now || deadline - now > ClientConfigs.value.schedulerMaxRetryDelay.milliseconds
     }
 
     /**

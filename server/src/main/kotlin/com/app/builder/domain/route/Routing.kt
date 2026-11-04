@@ -29,13 +29,13 @@ fun Application.installRouting(dependency: Dependency) {
         get(path = "/") { call.respondText(text = "Server running") }
         registryRoutes(permissionService = permissionService, registryUseCases = useCases.registryUseCases)
         configRoutes(permissionService = permissionService, configUseCases = useCases.configUseCases, registryUseCases = useCases.registryUseCases)
-        if (ServerFlags.flags.resources) staticResources(remotePath = "/api/data", basePackage = "static")
-        if (ServerFlags.flags.probe) probeRoutes()
-        if (ServerFlags.flags.authentication) authenticationRoutes(permissionService = permissionService, authenticationUseCases = useCases.authenticationUseCases, registryUseCases = useCases.registryUseCases)
-        if (ServerFlags.flags.broadcast) broadcastRoutes(permissionService = permissionService, broadcastService = dependency.broadcastService, fcmService = dependency.fcmService, registryUseCases = useCases.registryUseCases)
-        if (ServerFlags.flags.push) pushRoutes(permissionService = permissionService, deviceTokenUseCases = useCases.deviceTokenUseCases, pushService = dependency.pushService, registryUseCases = useCases.registryUseCases)
-        if (ServerFlags.flags.users) userRoutes(permissionService = permissionService, userUseCases = useCases.userUseCases, registryUseCases = useCases.registryUseCases)
-        if (ServerFlags.flags.deviceLocation) deviceLocationRoutes(permissionService = permissionService, deviceLocationUseCases = useCases.deviceLocationUseCases, registryUseCases = useCases.registryUseCases)
-        if (ServerFlags.flags.tasks) taskRoutes(permissionService = permissionService, taskUseCases = useCases.taskUseCases, registryUseCases = useCases.registryUseCases)
+        if (ServerFlags.value.resources) staticResources(remotePath = "/api/data", basePackage = "static")
+        if (ServerFlags.value.probe) probeRoutes()
+        if (ServerFlags.value.authentication) authenticationRoutes(permissionService = permissionService, authenticationUseCases = useCases.authenticationUseCases, registryUseCases = useCases.registryUseCases)
+        if (ServerFlags.value.broadcast) broadcastRoutes(permissionService = permissionService, broadcastService = dependency.broadcastService, fcmService = dependency.fcmService, registryUseCases = useCases.registryUseCases)
+        if (ServerFlags.value.push) pushRoutes(permissionService = permissionService, deviceTokenUseCases = useCases.deviceTokenUseCases, pushService = dependency.pushService, registryUseCases = useCases.registryUseCases)
+        if (ServerFlags.value.users) userRoutes(permissionService = permissionService, userUseCases = useCases.userUseCases, registryUseCases = useCases.registryUseCases)
+        if (ServerFlags.value.deviceLocation) deviceLocationRoutes(permissionService = permissionService, deviceLocationUseCases = useCases.deviceLocationUseCases, registryUseCases = useCases.registryUseCases)
+        if (ServerFlags.value.tasks) taskRoutes(permissionService = permissionService, taskUseCases = useCases.taskUseCases, registryUseCases = useCases.registryUseCases)
     }
 }

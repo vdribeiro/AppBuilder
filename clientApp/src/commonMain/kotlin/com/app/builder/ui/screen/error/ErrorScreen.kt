@@ -56,7 +56,7 @@ fun ErrorScreen(error: Boolean) {
         }
     ) {
         var logs: String? by remember { mutableStateOf(value = null) }
-        if (ClientFlags.flags.console) LaunchedEffect(key1 = Unit) {
+        if (ClientFlags.value.console) LaunchedEffect(key1 = Unit) {
             while (isActive) {
                 logs = Console.getSnapshot().joinToString(separator = "\n").ifBlank { null }
                 delay(timeMillis = 1000)

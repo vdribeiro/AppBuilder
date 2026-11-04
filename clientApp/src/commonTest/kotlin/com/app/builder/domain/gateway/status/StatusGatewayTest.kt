@@ -39,7 +39,7 @@ class StatusGatewayTest: TestCase() {
     fun notSyncedAfterTolerance() = runUnitTest {
         val scheduler = FakeScheduler()
         val gateway = StatusGateway(scheduler = scheduler, clockService = FakeClockService())
-        val tolerance = ClientConfigs.configs.schedulerSyncTolerance
+        val tolerance = ClientConfigs.value.schedulerSyncTolerance
         val values = mutableListOf<Boolean>()
         backgroundScope.launch { gateway.observeSynced().collect { values.add(it) } }
         testScheduler.runCurrent()
@@ -63,8 +63,8 @@ class StatusGatewayTest: TestCase() {
         val scheduler = FakeScheduler()
         val gateway = StatusGateway(scheduler = scheduler, clockService = FakeClockService())
         val job = Job(userUuid = Uuid.NIL, entityType = EntityType.CLIENT_FLAG, type = Job.Type.GET)
-        testScheduler.advanceTimeBy(delayTime = (ClientConfigs.configs.schedulerSyncTolerance + 1).milliseconds)
-        scheduler.activeJobs.value = listOf(job.copy(utc = job.utc - (ClientConfigs.configs.schedulerSyncTolerance + 1).milliseconds))
+        testScheduler.advanceTimeBy(delayTime = (ClientConfigs.value.schedulerSyncTolerance + 1).milliseconds)
+        scheduler.activeJobs.value = listOf(job.copy(utc = job.utc - (ClientConfigs.value.schedulerSyncTolerance + 1).milliseconds))
 
         val values = mutableListOf<Boolean>()
         backgroundScope.launch { gateway.observeSynced().collect { values.add(it) } }
@@ -80,7 +80,7 @@ class StatusGatewayTest: TestCase() {
         val values = mutableListOf<Boolean>()
         backgroundScope.launch { gateway.observeSynced().collect { values.add(it) } }
         scheduler.activeJobs.value = listOf(Job(userUuid = Uuid.NIL, entityType = EntityType.CLIENT_FLAG, type = Job.Type.GET))
-        testScheduler.advanceTimeBy(delayTime = (ClientConfigs.configs.schedulerSyncTolerance + 1).milliseconds)
+        testScheduler.advanceTimeBy(delayTime = (ClientConfigs.value.schedulerSyncTolerance + 1).milliseconds)
         assertEquals(expected = false, actual = values.last())
 
         ClientFlags.set { it.copy(http = false) }

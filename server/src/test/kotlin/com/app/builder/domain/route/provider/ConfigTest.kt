@@ -44,13 +44,13 @@ class ConfigTest: TestCase() {
         val flagsResponse = adminClient.post(request = HttpRequest(url = URL.ClientFlags), body = flags)
         assertEquals(expected = HttpStatusCode.OK, actual = flagsResponse.status)
         assertEquals(expected = flags, actual = flagsResponse.body<ClientFlags>())
-        assertEquals(expected = flags, actual = ClientFlags.flags)
+        assertEquals(expected = flags, actual = ClientFlags.value)
 
         val configs = FakeData.clientConfigs.copy(httpConnectTimeoutMillis = 1234L)
         val configsResponse = adminClient.post(request = HttpRequest(url = URL.ClientConfigs), body = configs)
         assertEquals(expected = HttpStatusCode.OK, actual = configsResponse.status)
         assertEquals(expected = configs, actual = configsResponse.body<ClientConfigs>())
-        assertEquals(expected = configs, actual = ClientConfigs.configs)
+        assertEquals(expected = configs, actual = ClientConfigs.value)
     }
 
     /** Verifies that reading server flags and configs requires admin permission. */
@@ -85,13 +85,13 @@ class ConfigTest: TestCase() {
         val flagsResponse = adminClient.post(request = HttpRequest(url = URL.ServerFlags), body = flags)
         assertEquals(expected = HttpStatusCode.OK, actual = flagsResponse.status)
         assertEquals(expected = flags, actual = flagsResponse.body<ServerFlags>())
-        assertEquals(expected = flags, actual = ServerFlags.flags)
+        assertEquals(expected = flags, actual = ServerFlags.value)
 
         val configs = FakeData.serverConfigs.copy(accessTokenValidity = 4321L)
         val configsResponse = adminClient.post(request = HttpRequest(url = URL.ServerConfigs), body = configs)
         assertEquals(expected = HttpStatusCode.OK, actual = configsResponse.status)
         assertEquals(expected = configs, actual = configsResponse.body<ServerConfigs>())
-        assertEquals(expected = configs, actual = ServerConfigs.configs)
+        assertEquals(expected = configs, actual = ServerConfigs.value)
     }
 
     /** Verifies that unauthenticated requests to the protected server flags and configs endpoints are rejected. */

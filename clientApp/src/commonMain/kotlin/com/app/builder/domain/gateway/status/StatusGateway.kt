@@ -25,7 +25,7 @@ class StatusGateway(
 ): StatusUseCases {
 
     override fun observeSynced(): Flow<Boolean> =
-        combine(flow = scheduler.observeActiveJobs(), flow2 = ClientFlags.flagsFlow) { jobs, flags ->
+        combine(flow = scheduler.observeActiveJobs(), flow2 = ClientFlags.flow) { jobs, flags ->
             if (flags.scheduler && flags.http) jobs else emptyList()
         }.transformLatest { jobs ->
             val oldest = jobs.minOfOrNull { it.utc }
@@ -34,7 +34,7 @@ class StatusGateway(
                 return@transformLatest
             }
             // The oldest job is not late yet, so report synced and wait until it would be
-            val remaining = oldest + ClientConfigs.configs.schedulerSyncTolerance.milliseconds - now()
+            val remaining = oldest + ClientConfigs.value.schedulerSyncTolerance.milliseconds - now()
             if (remaining > Duration.ZERO) {
                 emit(value = true)
                 delay(duration = remaining)

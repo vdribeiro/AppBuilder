@@ -1,10 +1,7 @@
 package com.app.builder.core.config
 
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.updateAndGet
 import kotlinx.serialization.Serializable
+import com.app.builder.core.flow.StateHolder
 
 /** Centralized config container to change system capabilities dynamically. */
 @Serializable
@@ -52,10 +49,9 @@ data class ClientConfigs(
     /** Maximum time in milliseconds to wait for the cached last known location before giving up and answering from the last fix the update loop captured. */
     val locationQueryTimeoutMillis: Long,
 ) {
-    companion object {
-
-        /** Default configs. */
-        private val default = ClientConfigs(
+    /** Holds the client configs. */
+    companion object: StateHolder<ClientConfigs>(
+        default = ClientConfigs(
             splitScreenMaximumWidth = 600,
             splitPaneRatio = 60,
             httpConnectTimeoutMillis = 20_000L,
@@ -78,27 +74,5 @@ data class ClientConfigs(
             locationIntervalMillis = 60_000L,
             locationQueryTimeoutMillis = 2_000L,
         )
-
-        /** Backing state flow tracking config changes. */
-        private val _configsFlow: MutableStateFlow<ClientConfigs> = MutableStateFlow(value = default)
-        /** Read only stream, emitting the current value on collection and every change after. */
-        val configsFlow: StateFlow<ClientConfigs> = _configsFlow.asStateFlow()
-        /** Current synchronous snapshot of the configs. */
-        val configs: ClientConfigs get() = _configsFlow.value
-
-        /**
-         * Atomically mutates the feature configuration state block and returns the freshly evaluated state.
-         *
-         * @param configs A lambda block receiving the current [ClientConfigs] snapshot and returning a modified copy.
-         * @return The updated [ClientConfigs] instance.
-         */
-        fun set(configs: (ClientConfigs) -> ClientConfigs): ClientConfigs = _configsFlow.updateAndGet(function = configs)
-
-        /**
-         * Restores the configs to their default values.
-         *
-         * @return The default [ClientConfigs] instance.
-         */
-        fun reset(): ClientConfigs = set { default }
-    }
+    )
 }

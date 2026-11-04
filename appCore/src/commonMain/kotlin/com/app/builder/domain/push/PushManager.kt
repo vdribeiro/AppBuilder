@@ -67,7 +67,7 @@ class PushManager(
     }
 
     override fun start() {
-        if (!ClientFlags.flags.push) return
+        if (!ClientFlags.value.push) return
         if (!mutex.tryLock()) return
         try {
             startTokenJob()
@@ -100,13 +100,13 @@ class PushManager(
             getInternetAvailabilityFlow().collectLatest { online ->
                 if (!online) return@collectLatest
 
-                var retryDelay = ClientConfigs.configs.pushRetryDelay
+                var retryDelay = ClientConfigs.value.pushRetryDelay
                 while (this@launch.isActive) {
                     val ticketUuid = requestTicket()
                     if (ticketUuid != null) {
                         listen(
                             ticketUuid = ticketUuid,
-                            onConnected = { retryDelay = ClientConfigs.configs.pushRetryDelay }
+                            onConnected = { retryDelay = ClientConfigs.value.pushRetryDelay }
                         ) { userUuid, pushPayload ->
                             Telemetry.info(tag = TAG, message = "Received push payload: ${pushPayload.uuid}")
                             if (pushPayload.userUuid != userUuid) {
@@ -118,7 +118,7 @@ class PushManager(
                         }
                     }
                     delay(timeMillis = retryDelay)
-                    retryDelay = (retryDelay * 2).coerceAtMost(maximumValue = ClientConfigs.configs.pushMaxRetryDelay)
+                    retryDelay = (retryDelay * 2).coerceAtMost(maximumValue = ClientConfigs.value.pushMaxRetryDelay)
                 }
             }
         }

@@ -71,11 +71,6 @@
   },
   {
     "languageIso": "en",
-    "key": "file",
-    "value": "File"
-  },
-  {
-    "languageIso": "en",
     "key": "device_file",
     "value": "Files"
   },

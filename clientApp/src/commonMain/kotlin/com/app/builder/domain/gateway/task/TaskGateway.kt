@@ -166,7 +166,7 @@ class TaskGateway(
                 headerMap = job.toHeaderMap(),
                 queryMap = queryMap
             ),
-            pageSize = ServerConfigs.configs.pageSize,
+            pageSize = ServerConfigs.value.pageSize,
             cursorOf = { it.modifiedAt.toString() to it.uuid.toString() }
         ) { tasks ->
             database.safeTransaction {
@@ -297,7 +297,7 @@ class TaskGateway(
      * @return The matching [TaskSchema] entities, merged across all chunks.
      */
     private suspend fun getTasksByUuidsFromDatabase(uuids: List<Uuid>): List<TaskSchema> = buildList {
-        uuids.chunked(size = ClientConfigs.configs.batchSize).forEach { uuidChunk ->
+        uuids.chunked(size = ClientConfigs.value.batchSize).forEach { uuidChunk ->
             addAll(elements = taskDao.getTasksByUuids(userUuid = user.uuid, taskUuids = uuidChunk).awaitAsList())
         }
     }

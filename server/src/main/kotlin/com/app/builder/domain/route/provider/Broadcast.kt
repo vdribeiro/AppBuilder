@@ -48,7 +48,7 @@ fun Route.broadcastRoutes(
     rateLimit(configuration = RateLimitName(name = RATE_LIMIT_BROADCAST)) {
         sse(path = URL.Broadcast.path) {
             if (!broadcastService.addConnection(session = this)) return@sse
-            heartbeat { period = ServerConfigs.configs.broadcastPingInterval.milliseconds }
+            heartbeat { period = ServerConfigs.value.broadcastPingInterval.milliseconds }
             try {
                 awaitCancellation()
             } finally {

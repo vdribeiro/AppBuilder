@@ -76,8 +76,8 @@ class ConfigScreenStore(
      * @return The entries of that config type, empty when they could not be read.
      */
     private suspend fun load(configType: ConfigType): ImmutableList<ConfigItem> = when (configType) {
-        ConfigType.CLIENT_FLAG -> ClientFlags.flags.toConfigItems(map = Configs.clientFlags) { ConfigValue.Toggle(value = it.boolean) }
-        ConfigType.CLIENT_CONFIG -> ClientConfigs.configs.toConfigItems(map = Configs.clientConfigs) { ConfigValue.Form(value = it.content) }
+        ConfigType.CLIENT_FLAG -> ClientFlags.value.toConfigItems(map = Configs.clientFlags) { ConfigValue.Toggle(value = it.boolean) }
+        ConfigType.CLIENT_CONFIG -> ClientConfigs.value.toConfigItems(map = Configs.clientConfigs) { ConfigValue.Form(value = it.content) }
         ConfigType.SERVER_FLAG -> configUseCases.getServerFeatureFlags()?.toConfigItems(map = Configs.serverFlags) { ConfigValue.Toggle(value = it.boolean) }
         ConfigType.SERVER_CONFIG -> configUseCases.getServerConfigs()?.toConfigItems(map = Configs.serverConfigs) { ConfigValue.Form(value = it.content) }
     }.orEmpty().toPersistentList()

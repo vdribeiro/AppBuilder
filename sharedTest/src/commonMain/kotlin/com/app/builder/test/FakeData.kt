@@ -33,13 +33,13 @@ object FakeData {
     /** The application version the test suites run under. */
     const val APP_VERSION = "0.0.0"
 
-    val clientFlags = ClientFlags.flags.copy()
+    val clientFlags = ClientFlags.value.copy()
 
-    val clientConfigs = ClientConfigs.configs.copy()
+    val clientConfigs = ClientConfigs.value.copy()
 
-    val serverFlags: ServerFlags = ServerFlags.flags.copy()
+    val serverFlags: ServerFlags = ServerFlags.value.copy()
 
-    val serverConfigs: ServerConfigs = ServerConfigs.configs.copy()
+    val serverConfigs: ServerConfigs = ServerConfigs.value.copy()
 
     val translations: List<Translation> = listOf(
         Translation(
@@ -85,7 +85,6 @@ object FakeData {
                 EntityType.USER -> Permission.WRITE
                 EntityType.DEVICE_LOCATION -> Permission.WRITE
                 EntityType.TASK -> Permission.READ
-                EntityType.FILE -> Permission.READ
             }?.let { type to it }
         }.toMap(),
         name = "User",

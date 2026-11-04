@@ -24,9 +24,9 @@ class RegistryUseCasesTest: TestCase() {
             .registryUseCases
         val lastSyncUtc = now() - 1.days
 
-        assertTrue(actual = registryUseCases.getRegistries(lastSyncUtc = lastSyncUtc, cursorUtc = null, cursorUuid = null, pageSize = ServerConfigs.configs.pageSize).isEmpty())
+        assertTrue(actual = registryUseCases.getRegistries(lastSyncUtc = lastSyncUtc, cursorUtc = null, cursorUuid = null, pageSize = ServerConfigs.value.pageSize).isEmpty())
         assertTrue(actual = registryUseCases.upsertRegistry(registry = FakeData.registry))
-        assertEquals(expected = listOf(FakeData.registry), actual = registryUseCases.getRegistries(lastSyncUtc = lastSyncUtc, cursorUtc = null, cursorUuid = null, pageSize = ServerConfigs.configs.pageSize))
+        assertEquals(expected = listOf(FakeData.registry), actual = registryUseCases.getRegistries(lastSyncUtc = lastSyncUtc, cursorUtc = null, cursorUuid = null, pageSize = ServerConfigs.value.pageSize))
     }
 
     /** Verifies that fetching registries filters by last sync time and paginates using the cursor. */
@@ -46,8 +46,8 @@ class RegistryUseCasesTest: TestCase() {
         assertTrue(actual = registryUseCases.upsertRegistry(registry = old))
         assertTrue(actual = registryUseCases.upsertRegistry(registry = recent))
 
-        assertEquals(expected = listOf(recent), actual = registryUseCases.getRegistries(lastSyncUtc = now - 1.minutes, cursorUtc = null, cursorUuid = null, pageSize = ServerConfigs.configs.pageSize))
-        assertTrue(actual = registryUseCases.getRegistries(lastSyncUtc = now + 1.minutes, cursorUtc = null, cursorUuid = null, pageSize = ServerConfigs.configs.pageSize).isEmpty())
+        assertEquals(expected = listOf(recent), actual = registryUseCases.getRegistries(lastSyncUtc = now - 1.minutes, cursorUtc = null, cursorUuid = null, pageSize = ServerConfigs.value.pageSize))
+        assertTrue(actual = registryUseCases.getRegistries(lastSyncUtc = now + 1.minutes, cursorUtc = null, cursorUuid = null, pageSize = ServerConfigs.value.pageSize).isEmpty())
 
         val firstPage = registryUseCases.getRegistries(lastSyncUtc = Instant.fromEpochSeconds(epochSeconds = 0), cursorUtc = null, cursorUuid = null, pageSize = 1)
         assertEquals(expected = listOf(recent), actual = firstPage)
@@ -72,7 +72,7 @@ class RegistryUseCasesTest: TestCase() {
         val updated = FakeData.registry.copy(appVersion = "2.0.0")
         assertTrue(actual = registryUseCases.upsertRegistry(registry = updated))
 
-        val registries = registryUseCases.getRegistries(lastSyncUtc = Instant.fromEpochSeconds(epochSeconds = 0), cursorUtc = null, cursorUuid = null, pageSize = ServerConfigs.configs.pageSize)
+        val registries = registryUseCases.getRegistries(lastSyncUtc = Instant.fromEpochSeconds(epochSeconds = 0), cursorUtc = null, cursorUuid = null, pageSize = ServerConfigs.value.pageSize)
         assertEquals(expected = listOf(updated), actual = registries)
     }
 }

@@ -86,7 +86,7 @@ object PushProvider {
     private suspend fun mark(uuid: Uuid): Boolean = handledPayloadsMutex.withLock {
         if (handledPayloads.contains(element = uuid)) return@withLock false
         handledPayloads.addLast(element = uuid)
-        if (handledPayloads.size > ClientConfigs.configs.maxHandledPayloads) handledPayloads.removeFirst()
+        if (handledPayloads.size > ClientConfigs.value.maxHandledPayloads) handledPayloads.removeFirst()
         true
     }
 

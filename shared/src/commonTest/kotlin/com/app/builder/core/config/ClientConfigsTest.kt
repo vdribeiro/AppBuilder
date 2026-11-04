@@ -15,7 +15,7 @@ class ClientConfigsTest: TestCase() {
     fun setUpdatesSnapshot() = runUnitTest {
         val updated = ClientConfigs.set { it.copy(batchSize = 1) }
         assertEquals(expected = 1, actual = updated.batchSize)
-        assertEquals(expected = updated, actual = ClientConfigs.configs)
+        assertEquals(expected = updated, actual = ClientConfigs.value)
     }
 
     /** Verifies set receives the current snapshot, so successive updates accumulate. */
@@ -32,13 +32,13 @@ class ClientConfigsTest: TestCase() {
     fun resetRestoresDefaults() = runUnitTest {
         ClientConfigs.set { it.copy(batchSize = 1) }
         assertEquals(expected = FakeData.clientConfigs, actual = ClientConfigs.reset())
-        assertEquals(expected = FakeData.clientConfigs, actual = ClientConfigs.configs)
+        assertEquals(expected = FakeData.clientConfigs, actual = ClientConfigs.value)
     }
 
     /** Verifies the configs survive a JSON round trip. */
     @Test
     fun serializationRoundTrip() = runUnitTest {
-        val value = ClientConfigs.configs.copy(batchSize = 1)
+        val value = ClientConfigs.value.copy(batchSize = 1)
         assertEquals(
             expected = value,
             actual = decode(value = assertNotNull(actual = encode(value = value)))

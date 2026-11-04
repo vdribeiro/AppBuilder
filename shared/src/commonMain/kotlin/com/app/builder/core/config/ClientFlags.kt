@@ -1,10 +1,7 @@
 package com.app.builder.core.config
 
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.updateAndGet
 import kotlinx.serialization.Serializable
+import com.app.builder.core.flow.StateHolder
 
 /** Centralized feature flag container to change system capabilities dynamically. */
 @Serializable
@@ -50,10 +47,9 @@ data class ClientFlags(
     /** Toggles the task screens and whether task entities are queued for background sync. When false, task screens fall back to the error screen and task data is excluded from sync even if the user has permission to read it. */
     val tasks: Boolean,
 ) {
-    companion object {
-
-        /** Default feature flags. */
-        private val default = ClientFlags(
+    /** Holds the client feature flags. */
+    companion object: StateHolder<ClientFlags>(
+        default = ClientFlags(
             console = true,
             http = true,
             scheduler = true,
@@ -75,27 +71,5 @@ data class ClientFlags(
             registries = true,
             tasks = true,
         )
-
-        /** Backing state flow tracking feature flag changes. */
-        private val _flagsFlow: MutableStateFlow<ClientFlags> = MutableStateFlow(value = default)
-        /** Read only stream, emitting the current value on collection and every change after. */
-        val flagsFlow: StateFlow<ClientFlags> = _flagsFlow.asStateFlow()
-        /** Current synchronous snapshot of the feature flags. */
-        val flags: ClientFlags get() = _flagsFlow.value
-
-        /**
-         * Atomically mutates the feature configuration state block and returns the freshly evaluated state.
-         *
-         * @param flags A lambda block receiving the current [ClientFlags] snapshot and returning a modified copy.
-         * @return The updated [ClientFlags] instance.
-         */
-        fun set(flags: (ClientFlags) -> ClientFlags): ClientFlags = _flagsFlow.updateAndGet(function = flags)
-
-        /**
-         * Restores the feature flags to their default values.
-         *
-         * @return The default [ClientFlags] instance.
-         */
-        fun reset(): ClientFlags = set { default }
-    }
+    )
 }

@@ -51,7 +51,7 @@ open class NfcController {
     /** Starts scanning for a tag to read. Transitions to [State.Scanning]. */
     fun read() {
         runCatching {
-            if (!ClientFlags.flags.nfc || !available) return@runCatching stop()
+            if (!ClientFlags.value.nfc || !available) return@runCatching stop()
             stop()
             platformRead()
             _state.update { State.Scanning }
@@ -68,7 +68,7 @@ open class NfcController {
      */
     fun write(records: List<NfcRecord>) {
         runCatching {
-            if (!ClientFlags.flags.nfc || !available) return@runCatching stop()
+            if (!ClientFlags.value.nfc || !available) return@runCatching stop()
             stop()
             platformWrite(records = records)
             _state.update { State.Writing }

@@ -41,11 +41,11 @@ internal class WebDeviceLocationProvider: DeviceLocationProvider() {
         super.platformStartUpdate()
         platformStopUpdate()
         pollJob = scope.launch {
-            loop(timeMillis = ClientConfigs.configs.locationIntervalMillis) {
+            loop(timeMillis = ClientConfigs.value.locationIntervalMillis) {
                 position(
                     slot = CAPTURE_SLOT,
-                    browserTimeoutMillis = ClientConfigs.configs.locationQueryTimeoutMillis.toInt(),
-                    maximumAgeMillis = ClientConfigs.configs.locationIntervalMillis.toInt(),
+                    browserTimeoutMillis = ClientConfigs.value.locationQueryTimeoutMillis.toInt(),
+                    maximumAgeMillis = ClientConfigs.value.locationIntervalMillis.toInt(),
                 )?.let { setLastKnownLocation(deviceLocation = it) }
             }
         }
@@ -82,7 +82,7 @@ internal class WebDeviceLocationProvider: DeviceLocationProvider() {
     private suspend fun position(slot: String, browserTimeoutMillis: Int, maximumAgeMillis: Int): DeviceLocation? {
         requestPosition(slot = slot, highAccuracy = false, timeoutMillis = browserTimeoutMillis, maximumAgeMillis = maximumAgeMillis)
         var waited = 0L
-        val timeout = ClientConfigs.configs.locationQueryTimeoutMillis
+        val timeout = ClientConfigs.value.locationQueryTimeoutMillis
         while (waited <= timeout) {
             if (pollPositionError(slot = slot)) return null
             val raw = pollPosition(slot = slot)

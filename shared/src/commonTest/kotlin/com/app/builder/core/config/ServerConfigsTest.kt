@@ -15,7 +15,7 @@ class ServerConfigsTest: TestCase() {
     fun setUpdatesSnapshot() = runUnitTest {
         val updated = ServerConfigs.set { it.copy(maxPageSize = 1) }
         assertEquals(expected = 1, actual = updated.maxPageSize)
-        assertEquals(expected = updated, actual = ServerConfigs.configs)
+        assertEquals(expected = updated, actual = ServerConfigs.value)
     }
 
     /** Verifies set receives the current snapshot, so successive updates accumulate. */
@@ -32,13 +32,13 @@ class ServerConfigsTest: TestCase() {
     fun resetRestoresDefaults() = runUnitTest {
         ServerConfigs.set { it.copy(maxPageSize = 1) }
         assertEquals(expected = FakeData.serverConfigs, actual = ServerConfigs.reset())
-        assertEquals(expected = FakeData.serverConfigs, actual = ServerConfigs.configs)
+        assertEquals(expected = FakeData.serverConfigs, actual = ServerConfigs.value)
     }
 
     /** Verifies the configs survive a JSON round trip. */
     @Test
     fun serializationRoundTrip() = runUnitTest {
-        val value = ServerConfigs.configs.copy(maxPageSize = 1)
+        val value = ServerConfigs.value.copy(maxPageSize = 1)
         assertEquals(
             expected = value,
             actual = decode(value = assertNotNull(actual = encode(value = value)))

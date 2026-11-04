@@ -75,7 +75,7 @@ class AuthenticationGateway(
                 it[UserSessionTable.userUuid] = user.uuid
                 it[UserSessionTable.refreshToken] = newRefreshToken
                 it[UserSessionTable.createdAt] = now
-                it[UserSessionTable.expiresAt] = now + ServerConfigs.configs.refreshTokenValidity.milliseconds
+                it[UserSessionTable.expiresAt] = now + ServerConfigs.value.refreshTokenValidity.milliseconds
             }
         }.onFailure {
             Telemetry.error(tag = TAG, message = "Unable to upsert user ${registrationForm.user.uuid}", throwable = it)
@@ -121,7 +121,7 @@ class AuthenticationGateway(
                 it[UserSessionTable.userUuid] = user.uuid
                 it[UserSessionTable.refreshToken] = newRefreshToken
                 it[UserSessionTable.createdAt] = now
-                it[UserSessionTable.expiresAt] = now + ServerConfigs.configs.refreshTokenValidity.milliseconds
+                it[UserSessionTable.expiresAt] = now + ServerConfigs.value.refreshTokenValidity.milliseconds
             }
         }.onFailure {
             Telemetry.error(tag = TAG, message = "Unable to insert session", throwable = it)
@@ -185,7 +185,7 @@ class AuthenticationGateway(
         database.safeTransaction {
             UserSessionTable.update(where = { UserSessionTable.refreshToken eq refreshToken }) {
                 it[UserSessionTable.refreshToken] = newRefreshToken
-                it[UserSessionTable.expiresAt] = now + ServerConfigs.configs.refreshTokenValidity.milliseconds
+                it[UserSessionTable.expiresAt] = now + ServerConfigs.value.refreshTokenValidity.milliseconds
             }
         }.onFailure {
             Telemetry.error(tag = TAG, message = "Unable to update session", throwable = it)

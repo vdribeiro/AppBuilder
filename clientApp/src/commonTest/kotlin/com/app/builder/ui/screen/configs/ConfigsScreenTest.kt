@@ -139,7 +139,7 @@ class ConfigsScreenTest: TestCase() {
         val updated = configScreenStore.item(configType = ConfigType.CLIENT_CONFIG, name = "httpConnectTimeoutMillis")
         assertEquals(expected = ConfigValue.Form(value = "12a"), actual = updated.value)
         assertFalse(actual = updated.pending)
-        assertEquals(expected = FakeData.clientConfigs, actual = ClientConfigs.configs)
+        assertEquals(expected = FakeData.clientConfigs, actual = ClientConfigs.value)
     }
 
     /** Verifies that a user only gets the sections of the config types they hold a permission on. */

@@ -35,12 +35,12 @@ fun Route.configRoutes(
     registryUseCases: RegistryUseCases
 ) {
     get(path = URL.ClientFlags.path) {
-        val flags = ClientFlags.flags
+        val flags = ClientFlags.value
         call.respondSafely(status = HttpStatusCode.OK, message = flags)
         Telemetry.info(tag = TAG, message = "Fetched client flags")
     }
     get(path = URL.ClientConfigs.path) {
-        val configs = ClientConfigs.configs
+        val configs = ClientConfigs.value
         call.respondSafely(status = HttpStatusCode.OK, message = configs)
         Telemetry.info(tag = TAG, message = "Fetched client configs")
     }
@@ -53,10 +53,10 @@ fun Route.configRoutes(
                 call.respondSafely(status = HttpStatusCode.InternalServerError, message = "Unable to update client flags")
                 return@post
             }
-            call.respondSafely(status = HttpStatusCode.OK, message = ClientFlags.flags)
+            call.respondSafely(status = HttpStatusCode.OK, message = ClientFlags.value)
             Telemetry.info(tag = TAG, message = "Updated client flags")
 
-            call.toRegistry(entityType = EntityType.CLIENT_FLAG, payload = encode(value = ClientFlags.flags))?.let { registryUseCases.upsertRegistry(registry = it) }
+            call.toRegistry(entityType = EntityType.CLIENT_FLAG, payload = encode(value = ClientFlags.value))?.let { registryUseCases.upsertRegistry(registry = it) }
         }
 
         post(path = URL.ClientConfigs.path) {
@@ -66,21 +66,21 @@ fun Route.configRoutes(
                 call.respondSafely(status = HttpStatusCode.InternalServerError, message = "Unable to update client configs")
                 return@post
             }
-            call.respondSafely(status = HttpStatusCode.OK, message = ClientConfigs.configs)
+            call.respondSafely(status = HttpStatusCode.OK, message = ClientConfigs.value)
             Telemetry.info(tag = TAG, message = "Updated client configs")
 
-            call.toRegistry(entityType = EntityType.CLIENT_CONFIG, payload = encode(value = ClientConfigs.configs))?.let { registryUseCases.upsertRegistry(registry = it) }
+            call.toRegistry(entityType = EntityType.CLIENT_CONFIG, payload = encode(value = ClientConfigs.value))?.let { registryUseCases.upsertRegistry(registry = it) }
         }
 
         get(path = URL.ServerFlags.path) {
             if (!call.validatePermission(permissionService = permissionService, entityType = EntityType.SERVER_FLAG, permission = Permission.READ)) return@get
-            call.respondSafely(status = HttpStatusCode.OK, message = ServerFlags.flags)
+            call.respondSafely(status = HttpStatusCode.OK, message = ServerFlags.value)
             Telemetry.info(tag = TAG, message = "Fetched server flags")
         }
 
         get(path = URL.ServerConfigs.path) {
             if (!call.validatePermission(permissionService = permissionService, entityType = EntityType.SERVER_CONFIG, permission = Permission.READ)) return@get
-            call.respondSafely(status = HttpStatusCode.OK, message = ServerConfigs.configs)
+            call.respondSafely(status = HttpStatusCode.OK, message = ServerConfigs.value)
             Telemetry.info(tag = TAG, message = "Fetched server configs")
         }
 
@@ -91,10 +91,10 @@ fun Route.configRoutes(
                 call.respondSafely(status = HttpStatusCode.InternalServerError, message = "Unable to update server flags")
                 return@post
             }
-            call.respondSafely(status = HttpStatusCode.OK, message = ServerFlags.flags)
+            call.respondSafely(status = HttpStatusCode.OK, message = ServerFlags.value)
             Telemetry.info(tag = TAG, message = "Updated server flags")
 
-            call.toRegistry(entityType = EntityType.SERVER_FLAG, payload = encode(value = ServerFlags.flags))?.let { registryUseCases.upsertRegistry(registry = it) }
+            call.toRegistry(entityType = EntityType.SERVER_FLAG, payload = encode(value = ServerFlags.value))?.let { registryUseCases.upsertRegistry(registry = it) }
         }
 
         post(path = URL.ServerConfigs.path) {
@@ -104,10 +104,10 @@ fun Route.configRoutes(
                 call.respondSafely(status = HttpStatusCode.InternalServerError, message = "Unable to update server configs")
                 return@post
             }
-            call.respondSafely(status = HttpStatusCode.OK, message = ServerConfigs.configs)
+            call.respondSafely(status = HttpStatusCode.OK, message = ServerConfigs.value)
             Telemetry.info(tag = TAG, message = "Updated server configs")
 
-            call.toRegistry(entityType = EntityType.SERVER_CONFIG, payload = encode(value = ServerConfigs.configs))?.let { registryUseCases.upsertRegistry(registry = it) }
+            call.toRegistry(entityType = EntityType.SERVER_CONFIG, payload = encode(value = ServerConfigs.value))?.let { registryUseCases.upsertRegistry(registry = it) }
         }
     }
 }

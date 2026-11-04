@@ -54,7 +54,7 @@ fun Route.taskRoutes(
                 val lastSyncUtc = queryMap[Query.LastSyncUtc.parameter]?.toInstant() ?: Instant.fromEpochSeconds(epochSeconds = 0)
                 val cursorUtc = queryMap[Query.CursorUtc.parameter]?.toInstant()
                 val cursorUuid = queryMap[Query.CursorUuid.parameter]?.toUuid()
-                val pageSize = queryMap[Query.PageSize.parameter]?.toIntOrNull() ?: ServerConfigs.configs.pageSize
+                val pageSize = queryMap[Query.PageSize.parameter]?.toIntOrNull() ?: ServerConfigs.value.pageSize
 
                 val tasks = taskUseCases.getTasks(userUuid = userUuid, lastSyncUtc = lastSyncUtc, cursorUtc = cursorUtc, cursorUuid = cursorUuid, pageSize = pageSize)
                 call.respondSafely(status = HttpStatusCode.OK, message = tasks)

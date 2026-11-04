@@ -90,7 +90,7 @@ class ClockManager(
                 .distinctUntilChanged()
                 .collectLatest {
                     val offset = it?.let { Duration.parseOrNull(value = it) }
-                    val isTrusted = offset != null && offset.absoluteValue <= ClientConfigs.configs.clockDriftTolerance.milliseconds
+                    val isTrusted = offset != null && offset.absoluteValue <= ClientConfigs.value.clockDriftTolerance.milliseconds
                     when {
                         isTrusted -> Telemetry.info(tag = TAG, message = "Clock drift within tolerance")
                         it == null -> Telemetry.info(tag = TAG, message = "No clock offset recorded yet")
@@ -126,7 +126,7 @@ class ClockManager(
                 while (this@launch.isActive && !_trusted.value) {
                     httpClient.head(request = HttpRequest(url = URL.Probe))
                     if (_trusted.value) return@collect
-                    delay(timeMillis = ClientConfigs.configs.clockProbeInterval)
+                    delay(timeMillis = ClientConfigs.value.clockProbeInterval)
                 }
             }
         }

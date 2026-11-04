@@ -43,7 +43,7 @@ open class DeviceLocationProvider {
     /** Starts location updates. Transitions to [State.Active]. */
     fun startUpdate() {
         runCatching {
-            if (!ClientFlags.flags.locationCapture || !available || !hasPermission()) return stopUpdate()
+            if (!ClientFlags.value.locationCapture || !available || !hasPermission()) return stopUpdate()
             platformStopUpdate()
             platformStartUpdate()
             _state.update { State.Active }
@@ -69,11 +69,11 @@ open class DeviceLocationProvider {
      * @return The last known [DeviceLocation], or null if none is available.
      */
     suspend fun getLastKnownLocation(): DeviceLocation? = runCatching {
-        if (!ClientFlags.flags.locationCapture || !available || !hasPermission()) {
+        if (!ClientFlags.value.locationCapture || !available || !hasPermission()) {
             stopUpdate()
             return null
         }
-        withTimeoutOrNull(timeMillis = ClientConfigs.configs.locationQueryTimeoutMillis) {
+        withTimeoutOrNull(timeMillis = ClientConfigs.value.locationQueryTimeoutMillis) {
             platformGetLastKnownLocation()
         }
     }.onFailure {

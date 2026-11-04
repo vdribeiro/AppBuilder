@@ -28,7 +28,7 @@ class DeviceLocationUseCasesTest: TestCase() {
                 lastSyncUtc = lastSyncUtc,
                 cursorUtc = null,
                 cursorUuid = null,
-                pageSize = ServerConfigs.configs.pageSize
+                pageSize = ServerConfigs.value.pageSize
             ).isEmpty()
         )
         assertTrue(actual = deviceLocationUseCases.upsertDeviceLocation(userUuid = FakeData.adminUser.uuid, deviceLocation = FakeData.deviceLocation))
@@ -39,7 +39,7 @@ class DeviceLocationUseCasesTest: TestCase() {
                 lastSyncUtc = lastSyncUtc,
                 cursorUtc = null,
                 cursorUuid = null,
-                pageSize = ServerConfigs.configs.pageSize
+                pageSize = ServerConfigs.value.pageSize
             )
         )
     }
@@ -60,10 +60,10 @@ class DeviceLocationUseCasesTest: TestCase() {
 
         assertEquals(
             expected = listOf(recent),
-            actual = deviceLocationUseCases.getDeviceLocations(userUuid = FakeData.adminUser.uuid, lastSyncUtc = now - 1.minutes, cursorUtc = null, cursorUuid = null, pageSize = ServerConfigs.configs.pageSize)
+            actual = deviceLocationUseCases.getDeviceLocations(userUuid = FakeData.adminUser.uuid, lastSyncUtc = now - 1.minutes, cursorUtc = null, cursorUuid = null, pageSize = ServerConfigs.value.pageSize)
         )
         assertTrue(
-            actual = deviceLocationUseCases.getDeviceLocations(userUuid = FakeData.adminUser.uuid, lastSyncUtc = now + 1.minutes, cursorUtc = null, cursorUuid = null, pageSize = ServerConfigs.configs.pageSize).isEmpty()
+            actual = deviceLocationUseCases.getDeviceLocations(userUuid = FakeData.adminUser.uuid, lastSyncUtc = now + 1.minutes, cursorUtc = null, cursorUuid = null, pageSize = ServerConfigs.value.pageSize).isEmpty()
         )
 
         val firstPage = deviceLocationUseCases.getDeviceLocations(
@@ -99,7 +99,7 @@ class DeviceLocationUseCasesTest: TestCase() {
                 lastSyncUtc = now() - 1.days,
                 cursorUtc = null,
                 cursorUuid = null,
-                pageSize = ServerConfigs.configs.pageSize
+                pageSize = ServerConfigs.value.pageSize
             ).isEmpty()
         )
     }

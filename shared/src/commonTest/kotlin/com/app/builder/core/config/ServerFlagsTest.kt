@@ -15,7 +15,7 @@ class ServerFlagsTest: TestCase() {
     fun setUpdatesSnapshot() = runUnitTest {
         val updated = ServerFlags.set { it.copy(tasks = false) }
         assertEquals(expected = false, actual = updated.tasks)
-        assertEquals(expected = updated, actual = ServerFlags.flags)
+        assertEquals(expected = updated, actual = ServerFlags.value)
     }
 
     /** Verifies set receives the current snapshot, so successive updates accumulate. */
@@ -32,13 +32,13 @@ class ServerFlagsTest: TestCase() {
     fun resetRestoresDefaults() = runUnitTest {
         ServerFlags.set { it.copy(tasks = false) }
         assertEquals(expected = FakeData.serverFlags, actual = ServerFlags.reset())
-        assertEquals(expected = FakeData.serverFlags, actual = ServerFlags.flags)
+        assertEquals(expected = FakeData.serverFlags, actual = ServerFlags.value)
     }
 
     /** Verifies the flags survive a JSON round trip. */
     @Test
     fun serializationRoundTrip() = runUnitTest {
-        val value = ServerFlags.flags.copy(tasks = false)
+        val value = ServerFlags.value.copy(tasks = false)
         assertEquals(
             expected = value,
             actual = decode(value = assertNotNull(actual = encode(value = value)))

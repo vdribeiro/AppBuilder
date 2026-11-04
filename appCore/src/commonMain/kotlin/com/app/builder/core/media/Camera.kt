@@ -61,7 +61,7 @@ open class Camera {
     /** Starts the platform capture session and attaches the surface. */
     fun startPreview() {
         runCatching {
-            if (!ClientFlags.flags.camera || !available || !hasPermission()) return@runCatching stopPreview()
+            if (!ClientFlags.value.camera || !available || !hasPermission()) return@runCatching stopPreview()
             platformStopRecording()
             platformStopPreview()
             platformStartPreview()
@@ -90,7 +90,7 @@ open class Camera {
      */
     fun capturePhoto(onResult: (String?) -> Unit) {
         runCatching {
-            if (!ClientFlags.flags.camera || !available || !hasPermission()) {
+            if (!ClientFlags.value.camera || !available || !hasPermission()) {
                 stopPreview()
                 return@runCatching onResult(null)
             }
@@ -109,7 +109,7 @@ open class Camera {
      */
     fun startRecording(onResult: (String) -> Unit) {
         runCatching {
-            if (!ClientFlags.flags.camera || !available || !hasPermission()) return@runCatching stopPreview()
+            if (!ClientFlags.value.camera || !available || !hasPermission()) return@runCatching stopPreview()
             if (state.value != State.Previewing) return@runCatching
             platformStopRecording()
             platformStartRecording(onResult = onResult)
@@ -122,7 +122,7 @@ open class Camera {
     /** Finalizes the video file. The result must reach whichever `onResult` callback was passed to [startRecording]. */
     fun stopRecording() {
         runCatching {
-            if (!ClientFlags.flags.camera || !available || !hasPermission()) return@runCatching stopPreview()
+            if (!ClientFlags.value.camera || !available || !hasPermission()) return@runCatching stopPreview()
             if (state.value != State.Recording) return@runCatching
             platformStopRecording()
             _state.update { State.Previewing }
@@ -137,7 +137,7 @@ open class Camera {
      */
     fun toggleFacing() {
         runCatching {
-            if (!ClientFlags.flags.camera || !available || !hasPermission()) return@runCatching stopPreview()
+            if (!ClientFlags.value.camera || !available || !hasPermission()) return@runCatching stopPreview()
             if (state.value != State.Previewing) return@runCatching
             val previous = _facing.value
             _facing.update {

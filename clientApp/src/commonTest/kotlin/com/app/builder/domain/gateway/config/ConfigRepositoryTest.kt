@@ -27,16 +27,16 @@ class ConfigRepositoryTest: TestCase() {
         configRepository.executeSyncFeatureFlags(job = Job(userUuid = Uuid.NIL, entityType = EntityType.CLIENT_FLAG, type = Job.Type.GET))
         configRepository.executeSyncConfigs(job = Job(userUuid = Uuid.NIL, entityType = EntityType.CLIENT_CONFIG, type = Job.Type.GET))
 
-        assertEquals(expected = FakeData.clientFlags, actual = ClientFlags.flags)
-        assertEquals(expected = FakeData.clientConfigs, actual = ClientConfigs.configs)
+        assertEquals(expected = FakeData.clientFlags, actual = ClientFlags.value)
+        assertEquals(expected = FakeData.clientConfigs, actual = ClientConfigs.value)
 
         ClientFlags.set { it.copy(http = !it.http, scheduler = !it.scheduler) }
         ClientConfigs.set { it.copy(httpConnectTimeoutMillis = it.httpConnectTimeoutMillis * 2) }
 
         configRepository.load()
 
-        assertEquals(expected = FakeData.clientFlags, actual = ClientFlags.flags)
-        assertEquals(expected = FakeData.clientConfigs, actual = ClientConfigs.configs)
+        assertEquals(expected = FakeData.clientFlags, actual = ClientFlags.value)
+        assertEquals(expected = FakeData.clientConfigs, actual = ClientConfigs.value)
     }
 
     /** Verifies that syncing feature flags queues a GET job for client feature flags. */
@@ -67,7 +67,7 @@ class ConfigRepositoryTest: TestCase() {
         val result = configRepository.executeSyncFeatureFlags(job = Job(userUuid = Uuid.NIL, entityType = EntityType.CLIENT_FLAG, type = Job.Type.GET))
 
         assertEquals(expected = JobResult.Success, actual = result)
-        assertEquals(expected = FakeData.clientFlags, actual = ClientFlags.flags)
+        assertEquals(expected = FakeData.clientFlags, actual = ClientFlags.value)
     }
 
     /** Verifies that executing a feature flags sync job fails when the http client flag is disabled. */
@@ -112,7 +112,7 @@ class ConfigRepositoryTest: TestCase() {
         val result = configRepository.executeSyncConfigs(job = Job(userUuid = Uuid.NIL, entityType = EntityType.CLIENT_CONFIG, type = Job.Type.GET))
 
         assertEquals(expected = JobResult.Success, actual = result)
-        assertEquals(expected = FakeData.clientConfigs, actual = ClientConfigs.configs)
+        assertEquals(expected = FakeData.clientConfigs, actual = ClientConfigs.value)
     }
 
     /** Verifies that executing a configs sync job fails when the http client flag is disabled. */

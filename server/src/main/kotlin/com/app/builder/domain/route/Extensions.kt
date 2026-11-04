@@ -110,7 +110,7 @@ suspend fun ApplicationCall.validateTime(skip: Boolean = Env.developmentMode): B
     val headerMap = getHeaderMap()
     val requestUtc = headerMap[Header.RequestUtc.header]?.toInstant() ?: error("Request time is missing")
     val requestSentUtc = headerMap[Header.RequestSentUtc.header]?.toInstant() ?: error("Request sent time is missing")
-    val future = now() + ServerConfigs.configs.timestampFutureTolerance.milliseconds
+    val future = now() + ServerConfigs.value.timestampFutureTolerance.milliseconds
     if (requestUtc > future || requestSentUtc > future) error("Time is in the future")
     true
 }.onFailure {

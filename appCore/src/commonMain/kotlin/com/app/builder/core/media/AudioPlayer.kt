@@ -43,7 +43,7 @@ open class AudioPlayer {
      */
     fun setPlaylist(playlist: List<String>, loop: Boolean = false, shuffle: Boolean = false) {
         runCatching {
-            if (!ClientFlags.flags.music || !available) return@runCatching stop()
+            if (!ClientFlags.value.music || !available) return@runCatching stop()
             stop()
             this.playlist = if (shuffle) playlist.shuffled() else playlist
             this.loop = loop
@@ -56,7 +56,7 @@ open class AudioPlayer {
     /** Starts or resumes playback. Transitions to [State.Playing]. */
     fun play() {
         runCatching {
-            if (!ClientFlags.flags.music || !available) return@runCatching stop()
+            if (!ClientFlags.value.music || !available) return@runCatching stop()
             when (state.value) {
                 State.Playing -> return
                 State.Idle,
@@ -72,7 +72,7 @@ open class AudioPlayer {
     /** Pauses playback. */
     fun pause() {
         runCatching {
-            if (!ClientFlags.flags.music || !available) return@runCatching stop()
+            if (!ClientFlags.value.music || !available) return@runCatching stop()
             platformPause()
             _state.update { State.Paused }
         }.onFailure {

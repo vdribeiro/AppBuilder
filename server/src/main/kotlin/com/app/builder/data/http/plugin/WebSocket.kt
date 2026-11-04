@@ -11,8 +11,8 @@ import com.app.builder.core.config.ServerConfigs
 /** Installs and configures web sockets. */
 fun Application.installWebSocket() {
     install(plugin = WebSockets) {
-        pingPeriod = ServerConfigs.configs.pushPingInterval.milliseconds
-        timeout = ServerConfigs.configs.pushTimeout.milliseconds
+        pingPeriod = ServerConfigs.value.pushPingInterval.milliseconds
+        timeout = ServerConfigs.value.pushTimeout.milliseconds
         maxFrameSize = Long.MAX_VALUE
         masking = false
     }

@@ -89,7 +89,7 @@ class PayloadManager(
      * @param payload The push payload to process.
      */
     private suspend fun sync(payload: PushPayload.EntityNotification) {
-        if (!ClientFlags.flags.pushSync) return
+        if (!ClientFlags.value.pushSync) return
         val entityUuid = payload.entityUuid ?: return
         when (payload.entityType) {
             EntityType.USER -> appGraph.getRepositories(payload = payload).userRepository.syncUser(uuid = entityUuid)

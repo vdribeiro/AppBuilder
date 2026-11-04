@@ -94,7 +94,7 @@ private fun SplitContent(
     }
 
     var scaffoldState by remember { mutableStateOf(value = ScaffoldState()) }
-    val safeRatio = (ClientConfigs.configs.splitPaneRatio / 100f).coerceIn(minimumValue = 0.01f, maximumValue = 0.99f)
+    val safeRatio = (ClientConfigs.value.splitPaneRatio / 100f).coerceIn(minimumValue = 0.01f, maximumValue = 0.99f)
     Skeleton(
         onBackClick = scaffoldState.onBackClick,
         topBar = scaffoldState.topBar,
