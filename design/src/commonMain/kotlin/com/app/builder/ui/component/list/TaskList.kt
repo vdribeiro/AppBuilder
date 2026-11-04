@@ -44,6 +44,7 @@ fun TaskList(
                     .testTag(tag = "task_card_$index")
                     .clickable { onClick(item) },
                 selected = item.selected,
+                uuid = item.uuid.takeIf { item.uuidVisible },
                 modifiedAt = item.modifiedAt,
                 deletedAt = item.deletedAt,
                 title = item.title,
@@ -58,6 +59,7 @@ fun TaskList(
  *
  * @property uuid A unique identifier of the task. Defaults to a random UUID.
  * @property selected The visual emphasis state of the card.
+ * @property uuidVisible Whether the UUID is shown on the card.
  * @property modifiedAt The timestamp indicating when this task was last updated.
  * @property deletedAt The timestamp indicating when this task was last deleted.
  * @property title The title of the task. Defaults to `null`.
@@ -68,6 +70,7 @@ fun TaskList(
 data class TaskItem(
     val uuid: String = uuid().toString(),
     val selected: Boolean = false,
+    val uuidVisible: Boolean = false,
     val modifiedAt: String? = null,
     val deletedAt: String? = null,
     val title: String? = null,

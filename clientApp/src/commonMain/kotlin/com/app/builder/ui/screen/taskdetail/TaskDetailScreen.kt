@@ -45,6 +45,7 @@ fun TaskDetailScreen(
     ) {
         TaskCard(
             enabled = task != null && state.editing,
+            uuid = task?.uuid?.toString(),
             modifiedAt = task?.modifiedAt?.toString(),
             deletedAt = task?.deletedAt?.toString(),
             title = task?.title,

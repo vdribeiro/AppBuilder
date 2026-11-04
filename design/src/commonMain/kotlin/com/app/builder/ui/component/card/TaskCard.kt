@@ -28,6 +28,7 @@ import com.app.builder.ui.core.text.Text
  * @param modifier The [Modifier] to be applied to the root layout.
  * @param enabled Controls whether the input can accept user focus, selection gestures, or keystroke input updates.
  * @param selected The visual emphasis state of the card.
+ * @param uuid The UUID of the task.
  * @param modifiedAt The modification timestamp of the task.
  * @param deletedAt The deletion timestamp of the task.
  * @param title The title of the task.
@@ -43,6 +44,7 @@ fun TaskCard(
     modifier: Modifier = Modifier,
     enabled: Boolean = false,
     selected: Boolean = false,
+    uuid: String? = null,
     modifiedAt: String? = null,
     deletedAt: String? = null,
     title: String? = null,
@@ -68,6 +70,13 @@ fun TaskCard(
             verticalArrangement = Arrangement.spacedBy(space = 8.dp, alignment = Alignment.Top),
             horizontalAlignment = Alignment.Start,
         ) {
+            uuid?.let {
+                InputField(
+                    enabled = false,
+                    title = "task_uuid",
+                    value = it,
+                )
+            }
             title?.let {
                 InputField(
                     enabled = enabled,

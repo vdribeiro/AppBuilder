@@ -83,10 +83,11 @@ sealed interface Screen: NavKey {
      * The screen showing the details of a single user.
      *
      * @property uuid The unique identifier of the user to display.
+     * @property new Whether the user is new and not registered yet, opening it in edit mode.
      */
     @Serializable
     @SerialName(value = "screen_user_detail")
-    data class UserDetail(val uuid: String): Screen
+    data class UserDetail(val uuid: String, val new: Boolean = false): Screen
     /** A screen with device location capture. */
     @Serializable
     @SerialName(value = "screen_device_location")
