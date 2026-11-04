@@ -443,6 +443,39 @@ class ActionBarStoreTest: TestCase() {
         assertEquals(expected = "TITLE", actual = persisted?.sortProperty)
     }
 
+    /** Verifies that expanding the filters persists it and that another action bar on the same file follows it. */
+    @Test
+    fun expandFiltersFollowsFile() = runUnitTest {
+        val store = ActionBarStore(
+            state = ActionBarState(),
+            router = router,
+            authenticationUseCases = authenticationUseCases(),
+            storageFile = AppFile.TaskPreferences,
+            defaults = defaults,
+        )
+        val otherStore = ActionBarStore(
+            state = ActionBarState(),
+            router = router,
+            authenticationUseCases = authenticationUseCases(),
+            storageFile = AppFile.TaskPreferences,
+            defaults = defaults,
+        )
+        subscribe(store = store)
+        subscribe(store = otherStore)
+        testScheduler.advanceUntilIdle()
+        assertFalse(actual = otherStore.state.filtersExpanded)
+
+        store.send(action = ActionBarAction.ExpandFilters(expanded = true))
+        testScheduler.advanceUntilIdle()
+        assertTrue(actual = store.state.filtersExpanded)
+        assertEquals(expected = true, actual = AppFile.TaskPreferences.load()?.filtersExpanded)
+        assertTrue(actual = otherStore.state.filtersExpanded)
+
+        otherStore.send(action = ActionBarAction.ExpandFilters(expanded = false))
+        testScheduler.advanceUntilIdle()
+        assertFalse(actual = store.state.filtersExpanded)
+    }
+
     /** Verifies that without a storage file the sorting and property filters still apply to the state. */
     @Test
     fun inMemory() = runUnitTest {

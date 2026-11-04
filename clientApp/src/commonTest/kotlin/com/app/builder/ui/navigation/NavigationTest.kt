@@ -6,15 +6,22 @@ import kotlin.test.assertIs
 import kotlin.test.assertTrue
 import kotlin.uuid.Uuid
 import kotlinx.coroutines.flow.first
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performTextInput
 import com.app.builder.Dependency.getUserDependency
 import com.app.builder.core.config.ClientFlags
 import com.app.builder.domain.EntityType
 import com.app.builder.domain.deeplink.DeepLink
+import com.app.builder.domain.gateway.registry.toRegistrySchema
 import com.app.builder.test.FakeData
 import com.app.builder.test.TestCase
+import com.app.builder.test.count
+import com.app.builder.ui.LocalSplitScreen
 
 class NavigationTest: TestCase() {
 
@@ -153,6 +160,100 @@ class NavigationTest: TestCase() {
 
         onNodeWithTag(testTag = "action_delete").performClick()
         authenticatedUseCases.taskUseCases.observeTask(uuid = taskUuid).first { it?.deletedAt != null }
+    }
+
+    /** Verifies that, on a split screen, the task detail's top bar keeps the list filters and that they apply to the list beside it. */
+    @Test
+    fun splitTaskDetailShowsListFilters() = runUITest {
+        val authenticatedUseCases = dependency.get()
+            .getUserDependency(user = FakeData.adminUser)
+            .useCases
+        authenticatedUseCases.authenticationUseCases.login(credentials = FakeData.adminCredentials)
+        val deletedTask = FakeData.task.copy(uuid = Uuid.random(), title = "Deleted", deletedAt = FakeData.task.modifiedAt)
+        authenticatedUseCases.taskUseCases.upsertTask(task = FakeData.task)
+        authenticatedUseCases.taskUseCases.upsertTask(task = deletedTask)
+        router.navigate(screen = Screen.TaskList)
+        router.navigate(screen = Screen.TaskDetail(uuid = FakeData.task.uuid.toString()))
+
+        setUI {
+            CompositionLocalProvider(value = LocalSplitScreen provides true) {
+                AuthenticatedNavigation(useCases = authenticatedUseCases)
+            }
+        }
+        waitUntil { onAllNodesWithTag(testTag = "task_card_0").fetchSemanticsNodes().isNotEmpty() }
+        onNodeWithTag(testTag = "task_card_1").assertDoesNotExist()
+
+        onNodeWithTag(testTag = "action_expand").performClick()
+        onNodeWithTag(testTag = "action_search").assertIsDisplayed()
+        onNodeWithTag(testTag = "action_show_deleted").assertIsDisplayed().performClick()
+        waitUntil { onAllNodesWithTag(testTag = "task_card_1").fetchSemanticsNodes().isNotEmpty() }
+    }
+
+    /** Verifies that, on a split screen, expanding the filters on the task detail keeps them expanded on the list once the detail is closed, and the other way round. */
+    @Test
+    fun splitTaskFiltersStayExpanded() = runUITest {
+        val authenticatedUseCases = dependency.get()
+            .getUserDependency(user = FakeData.adminUser)
+            .useCases
+        authenticatedUseCases.authenticationUseCases.login(credentials = FakeData.adminCredentials)
+        authenticatedUseCases.taskUseCases.upsertTask(task = FakeData.task)
+        router.navigate(screen = Screen.TaskList)
+        router.navigate(screen = Screen.TaskDetail(uuid = FakeData.task.uuid.toString()))
+
+        setUI {
+            CompositionLocalProvider(value = LocalSplitScreen provides true) {
+                AuthenticatedNavigation(useCases = authenticatedUseCases)
+            }
+        }
+        waitForIdle()
+        onNodeWithTag(testTag = "action_search").assertDoesNotExist()
+
+        onNodeWithTag(testTag = "action_expand").performClick()
+        onNodeWithTag(testTag = "action_search").assertIsDisplayed()
+
+        router.back()
+        waitForIdle()
+        assertEquals(expected = listOf(Screen.TaskList), actual = router.backStack.toList())
+        onNodeWithTag(testTag = "action_search").assertIsDisplayed()
+
+        onNodeWithTag(testTag = "action_expand").performClick()
+        onNodeWithTag(testTag = "action_search").assertDoesNotExist()
+
+        router.navigate(screen = Screen.TaskDetail(uuid = FakeData.task.uuid.toString()))
+        waitForIdle()
+        onNodeWithTag(testTag = "action_expand").assertIsDisplayed()
+        onNodeWithTag(testTag = "action_search").assertDoesNotExist()
+    }
+
+    /** Verifies that, on a split screen, the registry detail's top bar keeps the list filters and that they apply to the list beside it. */
+    @Test
+    fun splitRegistryDetailShowsListFilters() = runUITest {
+        val authenticatedUseCases = dependency.get()
+            .getUserDependency(user = FakeData.adminUser)
+            .useCases
+        authenticatedUseCases.authenticationUseCases.login(credentials = FakeData.adminCredentials)
+        val registryDao = dependency.get()
+            .database
+            .registryQueries
+        val otherRegistry = FakeData.registry.copy(requestUuid = Uuid.random(), model = "Galaxy S24")
+        registryDao.upsertRegistry(Registry = FakeData.registry.toRegistrySchema())
+        registryDao.upsertRegistry(Registry = otherRegistry.toRegistrySchema())
+        router.navigate(screen = Screen.RegistryList)
+        router.navigate(screen = Screen.RegistryDetail(uuid = FakeData.registry.requestUuid.toString()))
+
+        setUI {
+            CompositionLocalProvider(value = LocalSplitScreen provides true) {
+                AuthenticatedNavigation(useCases = authenticatedUseCases)
+            }
+        }
+        // Registry cards are taller than the screen, so the list row count is checked rather than each card.
+        waitUntil { runCatching { onNodeWithTag(testTag = "registry_list").count(count = 2) }.isSuccess }
+
+        onNodeWithTag(testTag = "action_expand").performClick()
+        onNodeWithTag(testTag = "action_show_deleted").assertDoesNotExist()
+        onNodeWithTag(testTag = "action_search").assertIsDisplayed().performClick()
+        onNodeWithTag(testTag = "action_search_input").performTextInput(text = otherRegistry.model)
+        waitUntil { runCatching { onNodeWithTag(testTag = "registry_list").count(count = 1) }.isSuccess }
     }
 
     /** Verifies that the design routes navigate between their sections and back to the app's authenticated landing screen. */
