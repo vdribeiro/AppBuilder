@@ -3,10 +3,10 @@ package com.app.builder.domain
 import kotlinx.serialization.Serializable
 
 /**
- * A user and a session verifier and tokens.
+ * A user and its account, with a session verifier and tokens.
  *
  * @property user The [User] domain model.
- * @property username The username the session was opened with.
+ * @property account The [Account] the session was opened with.
  * @property salt The random salt the verifier was derived with.
  * @property verifier The key derived from the password.
  * @property accessToken The JWT access token used for network authentication.
@@ -15,7 +15,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class UserSession(
     val user: User,
-    val username: String,
+    val account: Account,
     val salt: String,
     val verifier: String,
     val accessToken: String,

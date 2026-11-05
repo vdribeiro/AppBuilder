@@ -12,8 +12,9 @@ enum class EntityType {
     REGISTRY,
     NOTIFICATION,
     TRANSLATION,
-    SESSION,
+    ACCOUNT,
     USER,
     DEVICE_LOCATION,
     TASK,
+    TASK_ACCESS,
 }

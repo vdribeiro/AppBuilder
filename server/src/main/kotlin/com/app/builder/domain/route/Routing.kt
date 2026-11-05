@@ -7,6 +7,7 @@ import io.ktor.server.routing.get
 import io.ktor.server.routing.routing
 import com.app.builder.Dependency
 import com.app.builder.core.config.ServerFlags
+import com.app.builder.domain.route.provider.accountRoutes
 import com.app.builder.domain.route.provider.authenticationRoutes
 import com.app.builder.domain.route.provider.broadcastRoutes
 import com.app.builder.domain.route.provider.configRoutes
@@ -14,6 +15,7 @@ import com.app.builder.domain.route.provider.deviceLocationRoutes
 import com.app.builder.domain.route.provider.probeRoutes
 import com.app.builder.domain.route.provider.pushRoutes
 import com.app.builder.domain.route.provider.registryRoutes
+import com.app.builder.domain.route.provider.taskAccessRoutes
 import com.app.builder.domain.route.provider.taskRoutes
 import com.app.builder.domain.route.provider.userRoutes
 
@@ -34,8 +36,10 @@ fun Application.installRouting(dependency: Dependency) {
         if (ServerFlags.value.authentication) authenticationRoutes(permissionService = permissionService, authenticationUseCases = useCases.authenticationUseCases, registryUseCases = useCases.registryUseCases)
         if (ServerFlags.value.broadcast) broadcastRoutes(permissionService = permissionService, broadcastService = dependency.broadcastService, fcmService = dependency.fcmService, registryUseCases = useCases.registryUseCases)
         if (ServerFlags.value.push) pushRoutes(permissionService = permissionService, deviceTokenUseCases = useCases.deviceTokenUseCases, pushService = dependency.pushService, registryUseCases = useCases.registryUseCases)
-        if (ServerFlags.value.users) userRoutes(permissionService = permissionService, userUseCases = useCases.userUseCases, registryUseCases = useCases.registryUseCases)
+        if (ServerFlags.value.users) userRoutes(permissionService = permissionService, userUseCases = useCases.userUseCases, accountUseCases = useCases.accountUseCases, registryUseCases = useCases.registryUseCases)
+        if (ServerFlags.value.users) accountRoutes(permissionService = permissionService, accountUseCases = useCases.accountUseCases, registryUseCases = useCases.registryUseCases)
         if (ServerFlags.value.deviceLocation) deviceLocationRoutes(permissionService = permissionService, deviceLocationUseCases = useCases.deviceLocationUseCases, registryUseCases = useCases.registryUseCases)
         if (ServerFlags.value.tasks) taskRoutes(permissionService = permissionService, taskUseCases = useCases.taskUseCases, registryUseCases = useCases.registryUseCases)
+        if (ServerFlags.value.tasks) taskAccessRoutes(permissionService = permissionService, taskAccessUseCases = useCases.taskAccessUseCases, registryUseCases = useCases.registryUseCases)
     }
 }

@@ -11,8 +11,6 @@ object UserTable: Table(name = "user") {
     val modifiedAt = timestamp(name = "modified_at")
     /** The timestamp indicating when this user was last deleted. */
     val deletedAt = timestamp(name = "deleted_at").nullable()
-    /** The permissions granted to this user, stored as JSON-encoded text and keyed by entity type. */
-    val permissions = text(name = "permissions")
     /** The display name of the user. */
     val name = text(name = "name")
     /** The URL to the user's profile image, or null if not set. */
