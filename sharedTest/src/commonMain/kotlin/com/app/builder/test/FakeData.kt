@@ -8,6 +8,7 @@ import com.app.builder.core.locale.now
 import com.app.builder.core.platform.OS
 import com.app.builder.core.security.uuid
 import com.app.builder.data.serializer.encode
+import com.app.builder.domain.Account
 import com.app.builder.domain.Authentication
 import com.app.builder.domain.BearerToken
 import com.app.builder.domain.DeviceLocation
@@ -17,6 +18,7 @@ import com.app.builder.domain.PushPayload
 import com.app.builder.domain.RegistrationForm
 import com.app.builder.domain.Registry
 import com.app.builder.domain.Task
+import com.app.builder.domain.TaskUserAccess
 import com.app.builder.domain.Translation
 import com.app.builder.domain.User
 import com.app.builder.domain.UserCredentials
@@ -63,7 +65,6 @@ object FakeData {
         uuid = uuid(),
         modifiedAt = now(),
         deletedAt = null,
-        permissions = EntityType.entries.associateWith { Permission.WRITE },
         name = "Admin",
         avatar = "The Last Airbender"
     )
@@ -72,6 +73,23 @@ object FakeData {
         uuid = uuid(),
         modifiedAt = now(),
         deletedAt = null,
+        name = "User",
+        avatar = null
+    )
+
+    val adminAccount: Account = Account(
+        userUuid = adminUser.uuid,
+        modifiedAt = now(),
+        deletedAt = null,
+        username = "admin",
+        permissions = EntityType.entries.associateWith { Permission.WRITE }
+    )
+
+    val account: Account = Account(
+        userUuid = user.uuid,
+        modifiedAt = now(),
+        deletedAt = null,
+        username = "user",
         permissions = EntityType.entries.mapNotNull { type ->
             when (type) {
                 EntityType.CLIENT_FLAG -> Permission.READ
@@ -81,14 +99,13 @@ object FakeData {
                 EntityType.REGISTRY -> null
                 EntityType.NOTIFICATION -> null
                 EntityType.TRANSLATION -> Permission.READ
-                EntityType.SESSION -> Permission.READ
+                EntityType.ACCOUNT -> Permission.READ
                 EntityType.USER -> Permission.READ
                 EntityType.DEVICE_LOCATION -> Permission.WRITE
                 EntityType.TASK -> Permission.READ
+                EntityType.TASK_ACCESS -> null
             }?.let { type to it }
-        }.toMap(),
-        name = "User",
-        avatar = null
+        }.toMap()
     )
 
     val adminBearerToken: BearerToken = BearerToken(
@@ -102,32 +119,36 @@ object FakeData {
     )
 
     val adminCredentials = UserCredentials(
-        username = "admin",
+        username = adminAccount.username,
         password = "admin"
     )
 
     val credentials = UserCredentials(
-        username = "user",
+        username = account.username,
         password = "pass123"
     )
 
     val adminRegistrationForm = RegistrationForm(
         user = adminUser,
-        credentials = adminCredentials
+        account = adminAccount,
+        password = adminCredentials.password
     )
 
     val registrationForm = RegistrationForm(
         user = user,
-        credentials = credentials
+        account = account,
+        password = credentials.password
     )
 
     val adminAuthentication: Authentication = Authentication(
         user = adminUser,
+        account = adminAccount,
         bearer = adminBearerToken
     )
 
     val authentication: Authentication = Authentication(
         user = user,
+        account = account,
         bearer = bearerToken
     )
 
@@ -170,6 +191,14 @@ object FakeData {
         title = "Task Title",
         description = "Task Description",
         state = Task.State.TODO
+    )
+
+    val taskAccess: TaskUserAccess = TaskUserAccess(
+        uuid = uuid(),
+        modifiedAt = now(),
+        deletedAt = null,
+        taskUuid = task.uuid,
+        userUuid = user.uuid
     )
 
     val deviceLocation: DeviceLocation = DeviceLocation(
