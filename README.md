@@ -120,7 +120,7 @@ Everything below works with zero configuration: no Firebase project, no Postgres
    | Android | `./gradlew :clientApp:installDebug`                             |
    | iOS     | `cd iosApp && pod install`, then open `iosApp.xcworkspace`      |
 
-3. **Log in** with `admin`/`admin`. The account is seeded with all permissions, so it can create further accounts from inside the app.
+3. **Log in** with `admin`/`admin`. The account is seeded with all permissions, so it can create further users and accounts from inside the app.
 
 `.run/` holds shared IDE run configurations for all four clients and for every test suite, so each command above has a click-to-run equivalent.
 
@@ -195,7 +195,8 @@ Not every module has every package. See [Package Index](#package-index) and [Mod
 
 Dependencies are wired by hand. KMP support in popular DI frameworks adds complexity and limitations on every target, and generated code is especially troublesome on WASM.
 
-* **Client**: `Dependency.AppGraph` holds everything that exists before login (`SqlDriver` → `AppDatabase`, `HttpClient`, `Scheduler`, push and translation services, a default guest user). `Dependency.UserGraph` is built per authenticated user on top of it, cached by user uuid, so switching accounts swaps only the authenticated half.
+* **Client**: `Dependency.AppGraph` holds everything that exists before login (`SqlDriver` → `AppDatabase`, `HttpClient`, `Scheduler`, push and translation services, a default guest account). `Dependency.UserGraph` is built per authenticated user on top of it, cached by user uuid, so switching accounts swaps only the authenticated half.
+It is rebuilt when the account's permissions or disabled state change; screens opened from then on get the new graph, while screens already open keep the previous one until they're left.
 * **Server**: `Dependency` receives an already-built `R2dbcDatabase` and wires the `UseCases` through `Gateways`.
 
 # Offline Engine
@@ -723,20 +724,31 @@ Each runs `beforeTest()`, the test body, then `afterTest()`, cancelling the scop
 
 ## Accounts & Sessions
 
-The server seeds one super-user account on every boot (`admin`/`admin` in development, the `ADMIN_*` values in production).
-Authorization is per `EntityType`: each user carries a `READ`/`WRITE` permission map, checked on every protected route instead of a fixed role.
+A `User` is a person, with a name and an avatar, that other entities can refer to whether or not it can log in.
+An `Account` is what lets a user log in: its username, password hash and permissions live in the server's `user_account` table, and its sessions in `user_session`.
+The server seeds one super-user account on boot when it doesn't exist yet (`admin`/`admin` in development, the `ADMIN_*` values in production). 
+When it already exists, the boot grants it write permission on every entity type again, so entity types added later reach it and permissions removed from it come back.
 
-It is easier to strip down auth than to build it. If you don't need accounts, remove the routes and screens, move what you keep into `UnauthenticatedNavigation`, or grant all permissions to the `guest` user in the `Dependency` graph.
+Authorization is per `EntityType`: each account carries a `READ`/`WRITE` permission map, checked on every protected route instead of a fixed role.
+`USER` and `ACCOUNT` work like every other entity:
+
+* `USER` covers people. `WRITE` creates, edits, deletes and restores any user; `READ` lists them and still lets you update your own name and avatar.
+* `ACCOUNT` covers logins. `WRITE` creates an account for a user, changes its username and permissions, and disables or re-enables it; `READ` lists accounts.
+* Creating an account sends a password, so it is an online call that opens no session. The account list delta-syncs like any other entity.
+* A user can't be deleted while its account is active: disable the account first.
+* In the user detail screen, either `WRITE` opens edit mode, which unlocks only the fields that permission covers. Adding a user still needs `USER` `WRITE`, and deleting one also needs `ACCOUNT` `READ`, so the app can tell its account isn't active.
+
+It is easier to strip down auth than to build it. If you don't need accounts, remove the routes and screens, move what you keep into `UnauthenticatedNavigation`, or grant all permissions to the guest account in the `Dependency` graph.
 
 Offline login is covered in [Cryptography](#cryptography).
 
 ### Account Deletion
 
-Deleting a user is a soft delete: `deletedAt` is set and the row stays, so the deletion delta-syncs to every device. A deleted account:
+Disabling an account is a soft delete: the account's `deletedAt` is set and the row stays, so the change delta-syncs to every device. A disabled account:
 
 * **cannot log in again**. The password still verifies, so this check is the only thing stopping a new session;
 * **keeps refreshing the session it already had**, with no deadline;
-* **may only write work created before the deletion**, judged by the request header's UTC;
+* **may only write work created before the deletion**, judged by the request header's UTC. This covers every non-`GET` call, including updating its own user under `USER` `READ`;
 * **cannot read anything** its permissions used to reach, register a device or open a push stream. Its device tokens are deleted.
 
 Why not revoke the session? A device that was offline at the moment of deletion would lose the field work it is holding. A deadline only moves the question to how long a device might stay offline.
@@ -745,7 +757,7 @@ Keeping the session alive and judging each write by when it was created preserve
 <details>
 <summary>Enforcement details and trust assumptions</summary>
 
-* Clearing `deletedAt` is treated like changing permissions: only `USER` `WRITE` may do it, and a self-update carries the stored value over. Otherwise a deleted account could backdate a write to its own record and lift every restriction.
+* Only `ACCOUNT` `WRITE` may clear an account's `deletedAt` or change its permissions. Otherwise, a disabled account could backdate a write to its own record and lift every restriction.
 * Enforcement is served from a permission cache, so it applies on every instance at once, and is written into the access token at the next refresh.
 * An instance restarting before that first refresh falls back to the token minted while the account was live, so the account is unrestricted until that token expires and the next refresh closes it.
 * Header timestamps are client-supplied and only bounded against the future, so a tampered client can backdate. It is the same trust assumption as [Clock Trust](#clock-trust).
@@ -1002,33 +1014,40 @@ Any component can report a failure without knowing where logs go, and tests capt
 
 Every route shares a global rate limit; those marked *rate-limited* have a stricter one. Most groups are also gated by a `ServerFlags` flag; the flags/configs and `Registry` routes are installed unconditionally. Paths come from the shared `URL` registry.
 
-| Method & Path                                                | Purpose                                                       | Auth                                              | Flag             |
-|--------------------------------------------------------------|---------------------------------------------------------------|---------------------------------------------------|------------------|
-| `GET /`                                                      | Liveness text                                                 | —                                                 | —                |
-| `HEAD /api/probe`                                            | Health check                                                  | — (rate-limited)                                  | `probe`          |
-| `GET /api/clientflags` · `/api/clientconfigs`                | Serve client flags/configs                                    | —                                                 | —                |
-| `POST /api/clientflags` · `/api/clientconfigs`               | Update client flags/configs                                   | JWT, `CLIENT_FLAG`/`CLIENT_CONFIG` `WRITE`        | —                |
-| `GET`/`POST /api/serverflags` · `/api/serverconfigs`         | Read/update server flags/configs                              | JWT, `SERVER_FLAG`/`SERVER_CONFIG` `READ`/`WRITE` | —                |
-| `GET /api/registry`                                          | Delta-sync the request audit log                              | JWT, `REGISTRY` `READ`                            | —                |
-| `POST /api/registry`                                         | Record an audit entry                                         | JWT, `REGISTRY` `WRITE`                           | —                |
-| `GET /api/data/*`                                            | Static resources                                              | —                                                 | `resources`      |
-| `POST /api/register`                                         | Create an account                                             | JWT, `USER` `WRITE`                               | `authentication` |
-| `POST /api/login`                                            | Log in                                                        | —                                                 | `authentication` |
-| `POST /api/logout` · `/api/refresh-tokens`                   | Log out / rotate tokens                                       | Refresh token                                     | `authentication` |
-| `GET (SSE) /api/broadcast` · `POST /api/broadcast/subscribe` | Broadcast stream / FCM topic subscribe                        | — (rate-limited)                                  | `broadcast`      |
-| `POST /api/broadcast`                                        | Send a broadcast                                              | JWT, `NOTIFICATION` `WRITE`                       | `broadcast`      |
-| `POST /api/device-tokens` · `/api/tickets`                   | Register an FCM token / mint a WebSocket ticket               | JWT, account not deleted                          | `push`           |
-| `WS /api/push`                                               | Push connection; inbound frames are acknowledgements          | Ticket                                            | `push`           |
-| `POST /api/push`                                             | Send a targeted push                                          | JWT, `NOTIFICATION` `WRITE`                       | `push`           |
-| `GET /api/users` · `/api/users/{uuid}`                       | Delta-sync users / fetch one                                  | JWT, `USER` `READ`                                | `users`          |
-| `POST /api/users`                                            | Upsert a user (*)                                             | JWT, `USER` `WRITE`                               | `users`          |
-| `POST /api/device-location`                                  | Report a device location fix                                  | JWT, `DEVICE_LOCATION` `WRITE`                    | `deviceLocation` |
-| `GET /api/tasks` · `/api/tasks/{uuid}`                       | Delta-sync tasks / fetch one                                  | JWT, `TASK` `READ`                                | `tasks`          |
-| `POST /api/tasks`                                            | Upsert a task                                                 | JWT, `TASK` `WRITE`                               | `tasks`          |
-| `GET /api/[feature]` · `/api/[feature]/{uuid}`               | Delta-sync a feature / fetch one                              | JWT, `ENTITY` `READ`                              | Feature flag     |
-| `POST /api/[feature]`                                        | Upsert a feature entity                                       | JWT, `ENTITY` `WRITE`                             | Feature flag     |
+| Method & Path                                                | Purpose                                                     | Auth                                              | Flag             |
+|--------------------------------------------------------------|-------------------------------------------------------------|---------------------------------------------------|------------------|
+| `GET /`                                                      | Liveness text                                               | —                                                 | —                |
+| `HEAD /api/probe`                                            | Health check                                                | — (rate-limited)                                  | `probe`          |
+| `GET /api/clientflags` · `/api/clientconfigs`                | Serve client flags/configs                                  | —                                                 | —                |
+| `POST /api/clientflags` · `/api/clientconfigs`               | Update client flags/configs                                 | JWT, `CLIENT_FLAG`/`CLIENT_CONFIG` `WRITE`        | —                |
+| `GET`/`POST /api/serverflags` · `/api/serverconfigs`         | Read/update server flags/configs                            | JWT, `SERVER_FLAG`/`SERVER_CONFIG` `READ`/`WRITE` | —                |
+| `GET /api/registry`                                          | Delta-sync the request audit log                            | JWT, `REGISTRY` `READ`                            | —                |
+| `POST /api/registry`                                         | Record an audit entry                                       | JWT, `REGISTRY` `WRITE`                           | —                |
+| `GET /api/data/*`                                            | Static resources                                            | —                                                 | `resources`      |
+| `POST /api/register`                                         | Create an account for a user                                | JWT, `ACCOUNT` `WRITE`                            | `authentication` |
+| `POST /api/login`                                            | Log in                                                      | —                                                 | `authentication` |
+| `POST /api/logout` · `/api/refresh-tokens`                   | Log out / rotate tokens                                     | Refresh token                                     | `authentication` |
+| `GET (SSE) /api/broadcast` · `POST /api/broadcast/subscribe` | Broadcast stream / FCM topic subscribe                      | — (rate-limited)                                  | `broadcast`      |
+| `POST /api/broadcast`                                        | Send a broadcast                                            | JWT, `NOTIFICATION` `WRITE`                       | `broadcast`      |
+| `POST /api/device-tokens` · `/api/tickets`                   | Register an FCM token / mint a WebSocket ticket             | JWT, account not deleted                          | `push`           |
+| `WS /api/push`                                               | Push connection; inbound frames are acknowledgements        | Ticket                                            | `push`           |
+| `POST /api/push`                                             | Send a targeted push                                        | JWT, `NOTIFICATION` `WRITE`                       | `push`           |
+| `GET /api/users` · `/api/users/{uuid}`                       | Delta-sync users / fetch one                                | JWT, `USER` `READ`                                | `users`          |
+| `POST /api/users`                                            | Upsert a user (*1)                                          | JWT, `USER` `READ`                                | `users`          |
+| `GET /api/accounts` · `/api/accounts/{userUuid}`             | Delta-sync accounts / fetch one                             | JWT, `ACCOUNT` `READ`                             | `users`          |
+| `POST /api/accounts`                                         | Update an account's username, permissions or disabled state | JWT, `ACCOUNT` `WRITE`                            | `users`          |
+| `POST /api/device-location`                                  | Report a device location fix                                | JWT, `DEVICE_LOCATION` `WRITE`                    | `deviceLocation` |
+| `GET /api/[entity]` · `/api/[entity]/{uuid}`                 | Delta-sync a entity / fetch one                             | JWT, `ENTITY` `READ`                              | Feature flag     |
+| `POST /api/[entity]`                                         | Upsert a feature entity                                     | JWT, `ENTITY` `WRITE`                             | Feature flag     |
+| `GET /api/[entity]-accesses`                                 | Delta-sync entity accesses                                  | JWT, `ENTITY` `READ`                              | Feature flag     |
+| `POST /api/[entity]-accesses`                                | Grant or revoke a user's access to a feature (*2)           | JWT, `ENTITY` `WRITE`                             | Feature flag     |
 
-(*) `USER` `WRITE` may upsert any user. `USER` `READ` may only update itself, except its permissions. Deleted accounts are narrowed further, see [Account Deletion](#account-deletion).
+(*1) `USER` `WRITE` may upsert any user. `USER` `READ` may only update itself, keeping its stored `deletedAt`. Deleting a user with an active account is refused. Disabled accounts are narrowed further, see [Account Deletion](#account-deletion).
+
+(*2) A feature entity access is membership only: it makes the entity visible to that user, while what they can do with it still comes from their entity permission.
+Creating an entity grants its creator an access. Managing access needs entity `WRITE` plus an active access to the entity, and covers any user. 
+Revoking is a soft delete that sets the access's `deletedAt`, so the user still syncs its own revoked access and drops the entity, and granting again clears it.
+In the app, the entity detail lists every user with a checkbox for access, editable in edit mode and applied on Save. When an access sync brings a newly granted access for the current user, the app fetches that entity, since a entity older than the last entity sync wouldn't arrive otherwise.
 
 ## Platform Implementations
 
@@ -1159,7 +1178,7 @@ Declarations that resolve to a distinct implementation per source set:
 
 * `EntityType`: Every syncable entity. The offline engine, permission map and push payloads key off it.
 * `Permission`: `READ`/`WRITE` paired with an `EntityType` to form a permission map.
-* `User`, `UserCredentials`, `UserSession`, `RegistrationForm`, `Authentication`, `BearerToken`: Accounts, login input and tokens.
+* `User`, `Account`, `UserCredentials`, `UserSession`, `RegistrationForm`, `Authentication`, `BearerToken`: People, their accounts and permissions, login input and tokens.
 * `DeviceToken`: A registered FCM token.
 * `PushPayload`: The push envelope for WebSocket, SSE and FCM alike.
 * `Registry`: A request audit entry.
@@ -1357,7 +1376,7 @@ Set `server.host` in `local.properties`, and list the same host in the server's 
 
 ### Do I need user and session management?
 
-Not necessarily, but it is easier to strip auth out than to build it. Remove the routes and screens, or grant every permission to the `guest` user. See [Accounts & Sessions](#accounts--sessions).
+Not necessarily, but it is easier to strip auth out than to build it. Remove the routes and screens, or grant every permission to the guest account. See [Accounts & Sessions](#accounts--sessions).
 
 ## Building Features
 

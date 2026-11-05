@@ -40,8 +40,12 @@ object AppFile {
             REGISTRIES_LAST_SYNC_UTC,
             /** The UTC instant when users were last synchronized. */
             USERS_LAST_SYNC_UTC,
+            /** The UTC instant when accounts were last synchronized. */
+            ACCOUNTS_LAST_SYNC_UTC,
             /** The UTC instant when tasks were last synchronized. */
-            TASKS_LAST_SYNC_UTC
+            TASKS_LAST_SYNC_UTC,
+            /** The UTC instant when task accesses were last synchronized. */
+            TASK_ACCESSES_LAST_SYNC_UTC
         }
 
         override val serializer: KSerializer<Map<Key, String>> =

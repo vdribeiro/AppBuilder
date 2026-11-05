@@ -171,7 +171,7 @@ object Application {
         withTimeoutOrNull(timeout = timeout) {
             val dependency = dependency.filterNotNull().first()
             dependency.userGraph.useCases.authenticationUseCases
-                .observeCurrentUser().firstOrNull() ?: return@withTimeoutOrNull true
+                .observeCurrentAccount().firstOrNull() ?: return@withTimeoutOrNull true
             userDependency.filterNotNull().first()
         } != null
 
@@ -191,32 +191,34 @@ object Application {
             ThemeCache.set { customTheme }
 
             Telemetry.info(tag = TAG, message = "Initializing dependencies")
-            val dependency = appGraph.get().apply { start(); observeCurrentUser(scope = this@launch) }
+            val dependency = appGraph.get().apply { start(); observeCurrentAccount(scope = this@launch) }
             Telemetry.info(tag = TAG, message = "Setting dependencies")
             _dependency.update { dependency }
         }
     }
 
     /**
-     * Observes the current user, and sets the authenticated dependency accordingly.
+     * Observes the current user's account, and sets the authenticated dependency accordingly, swapping it when the account's dependency is rebuilt.
      *
      * @param scope The scope to collect on.
      */
-    private fun Dependency.AppGraph.observeCurrentUser(scope: CoroutineScope) {
+    private fun Dependency.AppGraph.observeCurrentAccount(scope: CoroutineScope) {
         scope.launch {
-            Telemetry.info(tag = TAG, message = "Observing user")
-            userGraph.useCases.authenticationUseCases.observeCurrentUser().collect { user ->
+            Telemetry.info(tag = TAG, message = "Observing account")
+            userGraph.useCases.authenticationUseCases.observeCurrentAccount().collect { account ->
+                val authenticatedDependency = account?.let { getUserDependency(account = it) }
+                if (authenticatedDependency === _userDependency.value) return@collect
                 _userDependency.value?.stop()
-                when (user) {
+                when (authenticatedDependency) {
                     null -> {
                         Telemetry.info(tag = TAG, message = "Clearing authenticated dependencies")
                         _userDependency.update { null }
                     }
 
                     else -> {
-                        Telemetry.info(tag = TAG, message = "Initializing authenticated dependencies for user ${user.uuid}")
-                        val authenticatedDependency = getUserDependency(user = user).apply { start() }
-                        Telemetry.info(tag = TAG, message = "Setting authenticated dependencies for user ${user.uuid}")
+                        Telemetry.info(tag = TAG, message = "Initializing authenticated dependencies for user ${authenticatedDependency.account.userUuid}")
+                        authenticatedDependency.start()
+                        Telemetry.info(tag = TAG, message = "Setting authenticated dependencies for user ${authenticatedDependency.account.userUuid}")
                         _userDependency.update { authenticatedDependency }
                     }
                 }
@@ -269,23 +271,25 @@ object Application {
 
     /** Stops [Dependency.UserGraph] services. */
     private suspend fun Dependency.UserGraph.stop() {
-        Telemetry.info(tag = TAG, message = "Stopping push service for user ${user.uuid}")
+        Telemetry.info(tag = TAG, message = "Stopping push service for user ${account.userUuid}")
         pushService.stop()
     }
 
     /** Starts [Dependency.UserGraph] services. */
     private suspend fun Dependency.UserGraph.start() {
         sync()
-        Telemetry.info(tag = TAG, message = "Starting push service for user ${user.uuid}")
+        Telemetry.info(tag = TAG, message = "Starting push service for user ${account.userUuid}")
         pushService.start()
     }
 
     /** Request syncs. */
     private suspend fun Dependency.UserGraph.sync() {
-        Telemetry.info(tag = TAG, message = "Requesting sync for user ${user.uuid}")
+        Telemetry.info(tag = TAG, message = "Requesting sync for user ${account.userUuid}")
         repositories.userRepository.syncUsers()
+        repositories.accountRepository.syncAccounts()
         if (ClientFlags.value.registries) repositories.registryRepository.syncRegistries()
         if (ClientFlags.value.tasks) repositories.taskRepository.syncTasks()
+        if (ClientFlags.value.tasks) repositories.taskRepository.syncTaskAccesses()
     }
 
     /** Register lifecycles of services. */

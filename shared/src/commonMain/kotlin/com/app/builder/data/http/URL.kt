@@ -38,7 +38,7 @@ sealed class URL(val path: String) {
     data object Tickets: URL(path = "/api/tickets")
     /** Endpoint for push payloads. */
     data object Push: URL(path = "/api/push")
-    /** Endpoint to register a new user account. */
+    /** Endpoint to create an account for a user. */
     data object Register: URL(path = "/api/register")
     /** Endpoint to authenticate an existing user and obtain session tokens. */
     data object Login: URL(path = "/api/login")
@@ -46,10 +46,14 @@ sealed class URL(val path: String) {
     data object Logout: URL(path = "/api/logout")
     /** Endpoint to exchange an expired access token for a renewed session token pair. */
     data object RefreshTokens: URL(path = "/api/refresh-tokens")
+    /** Endpoint for accounts. */
+    data object Accounts: URL(path = "/api/accounts")
     /** Endpoint for users. */
     data object Users: URL(path = "/api/users")
     /** Endpoint to report a device location fix. */
     data object DeviceLocations: URL(path = "/api/device-location")
     /** Endpoint for tasks. */
     data object Tasks: URL(path = "/api/tasks")
+    /** Endpoint for the users' access to tasks. */
+    data object TaskAccesses: URL(path = "/api/task-accesses")
 }

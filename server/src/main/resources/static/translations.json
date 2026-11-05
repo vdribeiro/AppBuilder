@@ -46,11 +46,6 @@
   },
   {
     "languageIso": "en",
-    "key": "session",
-    "value": "Session"
-  },
-  {
-    "languageIso": "en",
     "key": "user",
     "value": "User"
   },
@@ -368,6 +363,11 @@
     "languageIso": "en",
     "key": "task_state_complete",
     "value": "Complete"
+  },
+  {
+    "languageIso": "en",
+    "key": "account_active",
+    "value": "Active"
   },
   {
     "languageIso": "en",
