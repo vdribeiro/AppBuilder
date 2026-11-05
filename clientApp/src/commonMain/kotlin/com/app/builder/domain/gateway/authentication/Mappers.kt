@@ -4,10 +4,12 @@ import io.ktor.client.plugins.auth.providers.BearerTokens
 import com.app.builder.core.security.decrypt
 import com.app.builder.core.security.deriveKey
 import com.app.builder.core.security.encrypt
+import com.app.builder.data.database.AccountSchema
 import com.app.builder.data.database.SessionSchema
 import com.app.builder.data.database.UserSchema
 import com.app.builder.data.serializer.decode
 import com.app.builder.data.serializer.encode
+import com.app.builder.domain.Account
 import com.app.builder.domain.BearerToken
 import com.app.builder.domain.EntityType
 import com.app.builder.domain.Permission
@@ -24,7 +26,6 @@ fun UserSchema.toUser(): User = User(
     uuid = uuid,
     modifiedAt = modifiedAt,
     deletedAt = deletedAt,
-    permissions = decode<Map<EntityType, Permission>>(value = permissions).orEmpty(),
     name = name,
     avatar = avatar,
 )
@@ -38,9 +39,34 @@ fun User.toUserSchema(): UserSchema = UserSchema(
     uuid = uuid,
     modifiedAt = modifiedAt,
     deletedAt = deletedAt,
-    permissions = encode(value = permissions).orEmpty(),
     name = name,
     avatar = avatar,
+)
+
+/**
+ * Maps an [AccountSchema] entity to an [Account] domain model.
+ *
+ * @return The corresponding [Account] instance.
+ */
+fun AccountSchema.toAccount(): Account = Account(
+    userUuid = userUuid,
+    modifiedAt = modifiedAt,
+    deletedAt = deletedAt,
+    username = username,
+    permissions = decode<Map<EntityType, Permission>>(value = permissions).orEmpty(),
+)
+
+/**
+ * Maps an [Account] domain model to an [AccountSchema] entity.
+ *
+ * @return The corresponding [AccountSchema] instance.
+ */
+fun Account.toAccountSchema(): AccountSchema = AccountSchema(
+    userUuid = userUuid,
+    modifiedAt = modifiedAt,
+    deletedAt = deletedAt,
+    username = username,
+    permissions = encode(value = permissions).orEmpty(),
 )
 
 /**
@@ -50,7 +76,7 @@ fun User.toUserSchema(): UserSchema = UserSchema(
  */
 fun UserSession.toSessionSchema(): SessionSchema = SessionSchema(
     userUuid = user.uuid,
-    username = username,
+    username = account.username,
     salt = salt,
     verifier = verifier,
     accessToken = accessToken,

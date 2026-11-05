@@ -5,13 +5,14 @@ import app.cash.sqldelight.adapter.primitive.IntColumnAdapter
 import app.cash.sqldelight.db.SqlDriver
 import com.app.builder.data.database.adapter.InstantColumnAdapter
 import com.app.builder.data.database.adapter.UuidColumnAdapter
+import database.Account
 import database.AppDatabase
 import database.DeviceLocation
 import database.Job
 import database.Registry
 import database.Session
 import database.Task
-import database.TaskUserJoin
+import database.TaskUserAccess
 import database.User
 
 /**
@@ -24,6 +25,11 @@ class DatabaseFactory(driver: SqlDriver) {
     /** The initialized [AppDatabase] instance configured with required type adapters. */
     val database: AppDatabase = AppDatabase(
         driver = driver,
+        AccountAdapter = Account.Adapter(
+            userUuidAdapter = UuidColumnAdapter,
+            modifiedAtAdapter = InstantColumnAdapter,
+            deletedAtAdapter = InstantColumnAdapter,
+        ),
         JobAdapter = Job.Adapter(
             uuidAdapter = UuidColumnAdapter,
             userUuidAdapter = UuidColumnAdapter,
@@ -60,7 +66,10 @@ class DatabaseFactory(driver: SqlDriver) {
             deletedAtAdapter = InstantColumnAdapter,
             stateAdapter = EnumColumnAdapter()
         ),
-        TaskUserJoinAdapter = TaskUserJoin.Adapter(
+        TaskUserAccessAdapter = TaskUserAccess.Adapter(
+            uuidAdapter = UuidColumnAdapter,
+            modifiedAtAdapter = InstantColumnAdapter,
+            deletedAtAdapter = InstantColumnAdapter,
             taskUuidAdapter = UuidColumnAdapter,
             userUuidAdapter = UuidColumnAdapter,
         ),

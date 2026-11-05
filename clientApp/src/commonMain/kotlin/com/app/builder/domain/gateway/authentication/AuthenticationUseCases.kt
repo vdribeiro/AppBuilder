@@ -2,11 +2,11 @@ package com.app.builder.domain.gateway.authentication
 
 import kotlin.uuid.Uuid
 import kotlinx.coroutines.flow.Flow
-import com.app.builder.domain.RegistrationForm
+import com.app.builder.domain.Account
 import com.app.builder.domain.User
 import com.app.builder.domain.UserCredentials
 
-/** Defines the core contract for managing user authentication and registration. */
+/** Defines the core contract for managing user authentication. */
 interface AuthenticationUseCases {
 
     /**
@@ -18,12 +18,12 @@ interface AuthenticationUseCases {
     fun observeCurrentUser(): Flow<User?>
 
     /**
-     * Creates a new user account using a submitted [registrationForm].
+     * Observes the account of the active user session.
+     * Emits the authenticated user's account, or null if no user is authenticated or the session expires.
      *
-     * @param registrationForm The user's registration details.
-     * @return The newly registered [User], or null if registration fails.
+     * @return A [Flow] emitting the account or null.
      */
-    suspend fun register(registrationForm: RegistrationForm): User?
+    fun observeCurrentAccount(): Flow<Account?>
 
     /**
      * Authenticates a user using their unique [credentials].
