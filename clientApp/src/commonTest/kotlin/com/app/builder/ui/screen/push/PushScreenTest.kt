@@ -23,7 +23,7 @@ class PushScreenTest: TestCase() {
     @Test
     fun pushScreen() = runUITest {
         val authenticatedUseCases = dependency.get()
-            .getUserDependency(user = FakeData.adminUser)
+            .getUserDependency(account = FakeData.adminAccount)
             .useCases
         authenticatedUseCases.authenticationUseCases.login(credentials = FakeData.adminCredentials)
 

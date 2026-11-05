@@ -44,7 +44,7 @@ class AuthenticationRepositoryTest: TestCase() {
         assertNull(actual = userDao.getUserByUsername(username = username).awaitAsOneOrNull())
         assertNull(actual = sessionDao.getSession(userUuid = FakeData.adminUser.uuid).awaitAsOneOrNull())
 
-        val job = Job(userUuid = Uuid.NIL, entityType = EntityType.SESSION, type = Job.Type.POST)
+        val job = Job(userUuid = Uuid.NIL, entityType = EntityType.ACCOUNT, type = Job.Type.POST)
         assertTrue(actual = authenticationRepository.executeLogin(job = job) is JobResult.Error)
 
         val jobResult = authenticationRepository.executeLogin(job = job.copy(payload = encode(value = FakeData.adminCredentials)))
@@ -67,7 +67,7 @@ class AuthenticationRepositoryTest: TestCase() {
 
         val job = Job(
             userUuid = Uuid.NIL,
-            entityType = EntityType.SESSION,
+            entityType = EntityType.ACCOUNT,
             type = Job.Type.POST,
             payload = encode(value = FakeData.adminCredentials)
         )
@@ -100,7 +100,7 @@ class AuthenticationRepositoryTest: TestCase() {
         )
         assertEquals(expected = FakeData.adminUser.uuid, actual = sessionDao.getSession(userUuid = FakeData.adminUser.uuid).awaitAsOneOrNull()?.userUuid)
 
-        val job = Job(userUuid = Uuid.NIL, entityType = EntityType.SESSION, type = Job.Type.DELETE)
+        val job = Job(userUuid = Uuid.NIL, entityType = EntityType.ACCOUNT, type = Job.Type.DELETE)
         assertTrue(actual = authenticationRepository.executeLogout(job = job) is JobResult.Error)
 
         val jobResult = authenticationRepository.executeLogout(job = job.copy(payload = FakeData.adminUser.uuid.toString()))
@@ -135,7 +135,7 @@ class AuthenticationRepositoryTest: TestCase() {
 
         val job = Job(
             userUuid = Uuid.NIL,
-            entityType = EntityType.SESSION,
+            entityType = EntityType.ACCOUNT,
             type = Job.Type.DELETE,
             payload = FakeData.adminUser.uuid.toString()
         )
@@ -173,7 +173,7 @@ class AuthenticationRepositoryTest: TestCase() {
     @Test
     fun refreshBearerToken() = runUnitTest {
         val authenticationRepository = dependency.get()
-            .getUserDependency(user = FakeData.adminUser)
+            .getUserDependency(account = FakeData.adminAccount)
             .repositories
             .authenticationRepository
         val sessionDao = dependency.get()

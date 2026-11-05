@@ -49,8 +49,8 @@ class NavigationStore(
     private fun setup(): Job = launch(id = "setup") {
         Telemetry.info(tag = TAG, message = "Setup")
 
-        authenticationUseCases.observeCurrentUser().observe(id = "current_user") { user ->
-            val permissions = user?.permissions ?: return@observe
+        authenticationUseCases.observeCurrentAccount().observe(id = "current_account") { account ->
+            val permissions = account?.permissions ?: return@observe
             val items = buildList {
                 if (ClientFlags.value.home) add(
                     NavigationItem(

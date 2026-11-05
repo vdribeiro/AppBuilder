@@ -15,7 +15,7 @@ class RegistryUseCasesTest: TestCase() {
     @Test
     fun observeRegistries() = runUnitTest {
         val registryUseCases = dependency.get()
-            .getUserDependency(user = FakeData.adminUser)
+            .getUserDependency(account = FakeData.adminAccount)
             .useCases
             .registryUseCases
         val registryDao = dependency.get()
@@ -35,7 +35,7 @@ class RegistryUseCasesTest: TestCase() {
     @Test
     fun observeRegistriesWithoutPermission() = runUnitTest {
         val registryUseCases = dependency.get()
-            .getUserDependency(user = FakeData.user)
+            .getUserDependency(account = FakeData.account)
             .useCases
             .registryUseCases
         val registryDao = dependency.get()

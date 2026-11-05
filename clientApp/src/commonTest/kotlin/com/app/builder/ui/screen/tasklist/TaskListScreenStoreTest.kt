@@ -49,7 +49,7 @@ class TaskListScreenStoreTest: TestCase() {
      */
     private suspend fun listedTasks(preferences: AppFile.ActionBarData, count: Int): List<TaskItem> {
         val authenticatedUseCases = dependency.get()
-            .getUserDependency(user = FakeData.adminUser)
+            .getUserDependency(account = FakeData.adminAccount)
             .useCases
         authenticatedUseCases.authenticationUseCases.login(credentials = FakeData.adminCredentials)
         authenticatedUseCases.taskUseCases.upsertTask(task = alpha)

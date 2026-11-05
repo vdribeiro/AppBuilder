@@ -21,10 +21,10 @@ import com.app.builder.data.http.Query
 import com.app.builder.data.http.URL
 import com.app.builder.data.http.getPaginated
 import com.app.builder.data.storage.AppFile
+import com.app.builder.domain.Account
 import com.app.builder.domain.EntityType
 import com.app.builder.domain.Permission
 import com.app.builder.domain.Registry
-import com.app.builder.domain.User
 import com.app.builder.domain.scheduler.Job
 import com.app.builder.domain.scheduler.JobResult
 import com.app.builder.domain.scheduler.JobResult.NoOp.toJobResult
@@ -35,13 +35,13 @@ import database.AppDatabase
 /**
  * Gateway implementation for Registry Use Cases and Repository.
  *
- * @property user The current user.
+ * @property account The account of the current user.
  * @property database The SQLite database instance for registry data.
  * @property httpClient The HTTP client used for network operations.
  * @property scheduler The job scheduler for background tasks.
  */
 class RegistryGateway(
-    private val user: User,
+    private val account: Account,
     private val database: AppDatabase,
     private val httpClient: HttpClient,
     private val scheduler: Scheduler
@@ -51,7 +51,7 @@ class RegistryGateway(
     private val registryDao = database.registryQueries
 
     override fun observeRegistries(): Flow<List<Registry>> {
-        if (!user.hasPermission(entityType = EntityType.REGISTRY, permission = Permission.READ)) {
+        if (!account.hasPermission(entityType = EntityType.REGISTRY, permission = Permission.READ)) {
             val throwable = Throwable(message = "User does not have ${Permission.READ} permission for ${EntityType.REGISTRY}")
             Telemetry.error(tag = TAG, message = "Invalid permissions", throwable = throwable)
             return emptyFlow()
@@ -61,7 +61,7 @@ class RegistryGateway(
             .asFlow { it.toRegistry() }
             .onStart {
                 val job = Job(
-                    userUuid = user.uuid,
+                    userUuid = account.userUuid,
                     entityType = EntityType.REGISTRY,
                     type = Job.Type.GET,
                 )
@@ -75,7 +75,7 @@ class RegistryGateway(
     }
 
     override fun observeRegistry(uuid: Uuid): Flow<Registry?> {
-        if (!user.hasPermission(entityType = EntityType.REGISTRY, permission = Permission.READ)) {
+        if (!account.hasPermission(entityType = EntityType.REGISTRY, permission = Permission.READ)) {
             val throwable = Throwable(message = "User does not have ${Permission.READ} permission for ${EntityType.REGISTRY}")
             Telemetry.error(tag = TAG, message = "Invalid permissions", throwable = throwable)
             return emptyFlow()
@@ -92,14 +92,14 @@ class RegistryGateway(
     }
 
     override suspend fun syncRegistries() = withContext(context = Dispatcher.IO) {
-        if (!user.hasPermission(entityType = EntityType.REGISTRY, permission = Permission.READ)) {
+        if (!account.hasPermission(entityType = EntityType.REGISTRY, permission = Permission.READ)) {
             val throwable = Throwable(message = "User does not have ${Permission.READ} permission for ${EntityType.REGISTRY}")
             Telemetry.error(tag = TAG, message = "Invalid permissions", throwable = throwable)
             return@withContext
         }
 
         val job = Job(
-            userUuid = user.uuid,
+            userUuid = account.userUuid,
             entityType = EntityType.REGISTRY,
             type = Job.Type.GET,
         )
@@ -107,7 +107,7 @@ class RegistryGateway(
     }
 
     override suspend fun executeSyncRegistries(job: Job): JobResult = withContext(context = Dispatcher.IO) {
-        if (!user.hasPermission(entityType = EntityType.REGISTRY, permission = Permission.READ)) {
+        if (!account.hasPermission(entityType = EntityType.REGISTRY, permission = Permission.READ)) {
             val throwable = Throwable(message = "User does not have ${Permission.READ} permission for ${EntityType.REGISTRY}")
             Telemetry.error(tag = TAG, message = "Invalid permissions", throwable = throwable)
             return@withContext throwable.toJobResult()

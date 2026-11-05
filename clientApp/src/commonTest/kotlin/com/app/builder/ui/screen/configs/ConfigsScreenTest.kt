@@ -28,7 +28,7 @@ class ConfigsScreenTest: TestCase() {
      */
     private suspend fun ComposeUiTest.setUpScreen(): ConfigScreenStore {
         val authenticatedUseCases = dependency.get()
-            .getUserDependency(user = FakeData.adminUser)
+            .getUserDependency(account = FakeData.adminAccount)
             .useCases
         authenticatedUseCases.authenticationUseCases.login(credentials = FakeData.adminCredentials)
 
@@ -146,7 +146,7 @@ class ConfigsScreenTest: TestCase() {
     @Test
     fun configSectionsByPermission() = runUITest {
         val authenticatedUseCases = dependency.get()
-            .getUserDependency(user = FakeData.user)
+            .getUserDependency(account = FakeData.account)
             .useCases
         authenticatedUseCases.authenticationUseCases.login(credentials = FakeData.credentials)
 

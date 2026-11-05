@@ -1,5 +1,6 @@
 package com.app.builder.domain.gateway
 
+import com.app.builder.domain.gateway.account.AccountRepository
 import com.app.builder.domain.gateway.authentication.AuthenticationRepository
 import com.app.builder.domain.gateway.config.ConfigRepository
 import com.app.builder.domain.gateway.devicelocation.DeviceLocationRepository
@@ -18,10 +19,12 @@ interface Repositories {
     val configRepository: ConfigRepository
     /**The repository for managing registries. */
     val registryRepository: RegistryRepository
-    /**The repository for authentication, registration, and session management. */
+    /**The repository for authentication and session management. */
     val authenticationRepository: AuthenticationRepository
     /**The repository for managing users. */
     val userRepository: UserRepository
+    /**The repository for managing accounts. */
+    val accountRepository: AccountRepository
     /**The repository for managing tasks. */
     val taskRepository: TaskRepository
 }

@@ -30,7 +30,7 @@ class AudioScreenTest: TestCase() {
     @Test
     fun audioScreen() = runUITest {
         val authenticatedUseCases = dependency.get()
-            .getUserDependency(user = FakeData.adminUser)
+            .getUserDependency(account = FakeData.adminAccount)
             .useCases
         authenticatedUseCases.authenticationUseCases.login(credentials = FakeData.adminCredentials)
 

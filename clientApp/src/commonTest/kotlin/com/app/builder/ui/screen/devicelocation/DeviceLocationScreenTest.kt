@@ -35,7 +35,7 @@ class DeviceLocationScreenTest: TestCase() {
     @Test
     fun deviceLocationScreen() = runUITest {
         val authenticatedUseCases = dependency.get()
-            .getUserDependency(user = FakeData.adminUser)
+            .getUserDependency(account = FakeData.adminAccount)
             .useCases
         authenticatedUseCases.authenticationUseCases.login(credentials = FakeData.adminCredentials)
 

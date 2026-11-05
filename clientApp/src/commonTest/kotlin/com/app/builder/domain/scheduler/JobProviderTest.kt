@@ -40,10 +40,10 @@ class JobProviderTest: TestCase() {
             guestJob(type = Job.Type.GET, entityType = EntityType.TASK),
             guestJob(type = Job.Type.GET, entityType = EntityType.USER, entityUuid = Uuid.random()),
             guestJob(type = Job.Type.GET, entityType = EntityType.TASK, entityUuid = Uuid.random()),
-            guestJob(type = Job.Type.POST, entityType = EntityType.SESSION),
+            guestJob(type = Job.Type.POST, entityType = EntityType.ACCOUNT),
             guestJob(type = Job.Type.POST, entityType = EntityType.USER),
             guestJob(type = Job.Type.POST, entityType = EntityType.TASK),
-            guestJob(type = Job.Type.DELETE, entityType = EntityType.SESSION),
+            guestJob(type = Job.Type.DELETE, entityType = EntityType.ACCOUNT),
         )
 
         jobs.forEach { job ->
@@ -74,7 +74,7 @@ class JobProviderTest: TestCase() {
             Job(userUuid = userUuid, entityType = EntityType.TASK, type = Job.Type.GET),
             Job(userUuid = userUuid, entityUuid = Uuid.random(), entityType = EntityType.TASK, type = Job.Type.GET),
             Job(userUuid = userUuid, entityType = EntityType.TASK, type = Job.Type.POST),
-            Job(userUuid = userUuid, entityType = EntityType.SESSION, type = Job.Type.DELETE),
+            Job(userUuid = userUuid, entityType = EntityType.ACCOUNT, type = Job.Type.DELETE),
         )
 
         jobs.forEach { job ->

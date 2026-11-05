@@ -16,7 +16,7 @@ class PushUseCasesTest: TestCase() {
     @Test
     fun pushToUser() = runUnitTest {
         val pushUseCases = dependency.get()
-            .getUserDependency(user = FakeData.adminUser)
+            .getUserDependency(account = FakeData.adminAccount)
             .useCases
             .pushUseCases
 
@@ -29,7 +29,7 @@ class PushUseCasesTest: TestCase() {
     fun pushToUserOffline() = runUnitTest {
         ClientFlags.set { it.copy(http = false) }
         val pushUseCases = dependency.get()
-            .getUserDependency(user = FakeData.adminUser)
+            .getUserDependency(account = FakeData.adminAccount)
             .useCases
             .pushUseCases
 
@@ -41,7 +41,7 @@ class PushUseCasesTest: TestCase() {
     @Test
     fun pushBroadcast() = runUnitTest {
         val pushUseCases = dependency.get()
-            .getUserDependency(user = FakeData.adminUser)
+            .getUserDependency(account = FakeData.adminAccount)
             .useCases
             .pushUseCases
 
@@ -57,7 +57,7 @@ class PushUseCasesTest: TestCase() {
     fun pushBroadcastOffline() = runUnitTest {
         ClientFlags.set { it.copy(http = false) }
         val pushUseCases = dependency.get()
-            .getUserDependency(user = FakeData.adminUser)
+            .getUserDependency(account = FakeData.adminAccount)
             .useCases
             .pushUseCases
 

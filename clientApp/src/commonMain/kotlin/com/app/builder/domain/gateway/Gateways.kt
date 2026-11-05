@@ -1,8 +1,11 @@
 package com.app.builder.domain.gateway
 
 import io.ktor.client.HttpClient
-import com.app.builder.domain.User
+import com.app.builder.domain.Account
 import com.app.builder.domain.clock.ClockService
+import com.app.builder.domain.gateway.account.AccountGateway
+import com.app.builder.domain.gateway.account.AccountRepository
+import com.app.builder.domain.gateway.account.AccountUseCases
 import com.app.builder.domain.gateway.authentication.AuthenticationGateway
 import com.app.builder.domain.gateway.authentication.AuthenticationRepository
 import com.app.builder.domain.gateway.authentication.AuthenticationUseCases
@@ -32,14 +35,14 @@ import database.AppDatabase
 /**
  * Gateways.
  *
- * @param user The user tied with the gateways.
+ * @param account The account of the user tied with the gateways.
  * @param database The SQLite database instance.
  * @param httpClient The HTTP client used for network operations.
  * @param scheduler The job scheduler for background tasks.
  * @param clockService The service managing the device's clock.
  */
 class Gateways(
-    user: User,
+    account: Account,
     database: AppDatabase,
     httpClient: HttpClient,
     scheduler: Scheduler,
@@ -59,7 +62,7 @@ class Gateways(
     override val pushUseCases: PushUseCases = pushGateway
 
     private val deviceLocationGateway: DeviceLocationGateway = DeviceLocationGateway(
-        user = user,
+        account = account,
         database = database,
         httpClient = httpClient,
         scheduler = scheduler
@@ -67,7 +70,7 @@ class Gateways(
     override val deviceLocationRepository: DeviceLocationRepository = deviceLocationGateway
 
     private val configGateway: ConfigGateway = ConfigGateway(
-        user = user,
+        account = account,
         httpClient = httpClient,
         scheduler = scheduler
     )
@@ -75,7 +78,7 @@ class Gateways(
     override val configRepository: ConfigRepository = configGateway
 
     private val registryGateway: RegistryGateway = RegistryGateway(
-        user = user,
+        account = account,
         database = database,
         httpClient = httpClient,
         scheduler = scheduler
@@ -84,7 +87,6 @@ class Gateways(
     override val registryRepository: RegistryRepository = registryGateway
 
     private val authenticationGateway: AuthenticationGateway = AuthenticationGateway(
-        user = user,
         database = database,
         httpClient = httpClient,
         scheduler = scheduler
@@ -99,7 +101,7 @@ class Gateways(
     override val statusUseCases: StatusUseCases = statusGateway
 
     private val userGateway: UserGateway = UserGateway(
-        user = user,
+        account = account,
         database = database,
         httpClient = httpClient,
         scheduler = scheduler
@@ -107,8 +109,17 @@ class Gateways(
     override val userUseCases: UserUseCases = userGateway
     override val userRepository: UserRepository = userGateway
 
+    private val accountGateway: AccountGateway = AccountGateway(
+        account = account,
+        database = database,
+        httpClient = httpClient,
+        scheduler = scheduler
+    )
+    override val accountUseCases: AccountUseCases = accountGateway
+    override val accountRepository: AccountRepository = accountGateway
+
     private val taskGateway: TaskGateway = TaskGateway(
-        user = user,
+        account = account,
         database = database,
         httpClient = httpClient,
         scheduler = scheduler

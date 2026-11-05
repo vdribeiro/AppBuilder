@@ -68,7 +68,7 @@ class NavigationTest: TestCase() {
     @Test
     fun authenticated() = runUITest {
         val authenticatedUseCases = dependency.get()
-            .getUserDependency(user = FakeData.adminUser)
+            .getUserDependency(account = FakeData.adminAccount)
             .useCases
         router.navigate(screen = Screen.TaskList)
 
@@ -98,7 +98,7 @@ class NavigationTest: TestCase() {
     @Test
     fun everyAuthenticatedRouteRenders() = runUITest {
         val authenticatedUseCases = dependency.get()
-            .getUserDependency(user = FakeData.adminUser)
+            .getUserDependency(account = FakeData.adminAccount)
             .useCases
         authenticatedUseCases.authenticationUseCases.login(credentials = FakeData.adminCredentials)
         authenticatedUseCases.taskUseCases.upsertTask(task = FakeData.task)
@@ -139,7 +139,7 @@ class NavigationTest: TestCase() {
     @Test
     fun taskRoutesAddAndDelete() = runUITest {
         val authenticatedUseCases = dependency.get()
-            .getUserDependency(user = FakeData.adminUser)
+            .getUserDependency(account = FakeData.adminAccount)
             .useCases
         authenticatedUseCases.authenticationUseCases.login(credentials = FakeData.adminCredentials)
         router.navigate(screen = Screen.TaskList)
@@ -168,7 +168,7 @@ class NavigationTest: TestCase() {
     @Test
     fun splitTaskDetailShowsListFilters() = runUITest {
         val authenticatedUseCases = dependency.get()
-            .getUserDependency(user = FakeData.adminUser)
+            .getUserDependency(account = FakeData.adminAccount)
             .useCases
         authenticatedUseCases.authenticationUseCases.login(credentials = FakeData.adminCredentials)
         val deletedTask = FakeData.task.copy(uuid = Uuid.random(), title = "Deleted", deletedAt = FakeData.task.modifiedAt)
@@ -195,7 +195,7 @@ class NavigationTest: TestCase() {
     @Test
     fun splitTaskFiltersStayExpanded() = runUITest {
         val authenticatedUseCases = dependency.get()
-            .getUserDependency(user = FakeData.adminUser)
+            .getUserDependency(account = FakeData.adminAccount)
             .useCases
         authenticatedUseCases.authenticationUseCases.login(credentials = FakeData.adminCredentials)
         authenticatedUseCases.taskUseCases.upsertTask(task = FakeData.task)
@@ -231,7 +231,7 @@ class NavigationTest: TestCase() {
     @Test
     fun splitTaskSearchStaysOpen() = runUITest {
         val authenticatedUseCases = dependency.get()
-            .getUserDependency(user = FakeData.adminUser)
+            .getUserDependency(account = FakeData.adminAccount)
             .useCases
         authenticatedUseCases.authenticationUseCases.login(credentials = FakeData.adminCredentials)
         authenticatedUseCases.taskUseCases.upsertTask(task = FakeData.task)
@@ -265,7 +265,7 @@ class NavigationTest: TestCase() {
     @Test
     fun splitRegistryDetailShowsListFilters() = runUITest {
         val authenticatedUseCases = dependency.get()
-            .getUserDependency(user = FakeData.adminUser)
+            .getUserDependency(account = FakeData.adminAccount)
             .useCases
         authenticatedUseCases.authenticationUseCases.login(credentials = FakeData.adminCredentials)
         val registryDao = dependency.get()
@@ -296,7 +296,7 @@ class NavigationTest: TestCase() {
     @Test
     fun designRoutesNavigate() = runUITest {
         val authenticatedUseCases = dependency.get()
-            .getUserDependency(user = FakeData.adminUser)
+            .getUserDependency(account = FakeData.adminAccount)
             .useCases
         router.navigate(screen = Screen.DesignComponents)
 
@@ -330,7 +330,7 @@ class NavigationTest: TestCase() {
     @Test
     fun duplicateScreensRenderAndPop() = runUITest {
         val authenticatedUseCases = dependency.get()
-            .getUserDependency(user = FakeData.adminUser)
+            .getUserDependency(account = FakeData.adminAccount)
             .useCases
         authenticatedUseCases.authenticationUseCases.login(credentials = FakeData.adminCredentials)
         authenticatedUseCases.taskUseCases.upsertTask(task = FakeData.task)
@@ -415,7 +415,7 @@ class NavigationTest: TestCase() {
             DeepLink.Entity(entityUuid = uuid, entityType = EntityType.REGISTRY) to listOf(Screen.RegistryList, Screen.RegistryDetail(uuid = uuid.toString())),
             DeepLink.Entity(entityUuid = null, entityType = EntityType.NOTIFICATION) to listOf(Screen.Push),
             DeepLink.Entity(entityUuid = null, entityType = EntityType.TRANSLATION) to listOf(Screen.Translations),
-            DeepLink.Entity(entityUuid = null, entityType = EntityType.SESSION) to listOf(Screen.Login),
+            DeepLink.Entity(entityUuid = null, entityType = EntityType.ACCOUNT) to listOf(Screen.Login),
             DeepLink.Entity(entityUuid = null, entityType = EntityType.USER) to listOf(Screen.UserList),
             DeepLink.Entity(entityUuid = uuid, entityType = EntityType.USER) to listOf(Screen.UserList, Screen.UserDetail(uuid = uuid.toString())),
             DeepLink.Entity(entityUuid = null, entityType = EntityType.DEVICE_LOCATION) to listOf(Screen.DeviceLocation),

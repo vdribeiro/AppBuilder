@@ -45,7 +45,7 @@ class TaskDetailScreenTest: TestCase() {
      */
     private suspend fun storedTaskUseCases(credentials: UserCredentials = FakeData.adminCredentials): UseCases {
         val useCases = dependency.get()
-            .getUserDependency(user = FakeData.adminUser)
+            .getUserDependency(account = FakeData.adminAccount)
             .useCases
         useCases.authenticationUseCases.login(credentials = FakeData.adminCredentials)
         useCases.taskUseCases.upsertTask(task = FakeData.task)
@@ -62,7 +62,7 @@ class TaskDetailScreenTest: TestCase() {
      * @return The [TaskDetailScreenStore] and the [ActionBarStore] rendered.
      */
     private fun ComposeUiTest.setTaskDetailScreen(useCases: UseCases, taskUuid: Uuid = FakeData.task.uuid, new: Boolean = false): Pair<TaskDetailScreenStore, ActionBarStore> {
-        val store = TaskDetailScreenStore(state = TaskDetailScreenState(), router = router, taskUseCases = useCases.taskUseCases, taskUuid = taskUuid.toString(), new = new)
+        val store = TaskDetailScreenStore(state = TaskDetailScreenState(), router = router, taskUseCases = useCases.taskUseCases, userUseCases = useCases.userUseCases, taskUuid = taskUuid.toString(), new = new)
         val navigationStore = NavigationStore(state = NavigationState(selected = NavigationRoute.TASK), router = router, authenticationUseCases = useCases.authenticationUseCases)
         val actionBarStore = ActionBarStore(
             state = ActionBarState(editing = new),
@@ -92,7 +92,7 @@ class TaskDetailScreenTest: TestCase() {
     fun taskDetailScreen() = runUITest {
         val useCases = storedTaskUseCases()
 
-        val store = TaskDetailScreenStore(state = TaskDetailScreenState(), router = router, taskUseCases = useCases.taskUseCases, taskUuid = FakeData.task.uuid.toString())
+        val store = TaskDetailScreenStore(state = TaskDetailScreenState(), router = router, taskUseCases = useCases.taskUseCases, userUseCases = useCases.userUseCases, taskUuid = FakeData.task.uuid.toString())
         val navigationStore = NavigationStore(state = NavigationState(selected = NavigationRoute.TASK), router = router, authenticationUseCases = useCases.authenticationUseCases)
         val actionBarStore = ActionBarStore(state = ActionBarState(), router = router, authenticationUseCases = useCases.authenticationUseCases)
 
@@ -361,5 +361,32 @@ class TaskDetailScreenTest: TestCase() {
 
         val saved = useCases.taskUseCases.observeTask(uuid = FakeData.task.uuid).first { it?.state == Task.State.COMPLETE }
         assertEquals(expected = Task.State.COMPLETE, actual = saved?.state)
+    }
+
+    /** Verifies that access toggled while editing is listed, granted on save and discarded on cancel. */
+    @Test
+    fun editTaskAccess() = runUITest {
+        val useCases = storedTaskUseCases()
+        useCases.userUseCases.upsertUser(user = FakeData.user)
+        val (store, _) = setTaskDetailScreen(useCases = useCases)
+
+        waitUntil { store.state.task != null && store.state.savedAccessUserUuids.isNotEmpty() && store.state.users.isNotEmpty() }
+        onNodeWithText(text = FakeData.user.name).assertExists()
+
+        onNodeWithTag(testTag = "action_edit").performClick()
+        waitUntil { store.state.editing }
+        store.send(action = TaskDetailScreenAction.ToggleAccess(userUuid = FakeData.user.uuid))
+        waitUntil { FakeData.user.uuid in store.state.accessUserUuids }
+        onNodeWithTag(testTag = "action_cancel").performClick()
+        waitUntil { !store.state.editing }
+        assertFalse(actual = FakeData.user.uuid in store.state.accessUserUuids)
+
+        onNodeWithTag(testTag = "action_edit").performClick()
+        waitUntil { store.state.editing }
+        store.send(action = TaskDetailScreenAction.ToggleAccess(userUuid = FakeData.user.uuid))
+        waitUntil { FakeData.user.uuid in store.state.accessUserUuids }
+        onNodeWithTag(testTag = "action_save").performClick()
+        waitUntil { !store.state.editing && FakeData.user.uuid in store.state.savedAccessUserUuids }
+        assertTrue(actual = useCases.taskUseCases.observeTaskAccesses(taskUuid = FakeData.task.uuid).first().any { it.userUuid == FakeData.user.uuid })
     }
 }

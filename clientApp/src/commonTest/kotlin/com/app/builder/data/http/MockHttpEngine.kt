@@ -10,8 +10,9 @@ import io.ktor.http.content.TextContent
 import com.app.builder.core.locale.now
 import com.app.builder.data.serializer.decode
 import com.app.builder.data.serializer.encode
-import com.app.builder.domain.Authentication
+import com.app.builder.domain.Account
 import com.app.builder.domain.RegistrationForm
+import com.app.builder.domain.TaskUserAccess
 import com.app.builder.domain.UserCredentials
 import com.app.builder.test.FakeData
 
@@ -39,10 +40,12 @@ fun createMockHttpEngine(): HttpClientEngine = TestEngine { request ->
                 path.startsWith(prefix = URL.ServerConfigs.path) -> respondMock(content = encode(value = FakeData.serverConfigs))
                 path.startsWith(prefix = URL.Translations.path) -> respondMock(content = encode(value = FakeData.translations))
                 path.startsWith(prefix = URL.Registries.path) -> respondMock(content = encode(value = listOf(FakeData.registry)))
+                path.startsWith(prefix = URL.Accounts.path) -> respondMock(content = encode(value = listOf(FakeData.adminAccount, FakeData.account)))
                 path.startsWith(prefix = "${URL.Users.path}/") -> respondMock(content = encode(value = FakeData.adminUser))
                 path.startsWith(prefix = URL.Users.path) -> respondMock(content = encode(value = listOf(FakeData.adminUser, FakeData.user)))
                 path.startsWith(prefix = "${URL.Tasks.path}/") -> respondMock(content = encode(value = FakeData.task))
                 path.startsWith(prefix = URL.Tasks.path) -> respondMock(content = encode(value = listOf(FakeData.task)))
+                path.startsWith(prefix = URL.TaskAccesses.path) -> respondMock(content = encode(value = listOf(FakeData.taskAccess)))
                 else -> notFound(request = request)
             }
 
@@ -50,11 +53,17 @@ fun createMockHttpEngine(): HttpClientEngine = TestEngine { request ->
                 path.startsWith(prefix = URL.Tickets.path) -> respondMock(content = Uuid.NIL.toString())
                 path.startsWith(prefix = URL.Register.path) -> {
                     val registrationForm = request.decodeBody<RegistrationForm>() ?: return@TestEngine badRequest(request = request)
-                    when (registrationForm.user) {
-                        FakeData.adminUser -> respondMock(content = encode(value = FakeData.adminAuthentication))
-                        FakeData.user -> respondMock(content = encode(value = FakeData.authentication))
-                        else -> respondMock(content = encode(value = Authentication(user = registrationForm.user, bearer = FakeData.bearerToken)))
-                    }
+                    respondMock(content = encode(value = registrationForm.account))
+                }
+
+                path.startsWith(prefix = URL.Accounts.path) -> {
+                    val account = request.decodeBody<Account>() ?: return@TestEngine badRequest(request = request)
+                    respondMock(content = encode(value = account))
+                }
+
+                path.startsWith(prefix = URL.TaskAccesses.path) -> {
+                    val access = request.decodeBody<TaskUserAccess>() ?: return@TestEngine badRequest(request = request)
+                    respondMock(content = encode(value = access))
                 }
 
                 path.startsWith(prefix = URL.Login.path) -> {

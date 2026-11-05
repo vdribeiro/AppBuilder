@@ -14,7 +14,7 @@ class ConfigUseCasesTest: TestCase() {
     @Test
     fun updateClientFeatureFlags() = runUnitTest {
         val configUseCases = dependency.get()
-            .getUserDependency(user = FakeData.adminUser)
+            .getUserDependency(account = FakeData.adminAccount)
             .useCases
             .configUseCases
 
@@ -37,7 +37,7 @@ class ConfigUseCasesTest: TestCase() {
     @Test
     fun updateClientConfigs() = runUnitTest {
         val configUseCases = dependency.get()
-            .getUserDependency(user = FakeData.adminUser)
+            .getUserDependency(account = FakeData.adminAccount)
             .useCases
             .configUseCases
 
@@ -60,7 +60,7 @@ class ConfigUseCasesTest: TestCase() {
     @Test
     fun updateServerFeatureFlags() = runUnitTest {
         val configUseCases = dependency.get()
-            .getUserDependency(user = FakeData.adminUser)
+            .getUserDependency(account = FakeData.adminAccount)
             .useCases
             .configUseCases
 
@@ -85,7 +85,7 @@ class ConfigUseCasesTest: TestCase() {
     @Test
     fun updateServerConfigs() = runUnitTest {
         val configUseCases = dependency.get()
-            .getUserDependency(user = FakeData.adminUser)
+            .getUserDependency(account = FakeData.adminAccount)
             .useCases
             .configUseCases
 

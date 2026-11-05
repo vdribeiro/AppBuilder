@@ -33,7 +33,7 @@ class TaskListScreenTest: TestCase() {
     @Test
     fun taskScreen() = runUITest {
         val authenticatedUseCases = dependency.get()
-            .getUserDependency(user = FakeData.adminUser)
+            .getUserDependency(account = FakeData.adminAccount)
             .useCases
         authenticatedUseCases.authenticationUseCases.login(credentials = FakeData.adminCredentials)
         authenticatedUseCases.taskUseCases.upsertTask(task = FakeData.task)
@@ -86,7 +86,7 @@ class TaskListScreenTest: TestCase() {
     @Test
     fun selectionFollowsDetailScreen() = runUITest {
         val authenticatedUseCases = dependency.get()
-            .getUserDependency(user = FakeData.adminUser)
+            .getUserDependency(account = FakeData.adminAccount)
             .useCases
         authenticatedUseCases.authenticationUseCases.login(credentials = FakeData.adminCredentials)
         val otherTask = FakeData.task.copy(uuid = uuid(), title = "Other")
@@ -143,7 +143,7 @@ class TaskListScreenTest: TestCase() {
     @Test
     fun addTask() = runUITest {
         val authenticatedUseCases = dependency.get()
-            .getUserDependency(user = FakeData.adminUser)
+            .getUserDependency(account = FakeData.adminAccount)
             .useCases
         authenticatedUseCases.authenticationUseCases.login(credentials = FakeData.adminCredentials)
 

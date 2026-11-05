@@ -103,7 +103,6 @@ class TagManager(
                     uuid = record.entityUuid ?: uuid(),
                     modifiedAt = now(),
                     deletedAt = null,
-                    permissions = emptyMap(),
                     name = now().toString(),
                     avatar = null
                 )
@@ -127,8 +126,9 @@ class TagManager(
             EntityType.REGISTRY,
             EntityType.NOTIFICATION,
             EntityType.TRANSLATION,
-            EntityType.SESSION,
-            EntityType.DEVICE_LOCATION -> Unit
+            EntityType.ACCOUNT,
+            EntityType.DEVICE_LOCATION,
+            EntityType.TASK_ACCESS -> Unit
         }
     }
 

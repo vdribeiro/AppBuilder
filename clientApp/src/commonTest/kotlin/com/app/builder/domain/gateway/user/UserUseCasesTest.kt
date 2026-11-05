@@ -14,7 +14,7 @@ class UserUseCasesTest: TestCase() {
     @Test
     fun crudUser() = runUnitTest {
         val userUseCases = dependency.get()
-            .getUserDependency(user = FakeData.adminUser)
+            .getUserDependency(account = FakeData.adminAccount)
             .useCases
             .userUseCases
 

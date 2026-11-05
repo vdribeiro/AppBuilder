@@ -14,9 +14,9 @@ import com.app.builder.data.http.URL
 import com.app.builder.data.http.get
 import com.app.builder.data.http.post
 import com.app.builder.data.storage.AppFile
+import com.app.builder.domain.Account
 import com.app.builder.domain.EntityType
 import com.app.builder.domain.Permission
-import com.app.builder.domain.User
 import com.app.builder.domain.scheduler.Job
 import com.app.builder.domain.scheduler.JobResult
 import com.app.builder.domain.scheduler.JobResult.NoOp.toJobResult
@@ -26,12 +26,12 @@ import com.app.builder.domain.scheduler.toHeaderMap
 /**
  * Gateway implementation for Config Use Cases and Repository.
  *
- * @property user The current user.
+ * @property account The account of the current user.
  * @property httpClient The HTTP client used for network operations.
  * @property scheduler The job scheduler for background tasks.
  */
 class ConfigGateway(
-    private val user: User,
+    private val account: Account,
     private val httpClient: HttpClient,
     private val scheduler: Scheduler
 ): ConfigUseCases, ConfigRepository {
@@ -59,7 +59,7 @@ class ConfigGateway(
     }
 
     override suspend fun updateFeatureFlags(flags: ClientFlags): ClientFlags? = withContext(context = Dispatcher.IO) {
-        if (!user.hasPermission(entityType = EntityType.CLIENT_FLAG, permission = Permission.WRITE)) {
+        if (!account.hasPermission(entityType = EntityType.CLIENT_FLAG, permission = Permission.WRITE)) {
             Telemetry.info(tag = TAG, message = "User does not have ${Permission.WRITE} permission for ${EntityType.CLIENT_FLAG}")
             return@withContext null
         }
@@ -80,7 +80,7 @@ class ConfigGateway(
     }
 
     override suspend fun updateConfigs(configs: ClientConfigs): ClientConfigs? = withContext(context = Dispatcher.IO) {
-        if (!user.hasPermission(entityType = EntityType.CLIENT_CONFIG, permission = Permission.WRITE)) {
+        if (!account.hasPermission(entityType = EntityType.CLIENT_CONFIG, permission = Permission.WRITE)) {
             Telemetry.info(tag = TAG, message = "User does not have ${Permission.WRITE} permission for ${EntityType.CLIENT_CONFIG}")
             return@withContext null
         }
@@ -101,7 +101,7 @@ class ConfigGateway(
     }
 
     override suspend fun updateServerFeatureFlags(flags: ServerFlags): ServerFlags? = withContext(context = Dispatcher.IO) {
-        if (!user.hasPermission(entityType = EntityType.SERVER_FLAG, permission = Permission.WRITE)) {
+        if (!account.hasPermission(entityType = EntityType.SERVER_FLAG, permission = Permission.WRITE)) {
             Telemetry.info(tag = TAG, message = "User does not have ${Permission.WRITE} permission for ${EntityType.SERVER_FLAG}")
             return@withContext null
         }
@@ -122,7 +122,7 @@ class ConfigGateway(
     }
 
     override suspend fun updateServerConfigs(configs: ServerConfigs): ServerConfigs? = withContext(context = Dispatcher.IO) {
-        if (!user.hasPermission(entityType = EntityType.SERVER_CONFIG, permission = Permission.WRITE)) {
+        if (!account.hasPermission(entityType = EntityType.SERVER_CONFIG, permission = Permission.WRITE)) {
             Telemetry.info(tag = TAG, message = "User does not have ${Permission.WRITE} permission for ${EntityType.SERVER_CONFIG}")
             return@withContext null
         }
@@ -152,7 +152,7 @@ class ConfigGateway(
 
     override suspend fun syncFeatureFlags() = withContext(context = Dispatcher.IO) {
         val job = Job(
-            userUuid = user.uuid,
+            userUuid = account.userUuid,
             entityType = EntityType.CLIENT_FLAG,
             type = Job.Type.GET,
         )
@@ -161,7 +161,7 @@ class ConfigGateway(
 
     override suspend fun syncConfigs() = withContext(context = Dispatcher.IO) {
         val job = Job(
-            userUuid = user.uuid,
+            userUuid = account.userUuid,
             entityType = EntityType.CLIENT_CONFIG,
             type = Job.Type.GET,
         )

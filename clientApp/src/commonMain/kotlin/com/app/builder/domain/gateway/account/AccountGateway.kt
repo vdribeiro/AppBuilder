@@ -1,0 +1,268 @@
+package com.app.builder.domain.gateway.account
+
+import kotlin.uuid.Uuid
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.withContext
+import io.ktor.client.HttpClient
+import app.cash.sqldelight.async.coroutines.awaitAsList
+import app.cash.sqldelight.async.coroutines.awaitAsOneOrNull
+import com.app.builder.core.config.ClientConfigs
+import com.app.builder.core.config.ServerConfigs
+import com.app.builder.core.flow.Dispatcher
+import com.app.builder.core.locale.now
+import com.app.builder.core.security.uuid
+import com.app.builder.core.telemetry.Telemetry
+import com.app.builder.data.database.AccountSchema
+import com.app.builder.data.database.asFlow
+import com.app.builder.data.database.safeTransaction
+import com.app.builder.data.http.Header
+import com.app.builder.data.http.HttpRequest
+import com.app.builder.data.http.HttpResult
+import com.app.builder.data.http.Query
+import com.app.builder.data.http.URL
+import com.app.builder.data.http.getPaginated
+import com.app.builder.data.http.post
+import com.app.builder.data.storage.AppFile
+import com.app.builder.domain.Account
+import com.app.builder.domain.EntityType
+import com.app.builder.domain.Permission
+import com.app.builder.domain.RegistrationForm
+import com.app.builder.domain.gateway.authentication.toAccount
+import com.app.builder.domain.gateway.authentication.toAccountSchema
+import com.app.builder.domain.gateway.authentication.toUserSchema
+import com.app.builder.domain.scheduler.Job
+import com.app.builder.domain.scheduler.JobResult
+import com.app.builder.domain.scheduler.JobResult.NoOp.toJobResult
+import com.app.builder.domain.scheduler.Scheduler
+import com.app.builder.domain.scheduler.toHeaderMap
+import database.AppDatabase
+
+/**
+ * Gateway implementation for Account Use Cases and Repository.
+ * Accounts are synced in the background, while creating and updating one is an online call, since creating one carries a password.
+ *
+ * @property account The account of the current user.
+ * @property database The SQLite database instance for account data.
+ * @property httpClient The HTTP client used for network operations.
+ * @property scheduler The job scheduler for background tasks.
+ */
+class AccountGateway(
+    private val account: Account,
+    private val database: AppDatabase,
+    private val httpClient: HttpClient,
+    private val scheduler: Scheduler
+): AccountUseCases, AccountRepository {
+
+    /** Query interface for the accounts table. */
+    private val accountDao = database.accountQueries
+    /** Query interface for the users table. */
+    private val userDao = database.userQueries
+
+    override fun observeAccounts(): Flow<List<Account>> {
+        if (!account.hasPermission(entityType = EntityType.ACCOUNT, permission = Permission.READ)) {
+            val throwable = Throwable(message = "User does not have ${Permission.READ} permission for ${EntityType.ACCOUNT}")
+            Telemetry.error(tag = TAG, message = "Invalid permissions", throwable = throwable)
+            return emptyFlow()
+        }
+
+        return accountDao.getAccounts()
+            .asFlow { it.toAccount() }
+            .onStart {
+                val job = Job(
+                    userUuid = account.userUuid,
+                    entityType = EntityType.ACCOUNT,
+                    type = Job.Type.GET,
+                )
+                scheduler.queue(job = job)
+            }
+            .flowOn(context = Dispatcher.IO)
+            .catch {
+                Telemetry.error(tag = TAG, message = "Unable to observe accounts", throwable = it)
+                emit(value = emptyList())
+            }
+    }
+
+    override fun observeAccount(userUuid: Uuid): Flow<Account?> {
+        if (!account.hasPermission(entityType = EntityType.ACCOUNT, permission = Permission.READ)) {
+            val throwable = Throwable(message = "User does not have ${Permission.READ} permission for ${EntityType.ACCOUNT}")
+            Telemetry.error(tag = TAG, message = "Invalid permissions", throwable = throwable)
+            return emptyFlow()
+        }
+
+        return accountDao.getAccount(userUuid = userUuid)
+            .asFlow { it.toAccount() }
+            .map { it.firstOrNull() }
+            .flowOn(context = Dispatcher.IO)
+            .catch {
+                Telemetry.error(tag = TAG, message = "Unable to observe account", throwable = it)
+                emit(value = null)
+            }
+    }
+
+    override suspend fun createAccount(registrationForm: RegistrationForm): Account? = withContext(context = Dispatcher.IO) {
+        if (!account.hasPermission(entityType = EntityType.ACCOUNT, permission = Permission.WRITE)) {
+            val throwable = Throwable(message = "User does not have ${Permission.WRITE} permission for ${EntityType.ACCOUNT}")
+            Telemetry.error(tag = TAG, message = "Invalid permissions", throwable = throwable)
+            return@withContext null
+        }
+
+        val created = when (val result = httpClient.post<RegistrationForm, Account>(
+            request = HttpRequest(url = URL.Register, headerMap = requestHeaderMap()),
+            body = registrationForm
+        )) {
+            is HttpResult.Error -> {
+                Telemetry.error(tag = TAG, message = "Unable to create account", throwable = result.error)
+                return@withContext null
+            }
+
+            is HttpResult.Success -> result.data
+        }
+
+        database.safeTransaction {
+            if (userDao.getUser(userUuid = registrationForm.user.uuid).awaitAsOneOrNull() == null) {
+                userDao.upsertUser(User = registrationForm.user.toUserSchema())
+            }
+            upsertAccountInDatabase(account = created)
+        }.onFailure {
+            Telemetry.error(tag = TAG, message = "Unable to save created account", throwable = it)
+        }
+        Telemetry.info(tag = TAG, message = "Successfully created account ${created.userUuid}")
+        created
+    }
+
+    override suspend fun updateAccount(account: Account): Account? = withContext(context = Dispatcher.IO) {
+        if (!this@AccountGateway.account.hasPermission(entityType = EntityType.ACCOUNT, permission = Permission.WRITE)) {
+            val throwable = Throwable(message = "User does not have ${Permission.WRITE} permission for ${EntityType.ACCOUNT}")
+            Telemetry.error(tag = TAG, message = "Invalid permissions", throwable = throwable)
+            return@withContext null
+        }
+
+        val updated = when (val result = httpClient.post<Account, Account>(
+            request = HttpRequest(url = URL.Accounts, headerMap = requestHeaderMap()),
+            body = account
+        )) {
+            is HttpResult.Error -> {
+                Telemetry.error(tag = TAG, message = "Unable to update account ${account.userUuid}", throwable = result.error)
+                return@withContext null
+            }
+
+            is HttpResult.Success -> result.data
+        }
+
+        database.safeTransaction {
+            upsertAccountInDatabase(account = updated)
+        }.onFailure {
+            Telemetry.error(tag = TAG, message = "Unable to save updated account", throwable = it)
+        }
+        Telemetry.info(tag = TAG, message = "Successfully updated account ${updated.userUuid}")
+        updated
+    }
+
+    override suspend fun syncAccounts() = withContext(context = Dispatcher.IO) {
+        if (!account.hasPermission(entityType = EntityType.ACCOUNT, permission = Permission.READ)) {
+            val throwable = Throwable(message = "User does not have ${Permission.READ} permission for ${EntityType.ACCOUNT}")
+            Telemetry.error(tag = TAG, message = "Invalid permissions", throwable = throwable)
+            return@withContext
+        }
+
+        val job = Job(
+            userUuid = account.userUuid,
+            entityType = EntityType.ACCOUNT,
+            type = Job.Type.GET,
+        )
+        scheduler.queue(job = job)
+    }
+
+    override suspend fun executeSyncAccounts(job: Job): JobResult = withContext(context = Dispatcher.IO) {
+        if (!account.hasPermission(entityType = EntityType.ACCOUNT, permission = Permission.READ)) {
+            val throwable = Throwable(message = "User does not have ${Permission.READ} permission for ${EntityType.ACCOUNT}")
+            Telemetry.error(tag = TAG, message = "Invalid permissions", throwable = throwable)
+            return@withContext throwable.toJobResult()
+        }
+
+        val syncStartUtc = now().toString()
+        val sync = AppFile.Sync.cache().value.orEmpty()
+        val lastSync = sync[AppFile.Sync.Key.ACCOUNTS_LAST_SYNC_UTC]
+        val queryMap: Map<Query, String> = buildMap { if (!lastSync.isNullOrBlank()) put(key = Query.LastSyncUtc, value = lastSync) }
+
+        val result = httpClient.getPaginated<Account>(
+            request = HttpRequest(
+                url = URL.Accounts,
+                headerMap = job.toHeaderMap(),
+                queryMap = queryMap
+            ),
+            pageSize = ServerConfigs.value.pageSize,
+            cursorOf = { it.modifiedAt.toString() to it.userUuid.toString() }
+        ) { accounts ->
+            database.safeTransaction {
+                syncAccountsInDatabase(accounts = accounts)
+            }.fold(onSuccess = { HttpResult.Success(data = Unit) }, onFailure = { HttpResult.Error(error = it) })
+        }
+
+        when (result) {
+            is HttpResult.Error -> {
+                Telemetry.error(tag = TAG, message = "Unable to sync accounts", throwable = result.error)
+                result.error.toJobResult()
+            }
+
+            is HttpResult.Success -> {
+                AppFile.Sync.save { it.orEmpty().plus(pair = (AppFile.Sync.Key.ACCOUNTS_LAST_SYNC_UTC to syncStartUtc)) }
+                Telemetry.info(tag = TAG, message = "Successfully fetched accounts")
+                JobResult.Success
+            }
+        }
+    }
+
+    /**
+     * Builds the request headers of an online call, made at the current time.
+     *
+     * @return The header map identifying the request and when it was made.
+     */
+    private fun requestHeaderMap(): Map<Header, String> = mapOf(
+        Header.RequestUuid to uuid().toString(),
+        Header.RequestUtc to now().toString()
+    )
+
+    /**
+     * Synchronizes a batch of remote accounts with the local database, keeping any local account that is newer than its remote counterpart.
+     *
+     * @param accounts The list of remote [Account] objects to synchronize locally.
+     */
+    private suspend fun syncAccountsInDatabase(accounts: List<Account>) {
+        val localAccountsMap = getAccountsByUuidsFromDatabase(userUuids = accounts.map { it.userUuid }).associateBy { it.userUuid }
+        for (account in accounts) {
+            val localAccount = localAccountsMap[account.userUuid]
+            if (localAccount == null || account.modifiedAt >= localAccount.modifiedAt) upsertAccountInDatabase(account = account)
+        }
+    }
+
+    /**
+     * Retrieves accounts matching the given user UUIDs from the local database, in chunks, since SQLite limits the number of bound parameters in a statement.
+     *
+     * @param userUuids The user UUIDs to look up.
+     * @return The matching [AccountSchema] entities, merged across all chunks.
+     */
+    private suspend fun getAccountsByUuidsFromDatabase(userUuids: List<Uuid>): List<AccountSchema> = buildList {
+        userUuids.chunked(size = ClientConfigs.value.batchSize).forEach { uuidChunk ->
+            addAll(elements = accountDao.getAccountsByUuids(userUuids = uuidChunk).awaitAsList())
+        }
+    }
+
+    /**
+     * Inserts or updates an account in the local database.
+     *
+     * @param account The [Account] domain model containing the details to save.
+     * @return `true` if the account record was successfully upserted; `false` if no rows were affected.
+     */
+    private suspend fun upsertAccountInDatabase(account: Account): Boolean =
+        accountDao.upsertAccount(Account = account.toAccountSchema()) > 0
+
+    companion object {
+        private const val TAG = "AccountGateway"
+    }
+}

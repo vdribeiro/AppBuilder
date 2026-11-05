@@ -1,8 +1,8 @@
 package com.app.builder.domain.gateway.devicelocation
 
 import io.ktor.client.HttpClient
+import com.app.builder.domain.Account
 import com.app.builder.domain.DeviceLocation
-import com.app.builder.domain.User
 import com.app.builder.domain.scheduler.Job
 import com.app.builder.domain.scheduler.JobResult
 import com.app.builder.domain.scheduler.Scheduler
@@ -11,13 +11,13 @@ import database.AppDatabase
 /**
  * Gateway implementation for Device Location Repository.
  *
- * @property user The current user.
+ * @property account The account of the current user.
  * @property database The SQLite database instance for device location data.
  * @property httpClient The HTTP client used for network operations.
  * @property scheduler The job scheduler for background tasks.
  */
 class DeviceLocationGateway(
-    private val user: User,
+    private val account: Account,
     private val database: AppDatabase,
     private val httpClient: HttpClient,
     private val scheduler: Scheduler

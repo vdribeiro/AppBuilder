@@ -11,19 +11,26 @@ import com.app.builder.test.TestCase
 
 class MappersTest: TestCase() {
 
-    /** Verifies that users survive a round trip through their database schema, permissions included. */
+    /** Verifies that users survive a round trip through their database schema. */
     @Test
     fun userRoundTrip() = runUnitTest {
         assertEquals(expected = FakeData.adminUser, actual = FakeData.adminUser.toUserSchema().toUser())
         assertEquals(expected = FakeData.user, actual = FakeData.user.toUserSchema().toUser())
     }
 
-    /** Verifies that a user stored with unreadable permissions is mapped back without any permission. */
+    /** Verifies that accounts survive a round trip through their database schema, permissions included. */
     @Test
-    fun userWithInvalidPermissions() = runUnitTest {
-        val schema = FakeData.adminUser.toUserSchema().copy(permissions = "invalid")
+    fun accountRoundTrip() = runUnitTest {
+        assertEquals(expected = FakeData.adminAccount, actual = FakeData.adminAccount.toAccountSchema().toAccount())
+        assertEquals(expected = FakeData.account, actual = FakeData.account.toAccountSchema().toAccount())
+    }
 
-        assertTrue(actual = schema.toUser().permissions.isEmpty())
+    /** Verifies that an account stored with unreadable permissions is mapped back without any permission. */
+    @Test
+    fun accountWithInvalidPermissions() = runUnitTest {
+        val schema = FakeData.adminAccount.toAccountSchema().copy(permissions = "invalid")
+
+        assertTrue(actual = schema.toAccount().permissions.isEmpty())
     }
 
     /** Verifies that a user session maps to a session schema whose bearer token matches the session tokens. */
@@ -31,7 +38,7 @@ class MappersTest: TestCase() {
     fun sessionToBearerToken() = runUnitTest {
         val session = UserSession(
             user = FakeData.adminUser,
-            username = FakeData.adminCredentials.username,
+            account = FakeData.adminAccount,
             salt = "salt",
             verifier = "verifier",
             accessToken = FakeData.adminBearerToken.accessToken,
@@ -40,7 +47,7 @@ class MappersTest: TestCase() {
         val schema = session.toSessionSchema()
 
         assertEquals(expected = FakeData.adminUser.uuid, actual = schema.userUuid)
-        assertEquals(expected = session.username, actual = schema.username)
+        assertEquals(expected = session.account.username, actual = schema.username)
         assertEquals(expected = FakeData.adminBearerToken, actual = schema.toBearerToken())
 
         val bearerTokens = FakeData.adminBearerToken.toBearerTokens()

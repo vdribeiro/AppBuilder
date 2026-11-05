@@ -37,7 +37,7 @@ class ApplicationTest: TestCase() {
     /** Logs in as the admin through the admin's use cases. */
     private suspend fun login() {
         dependency.get()
-            .getUserDependency(user = FakeData.adminUser)
+            .getUserDependency(account = FakeData.adminAccount)
             .useCases
             .authenticationUseCases
             .login(credentials = FakeData.adminCredentials)
@@ -97,9 +97,9 @@ class ApplicationTest: TestCase() {
         withApplication {
             login()
             val userGraph = Application.userDependency.filterNotNull().first()
-            assertEquals(expected = FakeData.adminUser.uuid, actual = userGraph.user.uuid)
+            assertEquals(expected = FakeData.adminUser.uuid, actual = userGraph.account.userUuid)
 
-            userGraph.useCases.authenticationUseCases.logout(userUuid = userGraph.user.uuid)
+            userGraph.useCases.authenticationUseCases.logout(userUuid = userGraph.account.userUuid)
             Application.userDependency.first { it == null }
         }
     }

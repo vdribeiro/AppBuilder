@@ -156,13 +156,15 @@ private fun setBackStack(
         EntityType.CLIENT_CONFIG,
         EntityType.SERVER_FLAG,
         EntityType.SERVER_CONFIG -> listOf(Screen.Configs)
+
         EntityType.REGISTRY -> buildList<Screen> { add(Screen.RegistryList); entityUuid?.let { add(Screen.RegistryDetail(uuid = it.toString())) } }
         EntityType.NOTIFICATION -> listOf(Screen.Push)
         EntityType.TRANSLATION -> listOf(Screen.Translations)
-        EntityType.SESSION -> listOf(Screen.Login)
+        EntityType.ACCOUNT -> listOf(Screen.Login)
         EntityType.USER -> buildList<Screen> { add(Screen.UserList); entityUuid?.let { add(Screen.UserDetail(uuid = it.toString())) } }
         EntityType.DEVICE_LOCATION -> listOf(Screen.DeviceLocation)
         EntityType.TASK -> buildList<Screen> { add(Screen.TaskList); entityUuid?.let { add(Screen.TaskDetail(uuid = it.toString())) } }
+        EntityType.TASK_ACCESS -> listOf(Screen.TaskList)
     }
     if (backStack.isNotEmpty()) router.backStack.apply {
         clear()

@@ -36,7 +36,7 @@ class TagManagerTest: TestCase() {
      */
     private suspend fun loggedInUseCases(): UseCases {
         val useCases = dependency.get()
-            .getUserDependency(user = FakeData.adminUser)
+            .getUserDependency(account = FakeData.adminAccount)
             .useCases
         useCases.authenticationUseCases.login(credentials = FakeData.adminCredentials)
         return useCases
@@ -159,7 +159,7 @@ class TagManagerTest: TestCase() {
     @Test
     fun guestUpsertRecordWritesNothing() = runUnitTest {
         val guestUseCases = dependency.get().userGraph.useCases
-        val adminUseCases = dependency.get().getUserDependency(user = FakeData.adminUser).useCases
+        val adminUseCases = dependency.get().getUserDependency(account = FakeData.adminAccount).useCases
         val tagManager = tagManager()
 
         tagManager.start()

@@ -93,7 +93,11 @@ class PayloadManager(
         val entityUuid = payload.entityUuid ?: return
         when (payload.entityType) {
             EntityType.USER -> appGraph.getRepositories(payload = payload).userRepository.syncUser(uuid = entityUuid)
-            EntityType.TASK -> appGraph.getRepositories(payload = payload).taskRepository.syncTask(uuid = entityUuid)
+            EntityType.TASK -> appGraph.getRepositories(payload = payload).taskRepository.run {
+                syncTask(uuid = entityUuid)
+                syncTaskAccesses()
+            }
+
             else -> Unit
         }
     }

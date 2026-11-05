@@ -130,6 +130,38 @@ class ActionBarStoreTest: TestCase() {
         assertFalse(actual = state.showDelete)
     }
 
+    /** Verifies that write permission on a further editable entity offers edit, but not add or delete, without write permission on the entity. */
+    @Test
+    fun editPermission() = runUnitTest {
+        val authenticationUseCases = authenticationUseCases()
+        authenticationUseCases.login(credentials = FakeData.credentials)
+
+        val store = ActionBarStore(
+            state = ActionBarState(),
+            router = router,
+            authenticationUseCases = authenticationUseCases,
+            entityType = EntityType.TASK,
+            editEntityTypes = setOf(EntityType.DEVICE_LOCATION),
+            onAddClick = {},
+            onEditClick = {},
+            onSaveClick = {},
+            onCancelClick = {},
+            onDeleteClick = {},
+        )
+        subscribe(store = store)
+
+        val state = store.stateFlow.first { it.editable }
+        assertFalse(actual = state.writable)
+        assertFalse(actual = state.showAdd)
+        assertTrue(actual = state.showEdit)
+        assertFalse(actual = state.showDelete)
+
+        store.send(action = ActionBarAction.Edit)
+        val editing = store.stateFlow.first { it.editing }
+        assertTrue(actual = editing.showSave)
+        assertTrue(actual = editing.showCancel)
+    }
+
     /** Verifies that the entity buttons stay hidden when their callbacks are missing, or when the store has no entity to check permissions against. */
     @Test
     fun missingCallbacksOrEntity() = runUnitTest {
@@ -271,7 +303,7 @@ class ActionBarStoreTest: TestCase() {
         store.stateFlow.first { it.editing }
 
         authenticationUseCases.login(credentials = FakeData.credentials)
-        val state = store.stateFlow.first { it.avatarName == FakeData.user.name }
+        val state = store.stateFlow.first { it.avatarName == FakeData.user.name && !it.writable }
         testScheduler.advanceUntilIdle()
 
         assertFalse(actual = state.editing)

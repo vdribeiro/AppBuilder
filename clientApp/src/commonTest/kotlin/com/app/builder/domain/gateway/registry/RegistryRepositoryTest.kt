@@ -22,7 +22,7 @@ class RegistryRepositoryTest: TestCase() {
     @Test
     fun syncRegistries() = runUnitTest {
         val registryRepository = dependency.get()
-            .getUserDependency(user = FakeData.adminUser)
+            .getUserDependency(account = FakeData.adminAccount)
             .repositories
             .registryRepository
         val jobDao = dependency.get()
@@ -39,7 +39,7 @@ class RegistryRepositoryTest: TestCase() {
     @Test
     fun syncRegistriesWithoutPermission() = runUnitTest {
         val registryRepository = dependency.get()
-            .getUserDependency(user = FakeData.user)
+            .getUserDependency(account = FakeData.account)
             .repositories
             .registryRepository
         val jobDao = dependency.get()
@@ -56,7 +56,7 @@ class RegistryRepositoryTest: TestCase() {
     @Test
     fun executeSyncRegistries() = runUnitTest {
         val registryRepository = dependency.get()
-            .getUserDependency(user = FakeData.adminUser)
+            .getUserDependency(account = FakeData.adminAccount)
             .repositories
             .registryRepository
         val registryDao = dependency.get()
@@ -76,7 +76,7 @@ class RegistryRepositoryTest: TestCase() {
     @Test
     fun executeSyncRegistriesWithoutPermission() = runUnitTest {
         val registryRepository = dependency.get()
-            .getUserDependency(user = FakeData.user)
+            .getUserDependency(account = FakeData.account)
             .repositories
             .registryRepository
         val registryDao = dependency.get()
@@ -95,7 +95,7 @@ class RegistryRepositoryTest: TestCase() {
     fun executeSyncRegistriesOffline() = runUnitTest {
         ClientFlags.set { it.copy(http = false) }
         val registryRepository = dependency.get()
-            .getUserDependency(user = FakeData.adminUser)
+            .getUserDependency(account = FakeData.adminAccount)
             .repositories
             .registryRepository
 

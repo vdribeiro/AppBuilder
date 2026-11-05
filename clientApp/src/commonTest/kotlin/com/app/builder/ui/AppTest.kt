@@ -41,7 +41,7 @@ class AppTest: TestCase() {
             onNode(matcher = hasProgressBarRangeInfo(rangeInfo = ProgressBarRangeInfo.Indeterminate)).assertDoesNotExist()
 
             dependency.get()
-                .getUserDependency(user = FakeData.adminUser)
+                .getUserDependency(account = FakeData.adminAccount)
                 .useCases
                 .authenticationUseCases
                 .login(credentials = FakeData.adminCredentials)

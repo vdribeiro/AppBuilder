@@ -13,8 +13,8 @@ import com.app.builder.Dependency.getUserDependency
 import com.app.builder.core.config.ClientFlags
 import com.app.builder.data.serializer.encode
 import com.app.builder.data.storage.AppFile
+import com.app.builder.domain.Account
 import com.app.builder.domain.EntityType
-import com.app.builder.domain.User
 import com.app.builder.domain.scheduler.Job
 import com.app.builder.domain.scheduler.JobResult
 import com.app.builder.test.FakeData
@@ -26,11 +26,11 @@ class UserRepositoryTest: TestCase() {
     @Test
     fun executeSyncUsers() = runUnitTest {
         val userUseCases = dependency.get()
-            .getUserDependency(user = FakeData.adminUser)
+            .getUserDependency(account = FakeData.adminAccount)
             .useCases
             .userUseCases
         val userRepository = dependency.get()
-            .getUserDependency(user = FakeData.adminUser)
+            .getUserDependency(account = FakeData.adminAccount)
             .repositories
             .userRepository
         assertNull(actual = AppFile.Sync.cache().value.orEmpty()[AppFile.Sync.Key.USERS_LAST_SYNC_UTC])
@@ -48,7 +48,7 @@ class UserRepositoryTest: TestCase() {
     fun executeSyncUsersOffline() = runUnitTest {
         ClientFlags.set { it.copy(http = false) }
         val userRepository = dependency.get()
-            .getUserDependency(user = FakeData.adminUser)
+            .getUserDependency(account = FakeData.adminAccount)
             .repositories
             .userRepository
 
@@ -60,11 +60,11 @@ class UserRepositoryTest: TestCase() {
     @Test
     fun executeSyncUser() = runUnitTest {
         val userUseCases = dependency.get()
-            .getUserDependency(user = FakeData.adminUser)
+            .getUserDependency(account = FakeData.adminAccount)
             .useCases
             .userUseCases
         val userRepository = dependency.get()
-            .getUserDependency(user = FakeData.adminUser)
+            .getUserDependency(account = FakeData.adminAccount)
             .repositories
             .userRepository
 
@@ -82,11 +82,11 @@ class UserRepositoryTest: TestCase() {
     @Test
     fun executeUpsertUser() = runUnitTest {
         val userUseCases = dependency.get()
-            .getUserDependency(user = FakeData.adminUser)
+            .getUserDependency(account = FakeData.adminAccount)
             .useCases
             .userUseCases
         val userRepository = dependency.get()
-            .getUserDependency(user = FakeData.adminUser)
+            .getUserDependency(account = FakeData.adminAccount)
             .repositories
             .userRepository
 
@@ -106,7 +106,7 @@ class UserRepositoryTest: TestCase() {
     fun executeUpsertUserOffline() = runUnitTest {
         ClientFlags.set { it.copy(http = false) }
         val userRepository = dependency.get()
-            .getUserDependency(user = FakeData.adminUser)
+            .getUserDependency(account = FakeData.adminAccount)
             .repositories
             .userRepository
 
@@ -120,8 +120,8 @@ class UserRepositoryTest: TestCase() {
         assertTrue(actual = jobResult is JobResult.Error)
     }
 
-    /** A user without any permission, so every user operation is refused. */
-    private val unauthorizedUser: User = FakeData.user.copy(permissions = emptyMap())
+    /** An account without any permission, so every user operation is refused. */
+    private val unauthorizedAccount: Account = FakeData.account.copy(permissions = emptyMap())
 
     /**
      * Lists the jobs queued in the scheduler, in every state.
@@ -138,7 +138,7 @@ class UserRepositoryTest: TestCase() {
     @Test
     fun syncUsersQueuesGetJobs() = runUnitTest {
         val userRepository = dependency.get()
-            .getUserDependency(user = FakeData.adminUser)
+            .getUserDependency(account = FakeData.adminAccount)
             .repositories
             .userRepository
 
@@ -152,7 +152,7 @@ class UserRepositoryTest: TestCase() {
     /** Verifies that a user without read permission observes no users, queues no sync and fails every sync job. */
     @Test
     fun withoutReadPermission() = runUnitTest {
-        val userDependency = dependency.get().getUserDependency(user = unauthorizedUser)
+        val userDependency = dependency.get().getUserDependency(account = unauthorizedAccount)
         val userUseCases = userDependency.useCases.userUseCases
         val userRepository = userDependency.repositories.userRepository
 
@@ -171,7 +171,7 @@ class UserRepositoryTest: TestCase() {
     /** Verifies that a users sync keeps a local user that is newer than the remote one, and replaces one that is older. */
     @Test
     fun executeSyncUsersResolvesConflictsByModificationTime() = runUnitTest {
-        val userDependency = dependency.get().getUserDependency(user = FakeData.adminUser)
+        val userDependency = dependency.get().getUserDependency(account = FakeData.adminAccount)
         val userUseCases = userDependency.useCases.userUseCases
         val userRepository = userDependency.repositories.userRepository
         val job = Job(userUuid = Uuid.NIL, entityType = EntityType.USER, type = Job.Type.GET)
@@ -190,7 +190,7 @@ class UserRepositoryTest: TestCase() {
     /** Verifies that a single user sync keeps a local user that is newer than the remote one, and replaces one that is older. */
     @Test
     fun executeSyncUserResolvesConflictsByModificationTime() = runUnitTest {
-        val userDependency = dependency.get().getUserDependency(user = FakeData.adminUser)
+        val userDependency = dependency.get().getUserDependency(account = FakeData.adminAccount)
         val userUseCases = userDependency.useCases.userUseCases
         val userRepository = userDependency.repositories.userRepository
         val job = Job(userUuid = Uuid.NIL, entityUuid = FakeData.adminUser.uuid, entityType = EntityType.USER, type = Job.Type.GET)
@@ -210,7 +210,7 @@ class UserRepositoryTest: TestCase() {
     @Test
     fun executeSyncUserWithoutEntityUuid() = runUnitTest {
         val userRepository = dependency.get()
-            .getUserDependency(user = FakeData.adminUser)
+            .getUserDependency(account = FakeData.adminAccount)
             .repositories
             .userRepository
 
