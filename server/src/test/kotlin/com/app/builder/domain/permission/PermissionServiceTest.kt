@@ -27,7 +27,7 @@ class PermissionServiceTest: TestCase() {
 
         awaitUntil { instanceSignal.subscriptions.value > 0 }
 
-        val access = UserAccess(permissions = FakeData.user.permissions, deletedAt = null)
+        val access = UserAccess(permissions = FakeData.account.permissions, deletedAt = null)
         assertNull(actual = permissionService.get(userUuid = userUuid))
         permissionService.set(userUuid = userUuid, access = access)
         assertEquals(expected = access, actual = permissionService.get(userUuid = userUuid))
@@ -66,7 +66,7 @@ class PermissionServiceTest: TestCase() {
         val permissionService = dependency.get().permissionService
         val otherInstance = PermissionManager(instanceSignal = dependency.get().instanceSignal)
         val userUuid = FakeData.user.uuid
-        val access = UserAccess(permissions = FakeData.user.permissions, deletedAt = null)
+        val access = UserAccess(permissions = FakeData.account.permissions, deletedAt = null)
 
         permissionService.set(userUuid = userUuid, access = access)
         assertEquals(expected = access, actual = permissionService.get(userUuid = userUuid))
@@ -88,7 +88,7 @@ class PermissionServiceTest: TestCase() {
             val job = launch { instanceSignal.observe(channel = "permissions").collect { envelopes.add(element = it) } }
             awaitUntil { instanceSignal.subscriptions.value > 0 }
 
-            permissionService.set(userUuid = FakeData.user.uuid, access = UserAccess(permissions = FakeData.user.permissions, deletedAt = null))
+            permissionService.set(userUuid = FakeData.user.uuid, access = UserAccess(permissions = FakeData.account.permissions, deletedAt = null))
             awaitUntil { envelopes.isNotEmpty() }
 
             assertNotNull(actual = envelopes.single().substringBefore(delimiter = '|').toUuid())

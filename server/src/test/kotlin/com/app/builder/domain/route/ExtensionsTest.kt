@@ -112,7 +112,7 @@ class ExtensionsTest: TestCase() {
         val client = createClient(token = adminBearerToken.accessToken)
         val fallbackResponse = client.get(urlString = "/test/permissions")
         assertEquals(expected = HttpStatusCode.OK, actual = fallbackResponse.status)
-        assertEquals(expected = FakeData.adminUser.permissions, actual = fallbackResponse.body<Map<EntityType, Permission>>())
+        assertEquals(expected = FakeData.adminAccount.permissions, actual = fallbackResponse.body<Map<EntityType, Permission>>())
 
         val cachedPermissions = mapOf(EntityType.TASK to Permission.READ)
         permissionService.set(userUuid = FakeData.adminUser.uuid, access = UserAccess(permissions = cachedPermissions, deletedAt = null))
@@ -145,20 +145,20 @@ class ExtensionsTest: TestCase() {
             }
         }
 
-        // FakeData.user only has TASK -> READ, and no permission at all for NOTIFICATION.
+        // FakeData.account only has TASK -> READ, and no permission at all for NOTIFICATION.
         val userClient = createClient(token = bearerToken.accessToken)
         assertEquals(expected = HttpStatusCode.Forbidden, actual = userClient.get(urlString = "/test/validate-write").status)
         assertEquals(expected = HttpStatusCode.OK, actual = userClient.get(urlString = "/test/validate-read").status)
         assertEquals(expected = HttpStatusCode.Forbidden, actual = userClient.get(urlString = "/test/validate-notification-write").status)
 
-        // FakeData.adminUser has WRITE for every entity type.
+        // FakeData.adminAccount has WRITE for every entity type.
         val adminClient = createClient(token = adminBearerToken.accessToken)
         assertEquals(expected = HttpStatusCode.OK, actual = adminClient.get(urlString = "/test/validate-write").status)
         assertEquals(expected = HttpStatusCode.OK, actual = adminClient.get(urlString = "/test/validate-read").status)
     }
 
     /**
-     * Verifies that a deleted account is confined to draining what it already queued: a write created before the deletion is let through, while a write created after it, a read, and a write that carries no creation time at all are all refused.
+     * Verifies that a deleted account is confined to draining what it already queued: a write created before the deletion is let through, even one only checked against a read permission, while a write created after it, a read, and a write that carries no creation time at all are all refused.
      */
     @Test
     fun validatePermissionDeletedUser() = runServerTest {
@@ -171,8 +171,12 @@ class ExtensionsTest: TestCase() {
                         if (!call.validatePermission(permissionService = permissionService, entityType = EntityType.TASK, permission = Permission.READ)) return@get
                         call.respondSafely(status = HttpStatusCode.OK, message = "authorized")
                     }
-                    get("/test/deleted-write") {
-                        if (!call.validatePermission(permissionService = permissionService, entityType = EntityType.TASK, permission = Permission.WRITE)) return@get
+                    post("/test/deleted-write") {
+                        if (!call.validatePermission(permissionService = permissionService, entityType = EntityType.TASK, permission = Permission.WRITE)) return@post
+                        call.respondSafely(status = HttpStatusCode.OK, message = "authorized")
+                    }
+                    post("/test/deleted-read-write") {
+                        if (!call.validatePermission(permissionService = permissionService, entityType = EntityType.TASK, permission = Permission.READ)) return@post
                         call.respondSafely(status = HttpStatusCode.OK, message = "authorized")
                     }
                 }
@@ -183,7 +187,7 @@ class ExtensionsTest: TestCase() {
         val deletedAt = now()
         permissionService.set(
             userUuid = FakeData.adminUser.uuid,
-            access = UserAccess(permissions = FakeData.adminUser.permissions, deletedAt = deletedAt)
+            access = UserAccess(permissions = FakeData.adminAccount.permissions, deletedAt = deletedAt)
         )
         val client = createClient(token = adminBearerToken.accessToken)
         val before = (deletedAt - 60_000L.milliseconds).toString()
@@ -192,12 +196,17 @@ class ExtensionsTest: TestCase() {
         // Work the user queued while still authorized, which is what keeping the session alive is for.
         assertEquals(
             expected = HttpStatusCode.OK,
-            actual = client.get(urlString = "/test/deleted-write") { header(Header.RequestUtc.header, before) }.status
+            actual = client.post(urlString = "/test/deleted-write") { header(Header.RequestUtc.header, before) }.status
+        )
+        // A write a route only guards with a read permission, like a user changing itself, drains the same way.
+        assertEquals(
+            expected = HttpStatusCode.OK,
+            actual = client.post(urlString = "/test/deleted-read-write") { header(Header.RequestUtc.header, before) }.status
         )
         // Work created after the account went is not the user's to write.
         assertEquals(
             expected = HttpStatusCode.Forbidden,
-            actual = client.get(urlString = "/test/deleted-write") { header(Header.RequestUtc.header, after) }.status
+            actual = client.post(urlString = "/test/deleted-write") { header(Header.RequestUtc.header, after) }.status
         )
         // Reads are refused outright: a deleted account has no business pulling current data, and no queued work is lost by failing a fetch.
         assertEquals(
@@ -205,7 +214,7 @@ class ExtensionsTest: TestCase() {
             actual = client.get(urlString = "/test/deleted-read") { header(Header.RequestUtc.header, before) }.status
         )
         // Without a creation time there is nothing to show the work predates the deletion, so it is refused rather than assumed.
-        assertEquals(expected = HttpStatusCode.Forbidden, actual = client.get(urlString = "/test/deleted-write").status)
+        assertEquals(expected = HttpStatusCode.Forbidden, actual = client.post(urlString = "/test/deleted-write").status)
     }
 
     /** Verifies that validateTime() rejects missing or future timestamps with 400, accepts current ones, and is skipped in development mode. */

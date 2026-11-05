@@ -62,7 +62,7 @@ class ConnectionUseCasesTest: TestCase() {
     /** Verifies that the global connection limit rejects connections from other users once reached. */
     @Test
     fun globalLimitIsEnforced() = runServerTest {
-        val otherUser = FakeData.user.copy(uuid = uuid(), permissions = emptyMap(), name = "Other")
+        val otherUser = FakeData.user.copy(uuid = uuid(), name = "Other")
         assertTrue(actual = dependency.get().useCases.userUseCases.upsertUser(user = otherUser))
 
         ServerConfigs.set { it.copy(pushMaxConnections = 1) }

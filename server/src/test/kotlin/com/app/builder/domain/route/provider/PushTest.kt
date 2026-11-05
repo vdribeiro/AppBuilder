@@ -67,7 +67,7 @@ class PushTest: TestCase() {
 
         permissionService.set(
             userUuid = FakeData.user.uuid,
-            access = UserAccess(permissions = FakeData.user.permissions, deletedAt = now())
+            access = UserAccess(permissions = FakeData.account.permissions, deletedAt = now())
         )
 
         assertEquals(expected = HttpStatusCode.Forbidden, actual = client.post<DeviceToken>(request = HttpRequest(url = URL.DeviceTokens), body = registration).status)

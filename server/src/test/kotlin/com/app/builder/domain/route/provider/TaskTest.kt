@@ -15,9 +15,7 @@ import com.app.builder.data.http.get
 import com.app.builder.data.http.post
 import com.app.builder.domain.EntityType
 import com.app.builder.domain.Permission
-import com.app.builder.domain.RegistrationForm
 import com.app.builder.domain.Task
-import com.app.builder.domain.UserCredentials
 import com.app.builder.test.FakeData
 import com.app.builder.test.TestCase
 import io.ktor.client.request.get as ktorGet
@@ -113,13 +111,7 @@ class TaskTest: TestCase() {
         val ownerClient = createClient(token = adminBearerToken.accessToken)
         ownerClient.post(request = HttpRequest(url = URL.Tasks), body = FakeData.task)
 
-        val otherUser = FakeData.user.copy(uuid = uuid(), permissions = mapOf(EntityType.TASK to Permission.WRITE))
-        val otherAuth = seedUser(
-            registrationForm = RegistrationForm(
-                user = otherUser,
-                credentials = UserCredentials(username = "other_task_user", password = "pass123")
-            )
-        )
+        val otherAuth = seedUser(registrationForm = registrationForm(username = "other_task_user", permissions = mapOf(EntityType.TASK to Permission.WRITE)))
         val otherClient = createClient(token = otherAuth.bearer.accessToken)
 
         val response = otherClient.post(request = HttpRequest(url = URL.Tasks), body = FakeData.task.copy(title = "Hijacked"))
@@ -134,7 +126,7 @@ class TaskTest: TestCase() {
         val client = createClient(token = null)
         assertEquals(expected = HttpStatusCode.Unauthorized, actual = client.ktorGet(urlString = "${URL.Tasks.path}/${FakeData.task.uuid}").status)
 
-        // FakeData.user only has TASK -> READ.
+        // FakeData.account only has TASK -> READ.
         val userClient = createClient(token = bearerToken.accessToken)
         assertEquals(expected = HttpStatusCode.OK, actual = userClient.get(request = HttpRequest(url = URL.Tasks)).status)
         assertEquals(expected = HttpStatusCode.Forbidden, actual = userClient.post(request = HttpRequest(url = URL.Tasks), body = FakeData.task).status)
@@ -145,13 +137,7 @@ class TaskTest: TestCase() {
     fun getTasksRequiresReadPermission() = runServerTest {
         installRouting()
 
-        val noTaskUser = FakeData.user.copy(uuid = uuid(), permissions = mapOf(EntityType.USER to Permission.READ))
-        val noTaskAuth = seedUser(
-            registrationForm = RegistrationForm(
-                user = noTaskUser,
-                credentials = UserCredentials(username = "no_task_user", password = "pass123")
-            )
-        )
+        val noTaskAuth = seedUser(registrationForm = registrationForm(username = "no_task_user", permissions = mapOf(EntityType.USER to Permission.READ)))
         val client = createClient(token = noTaskAuth.bearer.accessToken)
 
         assertEquals(expected = HttpStatusCode.Forbidden, actual = client.get(request = HttpRequest(url = URL.Tasks)).status)

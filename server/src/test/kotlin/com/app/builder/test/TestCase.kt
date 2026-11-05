@@ -15,6 +15,7 @@ import io.ktor.serialization.kotlinx.json.json
 import io.ktor.server.testing.ApplicationTestBuilder
 import com.app.builder.Dependency
 import com.app.builder.core.flow.LazyData
+import com.app.builder.core.security.uuid
 import com.app.builder.data.database.DatabaseFactory
 import com.app.builder.data.database.create
 import com.app.builder.data.database.reset
@@ -22,9 +23,12 @@ import com.app.builder.data.http.installHttpPlugins
 import com.app.builder.data.signal.LocalSignal
 import com.app.builder.domain.Authentication
 import com.app.builder.domain.BearerToken
+import com.app.builder.domain.EntityType
+import com.app.builder.domain.Permission
 import com.app.builder.domain.RegistrationForm
 import com.app.builder.domain.push.NoOpFcmService
 import com.app.builder.domain.route.installRouting
+import com.app.builder.domain.usecase.WriteResult
 
 /** Abstract class for defining test cases. It provides a hermetic testing environment. */
 abstract class TestCase: SharedTestCase() {
@@ -55,14 +59,32 @@ abstract class TestCase: SharedTestCase() {
     }
 
     /**
-     * Seeds a user.
+     * Seeds a user and its account, then logs in with the account to open a session.
      *
      * @param registrationForm The registration form to use.
      * @return The [Authentication] of the seeded user.
      */
-    protected suspend fun seedUser(registrationForm: RegistrationForm): Authentication = requireNotNull(
-        value = dependency.get().useCases.authenticationUseCases.register(registrationForm = registrationForm)
-    ) { "Unable to seed the user account." }
+    protected suspend fun seedUser(registrationForm: RegistrationForm): Authentication {
+        val authenticationUseCases = dependency.get().useCases.authenticationUseCases
+        require(value = authenticationUseCases.register(registrationForm = registrationForm) == WriteResult.SUCCESS) { "Unable to seed the user account." }
+        return requireNotNull(value = authenticationUseCases.login(credentials = registrationForm.credentials)) { "Unable to log in the seeded user account." }
+    }
+
+    /**
+     * Builds a registration form for a new user, based on [FakeData.user] and [FakeData.account] with a fresh uuid.
+     *
+     * @param username The login username of the new account.
+     * @param permissions The permissions granted to the new account.
+     * @return The [RegistrationForm] of the new user.
+     */
+    protected fun registrationForm(username: String, permissions: Map<EntityType, Permission>): RegistrationForm {
+        val user = FakeData.user.copy(uuid = uuid())
+        return RegistrationForm(
+            user = user,
+            account = FakeData.account.copy(userUuid = user.uuid, username = username, permissions = permissions),
+            password = FakeData.credentials.password
+        )
+    }
 
     /** Installs HTTP plugins and routing, and starts the broadcast and push service. */
     protected fun ApplicationTestBuilder.installRouting() {

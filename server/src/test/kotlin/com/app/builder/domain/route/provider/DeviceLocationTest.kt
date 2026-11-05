@@ -9,8 +9,6 @@ import com.app.builder.data.http.URL
 import com.app.builder.data.http.post
 import com.app.builder.domain.EntityType
 import com.app.builder.domain.Permission
-import com.app.builder.domain.RegistrationForm
-import com.app.builder.domain.UserCredentials
 import com.app.builder.test.FakeData
 import com.app.builder.test.TestCase
 
@@ -42,13 +40,7 @@ class DeviceLocationTest: TestCase() {
     fun upsertDeviceLocationRequiresWritePermission() = runServerTest {
         installRouting()
 
-        val readOnlyUser = FakeData.user.copy(uuid = uuid(), permissions = mapOf(EntityType.DEVICE_LOCATION to Permission.READ))
-        val readOnlyAuth = seedUser(
-            registrationForm = RegistrationForm(
-                user = readOnlyUser,
-                credentials = UserCredentials(username = "readonly_device_location", password = "pass123")
-            )
-        )
+        val readOnlyAuth = seedUser(registrationForm = registrationForm(username = "readonly_device_location", permissions = mapOf(EntityType.DEVICE_LOCATION to Permission.READ)))
 
         val client = createClient(token = readOnlyAuth.bearer.accessToken)
         val response = client.post(request = HttpRequest(url = URL.DeviceLocations), body = FakeData.deviceLocation)

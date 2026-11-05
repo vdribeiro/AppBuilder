@@ -2,41 +2,97 @@ package com.app.builder.domain.route.provider
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import io.ktor.client.call.body
+import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpStatusCode
 import com.app.builder.core.config.ServerConfigs
+import com.app.builder.core.locale.now
 import com.app.builder.core.security.uuid
 import com.app.builder.data.http.HttpRequest
 import com.app.builder.data.http.URL
 import com.app.builder.data.http.post
+import com.app.builder.domain.Account
 import com.app.builder.domain.Authentication
-import com.app.builder.domain.RegistrationForm
+import com.app.builder.domain.EntityType
+import com.app.builder.domain.Permission
+import com.app.builder.domain.User
 import com.app.builder.domain.UserCredentials
 import com.app.builder.test.FakeData
 import com.app.builder.test.TestCase
+import io.ktor.client.request.get as ktorGet
 
 class AuthenticationTest: TestCase() {
 
-    /** Verifies that registering with a valid form succeeds and rejects malformed requests. */
+    /** Verifies that registering with a valid form responds with the created account and no session tokens, and rejects malformed requests. */
     @Test
     fun register() = runServerTest {
         installRouting()
         val client = createClient(token = adminBearerToken.accessToken)
+        val form = registrationForm(username = "new_user", permissions = mapOf(EntityType.TASK to Permission.READ))
 
         assertEquals(expected = HttpStatusCode.BadRequest, actual = client.post(request = HttpRequest(url = URL.Register), body = "No form").status)
-        val response = client.post(request = HttpRequest(url = URL.Register), body = FakeData.registrationForm)
+        val response = client.post(request = HttpRequest(url = URL.Register), body = form)
         assertEquals(expected = HttpStatusCode.OK, actual = response.status)
-        assertEquals(expected = FakeData.user, actual = response.body<Authentication>().user)
+        assertEquals(expected = form.account, actual = response.body<Account>())
+        assertFalse(actual = response.bodyAsText().contains(other = "accessToken"))
+        assertFalse(actual = response.bodyAsText().contains(other = "refreshToken"))
+
+        val user = client.ktorGet(urlString = "${URL.Users.path}/${form.user.uuid}")
+        assertEquals(expected = HttpStatusCode.OK, actual = user.status)
+        assertEquals(expected = form.user, actual = user.body<User>())
+        assertEquals(expected = HttpStatusCode.OK, actual = createClient(token = null).post(request = HttpRequest(url = URL.Login), body = form.credentials).status)
     }
 
-    /** Verifies that registering without user write permission is forbidden. */
+    /** Verifies that registering an account whose user uuid differs from the form's user is rejected. */
     @Test
-    fun registerWithoutUserWritePermission() = runServerTest {
+    fun registerWithMismatchedUser() = runServerTest {
         installRouting()
-        val client = createClient(token = bearerToken.accessToken)
+        val client = createClient(token = adminBearerToken.accessToken)
+        val form = registrationForm(username = "mismatched_user", permissions = emptyMap())
 
-        val response = client.post(request = HttpRequest(url = URL.Register), body = FakeData.registrationForm)
-        assertEquals(expected = HttpStatusCode.Forbidden, actual = response.status)
+        val response = client.post(request = HttpRequest(url = URL.Register), body = form.copy(account = form.account.copy(userUuid = uuid())))
+        assertEquals(expected = HttpStatusCode.BadRequest, actual = response.status)
+    }
+
+    /** Verifies that registering is rejected when the user already has an account or the username is taken. */
+    @Test
+    fun registerConflicts() = runServerTest {
+        installRouting()
+        val client = createClient(token = adminBearerToken.accessToken)
+
+        assertEquals(expected = HttpStatusCode.Conflict, actual = client.post(request = HttpRequest(url = URL.Register), body = FakeData.registrationForm).status)
+        val takenUsername = registrationForm(username = FakeData.account.username, permissions = emptyMap())
+        assertEquals(expected = HttpStatusCode.Conflict, actual = client.post(request = HttpRequest(url = URL.Register), body = takenUsername).status)
+    }
+
+    /** Verifies that registering an account for an existing user leaves the stored user unchanged. */
+    @Test
+    fun registerKeepsExistingUser() = runServerTest {
+        installRouting()
+        val client = createClient(token = adminBearerToken.accessToken)
+        val form = registrationForm(username = "existing_user", permissions = emptyMap())
+        val existingUser = form.user.copy(name = "Existing")
+        assertEquals(expected = HttpStatusCode.OK, actual = client.post(request = HttpRequest(url = URL.Users), body = existingUser).status)
+
+        val response = client.post(request = HttpRequest(url = URL.Register), body = form.copy(user = form.user.copy(name = "Overwritten")))
+        assertEquals(expected = HttpStatusCode.OK, actual = response.status)
+        assertEquals(expected = existingUser, actual = client.ktorGet(urlString = "${URL.Users.path}/${form.user.uuid}").body<User>())
+    }
+
+    /** Verifies that registering requires the account write permission, even for a user with the user write permission. */
+    @Test
+    fun registerWithoutAccountWritePermission() = runServerTest {
+        installRouting()
+        val form = registrationForm(username = "another_user", permissions = emptyMap())
+
+        // FakeData.account only has ACCOUNT -> READ.
+        val client = createClient(token = bearerToken.accessToken)
+        assertEquals(expected = HttpStatusCode.Forbidden, actual = client.post(request = HttpRequest(url = URL.Register), body = form).status)
+
+        val userWriter = seedUser(registrationForm = registrationForm(username = "user_writer", permissions = mapOf(EntityType.USER to Permission.WRITE)))
+        val userWriterClient = createClient(token = userWriter.bearer.accessToken)
+        assertEquals(expected = HttpStatusCode.Forbidden, actual = userWriterClient.post(request = HttpRequest(url = URL.Register), body = form).status)
     }
 
     /** Verifies that logging in with valid credentials succeeds and rejects malformed requests. */
@@ -51,7 +107,20 @@ class AuthenticationTest: TestCase() {
             body = FakeData.adminCredentials
         )
         assertEquals(expected = HttpStatusCode.OK, actual = response.status)
-        assertEquals(expected = FakeData.adminUser, actual = response.body<Authentication>().user)
+        val authentication = response.body<Authentication>()
+        assertEquals(expected = FakeData.adminUser, actual = authentication.user)
+        assertEquals(expected = FakeData.adminAccount, actual = authentication.account)
+    }
+
+    /** Verifies that logging in with a disabled account is rejected. */
+    @Test
+    fun loginWithDisabledAccount() = runServerTest {
+        installRouting()
+        val adminClient = createClient(token = adminBearerToken.accessToken)
+        assertEquals(expected = HttpStatusCode.OK, actual = adminClient.post(request = HttpRequest(url = URL.Accounts), body = FakeData.account.copy(deletedAt = now())).status)
+
+        val client = createClient(token = null)
+        assertEquals(expected = HttpStatusCode.Unauthorized, actual = client.post(request = HttpRequest(url = URL.Login), body = FakeData.credentials).status)
     }
 
     /** Verifies that logging out rejects an invalid refresh token and succeeds with a valid one. */
@@ -81,12 +150,7 @@ class AuthenticationTest: TestCase() {
     fun refreshTokenWithExpiredSession() = runServerTest {
         installRouting()
         ServerConfigs.set { it.copy(refreshTokenValidity = -1_000L) }
-        val expiredAuth = seedUser(
-            registrationForm = RegistrationForm(
-                user = FakeData.user.copy(uuid = uuid()),
-                credentials = UserCredentials(username = "expired_session_user", password = "pass123")
-            )
-        )
+        val expiredAuth = seedUser(registrationForm = registrationForm(username = "expired_session_user", permissions = emptyMap()))
 
         val client = createClient(token = null)
         assertEquals(expected = HttpStatusCode.Unauthorized, actual = client.post(request = HttpRequest(url = URL.RefreshTokens), body = expiredAuth.bearer.refreshToken).status)
