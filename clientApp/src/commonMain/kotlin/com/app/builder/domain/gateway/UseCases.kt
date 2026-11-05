@@ -1,5 +1,6 @@
 package com.app.builder.domain.gateway
 
+import com.app.builder.domain.gateway.account.AccountUseCases
 import com.app.builder.domain.gateway.authentication.AuthenticationUseCases
 import com.app.builder.domain.gateway.config.ConfigUseCases
 import com.app.builder.domain.gateway.push.PushUseCases
@@ -22,6 +23,8 @@ interface UseCases {
     val statusUseCases: StatusUseCases
     /** The use cases for managing users. */
     val userUseCases: UserUseCases
+    /** The use cases for managing accounts. */
+    val accountUseCases: AccountUseCases
     /** The use cases for managing tasks. */
     val taskUseCases: TaskUseCases
 }

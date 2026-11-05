@@ -12,9 +12,9 @@ import com.app.builder.data.database.table.DeviceTokenTable
 import com.app.builder.data.database.table.NotificationTable
 import com.app.builder.data.database.table.RegistryTable
 import com.app.builder.data.database.table.TaskTable
-import com.app.builder.data.database.table.TaskUserJoinTable
+import com.app.builder.data.database.table.TaskUserAccessTable
 import com.app.builder.data.database.table.TicketTable
-import com.app.builder.data.database.table.UserSecretTable
+import com.app.builder.data.database.table.UserAccountTable
 import com.app.builder.data.database.table.UserSessionTable
 import com.app.builder.data.database.table.UserTable
 import io.r2dbc.spi.IsolationLevel
@@ -23,7 +23,7 @@ import io.r2dbc.spi.IsolationLevel
 private val tables = listOf(
     ConfigTable,
     UserTable,
-    UserSecretTable,
+    UserAccountTable,
     UserSessionTable,
     RegistryTable,
     DeviceTokenTable,
@@ -32,7 +32,7 @@ private val tables = listOf(
     ConnectionTable,
     NotificationTable,
     TaskTable,
-    TaskUserJoinTable,
+    TaskUserAccessTable,
 ).toTypedArray()
 
 /** Creates all the tables in the database. */

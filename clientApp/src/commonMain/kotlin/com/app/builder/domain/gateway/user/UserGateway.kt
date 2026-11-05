@@ -29,6 +29,7 @@ import com.app.builder.data.http.post
 import com.app.builder.data.serializer.decode
 import com.app.builder.data.serializer.encode
 import com.app.builder.data.storage.AppFile
+import com.app.builder.domain.Account
 import com.app.builder.domain.EntityType
 import com.app.builder.domain.Permission
 import com.app.builder.domain.User
@@ -44,13 +45,13 @@ import database.AppDatabase
 /**
  * Gateway implementation for User Use Cases and Repository.
  *
- * @property user The current user.
+ * @property account The account of the current user.
  * @property database The SQLite database instance for user data.
  * @property httpClient The HTTP client used for network operations.
  * @property scheduler The job scheduler for background tasks.
  */
 class UserGateway(
-    private val user: User,
+    private val account: Account,
     private val database: AppDatabase,
     private val httpClient: HttpClient,
     private val scheduler: Scheduler
@@ -60,7 +61,7 @@ class UserGateway(
     private val userDao = database.userQueries
 
     override fun observeUsers(): Flow<List<User>> {
-        if (!user.hasPermission(entityType = EntityType.USER, permission = Permission.READ)) {
+        if (!account.hasPermission(entityType = EntityType.USER, permission = Permission.READ)) {
             val throwable = Throwable(message = "User does not have ${Permission.READ} permission for ${EntityType.USER}")
             Telemetry.error(tag = TAG, message = "Invalid permissions", throwable = throwable)
             return emptyFlow()
@@ -70,7 +71,7 @@ class UserGateway(
             .asFlow { it.toUser() }
             .onStart {
                 val job = Job(
-                    userUuid = user.uuid,
+                    userUuid = account.userUuid,
                     entityType = EntityType.USER,
                     type = Job.Type.GET,
                 )
@@ -84,7 +85,7 @@ class UserGateway(
     }
 
     override fun observeUser(uuid: Uuid): Flow<User?> {
-        if (!user.hasPermission(entityType = EntityType.USER, permission = Permission.READ)) {
+        if (!account.hasPermission(entityType = EntityType.USER, permission = Permission.READ)) {
             val throwable = Throwable(message = "User does not have ${Permission.READ} permission for ${EntityType.USER}")
             Telemetry.error(tag = TAG, message = "Invalid permissions", throwable = throwable)
             return emptyFlow()
@@ -114,7 +115,7 @@ class UserGateway(
             return@withContext
         }
         val job = Job(
-            userUuid = this@UserGateway.user.uuid,
+            userUuid = account.userUuid,
             entityUuid = user.uuid,
             entityType = EntityType.USER,
             type = Job.Type.POST,
@@ -124,14 +125,14 @@ class UserGateway(
     }
 
     override suspend fun syncUsers() = withContext(context = Dispatcher.IO) {
-        if (!user.hasPermission(entityType = EntityType.USER, permission = Permission.READ)) {
+        if (!account.hasPermission(entityType = EntityType.USER, permission = Permission.READ)) {
             val throwable = Throwable(message = "User does not have ${Permission.READ} permission for ${EntityType.USER}")
             Telemetry.error(tag = TAG, message = "Invalid permissions", throwable = throwable)
             return@withContext
         }
 
         val job = Job(
-            userUuid = user.uuid,
+            userUuid = account.userUuid,
             entityType = EntityType.USER,
             type = Job.Type.GET,
         )
@@ -139,14 +140,14 @@ class UserGateway(
     }
 
     override suspend fun syncUser(uuid: Uuid) = withContext(context = Dispatcher.IO) {
-        if (!user.hasPermission(entityType = EntityType.USER, permission = Permission.READ)) {
+        if (!account.hasPermission(entityType = EntityType.USER, permission = Permission.READ)) {
             val throwable = Throwable(message = "User does not have ${Permission.READ} permission for ${EntityType.USER}")
             Telemetry.error(tag = TAG, message = "Invalid permissions", throwable = throwable)
             return@withContext
         }
 
         val job = Job(
-            userUuid = user.uuid,
+            userUuid = account.userUuid,
             entityUuid = uuid,
             entityType = EntityType.USER,
             type = Job.Type.GET,
@@ -155,7 +156,7 @@ class UserGateway(
     }
 
     override suspend fun executeSyncUsers(job: Job): JobResult = withContext(context = Dispatcher.IO) {
-        if (!user.hasPermission(entityType = EntityType.USER, permission = Permission.READ)) {
+        if (!account.hasPermission(entityType = EntityType.USER, permission = Permission.READ)) {
             val throwable = Throwable(message = "User does not have ${Permission.READ} permission for ${EntityType.USER}")
             Telemetry.error(tag = TAG, message = "Invalid permissions", throwable = throwable)
             return@withContext throwable.toJobResult()
@@ -195,7 +196,7 @@ class UserGateway(
     }
 
     override suspend fun executeSyncUser(job: Job): JobResult = withContext(context = Dispatcher.IO) {
-        if (!user.hasPermission(entityType = EntityType.USER, permission = Permission.READ)) {
+        if (!account.hasPermission(entityType = EntityType.USER, permission = Permission.READ)) {
             val throwable = Throwable(message = "User does not have ${Permission.READ} permission for ${EntityType.USER}")
             Telemetry.error(tag = TAG, message = "Invalid permissions", throwable = throwable)
             return@withContext throwable.toJobResult()
@@ -274,8 +275,8 @@ class UserGateway(
      * @return true if the current user can upsert [user], false otherwise.
      */
     private fun canUpsert(user: User): Boolean =
-        this.user.hasPermission(entityType = EntityType.USER, permission = Permission.WRITE) ||
-            (user.uuid == this.user.uuid && this.user.hasPermission(entityType = EntityType.USER, permission = Permission.READ))
+        account.hasPermission(entityType = EntityType.USER, permission = Permission.WRITE) ||
+                (user.uuid == account.userUuid && account.hasPermission(entityType = EntityType.USER, permission = Permission.READ))
 
     /**
      * Synchronizes a single remote user with the local database.
