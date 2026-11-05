@@ -53,7 +53,7 @@ class PushServiceTest: TestCase() {
      * @return The fixture [PushService] instance.
      */
     private fun pushService(user: User, ticketStatus: HttpStatusCode = HttpStatusCode.OK): PushService = PushManager(
-        user = user,
+        userUuid = user.uuid,
         httpClient = HttpClientFactory(engine = TestEngine { request ->
             when (request.url.encodedPath) {
                 URL.Tickets.path -> {

@@ -5,7 +5,6 @@ CREATE TABLE IF NOT EXISTS User (
     uuid TEXT AS Uuid NOT NULL PRIMARY KEY,
     modifiedAt TEXT AS Instant NOT NULL,
     deletedAt TEXT AS Instant,
-    permissions TEXT NOT NULL,
     name TEXT NOT NULL,
     avatar TEXT
 );

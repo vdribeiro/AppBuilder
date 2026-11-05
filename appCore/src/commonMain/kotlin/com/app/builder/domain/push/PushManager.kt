@@ -31,17 +31,16 @@ import com.app.builder.data.http.webSocket
 import com.app.builder.data.serializer.decode
 import com.app.builder.domain.DeviceToken
 import com.app.builder.domain.PushPayload
-import com.app.builder.domain.User
 
 /**
  * Manager implementation for push workflows.
  * Manages the lifecycle of a persistent WebSocket connection to receive user push payloads.
  *
- * @property user The current user.
+ * @property userUuid The unique identifier of the current user.
  * @property httpClient The HTTP client used for network operations.
  */
 class PushManager(
-    private val user: User,
+    private val userUuid: Uuid,
     private val httpClient: HttpClient,
 ): PushService {
 
@@ -196,7 +195,7 @@ class PushManager(
             }
         ) { frame ->
             val payload = decode<PushPayload>(value = frame.readText()) ?: return@webSocket
-            block(user.uuid, payload)?.let { send(frame = Frame.Text(text = it)) }
+            block(userUuid, payload)?.let { send(frame = Frame.Text(text = it)) }
         }
         Unit
     }

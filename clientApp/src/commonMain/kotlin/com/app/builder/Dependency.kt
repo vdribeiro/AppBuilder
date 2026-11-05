@@ -11,14 +11,14 @@ import com.app.builder.core.locale.now
 import com.app.builder.data.database.DatabaseFactory
 import com.app.builder.data.http.Configurations
 import com.app.builder.data.http.HttpClientFactory
-import com.app.builder.domain.User
+import com.app.builder.domain.Account
 import com.app.builder.domain.clock.ClockManager
 import com.app.builder.domain.clock.ClockService
 import com.app.builder.domain.gateway.Gateways
 import com.app.builder.domain.gateway.Repositories
 import com.app.builder.domain.gateway.UseCases
+import com.app.builder.domain.gateway.authentication.toAccount
 import com.app.builder.domain.gateway.authentication.toBearerTokens
-import com.app.builder.domain.gateway.authentication.toUser
 import com.app.builder.domain.nfc.TagManager
 import com.app.builder.domain.nfc.TagService
 import com.app.builder.domain.push.BroadcastManager
@@ -78,7 +78,7 @@ object Dependency {
 
         /** Guest user graph. */
         val userGraph: UserGraph = UserGraph(
-            user = guestUser,
+            account = guestAccount,
             dependency = this
         )
 
@@ -106,28 +106,28 @@ object Dependency {
     /**
      * User dependency graph.
      *
-     * @property user for the graph.
+     * @property account The account of the user the graph is for.
      * @property dependency The [AppGraph] graph.
      */
     class UserGraph(
-        val user: User,
+        val account: Account,
         val dependency: AppGraph,
     ) {
         /** The HTTP client configured with the authenticated user's bearer token handling. */
         val httpClient: HttpClient = HttpClientFactory(
             engine = dependency.httpClientEngine,
             configurations = Configurations(
-                loadTokens = { repositories.authenticationRepository.getBearerToken(userUuid = user.uuid)?.toBearerTokens() },
+                loadTokens = { repositories.authenticationRepository.getBearerToken(userUuid = account.userUuid)?.toBearerTokens() },
                 refreshTokens = { oldTokens ->
                     val refreshToken = oldTokens?.refreshToken ?: return@Configurations null
-                    repositories.authenticationRepository.refreshBearerToken(userUuid = user.uuid, refreshToken = refreshToken)?.toBearerTokens()
+                    repositories.authenticationRepository.refreshBearerToken(userUuid = account.userUuid, refreshToken = refreshToken)?.toBearerTokens()
                 }
             )
         ).httpClient
 
         /** Gateways. */
         private val gateways = Gateways(
-            user = user,
+            account = account,
             database = dependency.database,
             httpClient = httpClient,
             scheduler = dependency.scheduler,
@@ -140,20 +140,19 @@ object Dependency {
 
         /** Push service. */
         val pushService: PushService = PushManager(
-            user = user,
+            userUuid = account.userUuid,
             httpClient = httpClient,
         )
     }
 
-    /** The default guest user. */
-    val guestUser: User by lazy {
-        User(
-            uuid = Uuid.NIL,
+    /** The account of the default guest user, without any permission. */
+    val guestAccount: Account by lazy {
+        Account(
+            userUuid = Uuid.NIL,
             modifiedAt = now(),
             deletedAt = null,
-            permissions = emptyMap(),
-            name = "Guest",
-            avatar = null
+            username = "guest",
+            permissions = emptyMap()
         )
     }
 
@@ -163,25 +162,28 @@ object Dependency {
     private val instanceMutex = Mutex()
 
     /**
-     * Retrieves or instantiates a unique, thread-safe [UserGraph] instance tied to the user.
+     * Retrieves or instantiates a unique, thread-safe [UserGraph] instance tied to the account's user.
+     * The cached instance is rebuilt when the account's permissions or disabled state differ from the ones it was built with.
      *
-     * @param user The user to tie the dependencies with.
+     * @param account The account to tie the dependencies with.
      * @return A [UserGraph] instance.
      */
-    suspend fun AppGraph.getUserDependency(user: User): UserGraph = instanceMutex.withLock {
-        instanceMap[user.uuid] ?: UserGraph(user = user, dependency = this).also { instanceMap[user.uuid] = it }
+    suspend fun AppGraph.getUserDependency(account: Account): UserGraph = instanceMutex.withLock {
+        instanceMap[account.userUuid]
+            ?.takeIf { it.account.permissions == account.permissions && it.account.deletedAt == account.deletedAt }
+            ?: UserGraph(account = account, dependency = this).also { instanceMap[account.userUuid] = it }
     }
 
     /**
      * Resolves the [UserGraph] of the user with [userUuid].
      *
      * @param userUuid The uuid of the user, or `null` for the guest.
-     * @return The guest [AppGraph.userGraph] for a `null` or guest uuid, the user's [UserGraph] if the user is stored, or `null` otherwise.
+     * @return The guest [AppGraph.userGraph] for a `null` or guest uuid, the user's [UserGraph] if its account is stored, or `null` otherwise.
      */
     suspend fun AppGraph.getUserGraph(userUuid: Uuid?): UserGraph? {
-        if (userUuid == null || userUuid == guestUser.uuid) return userGraph
-        val user = database.userQueries.getUser(userUuid = userUuid).awaitAsOneOrNull()?.toUser() ?: return null
-        return getUserDependency(user = user)
+        if (userUuid == null || userUuid == guestAccount.userUuid) return userGraph
+        val account = database.accountQueries.getAccount(userUuid = userUuid).awaitAsOneOrNull()?.toAccount() ?: return null
+        return getUserDependency(account = account)
     }
 
     /**
