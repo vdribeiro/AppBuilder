@@ -8,6 +8,7 @@ import kotlin.uuid.Uuid
 import kotlinx.coroutines.flow.firstOrNull
 import app.cash.sqldelight.async.coroutines.awaitAsList
 import com.app.builder.Dependency.getUserDependency
+import com.app.builder.core.security.uuid
 import com.app.builder.core.config.ClientFlags
 import com.app.builder.domain.Account
 import com.app.builder.domain.EntityType
@@ -76,7 +77,7 @@ class AccountGatewayTest: TestCase() {
         assertTrue(actual = userDependency.repositories.accountRepository.executeSyncAccount(job = job) is JobResult.Error)
     }
 
-    /** Verifies that executing an account fetch job fails without a user uuid, and otherwise stores the fetched account. */
+    /** Verifies that executing an account fetch job fails without a user uuid, stores the fetched account, and succeeds without storing anything for a user without an account. */
     @Test
     fun executeSyncAccount() = runUnitTest {
         val userDependency = dependency.get().getUserDependency(account = readOnlyAccount)
@@ -85,6 +86,10 @@ class AccountGatewayTest: TestCase() {
 
         assertTrue(actual = userDependency.repositories.accountRepository.executeSyncAccount(job = job.copy(entityUuid = FakeData.user.uuid)) is JobResult.Success)
         assertEquals(expected = FakeData.account, actual = userDependency.useCases.accountUseCases.observeAccount(userUuid = FakeData.user.uuid).firstOrNull())
+
+        val userUuid = uuid()
+        assertTrue(actual = userDependency.repositories.accountRepository.executeSyncAccount(job = job.copy(entityUuid = userUuid)) is JobResult.Success)
+        assertNull(actual = userDependency.useCases.accountUseCases.observeAccount(userUuid = userUuid).firstOrNull())
     }
 
     /** Verifies that observing an account queues a job fetching it. */
