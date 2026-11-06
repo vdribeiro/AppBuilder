@@ -5,6 +5,7 @@ import kotlinx.coroutines.Job
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.AppRegistration
+import androidx.compose.material.icons.filled.Apps
 import androidx.compose.material.icons.filled.Camera
 import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.GpsFixed
@@ -15,18 +16,24 @@ import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Task
+import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material.icons.outlined.Translate
 import com.app.builder.core.config.ClientFlags
 import com.app.builder.core.telemetry.Telemetry
 import com.app.builder.domain.EntityType
+import com.app.builder.domain.Permission
 import com.app.builder.domain.gateway.authentication.AuthenticationUseCases
 import com.app.builder.ui.core.navigation.NavigationItem
 import com.app.builder.ui.navigation.Router
 import com.app.builder.ui.navigation.Screen
+import com.app.builder.ui.navigation.authenticatedScreen
 import com.app.builder.ui.store.Store
 
 /**
  * Store backing the app's navigation bar, building the visible [NavigationItem]s from the current user's permissions.
+ *
+ * The bar shows one of two sections, picked from the selected route: the main section with the app's domain features,
+ * or the system section with the app's capabilities and configurations, entered from the main section's system item and left through its app item.
  *
  * @param state The initial [NavigationState].
  * @property router The router used for navigation.
@@ -51,109 +58,29 @@ class NavigationStore(
 
         authenticationUseCases.observeCurrentAccount().observe(id = "current_account") { account ->
             val permissions = account?.permissions ?: return@observe
-            val items = buildList {
-                if (ClientFlags.value.home) add(
+
+            val systemItems = getSystemItems(permissions = permissions)
+            val featureItems = getItems(permissions = permissions)
+
+            val items = (if (state.selected in SYSTEM_ROUTES) buildList {
+                add(
                     NavigationItem(
-                        selected = state.selected == NavigationRoute.HOME,
-                        text = "home",
-                        icon = Icons.Filled.Home,
-                        onClick = { router.navigate(screen = Screen.Home, option = Router.NavOption.CLEAR) },
+                        text = "app",
+                        icon = Icons.Filled.Apps,
+                        onClick = { router.navigate(screen = authenticatedScreen, option = Router.NavOption.CLEAR) },
                     )
                 )
-                if (ClientFlags.value.tasks && permissions[EntityType.TASK] != null) add(
-                    NavigationItem(
-                        selected = state.selected == NavigationRoute.TASK,
-                        text = "task",
-                        icon = Icons.Filled.Task,
-                        onClick = { router.navigate(screen = Screen.TaskList, option = Router.NavOption.CLEAR) },
+                addAll(elements = systemItems)
+            } else featureItems + buildList {
+                systemItems.firstOrNull()?.let { first ->
+                    add(
+                        NavigationItem(
+                            text = "system",
+                            icon = Icons.Filled.Tune,
+                            onClick = first.onClick,
+                        )
                     )
-                )
-                if (ClientFlags.value.users && permissions[EntityType.USER] != null) add(
-                    NavigationItem(
-                        selected = state.selected == NavigationRoute.USER,
-                        text = "user",
-                        icon = Icons.Filled.AccountCircle,
-                        onClick = { router.navigate(screen = Screen.UserList, option = Router.NavOption.CLEAR) },
-                    )
-                )
-                if (ClientFlags.value.registries && permissions[EntityType.REGISTRY] != null) add(
-                    NavigationItem(
-                        selected = state.selected == NavigationRoute.REGISTRY,
-                        text = "registry",
-                        icon = Icons.Filled.AppRegistration,
-                        onClick = { router.navigate(screen = Screen.RegistryList, option = Router.NavOption.CLEAR) },
-                    )
-                )
-                if (listOf(
-                        EntityType.CLIENT_FLAG,
-                        EntityType.CLIENT_CONFIG,
-                        EntityType.SERVER_FLAG,
-                        EntityType.SERVER_CONFIG
-                    ).any { permissions[it] != null }
-                ) add(
-                    NavigationItem(
-                        selected = state.selected == NavigationRoute.CONFIG,
-                        text = "config",
-                        icon = Icons.Filled.Settings,
-                        onClick = { router.navigate(screen = Screen.Configs, option = Router.NavOption.CLEAR) },
-                    )
-                )
-                if (ClientFlags.value.notifications && permissions[EntityType.NOTIFICATION] != null) add(
-                    NavigationItem(
-                        selected = state.selected == NavigationRoute.NOTIFICATION,
-                        text = "push",
-                        icon = Icons.Filled.Notifications,
-                        onClick = { router.navigate(screen = Screen.Push, option = Router.NavOption.CLEAR) },
-                    )
-                )
-                if (ClientFlags.value.locationCapture && permissions[EntityType.DEVICE_LOCATION] != null) add(
-                    NavigationItem(
-                        selected = state.selected == NavigationRoute.DEVICE_LOCATION,
-                        text = "device_location",
-                        icon = Icons.Filled.GpsFixed,
-                        onClick = { router.navigate(screen = Screen.DeviceLocation, option = Router.NavOption.CLEAR) },
-                    )
-                )
-                if (ClientFlags.value.nfc && permissions[EntityType.NFC] != null) add(
-                    NavigationItem(
-                        selected = state.selected == NavigationRoute.NFC,
-                        text = "nfc",
-                        icon = Icons.Filled.Nfc,
-                        onClick = { router.navigate(screen = Screen.NFC, option = Router.NavOption.CLEAR) },
-                    )
-                )
-                if (ClientFlags.value.camera) add(
-                    NavigationItem(
-                        selected = state.selected == NavigationRoute.CAMERA,
-                        text = "camera",
-                        icon = Icons.Filled.Camera,
-                        onClick = { router.navigate(screen = Screen.Camera, option = Router.NavOption.CLEAR) },
-                    )
-                )
-                if (ClientFlags.value.music) add(
-                    NavigationItem(
-                        selected = state.selected == NavigationRoute.AUDIO,
-                        text = "audio",
-                        icon = Icons.Filled.MusicNote,
-                        onClick = { router.navigate(screen = Screen.Audio, option = Router.NavOption.CLEAR) },
-                    )
-                )
-                if (ClientFlags.value.deviceFiles) add(
-                    NavigationItem(
-                        selected = state.selected == NavigationRoute.DEVICE_FILE,
-                        text = "device_file",
-                        icon = Icons.Filled.Folder,
-                        onClick = { router.navigate(screen = Screen.DeviceFiles, option = Router.NavOption.CLEAR) },
-                    )
-                )
-                if (permissions[EntityType.TRANSLATION] != null) add(
-                    NavigationItem(
-                        selected = state.selected == NavigationRoute.TRANSLATION,
-                        text = "translation",
-                        icon = Icons.Outlined.Translate,
-                        onClick = { router.navigate(screen = Screen.Translations, option = Router.NavOption.CLEAR) },
-                    )
-                )
+                }
                 if (ClientFlags.value.design) add(
                     NavigationItem(
                         text = "design",
@@ -161,7 +88,7 @@ class NavigationStore(
                         onClick = { router.navigate(screen = Screen.DesignComponents, option = Router.NavOption.CLEAR) },
                     )
                 )
-            }.toPersistentList()
+            }).toPersistentList()
 
             updateState { it.copy(items = items) }
         }
@@ -169,7 +96,127 @@ class NavigationStore(
         Telemetry.info(tag = TAG, message = "Setup complete")
     }
 
+    private fun getItems(permissions: Map<EntityType, Permission>): List<NavigationItem> = buildList {
+        if (ClientFlags.value.home) add(
+            NavigationItem(
+                selected = state.selected == NavigationRoute.HOME,
+                text = "home",
+                icon = Icons.Filled.Home,
+                onClick = { router.navigate(screen = Screen.Home, option = Router.NavOption.CLEAR) },
+            )
+        )
+        if (ClientFlags.value.tasks && permissions[EntityType.TASK] != null) add(
+            NavigationItem(
+                selected = state.selected == NavigationRoute.TASK,
+                text = "task",
+                icon = Icons.Filled.Task,
+                onClick = { router.navigate(screen = Screen.TaskList, option = Router.NavOption.CLEAR) },
+            )
+        )
+        if (ClientFlags.value.users && permissions[EntityType.USER] != null) add(
+            NavigationItem(
+                selected = state.selected == NavigationRoute.USER,
+                text = "user",
+                icon = Icons.Filled.AccountCircle,
+                onClick = { router.navigate(screen = Screen.UserList, option = Router.NavOption.CLEAR) },
+            )
+        )
+        if (ClientFlags.value.registries && permissions[EntityType.REGISTRY] != null) add(
+            NavigationItem(
+                selected = state.selected == NavigationRoute.REGISTRY,
+                text = "registry",
+                icon = Icons.Filled.AppRegistration,
+                onClick = { router.navigate(screen = Screen.RegistryList, option = Router.NavOption.CLEAR) },
+            )
+        )
+    }
+
+    private fun getSystemItems(permissions: Map<EntityType, Permission>): List<NavigationItem> = buildList {
+        if (listOf(
+                EntityType.CLIENT_FLAG,
+                EntityType.CLIENT_CONFIG,
+                EntityType.SERVER_FLAG,
+                EntityType.SERVER_CONFIG
+            ).any { permissions[it] != null }
+        ) add(
+            NavigationItem(
+                selected = state.selected == NavigationRoute.CONFIG,
+                text = "config",
+                icon = Icons.Filled.Settings,
+                onClick = { router.navigate(screen = Screen.Configs, option = Router.NavOption.CLEAR) },
+            )
+        )
+        if (ClientFlags.value.notifications && permissions[EntityType.NOTIFICATION] != null) add(
+            NavigationItem(
+                selected = state.selected == NavigationRoute.NOTIFICATION,
+                text = "push",
+                icon = Icons.Filled.Notifications,
+                onClick = { router.navigate(screen = Screen.Push, option = Router.NavOption.CLEAR) },
+            )
+        )
+        if (ClientFlags.value.locationCapture && permissions[EntityType.DEVICE_LOCATION] != null) add(
+            NavigationItem(
+                selected = state.selected == NavigationRoute.DEVICE_LOCATION,
+                text = "device_location",
+                icon = Icons.Filled.GpsFixed,
+                onClick = { router.navigate(screen = Screen.DeviceLocation, option = Router.NavOption.CLEAR) },
+            )
+        )
+        if (ClientFlags.value.nfc && permissions[EntityType.NFC] != null) add(
+            NavigationItem(
+                selected = state.selected == NavigationRoute.NFC,
+                text = "nfc",
+                icon = Icons.Filled.Nfc,
+                onClick = { router.navigate(screen = Screen.NFC, option = Router.NavOption.CLEAR) },
+            )
+        )
+        if (ClientFlags.value.camera) add(
+            NavigationItem(
+                selected = state.selected == NavigationRoute.CAMERA,
+                text = "camera",
+                icon = Icons.Filled.Camera,
+                onClick = { router.navigate(screen = Screen.Camera, option = Router.NavOption.CLEAR) },
+            )
+        )
+        if (ClientFlags.value.music) add(
+            NavigationItem(
+                selected = state.selected == NavigationRoute.AUDIO,
+                text = "audio",
+                icon = Icons.Filled.MusicNote,
+                onClick = { router.navigate(screen = Screen.Audio, option = Router.NavOption.CLEAR) },
+            )
+        )
+        if (ClientFlags.value.deviceFiles) add(
+            NavigationItem(
+                selected = state.selected == NavigationRoute.DEVICE_FILE,
+                text = "device_file",
+                icon = Icons.Filled.Folder,
+                onClick = { router.navigate(screen = Screen.DeviceFiles, option = Router.NavOption.CLEAR) },
+            )
+        )
+        if (permissions[EntityType.TRANSLATION] != null) add(
+            NavigationItem(
+                selected = state.selected == NavigationRoute.TRANSLATION,
+                text = "translation",
+                icon = Icons.Outlined.Translate,
+                onClick = { router.navigate(screen = Screen.Translations, option = Router.NavOption.CLEAR) },
+            )
+        )
+    }
+
     companion object {
         private const val TAG = "NavigationStore"
+
+        /** The routes shown in the system section. */
+        private val SYSTEM_ROUTES = setOf(
+            NavigationRoute.CONFIG,
+            NavigationRoute.NOTIFICATION,
+            NavigationRoute.DEVICE_LOCATION,
+            NavigationRoute.NFC,
+            NavigationRoute.CAMERA,
+            NavigationRoute.AUDIO,
+            NavigationRoute.DEVICE_FILE,
+            NavigationRoute.TRANSLATION,
+        )
     }
 }

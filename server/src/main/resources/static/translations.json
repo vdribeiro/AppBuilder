@@ -86,6 +86,16 @@
   },
   {
     "languageIso": "en",
+    "key": "system",
+    "value": "System"
+  },
+  {
+    "languageIso": "en",
+    "key": "app",
+    "value": "App"
+  },
+  {
+    "languageIso": "en",
     "key": "camera",
     "value": "Camera"
   },
