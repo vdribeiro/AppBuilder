@@ -14,10 +14,16 @@ sealed interface ActionBarAction {
     data object Add: ActionBarAction
     /** Start editing the current domain. */
     data object Edit: ActionBarAction
-    /** Save the current domain and stop editing it. */
+    /** Save the current domain, leaving whether to stop editing it to [SetEditing]. */
     data object Save: ActionBarAction
     /** Discard the edits to the current domain and stop editing it. */
     data object Cancel: ActionBarAction
+    /**
+     * Follows whether the current domain is being edited, as decided by its screen.
+     *
+     * @param editing Whether the current domain is being edited.
+     */
+    data class SetEditing(val editing: Boolean): ActionBarAction
     /** Delete the current domain. */
     data object Delete: ActionBarAction
     /** Restore the current domain. */

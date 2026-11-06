@@ -2,6 +2,7 @@ package com.app.builder.ui.component.actionbar
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
@@ -16,12 +17,14 @@ import com.app.builder.ui.store.previewStore
  * Renders a [TopActionBar] driven by [store], forwarding every user interaction back to it as an [ActionBarAction].
  *
  * @param store Store holding the [ActionBarState] to render and receiving the dispatched actions.
+ * @param editing Whether the screen is editing the current domain, which the store follows, or `null` when the screen does not edit.
  * @param deleted Whether the current domain is deleted, which hides the edit button and turns the delete toggle into restore, or `null` while it is unknown, which hides both.
  * @param deletable Whether the current domain can be deleted, which hides the delete toggle when `false` and the domain is not deleted.
  */
 @Composable
-fun ActionBar(store: Store<ActionBarState, ActionBarAction>, deleted: Boolean? = false, deletable: Boolean = true) {
+fun ActionBar(store: Store<ActionBarState, ActionBarAction>, editing: Boolean? = null, deleted: Boolean? = false, deletable: Boolean = true) {
     val state by store.stateFlow.collectAsStateWithLifecycle()
+    if (editing != null) LaunchedEffect(key1 = editing) { store.send(action = ActionBarAction.SetEditing(editing = editing)) }
     TopActionBar(
         modifier = Modifier
             .testTag(tag = "action_bar")

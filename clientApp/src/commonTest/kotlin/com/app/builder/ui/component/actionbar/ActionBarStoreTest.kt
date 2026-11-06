@@ -231,7 +231,7 @@ class ActionBarStoreTest: TestCase() {
         assertEquals(expected = 1, actual = restored)
     }
 
-    /** Verifies that edit switches to save and cancel, and that save and cancel switch back to add, edit and delete, invoking their callbacks. */
+    /** Verifies that edit switches to save and cancel, that save keeps editing until the screen stops it, and that cancel switches back to add, edit and delete, invoking their callbacks. */
     @Test
     fun editSaveAndCancel() = runUnitTest {
         val authenticationUseCases = authenticationUseCases()
@@ -263,8 +263,13 @@ class ActionBarStoreTest: TestCase() {
         assertFalse(actual = editing.showDelete)
 
         store.send(action = ActionBarAction.Save)
-        val saving = store.stateFlow.first { !it.editing }
+        testScheduler.advanceUntilIdle()
         assertEquals(expected = 1, actual = saved)
+        assertTrue(actual = store.state.editing)
+        assertTrue(actual = store.state.showSave)
+
+        store.send(action = ActionBarAction.SetEditing(editing = false))
+        val saving = store.stateFlow.first { !it.editing }
         assertTrue(actual = saving.showAdd)
         assertTrue(actual = saving.showEdit)
         assertFalse(actual = saving.showSave)
@@ -311,6 +316,31 @@ class ActionBarStoreTest: TestCase() {
         assertFalse(actual = state.showSave)
         assertFalse(actual = state.showCancel)
         assertEquals(expected = 1, actual = canceled)
+    }
+
+    /** Verifies that following the screen into edit mode shows no save or cancel button without edit permission. */
+    @Test
+    fun setEditingWithoutPermission() = runUnitTest {
+        val authenticationUseCases = authenticationUseCases()
+        authenticationUseCases.login(credentials = FakeData.credentials)
+        val store = ActionBarStore(
+            state = ActionBarState(),
+            router = router,
+            authenticationUseCases = authenticationUseCases,
+            entityType = EntityType.TASK,
+            onEditClick = {},
+            onSaveClick = {},
+            onCancelClick = {},
+        )
+        subscribe(store = store)
+        store.stateFlow.first { it.avatarName == FakeData.user.name }
+
+        store.send(action = ActionBarAction.SetEditing(editing = true))
+        testScheduler.advanceUntilIdle()
+
+        assertTrue(actual = store.state.editing)
+        assertFalse(actual = store.state.showSave)
+        assertFalse(actual = store.state.showCancel)
     }
 
     /** Verifies that the status flags follow the status use cases, and stay at their defaults without them. */

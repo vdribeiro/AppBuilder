@@ -32,7 +32,7 @@ import com.app.builder.ui.store.Store
  * @property editEntityTypes Further entities whose write permission also allows editing, while adding and deleting still need write permission on [entityType].
  * @property onAddClick Called when the add button is clicked.
  * @property onEditClick Called when the edit button is clicked.
- * @property onSaveClick Called when the save button is clicked.
+ * @property onSaveClick Called when the save button is clicked, after which the screen stops editing through [ActionBarAction.SetEditing].
  * @property onCancelClick Called when the cancel button is clicked, or when the write permission is lost while editing.
  * @property onDeleteClick Called when the delete toggle button is clicked on a domain that is not deleted.
  * @property onRestoreClick Called when the delete toggle button is clicked on a deleted domain.
@@ -65,6 +65,7 @@ class ActionBarStore(
             ActionBarAction.Edit -> edit()
             ActionBarAction.Save -> save()
             ActionBarAction.Cancel -> cancel()
+            is ActionBarAction.SetEditing -> updateState { it.withButtons(editing = action.editing) }
             ActionBarAction.Delete -> delete()
             ActionBarAction.Restore -> restore()
             ActionBarAction.Login -> router.navigate(screen = Screen.Login)
@@ -203,13 +204,12 @@ class ActionBarStore(
     }
 
     /**
-     * Calls the save callback and switches back to viewing.
+     * Calls the save callback, staying in edit mode until the screen reports through [ActionBarAction.SetEditing] that the save succeeded.
      *
      * @return The [Job] representing this execution.
      */
     private fun save(): Job = launch(id = "save") {
         onSaveClick?.invoke()
-        updateState { it.withButtons(editing = false) }
     }
 
     /**

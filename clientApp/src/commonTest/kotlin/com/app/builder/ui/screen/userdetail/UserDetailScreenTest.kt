@@ -200,7 +200,7 @@ class UserDetailScreenTest: TestCase() {
         onNodeWithTag(testTag = "action_delete").assertIsDisplayed()
     }
 
-    /** Verifies that a failed account update keeps editing, while the user edits are still saved. */
+    /** Verifies that a failed account update keeps editing, with the save and cancel buttons, while the user edits are still saved. */
     @Test
     fun saveUserOffline() = runUITest {
         val useCases = storedUserUseCases()
@@ -217,6 +217,9 @@ class UserDetailScreenTest: TestCase() {
 
         assertTrue(actual = store.state.editing)
         assertEquals(expected = FakeData.account.username, actual = useCases.accountUseCases.observeAccount(userUuid = FakeData.user.uuid).firstOrNull()?.username)
+        onNodeWithTag(testTag = "action_save").assertIsDisplayed()
+        onNodeWithTag(testTag = "action_cancel").assertIsDisplayed()
+        onNodeWithTag(testTag = "action_edit").assertDoesNotExist()
     }
 
     /** Verifies that cancel discards the user and account edits and goes back to viewing the stored ones. */

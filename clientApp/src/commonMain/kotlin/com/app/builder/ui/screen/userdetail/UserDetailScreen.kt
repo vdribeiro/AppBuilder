@@ -54,6 +54,7 @@ fun UserDetailScreen(
         topBar = {
             ActionBar(
                 store = actionBarStore,
+                editing = state.editing,
                 deleted = user?.let { it.deletedAt != null },
                 deletable = state.accountReadable && (savedAccount == null || savedAccount.deletedAt != null)
             )
