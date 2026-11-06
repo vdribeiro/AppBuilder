@@ -18,7 +18,6 @@ import com.app.builder.domain.PushPayload
 import com.app.builder.domain.RegistrationForm
 import com.app.builder.domain.Registry
 import com.app.builder.domain.Task
-import com.app.builder.domain.TaskUserAccess
 import com.app.builder.domain.Translation
 import com.app.builder.domain.User
 import com.app.builder.domain.UserCredentials
@@ -103,7 +102,6 @@ object FakeData {
                 EntityType.USER -> Permission.READ
                 EntityType.DEVICE_LOCATION -> Permission.WRITE
                 EntityType.TASK -> Permission.READ
-                EntityType.TASK_ACCESS -> null
             }?.let { type to it }
         }.toMap()
     )
@@ -191,14 +189,6 @@ object FakeData {
         title = "Task Title",
         description = "Task Description",
         state = Task.State.TODO
-    )
-
-    val taskAccess: TaskUserAccess = TaskUserAccess(
-        uuid = uuid(),
-        modifiedAt = now(),
-        deletedAt = null,
-        taskUuid = task.uuid,
-        userUuid = user.uuid
     )
 
     val deviceLocation: DeviceLocation = DeviceLocation(
