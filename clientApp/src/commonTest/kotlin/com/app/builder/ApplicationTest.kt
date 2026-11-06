@@ -5,8 +5,14 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNull
 import kotlin.test.assertSame
 import kotlin.test.assertTrue
+import kotlin.time.Duration.Companion.seconds
+import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeout
+import kotlinx.coroutines.withTimeoutOrNull
 import com.app.builder.Application.createDependency
 import com.app.builder.Dependency.getUserDependency
 import com.app.builder.data.database.NoOpSqlDriver
@@ -115,6 +121,21 @@ class ApplicationTest: TestCase() {
 
             assertSame(expected = dependency.get(), actual = Application.dependency.filterNotNull().first())
             assertNull(actual = Application.userDependency.value)
+        }
+    }
+
+    /** Verifies that a reset still completes when the coroutine that requested it is cancelled, as the screen that requests it is once the application stops. */
+    @Test
+    fun resetCompletesWhenCallerIsCancelled() = runUnitTest {
+        withApplication {
+            login()
+            Application.userDependency.filterNotNull().first()
+
+            coroutineScope { launch(start = CoroutineStart.UNDISPATCHED) { Application.reset() }.cancel() }
+
+            withTimeout(timeout = 10.seconds) { Application.userDependency.first { it == null } }
+            withTimeoutOrNull(timeout = 5.seconds) { Application.dependency.first { it == null } }
+            assertSame(expected = dependency.get(), actual = Application.dependency.filterNotNull().first())
         }
     }
 }

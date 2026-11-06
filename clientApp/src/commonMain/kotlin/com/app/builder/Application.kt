@@ -113,12 +113,12 @@ object Application {
     internal var appGraph: LazyData<Dependency.AppGraph> = LazyData { createDependency() }
 
     /** Resets the application. */
-    suspend fun reset() = withContext(context = Dispatcher.IO) {
+    suspend fun reset() = scope.launch(context = Dispatcher.IO) {
         Telemetry.info(tag = TAG, message = "Resetting application")
         stop()
         appGraph.get().reset()
         start()
-    }
+    }.join()
 
     /** Clears the application. */
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
