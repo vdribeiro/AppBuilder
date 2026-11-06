@@ -1,14 +1,11 @@
 package com.app.builder.ui.navigation.design
 
-import kotlinx.collections.immutable.persistentListOf
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.test.ComposeUiTest
 import com.app.builder.data.theme.CustomTheme
+import com.app.builder.test.FakeData
 import com.app.builder.test.TestCase
-import com.app.builder.ui.component.actionbar.ActionBarAction
-import com.app.builder.ui.component.actionbar.ActionBarState
-import com.app.builder.ui.component.navigation.NavigationRoute
-import com.app.builder.ui.component.navigation.NavigationState
+import com.app.builder.ui.component.session.SessionState
 import com.app.builder.ui.store.Store
 
 /** Base for the design screen tests, holding the stores and rendering helper they share. */
@@ -26,20 +23,8 @@ abstract class DesignScreenTestCase: TestCase() {
         }
     }
 
-    /** Action bar store holding a signed in user's avatar. */
-    protected val actionBarStore = Store<ActionBarState, ActionBarAction>(initialState = ActionBarState(avatarName = "Tails"))
-
-    /** Navigation store holding every design route. */
-    protected val navigationStore = Store<NavigationState, Unit>(
-        initialState = NavigationState(
-            routes = persistentListOf(
-                NavigationRoute.DESIGN_COMPONENTS,
-                NavigationRoute.DESIGN_COLORS,
-                NavigationRoute.DESIGN_SHAPES,
-                NavigationRoute.DESIGN_TYPOGRAPHY
-            )
-        )
-    )
+    /** Session store holding a signed in user, whose account opens the design routes. */
+    protected val sessionStore = Store<SessionState, Unit>(initialState = SessionState(loaded = true, user = FakeData.user, account = FakeData.account))
 
     /**
      * Renders showcase content with the test clock held still.

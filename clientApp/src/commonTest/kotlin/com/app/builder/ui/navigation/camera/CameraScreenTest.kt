@@ -17,10 +17,8 @@ import com.app.builder.core.platform.platform
 import com.app.builder.test.FakeData
 import com.app.builder.test.TestCase
 import com.app.builder.ui.LocalCamera
-import com.app.builder.ui.component.actionbar.ActionBarState
-import com.app.builder.ui.component.actionbar.ActionBarStore
-import com.app.builder.ui.component.navigation.NavigationState
-import com.app.builder.ui.component.navigation.NavigationStore
+import com.app.builder.ui.component.session.SessionState
+import com.app.builder.ui.component.session.SessionStore
 import com.app.builder.ui.permission.LocalPermissionManager
 import com.app.builder.ui.permission.Permission
 import com.app.builder.ui.permission.PermissionManager
@@ -61,8 +59,7 @@ class CameraScreenTest: TestCase() {
             .useCases
         authenticatedUseCases.authenticationUseCases.login(credentials = FakeData.adminCredentials)
 
-        val actionBarStore = ActionBarStore(state = ActionBarState(), router = router, authenticationUseCases = authenticatedUseCases.authenticationUseCases)
-        val navigationStore = NavigationStore(state = NavigationState(), authenticationUseCases = authenticatedUseCases.authenticationUseCases)
+        val sessionStore = SessionStore(state = SessionState(), authenticationUseCases = authenticatedUseCases.authenticationUseCases)
         val camera = FakeCamera()
 
         setUI {
@@ -70,7 +67,7 @@ class CameraScreenTest: TestCase() {
                 LocalCamera provides camera,
                 LocalPermissionManager provides GrantingPermissionManager(),
             ) {
-                CameraScreen(actionBarStore = actionBarStore, navigationStore = navigationStore)
+                CameraScreen(sessionStore = sessionStore)
             }
         }
 

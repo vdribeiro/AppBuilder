@@ -31,11 +31,11 @@ import com.app.builder.domain.UserCredentials
 import com.app.builder.domain.gateway.UseCases
 import com.app.builder.test.FakeData
 import com.app.builder.test.TestCase
-import com.app.builder.ui.component.actionbar.ActionBarState
-import com.app.builder.ui.component.actionbar.ActionBarStore
 import com.app.builder.ui.component.button.PermissionItem
-import com.app.builder.ui.component.navigation.NavigationState
-import com.app.builder.ui.component.navigation.NavigationStore
+import com.app.builder.ui.component.filters.FiltersState
+import com.app.builder.ui.component.filters.FiltersStore
+import com.app.builder.ui.component.session.SessionState
+import com.app.builder.ui.component.session.SessionStore
 import com.app.builder.ui.navigation.Router
 import com.app.builder.ui.navigation.Screen
 
@@ -58,14 +58,14 @@ class UserDetailScreenTest: TestCase() {
     }
 
     /**
-     * Renders the user detail screen of the user with [userUuid] with an action bar wired to every user detail action, as the user entry provider does.
+     * Renders the user detail screen of the user with [userUuid] with an action bar offering every user detail action, as the user entry provider does.
      *
      * @param useCases The use cases backing the stores.
      * @param userUuid The uuid of the user to display.
      * @param new Whether the user is new and not stored yet.
-     * @return The [UserDetailScreenStore] and the [ActionBarStore] rendered.
+     * @return The [UserDetailScreenStore] and the [SessionStore] rendered.
      */
-    private fun ComposeUiTest.setUserDetailScreen(useCases: UseCases, userUuid: String = FakeData.user.uuid.toString(), new: Boolean = false): Pair<UserDetailScreenStore, ActionBarStore> {
+    private fun ComposeUiTest.setUserDetailScreen(useCases: UseCases, userUuid: String = FakeData.user.uuid.toString(), new: Boolean = false): Pair<UserDetailScreenStore, SessionStore> {
         val store = UserDetailScreenStore(
             state = UserDetailScreenState(),
             router = router,
@@ -75,29 +75,17 @@ class UserDetailScreenTest: TestCase() {
             userUuid = userUuid,
             new = new
         )
-        val navigationStore = NavigationStore(state = NavigationState(), authenticationUseCases = useCases.authenticationUseCases)
-        val actionBarStore = ActionBarStore(
-            state = ActionBarState(editing = new),
-            router = router,
-            authenticationUseCases = useCases.authenticationUseCases,
-            entityType = EntityType.USER,
-            editEntityTypes = setOf(EntityType.ACCOUNT),
-            onEditClick = { store.send(action = UserDetailScreenAction.Edit) },
-            onSaveClick = { store.send(action = UserDetailScreenAction.Save) },
-            onCancelClick = { store.send(action = UserDetailScreenAction.Cancel) },
-            onDeleteClick = { store.send(action = UserDetailScreenAction.Delete) },
-            onRestoreClick = { store.send(action = UserDetailScreenAction.Restore) }
-        )
+        val sessionStore = SessionStore(state = SessionState(), authenticationUseCases = useCases.authenticationUseCases)
 
         setUI {
             UserDetailScreen(
-                actionBarStore = actionBarStore,
-                navigationStore = navigationStore,
+                sessionStore = sessionStore,
+                filtersStore = FiltersStore(state = FiltersState()),
                 store = store
             )
         }
 
-        return store to actionBarStore
+        return store to sessionStore
     }
 
     /** Verifies that a user with an active account is shown read only with its account, and can be edited but not deleted. */
@@ -122,9 +110,9 @@ class UserDetailScreenTest: TestCase() {
     /** Verifies that a user with only read permission views the user read only, without any of the edit buttons. */
     @Test
     fun readOnlyUser() = runUITest {
-        val (store, actionBarStore) = setUserDetailScreen(useCases = storedUserUseCases(credentials = FakeData.credentials))
+        val (store, sessionStore) = setUserDetailScreen(useCases = storedUserUseCases(credentials = FakeData.credentials))
 
-        waitUntil { store.state.user != null && store.state.accountReadable && actionBarStore.state.avatarName == FakeData.user.name }
+        waitUntil { store.state.user != null && store.state.accountReadable && sessionStore.state.user?.name == FakeData.user.name }
         assertFalse(actual = store.state.userWritable)
         assertFalse(actual = store.state.accountWritable)
         onNodeWithText(text = FakeData.user.name).assertIsNotEnabled()
@@ -398,9 +386,9 @@ class UserDetailScreenTest: TestCase() {
     /** Verifies that an invalid user uuid loads nothing. */
     @Test
     fun invalidUserUuid() = runUITest {
-        val (store, actionBarStore) = setUserDetailScreen(useCases = storedUserUseCases(), userUuid = "invalid")
+        val (store, sessionStore) = setUserDetailScreen(useCases = storedUserUseCases(), userUuid = "invalid")
 
-        waitUntil { actionBarStore.state.writable }
+        waitUntil { sessionStore.state.account != null }
         waitForIdle()
         assertEquals(expected = UserDetailScreenState(), actual = store.state)
         onNodeWithTag(testTag = "action_edit").assertDoesNotExist()

@@ -16,12 +16,10 @@ import com.app.builder.Dependency.getUserDependency
 import com.app.builder.core.config.ClientConfigs
 import com.app.builder.test.FakeData
 import com.app.builder.test.TestCase
-import com.app.builder.ui.component.actionbar.ActionBarState
-import com.app.builder.ui.component.actionbar.ActionBarStore
 import com.app.builder.ui.component.list.ConfigItem
 import com.app.builder.ui.component.list.ConfigValue
-import com.app.builder.ui.component.navigation.NavigationState
-import com.app.builder.ui.component.navigation.NavigationStore
+import com.app.builder.ui.component.session.SessionState
+import com.app.builder.ui.component.session.SessionStore
 
 class ConfigsScreenTest: TestCase() {
 
@@ -36,11 +34,10 @@ class ConfigsScreenTest: TestCase() {
             .useCases
         authenticatedUseCases.authenticationUseCases.login(credentials = FakeData.adminCredentials)
 
-        val navigationStore = NavigationStore(state = NavigationState(), authenticationUseCases = authenticatedUseCases.authenticationUseCases)
         val configScreenStore = ConfigScreenStore(state = ConfigScreenState(), configUseCases = authenticatedUseCases.configUseCases, authenticationUseCases = authenticatedUseCases.authenticationUseCases)
-        val actionBarStore = ActionBarStore(state = ActionBarState(), router = router, authenticationUseCases = authenticatedUseCases.authenticationUseCases)
+        val sessionStore = SessionStore(state = SessionState(), authenticationUseCases = authenticatedUseCases.authenticationUseCases)
 
-        setUI { ConfigsScreen(actionBarStore = actionBarStore, navigationStore = navigationStore, store = configScreenStore) }
+        setUI { ConfigsScreen(sessionStore = sessionStore, store = configScreenStore) }
 
         onNodeWithTag(testTag = "navigation_bar").assertIsDisplayed()
         onNode(matcher = isSelected() and hasText(text = "config")).assertIsDisplayed()
@@ -154,11 +151,10 @@ class ConfigsScreenTest: TestCase() {
             .useCases
         authenticatedUseCases.authenticationUseCases.login(credentials = FakeData.credentials)
 
-        val navigationStore = NavigationStore(state = NavigationState(), authenticationUseCases = authenticatedUseCases.authenticationUseCases)
         val configScreenStore = ConfigScreenStore(state = ConfigScreenState(), configUseCases = authenticatedUseCases.configUseCases, authenticationUseCases = authenticatedUseCases.authenticationUseCases)
-        val actionBarStore = ActionBarStore(state = ActionBarState(), router = router, authenticationUseCases = authenticatedUseCases.authenticationUseCases)
+        val sessionStore = SessionStore(state = SessionState(), authenticationUseCases = authenticatedUseCases.authenticationUseCases)
 
-        setUI { ConfigsScreen(actionBarStore = actionBarStore, navigationStore = navigationStore, store = configScreenStore) }
+        setUI { ConfigsScreen(sessionStore = sessionStore, store = configScreenStore) }
 
         waitUntil { configScreenStore.state.sections.isNotEmpty() }
 

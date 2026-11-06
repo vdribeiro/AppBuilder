@@ -19,10 +19,8 @@ import com.app.builder.domain.UserCredentials
 import com.app.builder.test.FakeData
 import com.app.builder.test.TestCase
 import com.app.builder.ui.LocalNfcController
-import com.app.builder.ui.component.actionbar.ActionBarState
-import com.app.builder.ui.component.actionbar.ActionBarStore
-import com.app.builder.ui.component.navigation.NavigationState
-import com.app.builder.ui.component.navigation.NavigationStore
+import com.app.builder.ui.component.session.SessionState
+import com.app.builder.ui.component.session.SessionStore
 
 /**
  * Reports the given availability and records what it is asked to write, without reaching any platform NFC API.
@@ -53,13 +51,12 @@ class NfcScreenTest: TestCase() {
             .authenticationUseCases
         authenticationUseCases.login(credentials = credentials)
 
-        val actionBarStore = ActionBarStore(state = ActionBarState(), router = router, authenticationUseCases = authenticationUseCases)
-        val navigationStore = NavigationStore(state = NavigationState(), authenticationUseCases = authenticationUseCases)
+        val sessionStore = SessionStore(state = SessionState(), authenticationUseCases = authenticationUseCases)
         val store = NfcScreenStore(state = NfcScreenState(), authenticationUseCases = authenticationUseCases)
 
         setUI {
             CompositionLocalProvider(LocalNfcController provides nfcController) {
-                NfcScreen(actionBarStore = actionBarStore, navigationStore = navigationStore, store = store)
+                NfcScreen(sessionStore = sessionStore, store = store)
             }
         }
     }

@@ -18,7 +18,7 @@ class DesignShapesScreenTest: DesignScreenTestCase() {
     @Test
     fun designShapesSection() = runUITest {
         val store = RecordingStore()
-        setShowcase { DesignShapesScreen(actionBarStore = actionBarStore, navigationStore = navigationStore, store = store) }
+        setShowcase { DesignShapesScreen(sessionStore = sessionStore, store = store) }
         waitForIdle()
 
         onNodeWithText(text = "Extra small (4dp)").assertIsDisplayed()
@@ -28,7 +28,7 @@ class DesignShapesScreenTest: DesignScreenTestCase() {
     @Test
     fun designShapesApplyRadius() = runUITest {
         val store = RecordingStore()
-        setShowcase { DesignShapesScreen(actionBarStore = actionBarStore, navigationStore = navigationStore, store = store) }
+        setShowcase { DesignShapesScreen(sessionStore = sessionStore, store = store) }
         waitForIdle()
 
         onNodeWithTag(testTag = "shape_swatch_${ShapeRole.MEDIUM.name}").performClick()
@@ -52,7 +52,7 @@ class DesignShapesScreenTest: DesignScreenTestCase() {
     fun designShapesResetRadius() = runUITest {
         ThemeCache.setShape(role = ShapeRole.MEDIUM.name, radius = 0f)
         val store = RecordingStore()
-        setShowcase { DesignShapesScreen(actionBarStore = actionBarStore, navigationStore = navigationStore, store = store) }
+        setShowcase { DesignShapesScreen(sessionStore = sessionStore, store = store) }
         waitForIdle()
 
         onNodeWithTag(testTag = "shape_swatch_${ShapeRole.MEDIUM.name}").performClick()

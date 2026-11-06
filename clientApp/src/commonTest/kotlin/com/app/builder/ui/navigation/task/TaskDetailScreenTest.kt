@@ -23,16 +23,15 @@ import androidx.compose.ui.test.performTextReplacement
 import com.app.builder.Dependency.getUserDependency
 import com.app.builder.core.locale.now
 import com.app.builder.core.security.uuid
-import com.app.builder.domain.EntityType
 import com.app.builder.domain.Task
 import com.app.builder.domain.UserCredentials
 import com.app.builder.domain.gateway.UseCases
 import com.app.builder.test.FakeData
 import com.app.builder.test.TestCase
-import com.app.builder.ui.component.actionbar.ActionBarState
-import com.app.builder.ui.component.actionbar.ActionBarStore
-import com.app.builder.ui.component.navigation.NavigationState
-import com.app.builder.ui.component.navigation.NavigationStore
+import com.app.builder.ui.component.filters.FiltersState
+import com.app.builder.ui.component.filters.FiltersStore
+import com.app.builder.ui.component.session.SessionState
+import com.app.builder.ui.component.session.SessionStore
 import com.app.builder.ui.navigation.Router
 import com.app.builder.ui.navigation.Screen
 
@@ -55,37 +54,26 @@ class TaskDetailScreenTest: TestCase() {
     }
 
     /**
-     * Renders the task detail screen of the task with [taskUuid] with an action bar wired to every task detail action, as the task entry provider does.
+     * Renders the task detail screen of the task with [taskUuid] with an action bar offering every task detail action, as the task entry provider does.
      *
      * @param useCases The use cases backing the stores.
      * @param taskUuid The uuid of the task to display.
      * @param new Whether the task is new and not stored yet.
-     * @return The [TaskDetailScreenStore] and the [ActionBarStore] rendered.
+     * @return The [TaskDetailScreenStore] and the [SessionStore] rendered.
      */
-    private fun ComposeUiTest.setTaskDetailScreen(useCases: UseCases, taskUuid: Uuid = FakeData.task.uuid, new: Boolean = false): Pair<TaskDetailScreenStore, ActionBarStore> {
+    private fun ComposeUiTest.setTaskDetailScreen(useCases: UseCases, taskUuid: Uuid = FakeData.task.uuid, new: Boolean = false): Pair<TaskDetailScreenStore, SessionStore> {
         val store = TaskDetailScreenStore(state = TaskDetailScreenState(), router = router, taskUseCases = useCases.taskUseCases, taskUuid = taskUuid.toString(), new = new)
-        val navigationStore = NavigationStore(state = NavigationState(), authenticationUseCases = useCases.authenticationUseCases)
-        val actionBarStore = ActionBarStore(
-            state = ActionBarState(editing = new),
-            router = router,
-            authenticationUseCases = useCases.authenticationUseCases,
-            entityType = EntityType.TASK,
-            onEditClick = { store.send(action = TaskDetailScreenAction.Edit) },
-            onSaveClick = { store.send(action = TaskDetailScreenAction.Save) },
-            onCancelClick = { store.send(action = TaskDetailScreenAction.Cancel) },
-            onDeleteClick = { store.send(action = TaskDetailScreenAction.Delete) },
-            onRestoreClick = { store.send(action = TaskDetailScreenAction.Restore) }
-        )
+        val sessionStore = SessionStore(state = SessionState(), authenticationUseCases = useCases.authenticationUseCases)
 
         setUI {
             TaskDetailScreen(
-                actionBarStore = actionBarStore,
+                sessionStore = sessionStore,
+                filtersStore = FiltersStore(state = FiltersState()),
                 store = store,
-                navigationStore = navigationStore
             )
         }
 
-        return store to actionBarStore
+        return store to sessionStore
     }
 
     /** Verifies that the task detail screen displays the title and description of the loaded task. */
@@ -94,14 +82,13 @@ class TaskDetailScreenTest: TestCase() {
         val useCases = storedTaskUseCases()
 
         val store = TaskDetailScreenStore(state = TaskDetailScreenState(), router = router, taskUseCases = useCases.taskUseCases, taskUuid = FakeData.task.uuid.toString())
-        val navigationStore = NavigationStore(state = NavigationState(), authenticationUseCases = useCases.authenticationUseCases)
-        val actionBarStore = ActionBarStore(state = ActionBarState(), router = router, authenticationUseCases = useCases.authenticationUseCases)
+        val sessionStore = SessionStore(state = SessionState(), authenticationUseCases = useCases.authenticationUseCases)
 
         setUI {
             TaskDetailScreen(
-                actionBarStore = actionBarStore,
+                sessionStore = sessionStore,
+                filtersStore = FiltersStore(state = FiltersState()),
                 store = store,
-                navigationStore = navigationStore
             )
         }
 
@@ -116,8 +103,6 @@ class TaskDetailScreenTest: TestCase() {
         onNodeWithText(text = FakeData.task.title).assertIsDisplayed()
         onNodeWithText(text = "task_description").assertIsDisplayed()
         onNodeWithText(text = FakeData.task.description).assertIsDisplayed()
-        onNodeWithTag(testTag = "action_edit").assertDoesNotExist()
-        onNodeWithTag(testTag = "action_delete").assertDoesNotExist()
     }
 
     /** Verifies that a user with write permission views the task read only, with the edit and delete buttons available. */
@@ -138,9 +123,9 @@ class TaskDetailScreenTest: TestCase() {
     /** Verifies that a user with only read permission views the task read only, without any of the edit buttons. */
     @Test
     fun readOnlyTask() = runUITest {
-        val (store, actionBarStore) = setTaskDetailScreen(useCases = storedTaskUseCases(credentials = FakeData.credentials))
+        val (store, sessionStore) = setTaskDetailScreen(useCases = storedTaskUseCases(credentials = FakeData.credentials))
 
-        waitUntil { store.state.task != null && actionBarStore.state.avatarName == FakeData.user.name }
+        waitUntil { store.state.task != null && sessionStore.state.user?.name == FakeData.user.name }
         onNodeWithText(text = FakeData.task.title).assertIsNotEnabled()
         onNodeWithText(text = FakeData.task.description).assertIsNotEnabled()
         onNodeWithTag(testTag = "action_edit").assertDoesNotExist()
@@ -275,9 +260,9 @@ class TaskDetailScreenTest: TestCase() {
     @Test
     fun missingTask() = runUITest {
         val useCases = storedTaskUseCases()
-        val (store, actionBarStore) = setTaskDetailScreen(useCases = useCases, taskUuid = uuid())
+        val (store, sessionStore) = setTaskDetailScreen(useCases = useCases, taskUuid = uuid())
 
-        waitUntil { actionBarStore.state.writable }
+        waitUntil { sessionStore.state.account != null }
         waitForIdle()
         assertNull(actual = store.state.task)
         onNodeWithTag(testTag = "action_edit").assertDoesNotExist()

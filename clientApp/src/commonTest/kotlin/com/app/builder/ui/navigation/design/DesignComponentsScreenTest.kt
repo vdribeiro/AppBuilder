@@ -32,7 +32,7 @@ class DesignComponentsScreenTest: DesignScreenTestCase() {
     /** Verifies that the design screens show the action bar and the design section of the navigation bar, with every design route and the app item. */
     @Test
     fun designNavigationItems() = runUITest {
-        setShowcase { DesignComponentsScreen(actionBarStore = actionBarStore, navigationStore = navigationStore) }
+        setShowcase { DesignComponentsScreen(sessionStore = sessionStore) }
         waitForIdle()
 
         onNodeWithTag(testTag = "action_bar").assertIsDisplayed()
@@ -46,7 +46,7 @@ class DesignComponentsScreenTest: DesignScreenTestCase() {
     /** Verifies that selecting another design route in the navigation bar opens its screen. */
     @Test
     fun designNavigationSectionClick() = runUITest {
-        setShowcase { DesignComponentsScreen(actionBarStore = actionBarStore, navigationStore = navigationStore) }
+        setShowcase { DesignComponentsScreen(sessionStore = sessionStore) }
         waitForIdle()
 
         onNodeWithText(text = "design_colors").performClick()
@@ -58,7 +58,7 @@ class DesignComponentsScreenTest: DesignScreenTestCase() {
     /** Verifies that the navigation bar's app item leaves the design section. */
     @Test
     fun designNavigationAppClick() = runUITest {
-        setShowcase { DesignComponentsScreen(actionBarStore = actionBarStore, navigationStore = navigationStore) }
+        setShowcase { DesignComponentsScreen(sessionStore = sessionStore) }
         waitForIdle()
 
         onNodeWithText(text = "app").performClick()

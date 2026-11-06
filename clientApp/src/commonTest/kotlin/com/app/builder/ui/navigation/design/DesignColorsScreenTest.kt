@@ -20,7 +20,7 @@ class DesignColorsScreenTest: DesignScreenTestCase() {
     @Test
     fun designColorsSection() = runUITest {
         val store = RecordingStore()
-        setShowcase { DesignColorsScreen(actionBarStore = actionBarStore, navigationStore = navigationStore, store = store) }
+        setShowcase { DesignColorsScreen(sessionStore = sessionStore, store = store) }
         waitForIdle()
 
         onNodeWithText(text = "Primary").assertIsDisplayed()
@@ -30,7 +30,7 @@ class DesignColorsScreenTest: DesignScreenTestCase() {
     @Test
     fun designColorsThemeMode() = runUITest {
         val store = RecordingStore()
-        setShowcase { DesignColorsScreen(actionBarStore = actionBarStore, navigationStore = navigationStore, store = store) }
+        setShowcase { DesignColorsScreen(sessionStore = sessionStore, store = store) }
         waitForIdle()
 
         onNodeWithText(text = "Dark").performClick()
@@ -46,7 +46,7 @@ class DesignColorsScreenTest: DesignScreenTestCase() {
     fun designColorsApplyDarkColor() = runUITest {
         ThemeCache.setMode(mode = ThemeMode.DARK)
         val store = RecordingStore()
-        setShowcase { DesignColorsScreen(actionBarStore = actionBarStore, navigationStore = navigationStore, store = store) }
+        setShowcase { DesignColorsScreen(sessionStore = sessionStore, store = store) }
         waitForIdle()
 
         onNodeWithTag(testTag = "color_swatch_${ColorRole.PRIMARY.name}").performClick()
@@ -64,7 +64,7 @@ class DesignColorsScreenTest: DesignScreenTestCase() {
     fun designColorsApplyColor() = runUITest {
         ThemeCache.setMode(mode = ThemeMode.LIGHT)
         val store = RecordingStore()
-        setShowcase { DesignColorsScreen(actionBarStore = actionBarStore, navigationStore = navigationStore, store = store) }
+        setShowcase { DesignColorsScreen(sessionStore = sessionStore, store = store) }
         waitForIdle()
 
         onNodeWithTag(testTag = "color_swatch_${ColorRole.PRIMARY.name}").performClick()
@@ -86,7 +86,7 @@ class DesignColorsScreenTest: DesignScreenTestCase() {
     @Test
     fun designColorsInvalidHex() = runUITest {
         val store = RecordingStore()
-        setShowcase { DesignColorsScreen(actionBarStore = actionBarStore, navigationStore = navigationStore, store = store) }
+        setShowcase { DesignColorsScreen(sessionStore = sessionStore, store = store) }
         waitForIdle()
 
         onNodeWithTag(testTag = "color_swatch_${ColorRole.PRIMARY.name}").performClick()
@@ -103,7 +103,7 @@ class DesignColorsScreenTest: DesignScreenTestCase() {
         ThemeCache.setMode(mode = ThemeMode.LIGHT)
         ThemeCache.setColor(dark = false, role = ColorRole.PRIMARY.name, hex = "#FF0000")
         val store = RecordingStore()
-        setShowcase { DesignColorsScreen(actionBarStore = actionBarStore, navigationStore = navigationStore, store = store) }
+        setShowcase { DesignColorsScreen(sessionStore = sessionStore, store = store) }
         waitForIdle()
 
         onNodeWithTag(testTag = "color_swatch_${ColorRole.PRIMARY.name}").performClick()

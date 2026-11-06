@@ -11,10 +11,8 @@ import androidx.compose.ui.test.onNodeWithText
 import com.app.builder.data.storage.AppFile
 import com.app.builder.test.FakeData
 import com.app.builder.test.TestCase
-import com.app.builder.ui.component.actionbar.ActionBarState
-import com.app.builder.ui.component.actionbar.ActionBarStore
-import com.app.builder.ui.component.navigation.NavigationState
-import com.app.builder.ui.component.navigation.NavigationStore
+import com.app.builder.ui.component.session.SessionState
+import com.app.builder.ui.component.session.SessionStore
 
 class DeviceFilesScreenTest: TestCase() {
 
@@ -27,11 +25,10 @@ class DeviceFilesScreenTest: TestCase() {
             .authenticationUseCases
         AppFile.TaskPreferences.save { AppFile.ActionBarData(search = "query") }
 
-        val actionBarStore = ActionBarStore(state = ActionBarState(), router = router, authenticationUseCases = authenticationUseCases)
-        val navigationStore = NavigationStore(state = NavigationState(), authenticationUseCases = authenticationUseCases)
+        val sessionStore = SessionStore(state = SessionState(), authenticationUseCases = authenticationUseCases)
         val store = DeviceFilesScreenStore(state = DeviceFilesScreenState())
 
-        setUI { DeviceFilesScreen(actionBarStore = actionBarStore, navigationStore = navigationStore, store = store) }
+        setUI { DeviceFilesScreen(sessionStore = sessionStore, store = store) }
 
         onNodeWithTag(testTag = "action_bar").assertIsDisplayed()
 
@@ -49,11 +46,10 @@ class DeviceFilesScreenTest: TestCase() {
             .useCases
             .authenticationUseCases
 
-        val actionBarStore = ActionBarStore(state = ActionBarState(), router = router, authenticationUseCases = authenticationUseCases)
-        val navigationStore = NavigationStore(state = NavigationState(), authenticationUseCases = authenticationUseCases)
+        val sessionStore = SessionStore(state = SessionState(), authenticationUseCases = authenticationUseCases)
         val store = DeviceFilesScreenStore(state = DeviceFilesScreenState())
 
-        setUI { DeviceFilesScreen(actionBarStore = actionBarStore, navigationStore = navigationStore, store = store) }
+        setUI { DeviceFilesScreen(sessionStore = sessionStore, store = store) }
         assertNull(actual = store.state.message)
 
         store.send(action = DeviceFilesScreenAction.OpenFile(path = "${FakeData.task.uuid}.missing"))

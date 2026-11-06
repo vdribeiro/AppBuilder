@@ -13,10 +13,8 @@ import com.app.builder.core.media.AudioPlayer
 import com.app.builder.test.FakeData
 import com.app.builder.test.TestCase
 import com.app.builder.ui.LocalAudioPlayer
-import com.app.builder.ui.component.actionbar.ActionBarState
-import com.app.builder.ui.component.actionbar.ActionBarStore
-import com.app.builder.ui.component.navigation.NavigationState
-import com.app.builder.ui.component.navigation.NavigationStore
+import com.app.builder.ui.component.session.SessionState
+import com.app.builder.ui.component.session.SessionStore
 
 /** Reports itself as available so the screen renders its controls, without reaching any platform media API. */
 private class FakeAudioPlayer: AudioPlayer() {
@@ -33,13 +31,12 @@ class AudioScreenTest: TestCase() {
             .useCases
         authenticatedUseCases.authenticationUseCases.login(credentials = FakeData.adminCredentials)
 
-        val actionBarStore = ActionBarStore(state = ActionBarState(), router = router, authenticationUseCases = authenticatedUseCases.authenticationUseCases)
-        val navigationStore = NavigationStore(state = NavigationState(), authenticationUseCases = authenticatedUseCases.authenticationUseCases)
+        val sessionStore = SessionStore(state = SessionState(), authenticationUseCases = authenticatedUseCases.authenticationUseCases)
         val audioPlayer = FakeAudioPlayer()
 
         setUI {
             CompositionLocalProvider(LocalAudioPlayer provides audioPlayer) {
-                AudioScreen(actionBarStore = actionBarStore, navigationStore = navigationStore)
+                AudioScreen(sessionStore = sessionStore)
             }
         }
 

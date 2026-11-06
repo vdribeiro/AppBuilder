@@ -9,7 +9,7 @@ class DesignTypographyScreenTest: DesignScreenTestCase() {
     /** Verifies that the typography section displays the text style scale. */
     @Test
     fun designTypographySection() = runUITest {
-        setShowcase { DesignTypographyScreen(actionBarStore = actionBarStore, navigationStore = navigationStore) }
+        setShowcase { DesignTypographyScreen(sessionStore = sessionStore) }
         waitForIdle()
 
         onNodeWithText(text = "Display large").assertIsDisplayed()

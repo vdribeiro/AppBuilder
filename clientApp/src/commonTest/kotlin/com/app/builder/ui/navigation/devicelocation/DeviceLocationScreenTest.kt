@@ -13,10 +13,8 @@ import com.app.builder.Dependency.getUserDependency
 import com.app.builder.core.devicelocation.DeviceLocationProvider
 import com.app.builder.test.FakeData
 import com.app.builder.test.TestCase
-import com.app.builder.ui.component.actionbar.ActionBarState
-import com.app.builder.ui.component.actionbar.ActionBarStore
-import com.app.builder.ui.component.navigation.NavigationState
-import com.app.builder.ui.component.navigation.NavigationStore
+import com.app.builder.ui.component.session.SessionState
+import com.app.builder.ui.component.session.SessionStore
 import com.app.builder.ui.devicelocation.LocalDeviceLocationProvider
 
 /** Counts the platform stop requests, without reaching any platform location API. */
@@ -39,13 +37,12 @@ class DeviceLocationScreenTest: TestCase() {
             .useCases
         authenticatedUseCases.authenticationUseCases.login(credentials = FakeData.adminCredentials)
 
-        val actionBarStore = ActionBarStore(state = ActionBarState(), router = router, authenticationUseCases = authenticatedUseCases.authenticationUseCases)
-        val navigationStore = NavigationStore(state = NavigationState(), authenticationUseCases = authenticatedUseCases.authenticationUseCases)
+        val sessionStore = SessionStore(state = SessionState(), authenticationUseCases = authenticatedUseCases.authenticationUseCases)
         val deviceLocationProvider = FakeDeviceLocationProvider()
 
         setUI {
             CompositionLocalProvider(LocalDeviceLocationProvider provides deviceLocationProvider) {
-                DeviceLocationScreen(actionBarStore = actionBarStore, navigationStore = navigationStore)
+                DeviceLocationScreen(sessionStore = sessionStore)
             }
         }
 

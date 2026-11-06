@@ -9,10 +9,8 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import com.app.builder.test.FakeData
 import com.app.builder.test.TestCase
-import com.app.builder.ui.component.actionbar.ActionBarState
-import com.app.builder.ui.component.actionbar.ActionBarStore
-import com.app.builder.ui.component.navigation.NavigationState
-import com.app.builder.ui.component.navigation.NavigationStore
+import com.app.builder.ui.component.session.SessionState
+import com.app.builder.ui.component.session.SessionStore
 import com.app.builder.ui.navigation.Screen
 
 class HomeScreenTest: TestCase() {
@@ -25,10 +23,9 @@ class HomeScreenTest: TestCase() {
             .useCases
             .authenticationUseCases
 
-        val actionBarStore = ActionBarStore(state = ActionBarState(), router = router, authenticationUseCases = authenticationUseCases)
-        val navigationStore = NavigationStore(state = NavigationState(), authenticationUseCases = authenticationUseCases)
+        val sessionStore = SessionStore(state = SessionState(), authenticationUseCases = authenticationUseCases)
 
-        setUI { HomeScreen(actionBarStore = actionBarStore, navigationStore = navigationStore) }
+        setUI { HomeScreen(sessionStore = sessionStore) }
 
         onNodeWithTag(testTag = "action_bar").assertIsDisplayed()
         onNodeWithText(text = "Home").assertIsDisplayed()
@@ -47,12 +44,11 @@ class HomeScreenTest: TestCase() {
             .authenticationUseCases
         authenticationUseCases.login(credentials = FakeData.adminCredentials)
 
-        val actionBarStore = ActionBarStore(state = ActionBarState(), router = router, authenticationUseCases = authenticationUseCases)
-        val navigationStore = NavigationStore(state = NavigationState(), authenticationUseCases = authenticationUseCases)
+        val sessionStore = SessionStore(state = SessionState(), authenticationUseCases = authenticationUseCases)
 
-        setUI { HomeScreen(actionBarStore = actionBarStore, navigationStore = navigationStore) }
+        setUI { HomeScreen(sessionStore = sessionStore) }
 
-        waitUntil { !actionBarStore.state.showLogin }
+        waitUntil { sessionStore.state.user != null }
         onNodeWithTag(testTag = "action_login").assertDoesNotExist()
 
         onNodeWithTag(testTag = "action_avatar").assertIsDisplayed().performClick()
