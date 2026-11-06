@@ -25,7 +25,7 @@ class UserProfileScreenTest: TestCase() {
             .useCases
             .authenticationUseCases
 
-        val navigationStore = NavigationStore(state = NavigationState(), router = router, authenticationUseCases = authenticationUseCases)
+        val navigationStore = NavigationStore(state = NavigationState(), authenticationUseCases = authenticationUseCases)
         val store = UserProfileScreenStore(state = UserProfileScreenState(guest = false), authenticationUseCases = authenticationUseCases)
 
         setUI { UserProfileScreen(navigationStore = navigationStore, store = store) }
@@ -51,7 +51,7 @@ class UserProfileScreenTest: TestCase() {
             .authenticationUseCases
         authenticationUseCases.login(credentials = FakeData.adminCredentials)
 
-        val navigationStore = NavigationStore(state = NavigationState(), router = router, authenticationUseCases = authenticationUseCases)
+        val navigationStore = NavigationStore(state = NavigationState(), authenticationUseCases = authenticationUseCases)
         val store = UserProfileScreenStore(state = UserProfileScreenState(), authenticationUseCases = authenticationUseCases)
 
         setUI { UserProfileScreen(navigationStore = navigationStore, store = store) }

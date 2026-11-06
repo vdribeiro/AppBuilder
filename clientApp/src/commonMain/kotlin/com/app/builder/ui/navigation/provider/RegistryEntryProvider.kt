@@ -12,9 +12,7 @@ import com.app.builder.domain.gateway.UseCases
 import com.app.builder.ui.LocalSplitScreen
 import com.app.builder.ui.component.actionbar.ActionBarState
 import com.app.builder.ui.component.actionbar.ActionBarStore
-import com.app.builder.ui.component.navigation.NavigationRoute
 import com.app.builder.ui.component.navigation.NavigationState
-import com.app.builder.ui.component.navigation.NavigationStore
 import com.app.builder.ui.navigation.LocalRouter
 import com.app.builder.ui.navigation.Router
 import com.app.builder.ui.navigation.Screen
@@ -25,19 +23,21 @@ import com.app.builder.ui.screen.registrydetail.RegistryDetailScreenStore
 import com.app.builder.ui.screen.registrylist.RegistryListScreen
 import com.app.builder.ui.screen.registrylist.RegistryListScreenState
 import com.app.builder.ui.screen.registrylist.RegistryListScreenStore
+import com.app.builder.ui.store.Store
 
 /**
  * The registry routes.
  *
  * @param useCases The use cases.
+ * @param navigationStore The navigation bar store shared by every screen.
  */
-fun EntryProviderScope<NavKey>.registryProvider(useCases: UseCases) {
+fun EntryProviderScope<NavKey>.registryProvider(useCases: UseCases, navigationStore: Store<NavigationState, Unit>) {
     entry<Screen.RegistryList>(metadata = split()) {
         val router = LocalRouter.current
         val store = viewModel { RegistryListScreenStore(router = router, state = RegistryListScreenState(), registryUseCases = useCases.registryUseCases) }
         RegistryListScreen(
             actionBarStore = viewModel { getActionBarStore(router = router, useCases = useCases) },
-            navigationStore = viewModel { NavigationStore(state = NavigationState(selected = NavigationRoute.REGISTRY), router = router, authenticationUseCases = useCases.authenticationUseCases) },
+            navigationStore = navigationStore,
             store = store
         )
     }
@@ -47,7 +47,7 @@ fun EntryProviderScope<NavKey>.registryProvider(useCases: UseCases) {
         val store = viewModel { RegistryDetailScreenStore(state = RegistryDetailScreenState(), registryUseCases = useCases.registryUseCases, registryUuid = it.uuid) }
         RegistryDetailScreen(
             actionBarStore = viewModel { getActionBarStore(router = router, useCases = useCases, showFilters = splitScreen) },
-            navigationStore = viewModel { NavigationStore(state = NavigationState(selected = NavigationRoute.REGISTRY), router = router, authenticationUseCases = useCases.authenticationUseCases) },
+            navigationStore = navigationStore,
             store = store
         )
     }
@@ -80,6 +80,7 @@ private val actionBarState = ActionBarState(
  *
  * @param router The router.
  * @param useCases The use cases.
+ * @param navigationStore The navigation bar store shared by every screen.
  * @param showFilters true to show the filters button, false otherwise.
  * @return The action bar store.
  */

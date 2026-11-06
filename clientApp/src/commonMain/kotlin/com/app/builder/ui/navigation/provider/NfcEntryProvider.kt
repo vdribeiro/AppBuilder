@@ -6,26 +6,26 @@ import androidx.navigation3.runtime.NavKey
 import com.app.builder.domain.gateway.UseCases
 import com.app.builder.ui.component.actionbar.ActionBarState
 import com.app.builder.ui.component.actionbar.ActionBarStore
-import com.app.builder.ui.component.navigation.NavigationRoute
 import com.app.builder.ui.component.navigation.NavigationState
-import com.app.builder.ui.component.navigation.NavigationStore
 import com.app.builder.ui.navigation.LocalRouter
 import com.app.builder.ui.navigation.Screen
 import com.app.builder.ui.screen.nfc.NfcScreen
 import com.app.builder.ui.screen.nfc.NfcScreenState
 import com.app.builder.ui.screen.nfc.NfcScreenStore
+import com.app.builder.ui.store.Store
 
 /**
  * The nfc routes.
  *
  * @param useCases The use cases.
+ * @param navigationStore The navigation bar store shared by every screen.
  */
-fun EntryProviderScope<NavKey>.nfcProvider(useCases: UseCases) {
+fun EntryProviderScope<NavKey>.nfcProvider(useCases: UseCases, navigationStore: Store<NavigationState, Unit>) {
     entry<Screen.NFC> {
         val router = LocalRouter.current
         NfcScreen(
             actionBarStore = viewModel { ActionBarStore(state = ActionBarState(), router = router, authenticationUseCases = useCases.authenticationUseCases, statusUseCases = useCases.statusUseCases) },
-            navigationStore = viewModel { NavigationStore(state = NavigationState(selected = NavigationRoute.NFC), router = router, authenticationUseCases = useCases.authenticationUseCases) },
+            navigationStore = navigationStore,
             store = viewModel { NfcScreenStore(state = NfcScreenState(), authenticationUseCases = useCases.authenticationUseCases) },
         )
     }

@@ -11,21 +11,21 @@ import com.app.builder.domain.Translation
 import com.app.builder.domain.gateway.UseCases
 import com.app.builder.ui.component.actionbar.ActionBarState
 import com.app.builder.ui.component.actionbar.ActionBarStore
-import com.app.builder.ui.component.navigation.NavigationRoute
 import com.app.builder.ui.component.navigation.NavigationState
-import com.app.builder.ui.component.navigation.NavigationStore
 import com.app.builder.ui.navigation.LocalRouter
 import com.app.builder.ui.navigation.Screen
 import com.app.builder.ui.screen.translations.TranslationsScreen
 import com.app.builder.ui.screen.translations.TranslationsScreenState
 import com.app.builder.ui.screen.translations.TranslationsScreenStore
+import com.app.builder.ui.store.Store
 
 /**
  * The translations route.
  *
  * @param useCases The use cases.
+ * @param navigationStore The navigation bar store shared by every screen.
  */
-fun EntryProviderScope<NavKey>.translationsProvider(useCases: UseCases) {
+fun EntryProviderScope<NavKey>.translationsProvider(useCases: UseCases, navigationStore: Store<NavigationState, Unit>) {
     entry<Screen.Translations> {
         val router = LocalRouter.current
         TranslationsScreen(
@@ -40,7 +40,7 @@ fun EntryProviderScope<NavKey>.translationsProvider(useCases: UseCases) {
                     entityType = EntityType.TRANSLATION,
                 )
             },
-            navigationStore = viewModel { NavigationStore(state = NavigationState(selected = NavigationRoute.TRANSLATION), router = router, authenticationUseCases = useCases.authenticationUseCases) },
+            navigationStore = navigationStore,
             store = viewModel { TranslationsScreenStore(state = TranslationsScreenState(), translationUseCases = useCases.translationUseCases) },
         )
     }

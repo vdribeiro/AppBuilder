@@ -21,7 +21,6 @@ import com.app.builder.test.TestCase
 import com.app.builder.test.count
 import com.app.builder.ui.component.actionbar.ActionBarState
 import com.app.builder.ui.component.actionbar.ActionBarStore
-import com.app.builder.ui.component.navigation.NavigationRoute
 import com.app.builder.ui.component.navigation.NavigationState
 import com.app.builder.ui.component.navigation.NavigationStore
 import com.app.builder.ui.navigation.Router
@@ -38,7 +37,7 @@ class TaskListScreenTest: TestCase() {
         authenticatedUseCases.authenticationUseCases.login(credentials = FakeData.adminCredentials)
         authenticatedUseCases.taskUseCases.upsertTask(task = FakeData.task)
 
-        val navigationStore = NavigationStore(state = NavigationState(selected = NavigationRoute.TASK), router = router, authenticationUseCases = authenticatedUseCases.authenticationUseCases)
+        val navigationStore = NavigationStore(state = NavigationState(), authenticationUseCases = authenticatedUseCases.authenticationUseCases)
         // The list store only emits once TaskPreferences holds data, and it is the action bar store that seeds that file, so it has to be wired up as the provider does.
         val properties = Task.Property.entries.map { it.name }.toPersistentList()
         val defaults = AppFile.ActionBarData(
@@ -93,7 +92,7 @@ class TaskListScreenTest: TestCase() {
         authenticatedUseCases.taskUseCases.upsertTask(task = FakeData.task)
         authenticatedUseCases.taskUseCases.upsertTask(task = otherTask)
 
-        val navigationStore = NavigationStore(state = NavigationState(selected = NavigationRoute.TASK), router = router, authenticationUseCases = authenticatedUseCases.authenticationUseCases)
+        val navigationStore = NavigationStore(state = NavigationState(), authenticationUseCases = authenticatedUseCases.authenticationUseCases)
         // The list store only emits once TaskPreferences holds data, and it is the action bar store that seeds that file, so it has to be wired up as the provider does.
         val properties = Task.Property.entries.map { it.name }.toPersistentList()
         val defaults = AppFile.ActionBarData(
@@ -147,7 +146,7 @@ class TaskListScreenTest: TestCase() {
             .useCases
         authenticatedUseCases.authenticationUseCases.login(credentials = FakeData.adminCredentials)
 
-        val navigationStore = NavigationStore(state = NavigationState(selected = NavigationRoute.TASK), router = router, authenticationUseCases = authenticatedUseCases.authenticationUseCases)
+        val navigationStore = NavigationStore(state = NavigationState(), authenticationUseCases = authenticatedUseCases.authenticationUseCases)
         val properties = Task.Property.entries.map { it.name }.toPersistentList()
         val defaults = AppFile.ActionBarData(
             search = "",

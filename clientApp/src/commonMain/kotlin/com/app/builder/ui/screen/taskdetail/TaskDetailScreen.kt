@@ -14,6 +14,7 @@ import com.app.builder.ui.component.actionbar.ActionBarAction
 import com.app.builder.ui.component.actionbar.ActionBarState
 import com.app.builder.ui.component.card.TaskCard
 import com.app.builder.ui.component.navigation.Navigation
+import com.app.builder.ui.component.navigation.NavigationRoute
 import com.app.builder.ui.component.navigation.NavigationState
 import com.app.builder.ui.navigation.LocalRouter
 import com.app.builder.ui.screen.Screen
@@ -41,7 +42,7 @@ fun TaskDetailScreen(
     Screen(
         onBackClick = { router.back() },
         topBar = { ActionBar(store = actionBarStore, editing = state.editing, deleted = task?.let { it.deletedAt != null }) },
-        bottomBar = { Navigation(store = navigationStore) },
+        bottomBar = { Navigation(store = navigationStore, selected = NavigationRoute.TASK) },
     ) {
         TaskCard(
             enabled = task != null && state.editing,

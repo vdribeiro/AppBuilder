@@ -21,7 +21,6 @@ import com.app.builder.test.TestCase
 import com.app.builder.ui.LocalNfcController
 import com.app.builder.ui.component.actionbar.ActionBarState
 import com.app.builder.ui.component.actionbar.ActionBarStore
-import com.app.builder.ui.component.navigation.NavigationRoute
 import com.app.builder.ui.component.navigation.NavigationState
 import com.app.builder.ui.component.navigation.NavigationStore
 
@@ -55,7 +54,7 @@ class NfcScreenTest: TestCase() {
         authenticationUseCases.login(credentials = credentials)
 
         val actionBarStore = ActionBarStore(state = ActionBarState(), router = router, authenticationUseCases = authenticationUseCases)
-        val navigationStore = NavigationStore(state = NavigationState(selected = NavigationRoute.NFC), router = router, authenticationUseCases = authenticationUseCases)
+        val navigationStore = NavigationStore(state = NavigationState(), authenticationUseCases = authenticationUseCases)
         val store = NfcScreenStore(state = NfcScreenState(), authenticationUseCases = authenticationUseCases)
 
         setUI {

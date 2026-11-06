@@ -34,7 +34,6 @@ import com.app.builder.test.TestCase
 import com.app.builder.ui.component.actionbar.ActionBarState
 import com.app.builder.ui.component.actionbar.ActionBarStore
 import com.app.builder.ui.component.button.PermissionItem
-import com.app.builder.ui.component.navigation.NavigationRoute
 import com.app.builder.ui.component.navigation.NavigationState
 import com.app.builder.ui.component.navigation.NavigationStore
 import com.app.builder.ui.navigation.Router
@@ -76,7 +75,7 @@ class UserDetailScreenTest: TestCase() {
             userUuid = userUuid,
             new = new
         )
-        val navigationStore = NavigationStore(state = NavigationState(selected = NavigationRoute.USER), router = router, authenticationUseCases = useCases.authenticationUseCases)
+        val navigationStore = NavigationStore(state = NavigationState(), authenticationUseCases = useCases.authenticationUseCases)
         val actionBarStore = ActionBarStore(
             state = ActionBarState(editing = new),
             router = router,

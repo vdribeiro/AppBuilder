@@ -21,6 +21,7 @@ import com.app.builder.ui.component.actionbar.ActionBarState
 import com.app.builder.ui.component.button.PermissionItem
 import com.app.builder.ui.component.card.UserCard
 import com.app.builder.ui.component.navigation.Navigation
+import com.app.builder.ui.component.navigation.NavigationRoute
 import com.app.builder.ui.component.navigation.NavigationState
 import com.app.builder.ui.core.image.Image
 import com.app.builder.ui.navigation.LocalRouter
@@ -59,7 +60,7 @@ fun UserDetailScreen(
                 deletable = state.accountReadable && (savedAccount == null || savedAccount.deletedAt != null)
             )
         },
-        bottomBar = { Navigation(store = navigationStore) },
+        bottomBar = { Navigation(store = navigationStore, selected = NavigationRoute.USER) },
     ) {
         UserCard(
             enabled = user != null && state.editing && state.userWritable,

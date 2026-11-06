@@ -11,6 +11,7 @@ import com.app.builder.ui.component.actionbar.ActionBarState
 import com.app.builder.ui.component.button.PushPayloadType
 import com.app.builder.ui.component.container.PushForm
 import com.app.builder.ui.component.navigation.Navigation
+import com.app.builder.ui.component.navigation.NavigationRoute
 import com.app.builder.ui.component.navigation.NavigationState
 import com.app.builder.ui.navigation.LocalRouter
 import com.app.builder.ui.navigation.Router
@@ -41,7 +42,7 @@ fun PushScreen(
     Screen(
         onBackClick = { router.navigate(screen = Screen.Home, option = Router.NavOption.CLEAR) },
         topBar = { ActionBar(store = actionBarStore) },
-        bottomBar = { Navigation(store = navigationStore) },
+        bottomBar = { Navigation(store = navigationStore, selected = NavigationRoute.NOTIFICATION) },
     ) {
         PushForm(
             type = state.type,

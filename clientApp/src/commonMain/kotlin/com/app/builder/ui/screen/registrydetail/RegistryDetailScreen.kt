@@ -16,6 +16,7 @@ import com.app.builder.ui.component.actionbar.ActionBarAction
 import com.app.builder.ui.component.actionbar.ActionBarState
 import com.app.builder.ui.component.card.RegistryCard
 import com.app.builder.ui.component.navigation.Navigation
+import com.app.builder.ui.component.navigation.NavigationRoute
 import com.app.builder.ui.component.navigation.NavigationState
 import com.app.builder.ui.navigation.LocalRouter
 import com.app.builder.ui.screen.Screen
@@ -43,7 +44,7 @@ fun RegistryDetailScreen(
     Screen(
         onBackClick = { router.back() },
         topBar = { ActionBar(store = actionBarStore) },
-        bottomBar = { Navigation(store = navigationStore) },
+        bottomBar = { Navigation(store = navigationStore, selected = NavigationRoute.REGISTRY) },
     ) {
         RegistryCard(
             requestUuid = registry?.requestUuid?.toString(),

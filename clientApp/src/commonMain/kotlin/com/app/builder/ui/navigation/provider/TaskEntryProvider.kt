@@ -13,9 +13,7 @@ import com.app.builder.domain.gateway.UseCases
 import com.app.builder.ui.LocalSplitScreen
 import com.app.builder.ui.component.actionbar.ActionBarState
 import com.app.builder.ui.component.actionbar.ActionBarStore
-import com.app.builder.ui.component.navigation.NavigationRoute
 import com.app.builder.ui.component.navigation.NavigationState
-import com.app.builder.ui.component.navigation.NavigationStore
 import com.app.builder.ui.navigation.LocalRouter
 import com.app.builder.ui.navigation.Router
 import com.app.builder.ui.navigation.Screen
@@ -27,19 +25,21 @@ import com.app.builder.ui.screen.taskdetail.TaskDetailScreenStore
 import com.app.builder.ui.screen.tasklist.TaskListScreen
 import com.app.builder.ui.screen.tasklist.TaskListScreenState
 import com.app.builder.ui.screen.tasklist.TaskListScreenStore
+import com.app.builder.ui.store.Store
 
 /**
  * The task routes.
  *
  * @param useCases The use cases.
+ * @param navigationStore The navigation bar store shared by every screen.
  */
-fun EntryProviderScope<NavKey>.taskProvider(useCases: UseCases) {
+fun EntryProviderScope<NavKey>.taskProvider(useCases: UseCases, navigationStore: Store<NavigationState, Unit>) {
     entry<Screen.TaskList>(metadata = split()) {
         val router = LocalRouter.current
         val store = viewModel { TaskListScreenStore(router = router, state = TaskListScreenState(), taskUseCases = useCases.taskUseCases) }
         TaskListScreen(
             actionBarStore = viewModel { getActionBarStore(router = router, useCases = useCases) },
-            navigationStore = viewModel { NavigationStore(state = NavigationState(selected = NavigationRoute.TASK), router = router, authenticationUseCases = useCases.authenticationUseCases) },
+            navigationStore = navigationStore,
             store = store
         )
     }
@@ -62,7 +62,7 @@ fun EntryProviderScope<NavKey>.taskProvider(useCases: UseCases) {
                     onRestoreClick = { store.send(action = TaskDetailScreenAction.Restore) },
                 )
             },
-            navigationStore = viewModel { NavigationStore(state = NavigationState(selected = NavigationRoute.TASK), router = router, authenticationUseCases = useCases.authenticationUseCases) },
+            navigationStore = navigationStore,
             store = store
         )
     }
@@ -94,6 +94,7 @@ private val actionBarState = ActionBarState(
  *
  * @param router The router.
  * @param useCases The use cases.
+ * @param navigationStore The navigation bar store shared by every screen.
  * @param showAdd true to show add button, false otherwise.
  * @param showFilters true to show the filters button, false otherwise.
  * @param editing true to start in edit mode, false to start in view mode.

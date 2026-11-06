@@ -13,6 +13,8 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.hasSetTextAction
+import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.isSelected
 import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
@@ -29,7 +31,6 @@ import com.app.builder.test.FakeData
 import com.app.builder.test.TestCase
 import com.app.builder.ui.component.actionbar.ActionBarState
 import com.app.builder.ui.component.actionbar.ActionBarStore
-import com.app.builder.ui.component.navigation.NavigationRoute
 import com.app.builder.ui.component.navigation.NavigationState
 import com.app.builder.ui.component.navigation.NavigationStore
 import com.app.builder.ui.navigation.Router
@@ -63,7 +64,7 @@ class TaskDetailScreenTest: TestCase() {
      */
     private fun ComposeUiTest.setTaskDetailScreen(useCases: UseCases, taskUuid: Uuid = FakeData.task.uuid, new: Boolean = false): Pair<TaskDetailScreenStore, ActionBarStore> {
         val store = TaskDetailScreenStore(state = TaskDetailScreenState(), router = router, taskUseCases = useCases.taskUseCases, taskUuid = taskUuid.toString(), new = new)
-        val navigationStore = NavigationStore(state = NavigationState(selected = NavigationRoute.TASK), router = router, authenticationUseCases = useCases.authenticationUseCases)
+        val navigationStore = NavigationStore(state = NavigationState(), authenticationUseCases = useCases.authenticationUseCases)
         val actionBarStore = ActionBarStore(
             state = ActionBarState(editing = new),
             router = router,
@@ -93,7 +94,7 @@ class TaskDetailScreenTest: TestCase() {
         val useCases = storedTaskUseCases()
 
         val store = TaskDetailScreenStore(state = TaskDetailScreenState(), router = router, taskUseCases = useCases.taskUseCases, taskUuid = FakeData.task.uuid.toString())
-        val navigationStore = NavigationStore(state = NavigationState(selected = NavigationRoute.TASK), router = router, authenticationUseCases = useCases.authenticationUseCases)
+        val navigationStore = NavigationStore(state = NavigationState(), authenticationUseCases = useCases.authenticationUseCases)
         val actionBarStore = ActionBarStore(state = ActionBarState(), router = router, authenticationUseCases = useCases.authenticationUseCases)
 
         setUI {
@@ -109,7 +110,7 @@ class TaskDetailScreenTest: TestCase() {
 
         onNodeWithTag(testTag = "action_bar").assertIsDisplayed()
         onNodeWithTag(testTag = "navigation_bar").assertIsDisplayed()
-        assertTrue(actual = navigationStore.state.items.first { it.text == "task" }.selected)
+        onNode(matcher = isSelected() and hasText(text = "task")).assertIsDisplayed()
 
         onNodeWithText(text = "task_title").assertIsDisplayed()
         onNodeWithText(text = FakeData.task.title).assertIsDisplayed()

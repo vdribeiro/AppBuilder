@@ -18,6 +18,7 @@ import com.app.builder.ui.component.actionbar.ActionBarState
 import com.app.builder.ui.component.list.TranslationItem
 import com.app.builder.ui.component.list.TranslationList
 import com.app.builder.ui.component.navigation.Navigation
+import com.app.builder.ui.component.navigation.NavigationRoute
 import com.app.builder.ui.component.navigation.NavigationState
 import com.app.builder.ui.core.navigation.Tab
 import com.app.builder.ui.core.navigation.Tabs
@@ -48,7 +49,7 @@ fun TranslationsScreen(
     Screen(
         onBackClick = { router.navigate(screen = Screen.Home, option = Router.NavOption.CLEAR) },
         topBar = { ActionBar(store = actionBarStore) },
-        bottomBar = { Navigation(store = navigationStore) },
+        bottomBar = { Navigation(store = navigationStore, selected = NavigationRoute.TRANSLATION) },
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
             if (state.languages.isNotEmpty()) {

@@ -3,8 +3,9 @@ package com.app.builder.ui.screen.push
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
-import kotlin.test.assertTrue
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.isSelected
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import com.app.builder.Dependency.getUserDependency
@@ -13,7 +14,6 @@ import com.app.builder.test.TestCase
 import com.app.builder.ui.component.actionbar.ActionBarState
 import com.app.builder.ui.component.actionbar.ActionBarStore
 import com.app.builder.ui.component.button.PushPayloadType
-import com.app.builder.ui.component.navigation.NavigationRoute
 import com.app.builder.ui.component.navigation.NavigationState
 import com.app.builder.ui.component.navigation.NavigationStore
 
@@ -27,7 +27,7 @@ class PushScreenTest: TestCase() {
             .useCases
         authenticatedUseCases.authenticationUseCases.login(credentials = FakeData.adminCredentials)
 
-        val navigationStore = NavigationStore(state = NavigationState(selected = NavigationRoute.NOTIFICATION), router = router, authenticationUseCases = authenticatedUseCases.authenticationUseCases)
+        val navigationStore = NavigationStore(state = NavigationState(), authenticationUseCases = authenticatedUseCases.authenticationUseCases)
         val pushScreenStore = PushScreenStore(state = PushScreenState(), pushUseCases = authenticatedUseCases.pushUseCases, userUseCases = authenticatedUseCases.userUseCases)
 
         val actionBarStore = ActionBarStore(state = ActionBarState(), router = router, authenticationUseCases = authenticatedUseCases.authenticationUseCases)
@@ -35,7 +35,7 @@ class PushScreenTest: TestCase() {
         setUI { PushScreen(actionBarStore = actionBarStore, navigationStore = navigationStore, store = pushScreenStore) }
 
         onNodeWithTag(testTag = "navigation_bar").assertIsDisplayed()
-        assertTrue(actual = navigationStore.state.items.first { it.text == "push" }.selected)
+        onNode(matcher = isSelected() and hasText(text = "push")).assertIsDisplayed()
         onNodeWithText(text = "push_field_type").assertIsDisplayed()
         onNodeWithText(text = "push_field_broadcast").assertIsDisplayed()
         onNodeWithText(text = "push_field_title").assertIsDisplayed()
