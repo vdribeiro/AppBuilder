@@ -26,6 +26,7 @@ import com.app.builder.domain.gateway.task.TaskRepository
 import com.app.builder.domain.gateway.task.TaskUseCases
 import com.app.builder.domain.gateway.translation.TranslationGateway
 import com.app.builder.domain.gateway.translation.TranslationRepository
+import com.app.builder.domain.gateway.translation.TranslationUseCases
 import com.app.builder.domain.gateway.user.UserGateway
 import com.app.builder.domain.gateway.user.UserRepository
 import com.app.builder.domain.gateway.user.UserUseCases
@@ -54,6 +55,7 @@ class Gateways(
         httpClient = httpClient,
         scheduler = scheduler
     )
+    override val translationUseCases: TranslationUseCases = translationGateway
     override val translationRepository: TranslationRepository = translationGateway
 
     private val pushGateway: PushGateway = PushGateway(

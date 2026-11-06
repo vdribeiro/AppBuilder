@@ -18,8 +18,9 @@ class AppFileTest: TestCase() {
         assertEquals(expected = "registry_preferences", actual = AppFile.RegistryPreferences.path)
         assertEquals(expected = "task_preferences", actual = AppFile.TaskPreferences.path)
         assertEquals(expected = "user_preferences", actual = AppFile.UserPreferences.path)
+        assertEquals(expected = "translation_preferences", actual = AppFile.TranslationPreferences.path)
         assertEquals(expected = "theme", actual = AppFile.Theme.path)
 
-        assertEquals(expected = 10, actual = AppFile.all.size)
+        assertEquals(expected = 11, actual = AppFile.all.size)
     }
 }

@@ -7,6 +7,7 @@ import com.app.builder.domain.gateway.push.PushUseCases
 import com.app.builder.domain.gateway.registry.RegistryUseCases
 import com.app.builder.domain.gateway.status.StatusUseCases
 import com.app.builder.domain.gateway.task.TaskUseCases
+import com.app.builder.domain.gateway.translation.TranslationUseCases
 import com.app.builder.domain.gateway.user.UserUseCases
 
 /** A central interface that groups together all the use cases of the application. */
@@ -27,4 +28,6 @@ interface UseCases {
     val accountUseCases: AccountUseCases
     /** The use cases for managing tasks. */
     val taskUseCases: TaskUseCases
+    /** The use cases for browsing translations. */
+    val translationUseCases: TranslationUseCases
 }

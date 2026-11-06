@@ -37,10 +37,19 @@ class TranslationGateway(
     private val database: AppDatabase,
     private val httpClient: HttpClient,
     private val scheduler: Scheduler
-): TranslationRepository {
+): TranslationRepository, TranslationUseCases {
 
     /** Query interface for the translations table. */
     private val translationDao = database.translationQueries
+
+    override fun observeLanguages(): Flow<List<String>> =
+        translationDao.getLanguages()
+            .asFlow { it }
+            .flowOn(context = Dispatcher.IO)
+            .catch {
+                Telemetry.error(tag = TAG, message = "Unable to observe languages", throwable = it)
+                emit(value = emptyList())
+            }
 
     override fun observeTranslations(languageIso: String): Flow<List<Translation>> =
         translationDao.getTranslations(languageIso = languageIso)

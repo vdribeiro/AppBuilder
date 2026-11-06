@@ -21,3 +21,8 @@ SELECT
     Translation.value
 FROM Translation
 WHERE Translation.languageIso = :languageIso;
+
+getLanguages:
+SELECT DISTINCT Translation.languageIso
+FROM Translation
+ORDER BY Translation.languageIso;

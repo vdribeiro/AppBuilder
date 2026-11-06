@@ -113,4 +113,26 @@ class TranslationGatewayTest: TestCase() {
         assertEquals(expected = listOf(element = stored), actual = translationRepository.observeTranslations(languageIso = DEFAULT_LANGUAGE).firstOrNull())
         assertNotNull(actual = jobDao.getJobsByState(states = Job.State.entries).awaitAsList().find { it.entityType == EntityType.TRANSLATION && it.type == Job.Type.GET })
     }
+
+    /** Verifies that the observed languages are the distinct languages holding translations, sorted alphabetically. */
+    @Test
+    fun observeLanguages() = runUnitTest {
+        val translationUseCases = dependency.get()
+            .userGraph
+            .useCases
+            .translationUseCases
+        val translationDao = dependency.get()
+            .database
+            .translationQueries
+
+        assertEquals(expected = emptyList(), actual = translationUseCases.observeLanguages().firstOrNull())
+
+        listOf(
+            Translation(languageIso = "pt", key = "yes", value = "Sim"),
+            Translation(languageIso = "en", key = "yes", value = "Yes"),
+            Translation(languageIso = "en", key = "no", value = "No"),
+        ).forEach { translationDao.upsertTranslation(Translation = it.toTranslationSchema()) }
+
+        assertEquals(expected = listOf("en", "pt"), actual = translationUseCases.observeLanguages().firstOrNull())
+    }
 }

@@ -14,4 +14,15 @@ data class Translation(
     val languageIso: String,
     val key: String,
     val value: String
-)
+) {
+    /**
+     * Enumerates the [Translation] fields that map to a localized display label.
+     *
+     * @property translationKey The [Translation.key] used to look up the localized label for this field.
+     */
+    @Serializable
+    enum class Property(val translationKey: String) {
+        KEY(translationKey = "translation_key"),
+        VALUE(translationKey = "translation_value")
+    }
+}

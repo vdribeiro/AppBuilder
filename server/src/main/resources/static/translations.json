@@ -46,6 +46,16 @@
   },
   {
     "languageIso": "en",
+    "key": "translation_key",
+    "value": "Key"
+  },
+  {
+    "languageIso": "en",
+    "key": "translation_value",
+    "value": "Value"
+  },
+  {
+    "languageIso": "en",
     "key": "user",
     "value": "User"
   },

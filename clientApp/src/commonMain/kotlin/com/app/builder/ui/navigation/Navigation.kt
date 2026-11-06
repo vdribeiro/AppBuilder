@@ -21,6 +21,7 @@ import com.app.builder.ui.navigation.provider.nfcProvider
 import com.app.builder.ui.navigation.provider.pushProvider
 import com.app.builder.ui.navigation.provider.registryProvider
 import com.app.builder.ui.navigation.provider.taskProvider
+import com.app.builder.ui.navigation.provider.translationsProvider
 import com.app.builder.ui.navigation.provider.userProfileProvider
 import com.app.builder.ui.navigation.provider.userProvider
 import com.app.builder.ui.screen.splash.SplashScreen
@@ -117,6 +118,7 @@ fun AuthenticatedNavigation(
             if (ClientFlags.value.notifications) pushProvider(useCases = useCases)
             if (ClientFlags.value.registries) registryProvider(useCases = useCases)
             if (ClientFlags.value.tasks) taskProvider(useCases = useCases)
+            translationsProvider(useCases = useCases)
         }
     )
 }

@@ -107,6 +107,11 @@ object AppFile {
         override val serializer: KSerializer<ActionBarData> = ActionBarData.serializer()
     }
 
+    /** Translation preferences. */
+    data object TranslationPreferences: StorageFile<ActionBarData>(path = "translation_preferences", encrypted = false) {
+        override val serializer: KSerializer<ActionBarData> = ActionBarData.serializer()
+    }
+
     /** Every file in this module. */
     val all: List<StorageFile<*>> = listOf(
         Theme,
@@ -119,5 +124,6 @@ object AppFile {
         RegistryPreferences,
         UserPreferences,
         TaskPreferences,
+        TranslationPreferences,
     )
 }
