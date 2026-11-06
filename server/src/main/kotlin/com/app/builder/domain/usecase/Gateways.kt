@@ -2,6 +2,8 @@ package com.app.builder.domain.usecase
 
 import org.jetbrains.exposed.v1.r2dbc.R2dbcDatabase
 import com.app.builder.data.signal.InstanceSignal
+import com.app.builder.domain.usecase.account.AccountGateway
+import com.app.builder.domain.usecase.account.AccountUseCases
 import com.app.builder.domain.usecase.authentication.AuthenticationGateway
 import com.app.builder.domain.usecase.authentication.AuthenticationUseCases
 import com.app.builder.domain.usecase.config.ConfigGateway
@@ -41,6 +43,7 @@ class Gateways(
     override val connectionUseCases: ConnectionUseCases = ConnectionGateway(database = database)
     override val notificationsUseCases: NotificationsUseCases = NotificationsGateway(database = database, instanceSignal = instanceSignal)
     override val userUseCases: UserUseCases = UserGateway(database = database)
+    override val accountUseCases: AccountUseCases = AccountGateway(database = database)
     override val deviceLocationUseCases: DeviceLocationUseCases = DeviceLocationGateway(database = database)
     override val taskUseCases: TaskUseCases = TaskGateway(database = database, notificationsUseCases = notificationsUseCases)
 }
