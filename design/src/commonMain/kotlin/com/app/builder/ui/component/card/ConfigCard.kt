@@ -31,6 +31,7 @@ import com.app.builder.ui.core.text.Text
  * @param description A human-readable explanation of what the entry controls.
  * @param value The current value.
  * @param pending Whether an edit to this entry is currently being persisted. Highlights the card and shows a small progress indicator while `true`.
+ * @param enabled Whether the user can edit the value.
  * @param onValueChange Callback invoked with the updated value when the user edits it.
  */
 @Composable
@@ -40,6 +41,7 @@ fun ConfigCardSwitch(
     description: String = "",
     value: Boolean = false,
     pending: Boolean = false,
+    enabled: Boolean = true,
     onValueChange: (Boolean) -> Unit = {},
 ) {
     val typography = LocalTypography.current
@@ -74,6 +76,7 @@ fun ConfigCardSwitch(
             }
             Switch(
                 checked = value,
+                enabled = enabled,
                 onCheckedChange = { onValueChange(it) }
             )
         }
@@ -88,6 +91,7 @@ fun ConfigCardSwitch(
  * @param description A human-readable explanation of what the entry controls.
  * @param value The current value.
  * @param pending Whether an edit to this entry is currently being persisted. Highlights the card and shows a small progress indicator while `true`.
+ * @param enabled Whether the user can edit the value.
  * @param onValueChange Callback invoked with the updated value when the user edits it.
  */
 @Composable
@@ -97,6 +101,7 @@ fun ConfigCardInput(
     description: String,
     value: String,
     pending: Boolean = false,
+    enabled: Boolean = true,
     onValueChange: (String) -> Unit = {},
 ) {
     val typography = LocalTypography.current
@@ -133,6 +138,7 @@ fun ConfigCardInput(
                 modifier = Modifier.width(width = 160.dp),
                 maxLines = 1,
                 value = value,
+                enabled = enabled,
                 onValueChange = { onValueChange(it) }
             )
         }

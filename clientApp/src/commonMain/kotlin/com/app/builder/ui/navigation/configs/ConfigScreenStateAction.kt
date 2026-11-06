@@ -30,7 +30,7 @@ sealed interface ConfigScreenAction {
 }
 
 /**
- * State for the config screen, holding every section the current user may browse, stacked as one scrollable page.
+ * State for the config screen, holding every section the current user may read, stacked as one scrollable page.
  *
  * @property sections Config sections currently displayed, in [ConfigType] order.
  */
@@ -43,11 +43,13 @@ data class ConfigScreenState(
  *
  * @property configType Which set of client or server flags/configs this section holds.
  * @property items Config entries of that type.
+ * @property editable Whether the current user has write permission on this config type.
  */
 @Stable
 data class ConfigSection(
     val configType: ConfigType,
-    val items: ImmutableList<ConfigItem> = persistentListOf()
+    val items: ImmutableList<ConfigItem> = persistentListOf(),
+    val editable: Boolean = false
 )
 
 /**

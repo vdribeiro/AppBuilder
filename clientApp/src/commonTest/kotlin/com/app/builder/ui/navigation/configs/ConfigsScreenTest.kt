@@ -5,9 +5,12 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 import androidx.compose.ui.test.ComposeUiTest
+import androidx.compose.ui.test.assertAll
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.isNotEnabled
 import androidx.compose.ui.test.isSelected
+import androidx.compose.ui.test.isToggleable
 import androidx.compose.ui.test.onNodeWithTag
 import com.app.builder.Dependency.getUserDependency
 import com.app.builder.core.config.ClientConfigs
@@ -143,7 +146,7 @@ class ConfigsScreenTest: TestCase() {
         assertEquals(expected = FakeData.clientConfigs, actual = ClientConfigs.value)
     }
 
-    /** Verifies that a user only gets the sections of the config types they hold a permission on. */
+    /** Verifies that a user only gets the sections they can read, and that read-only sections are disabled and ignore edits. */
     @Test
     fun configSectionsByPermission() = runUITest {
         val authenticatedUseCases = dependency.get()
@@ -160,5 +163,21 @@ class ConfigsScreenTest: TestCase() {
         waitUntil { configScreenStore.state.sections.isNotEmpty() }
 
         assertEquals(expected = listOf(ConfigType.CLIENT_FLAG, ConfigType.CLIENT_CONFIG), actual = configScreenStore.state.sections.map { it.configType })
+        assertTrue(actual = configScreenStore.state.sections.none { it.editable })
+        onAllNodes(matcher = isToggleable()).assertAll(matcher = isNotEnabled())
+
+        val item = configScreenStore.item(configType = ConfigType.CLIENT_FLAG, name = "http")
+        configScreenStore.send(action = ConfigScreenAction.UpdateValue(configType = ConfigType.CLIENT_FLAG, item = item, value = ConfigValue.Toggle(value = !FakeData.clientFlags.http)))
+        waitForIdle()
+
+        assertEquals(expected = item, actual = configScreenStore.item(configType = ConfigType.CLIENT_FLAG, name = "http"))
+    }
+
+    /** Verifies that an admin with write permission gets every section editable. */
+    @Test
+    fun configSectionsEditable() = runUITest {
+        val configScreenStore = setUpScreen()
+
+        assertTrue(actual = configScreenStore.state.sections.all { it.editable })
     }
 }

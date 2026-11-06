@@ -57,12 +57,14 @@ sealed interface ConfigValue {
  *
  * @param modifier The [Modifier] to be applied to the root layout.
  * @param items An [ImmutableList] of [ConfigItem]s.
+ * @param enabled Whether the user can edit the entries.
  * @param onValueChange Callback invoked with the edited item and value when the user makes a change.
  */
 @Composable
 fun ConfigList(
     modifier: Modifier = Modifier,
     items: ImmutableList<ConfigItem> = persistentListOf(),
+    enabled: Boolean = true,
     onValueChange: (ConfigItem, ConfigValue) -> Unit = { _, _ -> }
 ) {
     Column(
@@ -80,6 +82,7 @@ fun ConfigList(
                     description = item.description,
                     value = item.value.value,
                     pending = item.pending,
+                    enabled = enabled,
                     onValueChange = { onValueChange(item, ConfigValue.Toggle(value = it)) }
                 )
 
@@ -89,6 +92,7 @@ fun ConfigList(
                     description = item.description,
                     value = item.value.value,
                     pending = item.pending,
+                    enabled = enabled,
                     onValueChange = { onValueChange(item, ConfigValue.Form(value = it)) }
                 )
             }

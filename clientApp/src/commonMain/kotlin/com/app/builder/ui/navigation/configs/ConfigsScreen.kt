@@ -37,7 +37,7 @@ import com.app.builder.ui.store.Store
 import com.app.builder.ui.store.previewStore
 
 /**
- * The Config Screen, stacking the client and server flags and configs the current user may browse as one scrollable page, with a side navigation rail jumping to each section.
+ * The Config Screen, stacking the client and server flags and configs the current user may read as one scrollable page, with a side navigation rail jumping to each section.
  *
  * @param actionBarStore The store for action bar.
  * @param navigationStore The store driving the bottom navigation bar.
@@ -85,6 +85,7 @@ fun ConfigsScreen(
                         CategorySection(title = section.configType.text) {
                             ConfigList(
                                 items = section.items,
+                                enabled = section.editable,
                                 onValueChange = { item, value ->
                                     store.send(
                                         action = ConfigScreenAction.UpdateValue(
@@ -114,6 +115,7 @@ private fun ConfigsScreenPreview() = Preview {
                 sections = ConfigType.entries.map { configType ->
                     ConfigSection(
                         configType = configType,
+                        editable = true,
                         items = persistentListOf(
                             ConfigItem(
                                 name = "http",

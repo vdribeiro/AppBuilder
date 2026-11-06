@@ -17,6 +17,7 @@ import com.app.builder.core.config.ServerFlags
 import com.app.builder.core.telemetry.Telemetry
 import com.app.builder.data.serializer.decodeFromJson
 import com.app.builder.data.serializer.encodeToJson
+import com.app.builder.domain.Permission
 import com.app.builder.domain.gateway.authentication.AuthenticationUseCases
 import com.app.builder.domain.gateway.config.ConfigUseCases
 import com.app.builder.ui.component.list.ConfigItem
@@ -47,7 +48,7 @@ class ConfigScreenStore(
     }
 
     /**
-     * Observes the current user's permissions and loads one section per config type they are allowed to browse.
+     * Observes the current user's permissions and loads one section per config type they can read, editable only where they can write.
      *
      * @return The [Job] representing this execution.
      */
@@ -55,11 +56,17 @@ class ConfigScreenStore(
         Telemetry.info(tag = TAG, message = "Setup")
 
         authenticationUseCases.observeCurrentAccount().observe(id = "current_account") { account ->
-            val permissions = account?.permissions ?: return@observe
+            account ?: return@observe
 
             val sections = ConfigType.entries
-                .filter { permissions[it.entityType] != null }
-                .map { ConfigSection(configType = it, items = load(configType = it)) }
+                .filter { account.hasPermission(entityType = it.entityType, permission = Permission.READ) }
+                .map {
+                    ConfigSection(
+                        configType = it,
+                        items = load(configType = it),
+                        editable = account.hasPermission(entityType = it.entityType, permission = Permission.WRITE)
+                    )
+                }
                 .toPersistentList()
             updateState { it.copy(sections = sections) }
 
@@ -95,7 +102,7 @@ class ConfigScreenStore(
         val persistable = action.value !is ConfigValue.Form || action.value.value.toDoubleOrNull() != null
 
         val items = state.sections
-            .firstOrNull { it.configType == action.configType }
+            .firstOrNull { it.configType == action.configType && it.editable }
             ?.items
             ?.map {
                 if (it.uuid == action.item.uuid) it.copy(
@@ -104,7 +111,7 @@ class ConfigScreenStore(
                 ) else it
             }
             ?.toPersistentList()
-            ?: return@launch Telemetry.info(tag = TAG, message = "No ${action.configType} section to update")
+            ?: return@launch Telemetry.info(tag = TAG, message = "No editable ${action.configType} section to update")
         val pendingState = state.withItems(configType = action.configType, items = items)
         updateState { pendingState }
 
