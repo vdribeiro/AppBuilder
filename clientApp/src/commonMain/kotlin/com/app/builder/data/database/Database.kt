@@ -1,6 +1,7 @@
 package com.app.builder.data.database
 
 import kotlinx.coroutines.withContext
+import app.cash.sqldelight.db.SqlDriver
 import com.app.builder.core.flow.Dispatcher
 import com.app.builder.core.telemetry.Telemetry
 import database.Account
@@ -24,23 +25,18 @@ typealias DeviceLocationSchema = DeviceLocation
 typealias TaskSchema = Task
 
 /**
- * Clears all persisted records across all database tables.
- * Executes within an IO dispatcher and captures transaction failures gracefully.
+ * Drops every table in the database and creates them again from [AppDatabase.Schema], so a database left with an older schema is rebuilt too.
+ * Observers of the dropped tables are notified, so their queries run again against the new tables.
+ * Executes within an IO dispatcher and captures failures gracefully.
  */
-suspend fun AppDatabase.reset() = withContext(context = Dispatcher.IO) {
+suspend fun SqlDriver.reset() = withContext(context = Dispatcher.IO) {
     runCatching {
-        transaction {
-            jobQueries.truncateJob()
-            registryQueries.truncateRegistry()
-            translationQueries.truncateTranslation()
-            sessionQueries.truncateSession()
-            accountQueries.truncateAccount()
-            userQueries.truncateUser()
-            deviceLocationQueries.truncateDeviceLocation()
-            taskQueries.truncateTask()
-        }
+        val tables = getTableNames()
+        tables.forEach { execute(identifier = null, sql = "DROP TABLE IF EXISTS \"$it\"", parameters = 0).await() }
+        AppDatabase.Schema.create(driver = this@reset).await()
+        notifyListeners(queryKeys = tables.toTypedArray())
     }.onFailure {
-        Telemetry.error(tag = TAG, message = "Unable to clear database", throwable = it)
+        Telemetry.error(tag = TAG, message = "Unable to recreate database", throwable = it)
     }.getOrDefault(defaultValue = Unit)
 }
 

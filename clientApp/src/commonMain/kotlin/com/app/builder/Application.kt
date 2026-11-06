@@ -125,7 +125,7 @@ object Application {
     internal suspend fun Dependency.AppGraph.reset() {
         Dependency.getAll().forEach { it.stop() }
         Dependency.clearAll()
-        database.reset()
+        sqlDriver.reset()
         files.forEach { it.reset() }
         ClientFlags.reset()
         ClientConfigs.reset()

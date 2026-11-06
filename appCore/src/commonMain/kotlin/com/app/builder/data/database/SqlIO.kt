@@ -7,8 +7,12 @@ import kotlinx.coroutines.flow.map
 import app.cash.sqldelight.Query
 import app.cash.sqldelight.SuspendingTransacter
 import app.cash.sqldelight.SuspendingTransactionWithReturn
+import app.cash.sqldelight.async.coroutines.awaitAsList
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
+import app.cash.sqldelight.db.QueryResult
+import app.cash.sqldelight.db.SqlCursor
+import app.cash.sqldelight.db.SqlDriver
 import com.app.builder.core.flow.Dispatcher
 
 /**
@@ -41,3 +45,20 @@ fun <Entity: Any, Domain> Query<Entity>.asFlow(transform: (Entity) -> Domain): F
         .map { list -> list.map(transform = transform) }
         .distinctUntilChanged()
         .flowOn(context = Dispatcher.Default)
+
+/**
+ * Lists all tables in the database, except the internal ones.
+ *
+ * @return The table names.
+ */
+suspend fun SqlDriver.getTableNames(): List<String> = object: Query<String>(mapper = { it.getString(index = 0).orEmpty() }) {
+    override fun <R> execute(mapper: (SqlCursor) -> QueryResult<R>): QueryResult<R> = executeQuery(
+        identifier = null,
+        sql = "SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%'",
+        mapper = mapper,
+        parameters = 0
+    )
+
+    override fun addListener(listener: Listener) = Unit
+    override fun removeListener(listener: Listener) = Unit
+}.awaitAsList()
