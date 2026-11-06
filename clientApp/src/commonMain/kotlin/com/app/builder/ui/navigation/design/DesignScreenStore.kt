@@ -1,4 +1,4 @@
-package com.app.builder.ui.screen.design
+package com.app.builder.ui.navigation.design
 
 import kotlinx.coroutines.Job
 import com.app.builder.core.telemetry.Telemetry
@@ -8,7 +8,7 @@ import com.app.builder.data.theme.CustomTheme
 import com.app.builder.ui.store.Store
 
 /**
- * Store backing the design screen, persisting the theme customized in its showcases.
+ * Store backing the design colors and shapes screens, persisting the theme customized in their showcases.
  *
  * @property storageFile File the theme is persisted to.
  */

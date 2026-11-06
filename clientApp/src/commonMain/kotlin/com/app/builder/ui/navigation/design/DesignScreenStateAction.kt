@@ -1,4 +1,4 @@
-package com.app.builder.ui.screen.design
+package com.app.builder.ui.navigation.design
 
 import com.app.builder.data.theme.CustomTheme
 
