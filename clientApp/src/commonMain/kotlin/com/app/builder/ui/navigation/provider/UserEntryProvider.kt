@@ -46,7 +46,17 @@ fun EntryProviderScope<NavKey>.userProvider(useCases: UseCases) {
     entry<Screen.UserDetail>(metadata = split()) {
         val router = LocalRouter.current
         val splitScreen = LocalSplitScreen.current
-        val store = viewModel { UserDetailScreenStore(state = UserDetailScreenState(), router = router, userUseCases = useCases.userUseCases, authenticationUseCases = useCases.authenticationUseCases, userUuid = it.uuid, new = it.new) }
+        val store = viewModel {
+            UserDetailScreenStore(
+                state = UserDetailScreenState(),
+                router = router,
+                userUseCases = useCases.userUseCases,
+                accountUseCases = useCases.accountUseCases,
+                authenticationUseCases = useCases.authenticationUseCases,
+                userUuid = it.uuid,
+                new = it.new
+            )
+        }
         UserDetailScreen(
             actionBarStore = viewModel {
                 getActionBarStore(
@@ -55,6 +65,7 @@ fun EntryProviderScope<NavKey>.userProvider(useCases: UseCases) {
                     showAdd = splitScreen,
                     showFilters = splitScreen,
                     editing = it.new,
+                    editEntityTypes = setOf(EntityType.ACCOUNT),
                     onEditClick = { store.send(action = UserDetailScreenAction.Edit) },
                     onSaveClick = { store.send(action = UserDetailScreenAction.Save) },
                     onCancelClick = { store.send(action = UserDetailScreenAction.Cancel) },
@@ -97,6 +108,7 @@ private val actionBarState = ActionBarState(
  * @param showAdd true to show add button, false otherwise.
  * @param showFilters true to show the filters button, false otherwise.
  * @param editing true to start in edit mode, false to start in view mode.
+ * @param editEntityTypes Further entities whose write permission also allows editing a user.
  * @param onEditClick The edit click callback, or null to hide the edit action.
  * @param onSaveClick The save click callback, or null to hide the save action.
  * @param onCancelClick The cancel click callback, or null to hide the cancel action.
@@ -110,6 +122,7 @@ private fun getActionBarStore(
     showAdd: Boolean = true,
     showFilters: Boolean = true,
     editing: Boolean = false,
+    editEntityTypes: Set<EntityType> = emptySet(),
     onEditClick: (suspend () -> Unit)? = null,
     onSaveClick: (suspend () -> Unit)? = null,
     onCancelClick: (suspend () -> Unit)? = null,
@@ -123,6 +136,7 @@ private fun getActionBarStore(
     storageFile = AppFile.UserPreferences,
     defaults = defaults,
     entityType = EntityType.USER,
+    editEntityTypes = editEntityTypes,
     onAddClick = if (showAdd) {
         { router.navigate(screen = Screen.UserDetail(uuid = uuid().toString(), new = true), option = Router.NavOption.REPLACE_LAST) }
     } else null,

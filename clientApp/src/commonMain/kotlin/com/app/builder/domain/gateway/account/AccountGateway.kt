@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.withContext
 import io.ktor.client.HttpClient
+import io.ktor.http.HttpStatusCode
 import app.cash.sqldelight.async.coroutines.awaitAsOneOrNull
 import com.app.builder.core.flow.Dispatcher
 import com.app.builder.core.locale.now
@@ -21,6 +22,7 @@ import com.app.builder.data.http.HttpRequest
 import com.app.builder.data.http.HttpResult
 import com.app.builder.data.http.URL
 import com.app.builder.data.http.get
+import com.app.builder.data.http.plugin.UnsuccessfulStatusException
 import com.app.builder.data.http.post
 import com.app.builder.domain.Account
 import com.app.builder.domain.EntityType
@@ -159,6 +161,10 @@ class AccountGateway(
             uuid = entityUuid
         )) {
             is HttpResult.Error -> {
+                if ((result.error as? UnsuccessfulStatusException)?.status == HttpStatusCode.NotFound) {
+                    Telemetry.info(tag = TAG, message = "User $entityUuid has no account")
+                    return@withContext JobResult.Success
+                }
                 Telemetry.error(tag = TAG, message = "Unable to get the remote account of user $entityUuid", throwable = result.error)
                 result.error.toJobResult()
             }

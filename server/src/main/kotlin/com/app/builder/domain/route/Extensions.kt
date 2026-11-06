@@ -2,6 +2,7 @@ package com.app.builder.domain.route
 
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.uuid.Uuid
+import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.ApplicationCall
 import io.ktor.server.auth.jwt.JWTPrincipal
@@ -159,7 +160,7 @@ suspend fun ApplicationCall.getAccess(permissionService: PermissionService): Use
 /**
  * Checks if the user has the required [permission] for the [entityType], responding to the call when they do not.
  * Permissions are taken from [permissionService] so that changes apply before the access token expires, falling back to the token claim when the user is not cached.
- * A deleted account is also narrowed to draining what it already had: reads are refused outright, and a write is accepted only when the action predates the deletion.
+ * A deleted account is also narrowed to draining what it already had: `GET` calls are refused outright, and any other call is accepted only when the action predates the deletion, whichever [permission] it checks.
  *
  * @receiver [ApplicationCall] The context of the call.
  * @param permissionService The permission service.
@@ -182,7 +183,7 @@ suspend fun ApplicationCall.validatePermission(
     when {
         !granted -> false
         deletedAt == null -> true
-        permission != Permission.WRITE -> false
+        request.httpMethod == HttpMethod.Get -> false
         else -> getHeaderMap()[Header.RequestUtc.header]?.toInstant()?.let { it <= deletedAt } == true
     }.also {
         if (!it) respondSafely(status = HttpStatusCode.Forbidden, message = "Not authorized to $permission $entityType")

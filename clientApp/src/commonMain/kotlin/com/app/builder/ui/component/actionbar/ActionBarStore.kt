@@ -29,6 +29,7 @@ import com.app.builder.ui.store.Store
  * @property storageFile File the action bar data is persisted to, or `null` to keep it in memory only.
  * @property defaults Action bar data used when [storageFile] holds nothing yet.
  * @property entityType Entity the write permission is checked against, or `null` when the screen has no entity.
+ * @property editEntityTypes Further entities whose write permission also allows editing, while adding and deleting still need write permission on [entityType].
  * @property onAddClick Called when the add button is clicked.
  * @property onEditClick Called when the edit button is clicked.
  * @property onSaveClick Called when the save button is clicked.
@@ -44,6 +45,7 @@ class ActionBarStore(
     private val storageFile: StorageFile<AppFile.ActionBarData>? = null,
     private val defaults: AppFile.ActionBarData = AppFile.ActionBarData(),
     private val entityType: EntityType? = null,
+    private val editEntityTypes: Set<EntityType> = emptySet(),
     private val onAddClick: (suspend () -> Unit)? = null,
     private val onEditClick: (suspend () -> Unit)? = null,
     private val onSaveClick: (suspend () -> Unit)? = null,
@@ -102,16 +104,21 @@ class ActionBarStore(
                 null -> ImageResource.Kotlin.toImage()
                 else -> user.avatar?.let { avatar -> Image(url = avatar) }
             }
-            val write = entityType?.let { user?.hasPermission(entityType = it, permission = Permission.WRITE) } ?: false
-            val editingLost = state.editing && !write
-
             updateState {
                 it.copy(
                     avatarName = user?.name,
                     avatarImage = userImage,
                     showLogin = user == null,
-                ).withButtons(writable = write, editing = it.editing && write)
+                )
             }
+        }
+
+        authenticationUseCases.observeCurrentAccount().observe(id = "current_account") { account ->
+            val write = entityType?.let { account?.hasPermission(entityType = it, permission = Permission.WRITE) } ?: false
+            val edit = write || editEntityTypes.any { account?.hasPermission(entityType = it, permission = Permission.WRITE) == true }
+            val editingLost = state.editing && !edit
+
+            updateState { it.withButtons(writable = write, editable = edit, editing = it.editing && edit) }
             if (editingLost) onCancelClick?.invoke()
         }
 
@@ -157,20 +164,22 @@ class ActionBarStore(
     )
 
     /**
-     * Resolves which buttons are shown for the given write permission and mode.
+     * Resolves which buttons are shown for the given write permissions and mode.
      * Editing shows only save and cancel, viewing shows add, edit and delete.
      *
-     * @param writable Whether the current user has write permission on the entity.
+     * @param writable Whether the current user has write permission on the entity, needed to add and delete.
+     * @param editable Whether the current user has write permission on the entity or on any of [editEntityTypes], needed to edit.
      * @param editing Whether the current domain is being edited.
-     * @return This state with the permission, the mode and the buttons updated.
+     * @return This state with the permissions, the mode and the buttons updated.
      */
-    private fun ActionBarState.withButtons(writable: Boolean = this.writable, editing: Boolean = this.editing): ActionBarState = copy(
+    private fun ActionBarState.withButtons(writable: Boolean = this.writable, editable: Boolean = this.editable, editing: Boolean = this.editing): ActionBarState = copy(
         writable = writable,
+        editable = editable,
         editing = editing,
         showAdd = onAddClick != null && writable && !editing,
-        showEdit = onEditClick != null && writable && !editing,
-        showSave = onSaveClick != null && writable && editing,
-        showCancel = onCancelClick != null && writable && editing,
+        showEdit = onEditClick != null && editable && !editing,
+        showSave = onSaveClick != null && editable && editing,
+        showCancel = onCancelClick != null && editable && editing,
         showDelete = onDeleteClick != null && writable && !editing,
     )
 
