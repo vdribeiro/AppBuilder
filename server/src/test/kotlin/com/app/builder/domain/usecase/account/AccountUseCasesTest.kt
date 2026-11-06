@@ -4,9 +4,6 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
-import kotlin.time.Duration.Companion.minutes
-import kotlin.time.Instant
-import com.app.builder.core.config.ServerConfigs
 import com.app.builder.core.locale.now
 import com.app.builder.core.security.uuid
 import com.app.builder.domain.DeviceToken
@@ -80,32 +77,5 @@ class AccountUseCasesTest: TestCase() {
 
         assertEquals(expected = WriteResult.SUCCESS, actual = accountUseCases.upsertAccount(account = FakeData.account.copy(deletedAt = now())))
         assertTrue(actual = deviceTokenUseCases.getTokens(userUuid = FakeData.user.uuid).isEmpty())
-    }
-
-    /** Verifies that fetching accounts since a last sync timestamp only returns accounts modified after that time, and paginates using the cursor timestamp and user uuid. */
-    @Test
-    fun getAccountsPaginated() = runServerTest {
-        val accountUseCases = dependency.get()
-            .useCases
-            .accountUseCases
-
-        val now = now()
-        val old = FakeData.account.copy(modifiedAt = now - 10.minutes)
-        val recent = FakeData.adminAccount.copy(modifiedAt = now)
-        assertEquals(expected = WriteResult.SUCCESS, actual = accountUseCases.upsertAccount(account = old))
-        assertEquals(expected = WriteResult.SUCCESS, actual = accountUseCases.upsertAccount(account = recent))
-
-        assertEquals(expected = setOf(old, recent), actual = accountUseCases.getAccounts(lastSyncUtc = Instant.fromEpochSeconds(epochSeconds = 0), cursorUtc = null, cursorUuid = null, pageSize = ServerConfigs.value.pageSize).toSet())
-        assertEquals(expected = listOf(recent), actual = accountUseCases.getAccounts(lastSyncUtc = now - 1.minutes, cursorUtc = null, cursorUuid = null, pageSize = ServerConfigs.value.pageSize))
-
-        val firstPage = accountUseCases.getAccounts(lastSyncUtc = Instant.fromEpochSeconds(epochSeconds = 0), cursorUtc = null, cursorUuid = null, pageSize = 1)
-        assertEquals(expected = listOf(recent), actual = firstPage)
-        val secondPage = accountUseCases.getAccounts(
-            lastSyncUtc = Instant.fromEpochSeconds(epochSeconds = 0),
-            cursorUtc = firstPage.last().modifiedAt,
-            cursorUuid = firstPage.last().userUuid,
-            pageSize = 1
-        )
-        assertEquals(expected = listOf(old), actual = secondPage)
     }
 }

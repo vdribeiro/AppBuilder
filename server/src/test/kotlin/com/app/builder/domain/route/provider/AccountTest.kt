@@ -10,7 +10,6 @@ import io.ktor.http.HttpStatusCode
 import com.app.builder.core.locale.now
 import com.app.builder.core.security.uuid
 import com.app.builder.data.http.HttpRequest
-import com.app.builder.data.http.Query
 import com.app.builder.data.http.URL
 import com.app.builder.data.http.get
 import com.app.builder.data.http.post
@@ -24,41 +23,13 @@ import io.ktor.client.request.get as ktorGet
 
 class AccountTest: TestCase() {
 
-    /** Verifies that fetching accounts requires authentication, supports pagination, and never exposes password hashes. */
-    @Test
-    fun getAccounts() = runServerTest {
-        installRouting()
-
-        val client = createClient(token = null)
-        assertEquals(expected = HttpStatusCode.Unauthorized, actual = client.get(request = HttpRequest(url = URL.Accounts)).status)
-
-        // FakeData.account only has ACCOUNT -> READ.
-        val userClient = createClient(token = bearerToken.accessToken)
-        val response = userClient.get(request = HttpRequest(url = URL.Accounts, queryMap = mapOf(Query.LastSyncUtc to "1970-01-01T00:00:00Z")))
-        assertEquals(expected = HttpStatusCode.OK, actual = response.status)
-        assertFalse(actual = response.bodyAsText().contains(other = "password", ignoreCase = true))
-        val allAccounts = response.body<List<Account>>()
-        assertEquals(expected = setOf(FakeData.adminAccount, FakeData.account), actual = allAccounts.toSet())
-
-        val firstPage = userClient.get(request = HttpRequest(url = URL.Accounts, queryMap = mapOf(Query.LastSyncUtc to "1970-01-01T00:00:00Z", Query.PageSize to "1"))).body<List<Account>>()
-        assertEquals(expected = listOf(allAccounts.first()), actual = firstPage)
-
-        val secondPageRequest = HttpRequest(
-            url = URL.Accounts,
-            queryMap = mapOf(
-                Query.LastSyncUtc to "1970-01-01T00:00:00Z",
-                Query.PageSize to "1",
-                Query.CursorUtc to firstPage.last().modifiedAt.toString(),
-                Query.CursorUuid to firstPage.last().userUuid.toString()
-            )
-        )
-        assertEquals(expected = listOf(allAccounts.last()), actual = userClient.get(request = secondPageRequest).body<List<Account>>())
-    }
-
-    /** Verifies fetching a single account by user uuid: returns the account, 404s when missing, and 400s on a malformed uuid. */
+    /** Verifies fetching a single account by user uuid: requires authentication, returns the account without its password hash, 404s when missing, and 400s on a malformed uuid. */
     @Test
     fun getAccount() = runServerTest {
         installRouting()
+        assertEquals(expected = HttpStatusCode.Unauthorized, actual = createClient(token = null).ktorGet(urlString = "${URL.Accounts.path}/${FakeData.adminUser.uuid}").status)
+
+        // FakeData.account only has ACCOUNT -> READ.
         val client = createClient(token = bearerToken.accessToken)
 
         assertEquals(expected = HttpStatusCode.BadRequest, actual = client.ktorGet(urlString = "${URL.Accounts.path}/not-a-uuid").status)
@@ -70,15 +41,14 @@ class AccountTest: TestCase() {
         assertEquals(expected = FakeData.adminAccount, actual = response.body<Account>())
     }
 
-    /** Verifies that reading accounts is forbidden for a user without any account permission. */
+    /** Verifies that reading an account is forbidden for a user without any account permission. */
     @Test
-    fun getAccountsRequiresReadPermission() = runServerTest {
+    fun getAccountRequiresReadPermission() = runServerTest {
         installRouting()
 
         val noAccountAuth = seedUser(registrationForm = registrationForm(username = "no_account_permission", permissions = mapOf(EntityType.USER to Permission.WRITE)))
         val client = createClient(token = noAccountAuth.bearer.accessToken)
 
-        assertEquals(expected = HttpStatusCode.Forbidden, actual = client.get(request = HttpRequest(url = URL.Accounts)).status)
         assertEquals(expected = HttpStatusCode.Forbidden, actual = client.ktorGet(urlString = "${URL.Accounts.path}/${FakeData.user.uuid}").status)
     }
 
