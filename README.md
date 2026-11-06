@@ -299,7 +299,7 @@ flowchart LR
 ```
 
 The scheduler combines four streams. When a gate is closed it substitutes an empty list instead of stopping, so the loop stays subscribed and resumes the moment any source emits again.
-A database read failure also becomes an empty emission, so a transient storage error costs one idle tick rather than the scheduler.
+A database read failure also becomes an empty emission, and the scheduler resubscribes after `schedulerRetryDelay`, so a transient storage error pauses dispatch rather than stopping the scheduler.
 
 ### Clock Trust
 
@@ -508,7 +508,7 @@ Gate every new feature behind a flag, and give it the flag before its first scre
 
 1. **Components**: `ui/component/{component}` with `{Component}`, `{Component}StateAction` and `{Component}Store`.
 2. **Screen**: `ui/screen/{feature}` with `{Feature}Screen`, `{Feature}ScreenStateAction` and `{Feature}ScreenStore`.
-3. **Gateway**: `domain/gateway/{feature}` with a `{Feature}Gateway` implementing `{Feature}UseCases` and/or `{Feature}Repository`, a `Mappers` file between the domain model and the SQLDelight schema, and the `.sq` files under `sqldelight`. Register it in `Gateways`, and its interfaces in `UseCases` and/or `Repositories`.
+3. **Gateway**: `domain/gateway/{feature}` with a `{Feature}Gateway` implementing `{Feature}UseCases` and/or `{Feature}Repository`, mappers between the domain model and the SQLDelight schema, and the `.sq` files under `sqldelight`. Register it in `Gateways`, and its interfaces in `UseCases` and/or `Repositories`.
 4. **Scheduler**: handle the entity in `domain/scheduler/JobProvider`, which switches on `EntityType` and `Job.Type` and delegates to the feature's **`Repository`**.
 5. **Navigation**: add the screen to `Screen`, its route to the `provider` package, and link it in `Navigation`, gated by the flag.
 
@@ -614,8 +614,9 @@ The `design` module splits into:
 * **`core`**: building blocks with no knowledge of the app's domain, which could be lifted into an unrelated project unchanged.
 * **`component`**: composite components built from those blocks, which do know the domain types they render.
 * **`showcase`**: a catalog of every core component, color, shape and typography style, mirroring the `core` package one to one.
+* **`data`**: the theme and translation caches the UI reads from.
 
-Nothing in the module holds state or talks to a gateway: components take data and callbacks as parameters, which is why the whole module is previewable.
+Apart from those caches, nothing in the module holds state or talks to a gateway: components take data and callbacks as parameters, which is why the whole module is previewable.
 
 The showcase is a section of the app rather than a separate target, so it runs on every platform. `ui/screen/design/DesignScreen` in `clientApp` hosts it like any other screen.
 
@@ -681,7 +682,8 @@ Call `grantPermission(permission)` on the `PermissionManager` from `LocalPermiss
 
 In-flight requests live in the manager's own `SupervisorJob` scope, so a caller leaving the screen mid-prompt doesn't cancel it for the other waiters.
 
-To add a permission, add the `Permission` enum entry and implement it in each platform's `PermissionManager`. Platforms without a permission model inherit a base that denies everything, so call sites never branch on target.
+To add a permission, add the `Permission` enum entry and implement it in each platform's `PermissionManager`.
+Platforms without a permission model inherit a base that denies everything, so call sites never branch on target.
 Manifests are still yours: `AndroidManifest.xml` on Android, the usage-description key in `Info.plist` on iOS.
 
 ## Platform-Specific Code
@@ -820,7 +822,7 @@ The switch is `Env.developmentMode`, from the `DEVELOPMENT` variable.
 | Telemetry             | Console `ServerLogger`                | Console, plus Sentry if `SENTRY_DSN` is set        |
 | CORS                  | `localhost:8080` and `localhost:8010` | HTTPS only, from `CORS_HOSTS`                      |
 | Future-dated requests | Allowed                               | Rejected                                           |
-| Rate limiting         | One shared bucket                     | Per caller address, if `TRUSTED_PROXY_HOPS` is set |
+| Rate limiting         | Per socket address (all localhost)    | Per caller address, if `TRUSTED_PROXY_HOPS` is set |
 | Seeded account        | `admin`/`admin`                       | The `ADMIN_*` values                               |
 
 > [!NOTE]
@@ -867,28 +869,28 @@ Always module-qualify tasks: several modules share the same unqualified task nam
 Most of this repository is scaffolding for the app it builds, but some pieces are self-contained enough to publish as standalone libraries, or drop into another Kotlin project with little more than a package rename.
 They follow the [platform convention](#platform-specific-code), which is why they travel well.
 
-| Piece                                             | Where                                                  | In one line                                                                    |
-|---------------------------------------------------|--------------------------------------------------------|--------------------------------------------------------------------------------|
-| [Offline job scheduler](#offline-engine)          | `appCore/.../domain/scheduler/`                        | Persistent job queue with chains, backoff, gating and zombie recovery.         |
-| [Clock trust service](#clock-trust)               | `appCore/.../domain/clock/`                            | Can the device clock be trusted? Needed by any last-write-wins offline system. |
-| [Push suite](#push-notifications)                 | `appCore/.../domain/push/` · `server/.../domain/push/` | FCM, WebSocket and SSE as one de-duplicated stream.                            |
-| [Instance signaling](#multi-instance-scaling)     | `server/.../data/signal/`                              | Cross-instance wake-ups over Postgres `LISTEN`/`NOTIFY`.                       |
-| [MVI Store](#store)                               | `appCore/.../ui/store/Store.kt`                        | MVI in one file, with keyed jobs and subscription-aware collection.            |
-| [Router & scenes](#navigation)                    | `appCore/.../ui/navigation/`                           | Named backstack strategies and adaptive split layouts.                         |
-| [Translation pipeline](#translations)             | `design/.../data/translation/` · `ui/Translations.kt`  | Server-served, reactive, with a bundled fallback.                              |
-| [Permission manager](#permissions)                | `appCore/.../ui/permission/`                           | Flag-aware, deduplicated permission requests.                                  |
-| [Flags & configs](#feature-flags--remote-configs) | `shared/.../core/config/`                              | Typed, shared, hot-reloaded toggles with no third-party service.               |
-| [Test harness](#testing)                          | `sharedTest/.../test/SharedTestCase.kt`                | Unit, Compose UI and Ktor server tests from `commonTest`.                      |
-| [LazyData](#lazydata)                             | `shared/.../core/flow/LazyData.kt`                     | A suspending `lazy {}`.                                                        |
-| [Mock HTTP engine](#mock-http-engine)             | `sharedTest/.../data/http/MockHttp.kt`                 | A `MockEngine` that supports WebSocket, SSE and timeouts.                      |
-| [Audio player](#audio-player)                     | `appCore/.../core/media/AudioPlayer.kt`                | Playlist playback with loop and shuffle, paused with the app.                  |
-| [Camera](#camera)                                 | `appCore/.../core/media/Camera.kt`                     | Preview, photo and video capture, with per-call results.                       |
-| [NFC](#nfc)                                       | `appCore/.../core/nfc/NfcController.kt`                | NDEF read and write, including tags delivered while backgrounded.              |
-| [Device location](#device-location)               | `appCore/.../core/devicelocation/`                     | Location fixes answered instantly from a warm cache.                           |
-| [Cryptography](#cryptography)                     | `appCore/.../core/security/Cryptography.kt`            | Encryption backed by real platform keystores.                                  |
-| [Persisted storage](#persisted-storage)           | `appCore/.../data/storage/`                            | Typed, optionally encrypted and cached files.                                  |
-| [HTTP stack](#http-stack)                         | `appCore/.../data/http/` · `shared/.../data/http/`     | A Ktor client whose interceptor ordering is load-bearing.                      |
-| [Telemetry hub](#telemetry-hub)                   | `shared/.../core/telemetry/`                           | One logging API over pluggable engines.                                        |
+| Piece                                             | Where                                                               | In one line                                                                    |
+|---------------------------------------------------|---------------------------------------------------------------------|--------------------------------------------------------------------------------|
+| [Offline job scheduler](#offline-engine)          | `appCore/.../domain/scheduler/`                                     | Persistent job queue with chains, backoff, gating and zombie recovery.         |
+| [Clock trust service](#clock-trust)               | `appCore/.../domain/clock/`                                         | Can the device clock be trusted? Needed by any last-write-wins offline system. |
+| [Push suite](#push-notifications)                 | `appCore/.../domain/push/` · `server/.../domain/push/`              | FCM, WebSocket and SSE as one de-duplicated stream.                            |
+| [Instance signaling](#multi-instance-scaling)     | `server/.../data/signal/`                                           | Cross-instance wake-ups over Postgres `LISTEN`/`NOTIFY`.                       |
+| [MVI Store](#store)                               | `appCore/.../ui/store/Store.kt`                                     | MVI in one file, with keyed jobs and subscription-aware collection.            |
+| [Router & scenes](#navigation)                    | `appCore/.../ui/navigation/`                                        | Named backstack strategies and adaptive split layouts.                         |
+| [Translation pipeline](#translations)             | `appCore/.../domain/translation/` · `design/.../ui/Translations.kt` | Server-served, reactive, with a bundled fallback.                              |
+| [Permission manager](#permissions)                | `appCore/.../ui/permission/`                                        | Flag-aware, deduplicated permission requests.                                  |
+| [Flags & configs](#feature-flags--remote-configs) | `shared/.../core/config/`                                           | Typed, shared, hot-reloaded toggles with no third-party service.               |
+| [Test harness](#testing)                          | `sharedTest/.../test/SharedTestCase.kt`                             | Unit, Compose UI and Ktor server tests from `commonTest`.                      |
+| [LazyData](#lazydata)                             | `shared/.../core/flow/LazyData.kt`                                  | A suspending `lazy {}`.                                                        |
+| [Mock HTTP engine](#mock-http-engine)             | `sharedTest/.../data/http/MockHttp.kt`                              | A `MockEngine` that supports WebSocket, SSE and timeouts.                      |
+| [Audio player](#audio-player)                     | `appCore/.../core/media/AudioPlayer.kt`                             | Playlist playback with loop and shuffle, paused with the app.                  |
+| [Camera](#camera)                                 | `appCore/.../core/media/Camera.kt`                                  | Preview, photo and video capture, with per-call results.                       |
+| [NFC](#nfc)                                       | `appCore/.../core/nfc/NfcController.kt`                             | NDEF read and write, including tags delivered while backgrounded.              |
+| [Device location](#device-location)               | `appCore/.../core/devicelocation/`                                  | Location fixes answered instantly from a warm cache.                           |
+| [Cryptography](#cryptography)                     | `appCore/.../core/security/Cryptography.kt`                         | Encryption backed by real platform keystores.                                  |
+| [Persisted storage](#persisted-storage)           | `appCore/.../data/storage/`                                         | Typed, optionally encrypted and cached files.                                  |
+| [HTTP stack](#http-stack)                         | `appCore/.../data/http/` · `shared/.../data/http/`                  | A Ktor client whose interceptor ordering is load-bearing.                      |
+| [Telemetry hub](#telemetry-hub)                   | `shared/.../core/telemetry/`                                        | One logging API over pluggable engines.                                        |
 
 `...` stands for `src/commonMain/kotlin/com/app/builder` (or `src/main/kotlin/com/app/builder` on the server).
 
@@ -927,7 +929,7 @@ Setting a playlist always stops and reloads, so set it once rather than on every
 `appCore/.../core/media/Camera.kt` · `ui/media/Camera.kt`
 
 An `Idle`/`Previewing`/`Recording` state machine driven by `startPreview()`, `stopPreview()`, `capturePhoto(onResult)`, `startRecording(onResult)`, `stopRecording()`, `toggleFacing()` and `dispose()`, gated by the `camera` flag and the camera permission.
-Captures come back through the `onResult` passed at the call site, carrying the capture's location (a file path, or a data URL on Web) or `null`, so each caller receives exactly the capture it asked for.
+Captures come back through the `onResult` passed at the call site, carrying the capture's location (a file path, or a data URL on Web), or `null` for a failed photo, so each caller receives exactly the capture it asked for.
 Illegal transitions are dropped by the base class, so no platform has to re-derive what is valid from where.
 `CameraPreview` is an `expect` composable, so the preview surface is the only piece of UI that varies.
 
@@ -1022,7 +1024,6 @@ Every route shares a global rate limit; those marked *rate-limited* have a stric
 | `POST /api/clientflags` · `/api/clientconfigs`               | Update client flags/configs                                 | JWT, `CLIENT_FLAG`/`CLIENT_CONFIG` `WRITE`        | —                |
 | `GET`/`POST /api/serverflags` · `/api/serverconfigs`         | Read/update server flags/configs                            | JWT, `SERVER_FLAG`/`SERVER_CONFIG` `READ`/`WRITE` | —                |
 | `GET /api/registry`                                          | Delta-sync the request audit log                            | JWT, `REGISTRY` `READ`                            | —                |
-| `POST /api/registry`                                         | Record an audit entry                                       | JWT, `REGISTRY` `WRITE`                           | —                |
 | `GET /api/data/*`                                            | Static resources                                            | —                                                 | `resources`      |
 | `POST /api/register`                                         | Create an account for a user                                | JWT, `ACCOUNT` `WRITE`                            | `authentication` |
 | `POST /api/login`                                            | Log in                                                      | —                                                 | `authentication` |
@@ -1188,13 +1189,15 @@ Declarations that resolve to a distinct implementation per source set:
 <details>
 <summary>Shared Test</summary>
 
+* **core/locale** `MockClock`: A `Clock` driven by the test scheduler's virtual time.
 * **core/telemetry** `MockLogger`: A mock `TelemetryEngine`.
-* **data/http** `TestEngine`: A Ktor `MockEngine` plus response helpers.
+* **data/http** `MockHttp`: `TestEngine`, a Ktor `MockEngine`, plus response helpers.
 * **ui/lifecycle** `OverridableLifecycleOwner`: A `LifecycleOwner` that can be set to any state.
 * **test**
     * `FakeData`: Fake data for tests.
     * `SharedTestCase`: The hermetic harness for unit, UI and server tests.
     * `PlatformTestCase`: Extends `SharedTestCase` with platform-specific setup.
+    * `FakeAndroidKeyStore` / `FakeKeychain`: In-memory Android KeyStore and Apple Keychain fakes.
     * `Extensions`: Test helper extensions.
 
 </details>
@@ -1210,7 +1213,7 @@ Declarations that resolve to a distinct implementation per source set:
 
 **ui**
 
-* `Color`, `Typography`, `Shapes`: `LocalColorScheme` (light and dark), `LocalTypography`, `LocalShapes`.
+* `Colors`, `Typography`, `Shapes`: `LocalColorScheme` (light and dark), `LocalTypography`, `LocalShapes`.
 * `Translations`: Composable helpers over `TranslationCache`. Provides `LocalTranslationState`.
 * `Theme`: The app theme. Also provides `LocalSplitScreen` and registers the image loader.
 * `Preview`: Applies the theme for accurate previews.
