@@ -47,7 +47,6 @@ fun Route.taskRoutes(
         route(path = URL.Tasks.path) {
             get {
                 if (!call.validateTime()) return@get
-                val userUuid = call.getUserUuid() ?: return@get
                 if (!call.validatePermission(permissionService = permissionService, entityType = EntityType.TASK, permission = Permission.READ)) return@get
 
                 val queryMap = call.getQueryMap()
@@ -56,16 +55,15 @@ fun Route.taskRoutes(
                 val cursorUuid = queryMap[Query.CursorUuid.parameter]?.toUuid()
                 val pageSize = queryMap[Query.PageSize.parameter]?.toIntOrNull() ?: ServerConfigs.value.pageSize
 
-                val tasks = taskUseCases.getTasks(userUuid = userUuid, lastSyncUtc = lastSyncUtc, cursorUtc = cursorUtc, cursorUuid = cursorUuid, pageSize = pageSize)
+                val tasks = taskUseCases.getTasks(lastSyncUtc = lastSyncUtc, cursorUtc = cursorUtc, cursorUuid = cursorUuid, pageSize = pageSize)
                 call.respondSafely(status = HttpStatusCode.OK, message = tasks)
-                Telemetry.info(tag = TAG, message = "Fetched ${tasks.size} tasks for user $userUuid")
+                Telemetry.info(tag = TAG, message = "Fetched ${tasks.size} tasks")
 
                 call.toRegistry(entityType = EntityType.TASK)?.let { registryUseCases.upsertRegistry(registry = it) }
             }
 
             get(path = "/{uuid}") {
                 if (!call.validateTime()) return@get
-                val userUuid = call.getUserUuid() ?: return@get
                 if (!call.validatePermission(permissionService = permissionService, entityType = EntityType.TASK, permission = Permission.READ)) return@get
 
                 val uuid = call.getParameters()["uuid"]?.toUuid() ?: run {
@@ -73,12 +71,12 @@ fun Route.taskRoutes(
                     return@get
                 }
 
-                val task = taskUseCases.getTask(userUuid = userUuid, uuid = uuid) ?: run {
+                val task = taskUseCases.getTask(uuid = uuid) ?: run {
                     call.respondSafely(status = HttpStatusCode.NotFound, message = "Task not found")
                     return@get
                 }
                 call.respondSafely(status = HttpStatusCode.OK, message = task)
-                Telemetry.info(tag = TAG, message = "Fetched task $uuid for user $userUuid")
+                Telemetry.info(tag = TAG, message = "Fetched task $uuid")
 
                 call.toRegistry(
                     entityType = EntityType.TASK,
@@ -92,10 +90,10 @@ fun Route.taskRoutes(
                 if (!call.validatePermission(permissionService = permissionService, entityType = EntityType.TASK, permission = Permission.WRITE)) return@post
                 val task = call.receive<Task>() ?: return@post
 
-                val success = taskUseCases.upsertTask(userUuid = userUuid, task = task)
+                val success = taskUseCases.upsertTask(task = task)
                 if (!success) {
-                    Telemetry.error(tag = TAG, message = "User $userUuid is not authorized to upsert task ${task.uuid}")
-                    call.respondSafely(status = HttpStatusCode.Forbidden, message = "Not authorized to modify this task")
+                    Telemetry.error(tag = TAG, message = "Error upserting task ${task.uuid}")
+                    call.respondSafely(status = HttpStatusCode.InternalServerError, message = "Error upserting task")
                     return@post
                 }
 

@@ -9,7 +9,6 @@ import com.app.builder.domain.usecase.devicetoken.DeviceTokenUseCases
 import com.app.builder.domain.usecase.notification.NotificationsUseCases
 import com.app.builder.domain.usecase.registry.RegistryUseCases
 import com.app.builder.domain.usecase.task.TaskUseCases
-import com.app.builder.domain.usecase.taskaccess.TaskAccessUseCases
 import com.app.builder.domain.usecase.ticket.TicketUseCases
 import com.app.builder.domain.usecase.user.UserUseCases
 
@@ -37,6 +36,4 @@ interface UseCases {
     val deviceLocationUseCases: DeviceLocationUseCases
     /** The task use cases. */
     val taskUseCases: TaskUseCases
-    /** The task access use cases. */
-    val taskAccessUseCases: TaskAccessUseCases
 }
