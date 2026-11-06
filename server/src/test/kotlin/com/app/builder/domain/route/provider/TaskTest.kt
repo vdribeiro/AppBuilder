@@ -103,19 +103,20 @@ class TaskTest: TestCase() {
         assertEquals(expected = listOf(first), actual = client.get(request = secondPageRequest).body<List<Task>>())
     }
 
-    /** Verifies that a non-owning user cannot update another user's existing task. */
+    /** Verifies that any user with task write permission can update a task created by another user. */
     @Test
-    fun upsertTaskForbiddenForNonOwner() = runServerTest {
+    fun upsertTaskCreatedByAnotherUser() = runServerTest {
         installRouting()
 
-        val ownerClient = createClient(token = adminBearerToken.accessToken)
-        ownerClient.post(request = HttpRequest(url = URL.Tasks), body = FakeData.task)
+        val creatorClient = createClient(token = adminBearerToken.accessToken)
+        creatorClient.post(request = HttpRequest(url = URL.Tasks), body = FakeData.task)
 
         val otherAuth = seedUser(registrationForm = registrationForm(username = "other_task_user", permissions = mapOf(EntityType.TASK to Permission.WRITE)))
         val otherClient = createClient(token = otherAuth.bearer.accessToken)
 
-        val response = otherClient.post(request = HttpRequest(url = URL.Tasks), body = FakeData.task.copy(title = "Hijacked"))
-        assertEquals(expected = HttpStatusCode.Forbidden, actual = response.status)
+        val editedTask = FakeData.task.copy(title = "Edited")
+        assertEquals(expected = HttpStatusCode.OK, actual = otherClient.post(request = HttpRequest(url = URL.Tasks), body = editedTask).status)
+        assertEquals(expected = editedTask, actual = otherClient.ktorGet(urlString = "${URL.Tasks.path}/${FakeData.task.uuid}").body<Task>())
     }
 
     /** Verifies that fetching a single task requires authentication, and that upserting requires task write permission. */
