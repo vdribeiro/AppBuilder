@@ -127,7 +127,8 @@ class TagManager(
             EntityType.NOTIFICATION,
             EntityType.TRANSLATION,
             EntityType.ACCOUNT,
-            EntityType.DEVICE_LOCATION -> Unit
+            EntityType.DEVICE_LOCATION,
+            EntityType.NFC -> Unit
         }
     }
 
