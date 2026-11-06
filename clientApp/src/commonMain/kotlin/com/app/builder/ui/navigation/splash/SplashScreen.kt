@@ -1,4 +1,4 @@
-package com.app.builder.ui.screen.splash
+package com.app.builder.ui.navigation.splash
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment

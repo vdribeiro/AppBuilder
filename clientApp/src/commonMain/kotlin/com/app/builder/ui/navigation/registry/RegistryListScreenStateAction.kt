@@ -1,4 +1,4 @@
-package com.app.builder.ui.screen.registrylist
+package com.app.builder.ui.navigation.registry
 
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf

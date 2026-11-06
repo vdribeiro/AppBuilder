@@ -1,4 +1,4 @@
-package com.app.builder.ui.navigation.provider
+package com.app.builder.ui.navigation.task
 
 import kotlinx.collections.immutable.toImmutableMap
 import kotlinx.collections.immutable.toPersistentList
@@ -18,13 +18,6 @@ import com.app.builder.ui.navigation.LocalRouter
 import com.app.builder.ui.navigation.Router
 import com.app.builder.ui.navigation.Screen
 import com.app.builder.ui.navigation.scene.SplitSceneStrategy.Companion.split
-import com.app.builder.ui.screen.taskdetail.TaskDetailScreen
-import com.app.builder.ui.screen.taskdetail.TaskDetailScreenAction
-import com.app.builder.ui.screen.taskdetail.TaskDetailScreenState
-import com.app.builder.ui.screen.taskdetail.TaskDetailScreenStore
-import com.app.builder.ui.screen.tasklist.TaskListScreen
-import com.app.builder.ui.screen.tasklist.TaskListScreenState
-import com.app.builder.ui.screen.tasklist.TaskListScreenStore
 import com.app.builder.ui.store.Store
 
 /**

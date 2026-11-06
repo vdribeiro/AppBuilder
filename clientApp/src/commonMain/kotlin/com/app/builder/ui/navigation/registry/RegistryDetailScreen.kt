@@ -1,4 +1,4 @@
-package com.app.builder.ui.screen.registrydetail
+package com.app.builder.ui.navigation.registry
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue

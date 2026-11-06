@@ -1,4 +1,4 @@
-package com.app.builder.ui.screen.registrydetail
+package com.app.builder.ui.navigation.registry
 
 import kotlinx.coroutines.Job
 import com.app.builder.core.security.toUuid

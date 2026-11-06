@@ -1,4 +1,4 @@
-package com.app.builder.ui.screen.taskdetail
+package com.app.builder.ui.navigation.task
 
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.firstOrNull

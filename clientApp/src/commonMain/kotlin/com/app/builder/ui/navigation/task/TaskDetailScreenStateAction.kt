@@ -1,4 +1,4 @@
-package com.app.builder.ui.screen.taskdetail
+package com.app.builder.ui.navigation.task
 
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toPersistentList

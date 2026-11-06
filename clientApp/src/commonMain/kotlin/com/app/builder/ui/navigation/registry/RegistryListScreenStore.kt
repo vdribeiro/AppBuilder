@@ -1,4 +1,4 @@
-package com.app.builder.ui.screen.registrylist
+package com.app.builder.ui.navigation.registry
 
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.Job
