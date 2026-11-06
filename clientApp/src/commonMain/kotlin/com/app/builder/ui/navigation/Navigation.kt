@@ -2,29 +2,37 @@ package com.app.builder.ui.navigation
 
 import kotlin.uuid.Uuid
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.ViewModelStore
+import androidx.lifecycle.ViewModelStoreOwner
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.app.builder.core.config.ClientFlags
 import com.app.builder.domain.EntityType
 import com.app.builder.domain.deeplink.DeepLink
 import com.app.builder.domain.gateway.UseCases
-import com.app.builder.ui.navigation.provider.audioProvider
-import com.app.builder.ui.navigation.provider.authenticationProvider
-import com.app.builder.ui.navigation.provider.cameraProvider
-import com.app.builder.ui.navigation.provider.configsProvider
-import com.app.builder.ui.navigation.provider.designProvider
-import com.app.builder.ui.navigation.provider.deviceFilesProvider
-import com.app.builder.ui.navigation.provider.deviceLocationProvider
-import com.app.builder.ui.navigation.provider.errorProvider
-import com.app.builder.ui.navigation.provider.homeProvider
-import com.app.builder.ui.navigation.provider.nfcProvider
-import com.app.builder.ui.navigation.provider.pushProvider
-import com.app.builder.ui.navigation.provider.registryProvider
-import com.app.builder.ui.navigation.provider.taskProvider
-import com.app.builder.ui.navigation.provider.translationsProvider
-import com.app.builder.ui.navigation.provider.userProfileProvider
-import com.app.builder.ui.navigation.provider.userProvider
-import com.app.builder.ui.screen.splash.SplashScreen
+import com.app.builder.ui.component.navigation.NavigationState
+import com.app.builder.ui.component.navigation.NavigationStore
+import com.app.builder.ui.navigation.audio.audioProvider
+import com.app.builder.ui.navigation.camera.cameraProvider
+import com.app.builder.ui.navigation.configs.configsProvider
+import com.app.builder.ui.navigation.design.designProvider
+import com.app.builder.ui.navigation.devicefiles.deviceFilesProvider
+import com.app.builder.ui.navigation.devicelocation.deviceLocationProvider
+import com.app.builder.ui.navigation.error.errorProvider
+import com.app.builder.ui.navigation.home.homeProvider
+import com.app.builder.ui.navigation.login.authenticationProvider
+import com.app.builder.ui.navigation.nfc.nfcProvider
+import com.app.builder.ui.navigation.push.pushProvider
+import com.app.builder.ui.navigation.registry.registryProvider
+import com.app.builder.ui.navigation.splash.SplashScreen
+import com.app.builder.ui.navigation.task.taskProvider
+import com.app.builder.ui.navigation.translations.translationsProvider
+import com.app.builder.ui.navigation.user.userProvider
+import com.app.builder.ui.navigation.userprofile.userProfileProvider
+import com.app.builder.ui.store.Store
 
 /** The screen to show while the use cases are loading. */
 val loadingScreen: Screen = Screen.Splash
@@ -75,14 +83,15 @@ fun UnauthenticatedNavigation(
     modifier: Modifier = Modifier,
     useCases: UseCases?
 ) {
+    val navigationStore = remember { Store<NavigationState, Unit>(initialState = NavigationState()) }
     Navigation(
         modifier = modifier,
         fallbackScreen = Screen.Error(error = true),
         entryProviderScope = {
             errorProvider()
             if (useCases == null) return@Navigation
-            if (ClientFlags.value.home) homeProvider(useCases = useCases)
-            if (ClientFlags.value.userProfile) userProfileProvider(useCases = useCases)
+            if (ClientFlags.value.home) homeProvider(useCases = useCases, navigationStore = navigationStore)
+            if (ClientFlags.value.userProfile) userProfileProvider(useCases = useCases, navigationStore = navigationStore)
             if (ClientFlags.value.login) authenticationProvider(useCases = useCases)
         }
     )
@@ -99,28 +108,48 @@ fun AuthenticatedNavigation(
     modifier: Modifier = Modifier,
     useCases: UseCases?,
 ) {
+    val navigationStore = useCases?.let { rememberNavigationStore(useCases = it) }
     Navigation(
         modifier = modifier,
         fallbackScreen = Screen.Error(error = true),
         entryProviderScope = {
             errorProvider()
-            if (useCases == null) return@Navigation
-            configsProvider(useCases = useCases)
-            if (ClientFlags.value.home) homeProvider(useCases = useCases)
-            if (ClientFlags.value.design) designProvider()
-            if (ClientFlags.value.userProfile) userProfileProvider(useCases = useCases)
-            if (ClientFlags.value.users) userProvider(useCases = useCases)
-            if (ClientFlags.value.locationCapture) deviceLocationProvider(useCases = useCases)
-            if (ClientFlags.value.nfc) nfcProvider(useCases = useCases)
-            if (ClientFlags.value.camera) cameraProvider(useCases = useCases)
-            if (ClientFlags.value.deviceFiles) deviceFilesProvider(useCases = useCases)
-            if (ClientFlags.value.music) audioProvider(useCases = useCases)
-            if (ClientFlags.value.notifications) pushProvider(useCases = useCases)
-            if (ClientFlags.value.registries) registryProvider(useCases = useCases)
-            if (ClientFlags.value.tasks) taskProvider(useCases = useCases)
-            translationsProvider(useCases = useCases)
+            if (useCases == null || navigationStore == null) return@Navigation
+            configsProvider(useCases = useCases, navigationStore = navigationStore)
+            if (ClientFlags.value.home) homeProvider(useCases = useCases, navigationStore = navigationStore)
+            if (ClientFlags.value.design) designProvider(navigationStore = navigationStore)
+            if (ClientFlags.value.userProfile) userProfileProvider(useCases = useCases, navigationStore = navigationStore)
+            if (ClientFlags.value.users) userProvider(useCases = useCases, navigationStore = navigationStore)
+            if (ClientFlags.value.locationCapture) deviceLocationProvider(useCases = useCases, navigationStore = navigationStore)
+            if (ClientFlags.value.nfc) nfcProvider(useCases = useCases, navigationStore = navigationStore)
+            if (ClientFlags.value.camera) cameraProvider(useCases = useCases, navigationStore = navigationStore)
+            if (ClientFlags.value.deviceFiles) deviceFilesProvider(useCases = useCases, navigationStore = navigationStore)
+            if (ClientFlags.value.music) audioProvider(useCases = useCases, navigationStore = navigationStore)
+            if (ClientFlags.value.notifications) pushProvider(useCases = useCases, navigationStore = navigationStore)
+            if (ClientFlags.value.registries) registryProvider(useCases = useCases, navigationStore = navigationStore)
+            if (ClientFlags.value.tasks) taskProvider(useCases = useCases, navigationStore = navigationStore)
+            translationsProvider(useCases = useCases, navigationStore = navigationStore)
         }
     )
+}
+
+/**
+ * Remembers the navigation bar store shared by every screen of a navigation host, cleared when the host leaves the composition or the use cases change.
+ *
+ * @param useCases The use cases the store observes.
+ * @return The shared navigation bar store.
+ */
+@Composable
+private fun rememberNavigationStore(useCases: UseCases): Store<NavigationState, Unit> {
+    val owner = remember(key1 = useCases) {
+        object: ViewModelStoreOwner {
+            override val viewModelStore = ViewModelStore()
+        }
+    }
+    DisposableEffect(key1 = owner) {
+        onDispose { owner.viewModelStore.clear() }
+    }
+    return viewModel(viewModelStoreOwner = owner) { NavigationStore(state = NavigationState(), authenticationUseCases = useCases.authenticationUseCases) }
 }
 
 /** Register deep links. */
