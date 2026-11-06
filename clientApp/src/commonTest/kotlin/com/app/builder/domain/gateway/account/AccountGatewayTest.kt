@@ -8,8 +8,8 @@ import kotlin.uuid.Uuid
 import kotlinx.coroutines.flow.firstOrNull
 import app.cash.sqldelight.async.coroutines.awaitAsList
 import com.app.builder.Dependency.getUserDependency
-import com.app.builder.core.security.uuid
 import com.app.builder.core.config.ClientFlags
+import com.app.builder.core.security.uuid
 import com.app.builder.domain.Account
 import com.app.builder.domain.EntityType
 import com.app.builder.domain.Permission

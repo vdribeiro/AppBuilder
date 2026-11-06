@@ -49,10 +49,12 @@ fun Route.authenticationRoutes(
                     call.respondSafely(status = HttpStatusCode.BadRequest, message = "Invalid registration form")
                     return@post
                 }
+
                 WriteResult.NOT_FOUND, WriteResult.CONFLICT -> {
                     call.respondSafely(status = HttpStatusCode.Conflict, message = "The user already has an account or the username is taken")
                     return@post
                 }
+
                 WriteResult.ERROR -> {
                     Telemetry.error(tag = TAG, message = "Failed to register an account for user ${registrationForm.user.uuid}")
                     call.respondSafely(status = HttpStatusCode.InternalServerError, message = "Error registering account")

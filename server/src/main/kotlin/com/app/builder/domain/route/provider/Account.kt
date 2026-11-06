@@ -21,8 +21,8 @@ import com.app.builder.domain.route.respondSafely
 import com.app.builder.domain.route.toRegistry
 import com.app.builder.domain.route.validatePermission
 import com.app.builder.domain.route.validateTime
-import com.app.builder.domain.usecase.account.AccountUseCases
 import com.app.builder.domain.usecase.WriteResult
+import com.app.builder.domain.usecase.account.AccountUseCases
 import com.app.builder.domain.usecase.registry.RegistryUseCases
 
 /**
@@ -71,10 +71,12 @@ fun Route.accountRoutes(
                         call.respondSafely(status = HttpStatusCode.NotFound, message = "Account not found")
                         return@post
                     }
+
                     WriteResult.INVALID, WriteResult.CONFLICT -> {
                         call.respondSafely(status = HttpStatusCode.Conflict, message = "The username is taken")
                         return@post
                     }
+
                     WriteResult.ERROR -> {
                         Telemetry.error(tag = TAG, message = "Error upserting the account of user ${account.userUuid}")
                         call.respondSafely(status = HttpStatusCode.InternalServerError, message = "Error upserting account")
