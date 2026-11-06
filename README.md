@@ -299,7 +299,7 @@ flowchart LR
 ```
 
 The scheduler combines four streams. When a gate is closed it substitutes an empty list instead of stopping, so the loop stays subscribed and resumes the moment any source emits again.
-A database read failure also becomes an empty emission, and the scheduler resubscribes after `schedulerRetryDelay`, so a transient storage error pauses dispatch rather than stopping the scheduler.
+A database read failure becomes an empty emission, so the scheduler stays up but dispatches nothing until the database is reset.
 
 ### Clock Trust
 
@@ -792,6 +792,8 @@ Every key falls back to an empty default, so a missing file costs you signed rel
 | Push          | `GCP_PROJECT_ID`                                                           |
 | Rate limiting | `TRUSTED_PROXY_HOPS`                                                       |
 
+Rate limits are keyed on the caller's address: the socket address by default, or the `X-Forwarded-For` entry `TRUSTED_PROXY_HOPS` hops back. Behind a proxy without it, every caller shares one bucket.
+
 Most have no default. What makes `./gradlew :server:run` work with none set is the `localEnv` map in `server/build.gradle.kts`, injected into both the `run` task and every `Test` task:
 
 ```properties
@@ -822,7 +824,7 @@ The switch is `Env.developmentMode`, from the `DEVELOPMENT` variable.
 | Telemetry             | Console `ServerLogger`                | Console, plus Sentry if `SENTRY_DSN` is set        |
 | CORS                  | `localhost:8080` and `localhost:8010` | HTTPS only, from `CORS_HOSTS`                      |
 | Future-dated requests | Allowed                               | Rejected                                           |
-| Rate limiting         | Per socket address (all localhost)    | Per caller address, if `TRUSTED_PROXY_HOPS` is set |
+| Rate limiting         | One shared bucket                     | Per caller address, if `TRUSTED_PROXY_HOPS` is set |
 | Seeded account        | `admin`/`admin`                       | The `ADMIN_*` values                               |
 
 > [!NOTE]
