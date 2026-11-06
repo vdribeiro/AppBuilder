@@ -1,4 +1,4 @@
-package com.app.builder.ui.screen.audio
+package com.app.builder.ui.navigation.audio
 
 import kotlin.test.Test
 import androidx.compose.runtime.CompositionLocalProvider

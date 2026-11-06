@@ -1,4 +1,4 @@
-package com.app.builder.ui.screen.configs
+package com.app.builder.ui.navigation.configs
 
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList

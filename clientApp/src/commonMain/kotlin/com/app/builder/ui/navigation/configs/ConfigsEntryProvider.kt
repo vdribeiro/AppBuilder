@@ -1,4 +1,4 @@
-package com.app.builder.ui.navigation.provider
+package com.app.builder.ui.navigation.configs
 
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation3.runtime.EntryProviderScope
@@ -9,21 +9,21 @@ import com.app.builder.ui.component.actionbar.ActionBarStore
 import com.app.builder.ui.component.navigation.NavigationState
 import com.app.builder.ui.navigation.LocalRouter
 import com.app.builder.ui.navigation.Screen
-import com.app.builder.ui.screen.audio.AudioScreen
 import com.app.builder.ui.store.Store
 
 /**
- * The audio routes.
+ * The flags and configs route.
  *
  * @param useCases The use cases.
  * @param navigationStore The navigation bar store shared by every screen.
  */
-fun EntryProviderScope<NavKey>.audioProvider(useCases: UseCases, navigationStore: Store<NavigationState, Unit>) {
-    entry<Screen.Audio> {
+fun EntryProviderScope<NavKey>.configsProvider(useCases: UseCases, navigationStore: Store<NavigationState, Unit>) {
+    entry<Screen.Configs> {
         val router = LocalRouter.current
-        AudioScreen(
+        ConfigsScreen(
             actionBarStore = viewModel { ActionBarStore(state = ActionBarState(), router = router, authenticationUseCases = useCases.authenticationUseCases, statusUseCases = useCases.statusUseCases) },
             navigationStore = navigationStore,
+            store = viewModel { ConfigScreenStore(state = ConfigScreenState(), configUseCases = useCases.configUseCases, authenticationUseCases = useCases.authenticationUseCases) },
         )
     }
 }

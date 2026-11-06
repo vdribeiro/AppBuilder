@@ -1,4 +1,4 @@
-package com.app.builder.ui.screen.audio
+package com.app.builder.ui.navigation.audio
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row

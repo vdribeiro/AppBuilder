@@ -1,4 +1,4 @@
-package com.app.builder.ui.screen.camera
+package com.app.builder.ui.navigation.camera
 
 import kotlin.test.Test
 import androidx.compose.runtime.CompositionLocalProvider
