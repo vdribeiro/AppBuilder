@@ -1,4 +1,4 @@
-package com.app.builder.ui.screen.push
+package com.app.builder.ui.navigation.push
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue

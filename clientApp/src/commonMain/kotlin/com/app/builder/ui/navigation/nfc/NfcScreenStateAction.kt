@@ -1,4 +1,4 @@
-package com.app.builder.ui.screen.nfc
+package com.app.builder.ui.navigation.nfc
 
 /**
  * State for the NFC screen.

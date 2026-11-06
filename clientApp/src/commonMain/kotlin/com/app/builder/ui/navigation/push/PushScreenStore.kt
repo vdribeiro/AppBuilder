@@ -1,4 +1,4 @@
-package com.app.builder.ui.screen.push
+package com.app.builder.ui.navigation.push
 
 import kotlin.uuid.Uuid
 import kotlinx.collections.immutable.toPersistentList

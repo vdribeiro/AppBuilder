@@ -1,4 +1,4 @@
-package com.app.builder.ui.screen.nfc
+package com.app.builder.ui.navigation.nfc
 
 import kotlin.test.Test
 import kotlin.test.assertEquals

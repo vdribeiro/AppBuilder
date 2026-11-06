@@ -1,4 +1,4 @@
-package com.app.builder.ui.navigation.provider
+package com.app.builder.ui.navigation.push
 
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation3.runtime.EntryProviderScope
@@ -9,24 +9,21 @@ import com.app.builder.ui.component.actionbar.ActionBarStore
 import com.app.builder.ui.component.navigation.NavigationState
 import com.app.builder.ui.navigation.LocalRouter
 import com.app.builder.ui.navigation.Screen
-import com.app.builder.ui.screen.nfc.NfcScreen
-import com.app.builder.ui.screen.nfc.NfcScreenState
-import com.app.builder.ui.screen.nfc.NfcScreenStore
 import com.app.builder.ui.store.Store
 
 /**
- * The nfc routes.
+ * The push notifications route.
  *
  * @param useCases The use cases.
  * @param navigationStore The navigation bar store shared by every screen.
  */
-fun EntryProviderScope<NavKey>.nfcProvider(useCases: UseCases, navigationStore: Store<NavigationState, Unit>) {
-    entry<Screen.NFC> {
+fun EntryProviderScope<NavKey>.pushProvider(useCases: UseCases, navigationStore: Store<NavigationState, Unit>) {
+    entry<Screen.Push> {
         val router = LocalRouter.current
-        NfcScreen(
+        PushScreen(
             actionBarStore = viewModel { ActionBarStore(state = ActionBarState(), router = router, authenticationUseCases = useCases.authenticationUseCases, statusUseCases = useCases.statusUseCases) },
             navigationStore = navigationStore,
-            store = viewModel { NfcScreenStore(state = NfcScreenState(), authenticationUseCases = useCases.authenticationUseCases) },
+            store = viewModel { PushScreenStore(state = PushScreenState(), pushUseCases = useCases.pushUseCases, userUseCases = useCases.userUseCases) },
         )
     }
 }

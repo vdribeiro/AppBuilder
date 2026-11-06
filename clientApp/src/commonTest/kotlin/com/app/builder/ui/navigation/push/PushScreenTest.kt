@@ -1,4 +1,4 @@
-package com.app.builder.ui.screen.push
+package com.app.builder.ui.navigation.push
 
 import kotlin.test.Test
 import kotlin.test.assertEquals

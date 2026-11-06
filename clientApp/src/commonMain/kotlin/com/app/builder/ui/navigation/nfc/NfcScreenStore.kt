@@ -1,4 +1,4 @@
-package com.app.builder.ui.screen.nfc
+package com.app.builder.ui.navigation.nfc
 
 import kotlinx.coroutines.Job
 import com.app.builder.core.telemetry.Telemetry

@@ -1,4 +1,4 @@
-package com.app.builder.ui.screen.nfc
+package com.app.builder.ui.navigation.nfc
 
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
