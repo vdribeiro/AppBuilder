@@ -1,4 +1,4 @@
-package com.app.builder.ui.screen.home
+package com.app.builder.ui.navigation.home
 
 import kotlin.test.Test
 import kotlin.test.assertEquals

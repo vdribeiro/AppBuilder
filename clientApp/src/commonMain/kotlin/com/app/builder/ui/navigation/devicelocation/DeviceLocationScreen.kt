@@ -1,4 +1,4 @@
-package com.app.builder.ui.screen.devicelocation
+package com.app.builder.ui.navigation.devicelocation
 
 import kotlin.math.round
 import kotlinx.collections.immutable.persistentListOf

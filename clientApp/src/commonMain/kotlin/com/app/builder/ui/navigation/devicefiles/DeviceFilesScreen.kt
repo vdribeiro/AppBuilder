@@ -1,4 +1,4 @@
-package com.app.builder.ui.screen.devicefiles
+package com.app.builder.ui.navigation.devicefiles
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect

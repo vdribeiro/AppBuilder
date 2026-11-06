@@ -1,4 +1,4 @@
-package com.app.builder.ui.navigation.provider
+package com.app.builder.ui.navigation.home
 
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation3.runtime.EntryProviderScope
@@ -9,24 +9,20 @@ import com.app.builder.ui.component.actionbar.ActionBarStore
 import com.app.builder.ui.component.navigation.NavigationState
 import com.app.builder.ui.navigation.LocalRouter
 import com.app.builder.ui.navigation.Screen
-import com.app.builder.ui.screen.devicefiles.DeviceFilesScreen
-import com.app.builder.ui.screen.devicefiles.DeviceFilesScreenState
-import com.app.builder.ui.screen.devicefiles.DeviceFilesScreenStore
 import com.app.builder.ui.store.Store
 
 /**
- * The device files routes.
+ * The home routes.
  *
  * @param useCases The use cases.
  * @param navigationStore The navigation bar store shared by every screen.
  */
-fun EntryProviderScope<NavKey>.deviceFilesProvider(useCases: UseCases, navigationStore: Store<NavigationState, Unit>) {
-    entry<Screen.DeviceFiles> {
+fun EntryProviderScope<NavKey>.homeProvider(useCases: UseCases, navigationStore: Store<NavigationState, Unit>) {
+    entry<Screen.Home> {
         val router = LocalRouter.current
-        DeviceFilesScreen(
+        HomeScreen(
             actionBarStore = viewModel { ActionBarStore(state = ActionBarState(), router = router, authenticationUseCases = useCases.authenticationUseCases, statusUseCases = useCases.statusUseCases) },
             navigationStore = navigationStore,
-            store = viewModel { DeviceFilesScreenStore(state = DeviceFilesScreenState()) },
         )
     }
 }

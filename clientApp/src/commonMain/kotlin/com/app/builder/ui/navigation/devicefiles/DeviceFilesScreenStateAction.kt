@@ -1,4 +1,4 @@
-package com.app.builder.ui.screen.devicefiles
+package com.app.builder.ui.navigation.devicefiles
 
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf

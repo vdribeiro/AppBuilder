@@ -1,4 +1,4 @@
-package com.app.builder.ui.screen.error
+package com.app.builder.ui.navigation.error
 
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive

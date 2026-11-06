@@ -1,4 +1,4 @@
-package com.app.builder.ui.screen.login
+package com.app.builder.ui.navigation.login
 
 /** Actions supported by the Login Screen. */
 sealed interface LoginScreenAction {

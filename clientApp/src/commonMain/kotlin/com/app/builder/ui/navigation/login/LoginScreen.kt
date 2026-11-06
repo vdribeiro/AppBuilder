@@ -1,4 +1,4 @@
-package com.app.builder.ui.screen.login
+package com.app.builder.ui.navigation.login
 
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.runtime.Composable

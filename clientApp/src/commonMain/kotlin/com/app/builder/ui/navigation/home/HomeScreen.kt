@@ -1,4 +1,4 @@
-package com.app.builder.ui.screen.home
+package com.app.builder.ui.navigation.home
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
