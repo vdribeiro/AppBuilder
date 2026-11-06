@@ -161,11 +161,6 @@
   },
   {
     "languageIso": "en",
-    "key": "registration",
-    "value": "Registration"
-  },
-  {
-    "languageIso": "en",
     "key": "feedback",
     "value": "Feedback"
   },
@@ -258,11 +253,6 @@
     "languageIso": "en",
     "key": "task_list",
     "value": "Task List"
-  },
-  {
-    "languageIso": "en",
-    "key": "task_detail",
-    "value": "Task Detail"
   },
   {
     "languageIso": "en",
@@ -373,11 +363,6 @@
     "languageIso": "en",
     "key": "app_version",
     "value": "App Version"
-  },
-  {
-    "languageIso": "en",
-    "key": "tasks",
-    "value": "Tasks"
   },
   {
     "languageIso": "en",
