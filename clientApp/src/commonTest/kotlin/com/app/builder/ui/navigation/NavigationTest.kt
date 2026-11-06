@@ -419,6 +419,7 @@ class NavigationTest: TestCase() {
             DeepLink.Entity(entityUuid = null, entityType = EntityType.USER) to listOf(Screen.UserList),
             DeepLink.Entity(entityUuid = uuid, entityType = EntityType.USER) to listOf(Screen.UserList, Screen.UserDetail(uuid = uuid.toString())),
             DeepLink.Entity(entityUuid = null, entityType = EntityType.DEVICE_LOCATION) to listOf(Screen.DeviceLocation),
+            DeepLink.Entity(entityUuid = null, entityType = EntityType.NFC) to listOf(Screen.NFC),
             DeepLink.Entity(entityUuid = null, entityType = EntityType.TASK) to listOf(Screen.TaskList),
             DeepLink.Entity(entityUuid = uuid, entityType = EntityType.TASK) to listOf(Screen.TaskList, Screen.TaskDetail(uuid = uuid.toString())),
         )

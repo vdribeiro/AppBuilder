@@ -15,5 +15,6 @@ enum class EntityType {
     ACCOUNT,
     USER,
     DEVICE_LOCATION,
+    NFC,
     TASK,
 }

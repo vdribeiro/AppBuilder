@@ -84,6 +84,20 @@ class NavigationStore(
                         onClick = { router.navigate(screen = Screen.RegistryList, option = Router.NavOption.CLEAR) },
                     )
                 )
+                if (listOf(
+                        EntityType.CLIENT_FLAG,
+                        EntityType.CLIENT_CONFIG,
+                        EntityType.SERVER_FLAG,
+                        EntityType.SERVER_CONFIG
+                    ).any { permissions[it] != null }
+                ) add(
+                    NavigationItem(
+                        selected = state.selected == NavigationRoute.CONFIG,
+                        text = "config",
+                        icon = Icons.Filled.Settings,
+                        onClick = { router.navigate(screen = Screen.Configs, option = Router.NavOption.CLEAR) },
+                    )
+                )
                 if (ClientFlags.value.notifications && permissions[EntityType.NOTIFICATION] != null) add(
                     NavigationItem(
                         selected = state.selected == NavigationRoute.NOTIFICATION,
@@ -100,7 +114,7 @@ class NavigationStore(
                         onClick = { router.navigate(screen = Screen.DeviceLocation, option = Router.NavOption.CLEAR) },
                     )
                 )
-                if (ClientFlags.value.nfc) add(
+                if (ClientFlags.value.nfc && permissions[EntityType.NFC] != null) add(
                     NavigationItem(
                         selected = state.selected == NavigationRoute.NFC,
                         text = "nfc",
@@ -116,14 +130,6 @@ class NavigationStore(
                         onClick = { router.navigate(screen = Screen.Camera, option = Router.NavOption.CLEAR) },
                     )
                 )
-                if (ClientFlags.value.deviceFiles) add(
-                    NavigationItem(
-                        selected = state.selected == NavigationRoute.DEVICE_FILE,
-                        text = "device_file",
-                        icon = Icons.Filled.Folder,
-                        onClick = { router.navigate(screen = Screen.DeviceFiles, option = Router.NavOption.CLEAR) },
-                    )
-                )
                 if (ClientFlags.value.music) add(
                     NavigationItem(
                         selected = state.selected == NavigationRoute.AUDIO,
@@ -132,18 +138,12 @@ class NavigationStore(
                         onClick = { router.navigate(screen = Screen.Audio, option = Router.NavOption.CLEAR) },
                     )
                 )
-                if (listOf(
-                        EntityType.CLIENT_FLAG,
-                        EntityType.CLIENT_CONFIG,
-                        EntityType.SERVER_FLAG,
-                        EntityType.SERVER_CONFIG
-                    ).any { permissions[it] != null }
-                ) add(
+                if (ClientFlags.value.deviceFiles) add(
                     NavigationItem(
-                        selected = state.selected == NavigationRoute.CONFIG,
-                        text = "config",
-                        icon = Icons.Filled.Settings,
-                        onClick = { router.navigate(screen = Screen.Configs, option = Router.NavOption.CLEAR) },
+                        selected = state.selected == NavigationRoute.DEVICE_FILE,
+                        text = "device_file",
+                        icon = Icons.Filled.Folder,
+                        onClick = { router.navigate(screen = Screen.DeviceFiles, option = Router.NavOption.CLEAR) },
                     )
                 )
                 if (permissions[EntityType.TRANSLATION] != null) add(

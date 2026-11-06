@@ -163,6 +163,7 @@ private fun setBackStack(
         EntityType.ACCOUNT -> listOf(Screen.Login)
         EntityType.USER -> buildList<Screen> { add(Screen.UserList); entityUuid?.let { add(Screen.UserDetail(uuid = it.toString())) } }
         EntityType.DEVICE_LOCATION -> listOf(Screen.DeviceLocation)
+        EntityType.NFC -> listOf(Screen.NFC)
         EntityType.TASK -> buildList<Screen> { add(Screen.TaskList); entityUuid?.let { add(Screen.TaskDetail(uuid = it.toString())) } }
     }
     if (backStack.isNotEmpty()) router.backStack.apply {

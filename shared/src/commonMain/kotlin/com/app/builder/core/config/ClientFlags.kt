@@ -59,7 +59,7 @@ data class ClientFlags(
             broadcast = true,
             push = true,
             pushSync = true,
-            locationCapture = false,
+            locationCapture = true,
             scrollBar = true,
             design = true,
             home = true,

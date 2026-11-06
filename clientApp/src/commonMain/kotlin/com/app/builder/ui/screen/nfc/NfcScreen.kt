@@ -67,17 +67,20 @@ import com.app.builder.ui.core.list.LazyColumn as ListLazyColumn
  *
  * @param actionBarStore The store for action bar.
  * @param navigationStore Drives the bottom navigation bar.
+ * @param store The store for the NFC screen.
  */
 @Composable
 fun NfcScreen(
     actionBarStore: Store<ActionBarState, ActionBarAction>,
     navigationStore: Store<NavigationState, Unit>,
+    store: Store<NfcScreenState, Unit>,
 ) {
     val router = LocalRouter.current
     val nfc = LocalNfcController.current
     val colorScheme = LocalColorScheme.current
 
-    val state by nfc.state.collectAsStateWithLifecycle()
+    val nfcState by nfc.state.collectAsStateWithLifecycle()
+    val state by store.stateFlow.collectAsStateWithLifecycle()
 
     var snackbarMessage by remember { mutableStateOf<String?>(value = null) }
 
@@ -133,10 +136,10 @@ fun NfcScreen(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(space = 8.dp)
                         ) {
-                            if (state != NfcController.State.Idle) ProgressIndicator(modifier = Modifier.size(size = 16.dp))
+                            if (nfcState != NfcController.State.Idle) ProgressIndicator(modifier = Modifier.size(size = 16.dp))
                             Column {
                                 Text(text = "State", fontWeight = FontWeight.Bold)
-                                Text(text = state.toString())
+                                Text(text = nfcState.toString())
                             }
                         }
                     }
@@ -156,13 +159,13 @@ fun NfcScreen(
                             variant = ButtonGroupVariant.STANDARD,
                             items = persistentListOf(
                                 ButtonGroupItem(
-                                    enabled = available && state != NfcController.State.Scanning,
+                                    enabled = available && nfcState != NfcController.State.Scanning,
                                     text = "Start Scan",
                                     icon = Icons.Default.PlayArrow,
                                     onClick = { nfc.read() }
                                 ),
                                 ButtonGroupItem(
-                                    enabled = state != NfcController.State.Idle,
+                                    enabled = nfcState != NfcController.State.Idle,
                                     text = "Stop",
                                     icon = Icons.Default.Stop,
                                     onClick = { nfc.stop() }
@@ -173,7 +176,7 @@ fun NfcScreen(
                 }
             }
 
-            item(key = "write") {
+            if (state.writable) item(key = "write") {
                 Card {
                     Column(
                         modifier = Modifier
@@ -238,7 +241,7 @@ fun NfcScreen(
                                 }
                                 nfc.write(records = listOf(record))
                             }
-                            if (state == NfcController.State.Writing) Button(
+                            if (nfcState == NfcController.State.Writing) Button(
                                 style = ButtonStyle.TEXT,
                                 text = "Cancel Write",
                                 content = { Icon(imageVector = Icons.Default.Close) }
@@ -262,5 +265,6 @@ private fun NfcScreenPreview() = Preview {
     NfcScreen(
         actionBarStore = previewStore(initialState = ActionBarState(avatarName = "NFC")),
         navigationStore = previewStore(initialState = NavigationState()),
+        store = previewStore(initialState = NfcScreenState(writable = true)),
     )
 }

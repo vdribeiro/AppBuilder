@@ -12,6 +12,8 @@ import com.app.builder.ui.component.navigation.NavigationStore
 import com.app.builder.ui.navigation.LocalRouter
 import com.app.builder.ui.navigation.Screen
 import com.app.builder.ui.screen.nfc.NfcScreen
+import com.app.builder.ui.screen.nfc.NfcScreenState
+import com.app.builder.ui.screen.nfc.NfcScreenStore
 
 /**
  * The nfc routes.
@@ -24,6 +26,7 @@ fun EntryProviderScope<NavKey>.nfcProvider(useCases: UseCases) {
         NfcScreen(
             actionBarStore = viewModel { ActionBarStore(state = ActionBarState(), router = router, authenticationUseCases = useCases.authenticationUseCases, statusUseCases = useCases.statusUseCases) },
             navigationStore = viewModel { NavigationStore(state = NavigationState(selected = NavigationRoute.NFC), router = router, authenticationUseCases = useCases.authenticationUseCases) },
+            store = viewModel { NfcScreenStore(state = NfcScreenState(), authenticationUseCases = useCases.authenticationUseCases) },
         )
     }
 }

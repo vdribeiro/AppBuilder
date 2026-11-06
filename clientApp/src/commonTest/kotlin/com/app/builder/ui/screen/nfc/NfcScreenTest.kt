@@ -15,6 +15,7 @@ import androidx.compose.ui.test.performTextReplacement
 import com.app.builder.core.nfc.NfcController
 import com.app.builder.core.nfc.NfcRecord
 import com.app.builder.domain.EntityType
+import com.app.builder.domain.UserCredentials
 import com.app.builder.test.FakeData
 import com.app.builder.test.TestCase
 import com.app.builder.ui.LocalNfcController
@@ -41,22 +42,25 @@ private class FakeNfcController(override val available: Boolean): NfcController(
 class NfcScreenTest: TestCase() {
 
     /**
-     * Renders the NFC screen backed by the given controller.
+     * Logs in with [credentials] and renders the NFC screen backed by the given controller.
      *
      * @param nfcController The controller the screen drives.
+     * @param credentials The credentials to log in with.
      */
-    private suspend fun ComposeUiTest.setUpScreen(nfcController: NfcController) {
+    private suspend fun ComposeUiTest.setUpScreen(nfcController: NfcController, credentials: UserCredentials = FakeData.adminCredentials) {
         val authenticationUseCases = dependency.get()
             .userGraph
             .useCases
             .authenticationUseCases
+        authenticationUseCases.login(credentials = credentials)
 
         val actionBarStore = ActionBarStore(state = ActionBarState(), router = router, authenticationUseCases = authenticationUseCases)
         val navigationStore = NavigationStore(state = NavigationState(selected = NavigationRoute.NFC), router = router, authenticationUseCases = authenticationUseCases)
+        val store = NfcScreenStore(state = NfcScreenState(), authenticationUseCases = authenticationUseCases)
 
         setUI {
             CompositionLocalProvider(LocalNfcController provides nfcController) {
-                NfcScreen(actionBarStore = actionBarStore, navigationStore = navigationStore)
+                NfcScreen(actionBarStore = actionBarStore, navigationStore = navigationStore, store = store)
             }
         }
     }
@@ -113,5 +117,14 @@ class NfcScreenTest: TestCase() {
 
         onNodeWithText(text = "Cancel Write").assertDoesNotExist()
         assertTrue(actual = nfcController.written.size == 1)
+    }
+
+    /** Verifies that the write section is hidden without NFC write permission, while scanning stays available. */
+    @Test
+    fun writeWithoutPermission() = runUITest {
+        setUpScreen(nfcController = FakeNfcController(available = true), credentials = FakeData.credentials)
+
+        onNodeWithText(text = "Start Scan").assertIsEnabled()
+        onNodeWithText(text = "Write Tag").assertDoesNotExist()
     }
 }

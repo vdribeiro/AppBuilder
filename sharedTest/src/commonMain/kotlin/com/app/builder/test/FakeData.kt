@@ -101,6 +101,7 @@ object FakeData {
                 EntityType.ACCOUNT -> Permission.READ
                 EntityType.USER -> Permission.READ
                 EntityType.DEVICE_LOCATION -> Permission.WRITE
+                EntityType.NFC -> Permission.READ
                 EntityType.TASK -> Permission.READ
             }?.let { type to it }
         }.toMap()
