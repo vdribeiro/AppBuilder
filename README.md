@@ -507,10 +507,10 @@ Gate every new feature behind a flag, and give it the flag before its first scre
 **Client App**
 
 1. **Components**: `ui/component/{component}` with `{Component}`, `{Component}StateAction` and `{Component}Store`.
-2. **Screen**: `ui/screen/{feature}` with `{Feature}Screen`, `{Feature}ScreenStateAction` and `{Feature}ScreenStore`.
+2. **Screen**: `ui/navigation/{feature}` with `{Feature}Screen`, `{Feature}ScreenStateAction`, `{Feature}ScreenStore` and the feature's `{Feature}EntryProvider`. One package per navigation item, so a list and its detail screen share it.
 3. **Gateway**: `domain/gateway/{feature}` with a `{Feature}Gateway` implementing `{Feature}UseCases` and/or `{Feature}Repository`, mappers between the domain model and the SQLDelight schema, and the `.sq` files under `sqldelight`. Register it in `Gateways`, and its interfaces in `UseCases` and/or `Repositories`.
 4. **Scheduler**: handle the entity in `domain/scheduler/JobProvider`, which switches on `EntityType` and `Job.Type` and delegates to the feature's **`Repository`**.
-5. **Navigation**: add the screen to `Screen`, its route to the `provider` package, and link it in `Navigation`, gated by the flag.
+5. **Navigation**: add the screen to `Screen`, its route to the feature's entry provider, and link it in `Navigation`, gated by the flag. For a navigation bar item, add a `NavigationRoute` in its `NavigationSection` and resolve it in `NavigationStore`.
 
 **Server**
 
@@ -548,24 +548,24 @@ Adding something is a compile-time change in one known place, and removing it br
 
 **Everything else**
 
-| Adding            | Register it in                                                                                                      |
-|-------------------|---------------------------------------------------------------------------------------------------------------------|
-| Entity type       | `shared/domain/EntityType` (required by the offline engine)                                                         |
-| Endpoint          | `shared/data/http/URL`                                                                                              |
-| HTTP header       | `shared/data/http/Header`                                                                                           |
-| Query parameter   | `shared/data/http/Query`                                                                                            |
-| Push payload type | `shared/domain/PushPayload`, then handle it in `clientApp/domain/push/PayloadManager`                               |
-| Feature toggle    | `ClientFlags` and `ServerFlags`                                                                                     |
-| Tunable value     | `ClientConfigs` and `ServerConfigs`                                                                                 |
-| Translation       | `main/resources/static/translations.json`, mirrored in `composeResources/files/translations.json`                   |
-| Persisted file    | A `StorageFile` in `CoreFile` (`appCore`) or `AppFile` (`clientApp`), plus that index's `all` list                  |
-| Screen            | `ui/navigation/Screen` with a stable `@SerialName`, an entry in `ui/navigation/provider` and the `Navigation` graph |
-| Background job    | `domain/scheduler/JobProvider`                                                                                      |
-| Permission        | `ui/permission/Permission`, then each platform's `PermissionManager`                                                |
-| Telemetry engine  | `Telemetry.engines`                                                                                                 |
-| Server table      | `data/database/table`, plus the table list in `Database`                                                            |
-| Server route      | `domain/route/provider`, plus the link in `Routing`                                                                 |
-| Test fixture      | A `FakeData` value in `sharedTest` and a branch in `createMockHttpEngine`, not a mock per test                      |
+| Adding            | Register it in                                                                                                       |
+|-------------------|----------------------------------------------------------------------------------------------------------------------|
+| Entity type       | `shared/domain/EntityType` (required by the offline engine)                                                          |
+| Endpoint          | `shared/data/http/URL`                                                                                               |
+| HTTP header       | `shared/data/http/Header`                                                                                            |
+| Query parameter   | `shared/data/http/Query`                                                                                             |
+| Push payload type | `shared/domain/PushPayload`, then handle it in `clientApp/domain/push/PayloadManager`                                |
+| Feature toggle    | `ClientFlags` and `ServerFlags`                                                                                      |
+| Tunable value     | `ClientConfigs` and `ServerConfigs`                                                                                  |
+| Translation       | `main/resources/static/translations.json`, mirrored in `composeResources/files/translations.json`                    |
+| Persisted file    | A `StorageFile` in `CoreFile` (`appCore`) or `AppFile` (`clientApp`), plus that index's `all` list                   |
+| Screen            | `ui/navigation/Screen` with a stable `@SerialName`, an entry in `ui/navigation/{feature}` and the `Navigation` graph |
+| Background job    | `domain/scheduler/JobProvider`                                                                                       |
+| Permission        | `ui/permission/Permission`, then each platform's `PermissionManager`                                                 |
+| Telemetry engine  | `Telemetry.engines`                                                                                                  |
+| Server table      | `data/database/table`, plus the table list in `Database`                                                             |
+| Server route      | `domain/route/provider`, plus the link in `Routing`                                                                  |
+| Test fixture      | A `FakeData` value in `sharedTest` and a branch in `createMockHttpEngine`, not a mock per test                       |
 
 `ImageResource` also pairs the path with the generated `Res.drawable` reference, so the UI never touches generated identifiers.
 Persisted files are never opened by path: `Files.kt` concatenates every module index into `files`, which a full wipe iterates over, and `logFiles()` warns at startup when two files claim the same path.
@@ -618,11 +618,11 @@ The `design` module splits into:
 
 Apart from those caches, nothing in the module holds state or talks to a gateway: components take data and callbacks as parameters, which is why the whole module is previewable.
 
-The showcase is a section of the app rather than a separate target, so it runs on every platform. `ui/screen/design/DesignScreen` in `clientApp` hosts it like any other screen.
+The showcase is a section of the app rather than a separate target, so it runs on every platform. `ui/navigation/design` in `clientApp` hosts it as four screens, one per catalog, like any other screen.
 
-* `DesignScreen` takes the `DesignSection` to render plus `onSectionClick` and `onAppClick` callbacks, and handles only its own back action, which clears the stack to `Screen.Home`.
-* Each section has its own `Screen.Design{Section}` key. `designProvider` maps each key to its section and routes both callbacks through the `Router`.
-* Inside the showcase, the app's navigation bar is replaced by the showcase's own, whose `App` entry returns to the app's landing screen. Both directions use `NavOption.CLEAR`, like every navigation bar entry.
+* `DesignComponentsScreen`, `DesignColorsScreen`, `DesignShapesScreen` and `DesignTypographyScreen` each have their own `Screen.Design{Section}` key and handle only their own back action, which clears the stack to `Screen.Home`.
+* The colors and shapes screens share `DesignScreenStore`, which persists the customized theme.
+* The screens show the design section of the app's navigation bar, whose `App` entry returns to the app's landing screen. Both directions use `NavOption.CLEAR`, like every navigation bar entry.
 
 The whole showcase is behind the `design` client flag.
 
@@ -1384,7 +1384,7 @@ Write the local change first, then queue a `Job` handled in `JobProvider`. See [
 
 ### Where are the Splash, Home and Error screens?
 
-Already in `clientApp`'s `ui/screen/` as thin placeholders (`splash`, `home`, `error`), so replacing one means editing its composable. See [Navigation](#navigation).
+Already in `clientApp`'s `ui/navigation/` as thin placeholders (`splash`, `home`, `error`), so replacing one means editing its composable. See [Navigation](#navigation).
 
 ### How do I handle platform-specific permissions?
 

@@ -298,6 +298,7 @@ class NavigationTest: TestCase() {
         val authenticatedUseCases = dependency.get()
             .getUserDependency(account = FakeData.adminAccount)
             .useCases
+        authenticatedUseCases.authenticationUseCases.login(credentials = FakeData.adminCredentials)
         router.navigate(screen = Screen.DesignComponents)
 
         setUI {
@@ -305,23 +306,23 @@ class NavigationTest: TestCase() {
         }
         waitForIdle()
 
-        onNodeWithText(text = "Colors").performClick()
+        onNodeWithText(text = "design_colors").performClick()
         waitForIdle()
         assertEquals(expected = listOf(Screen.DesignColors), actual = router.backStack.toList())
 
-        onNodeWithText(text = "Shapes").performClick()
+        onNodeWithText(text = "design_shapes").performClick()
         waitForIdle()
         assertEquals(expected = listOf(Screen.DesignShapes), actual = router.backStack.toList())
 
-        onNodeWithText(text = "Typography").performClick()
+        onNodeWithText(text = "design_typography").performClick()
         waitForIdle()
         assertEquals(expected = listOf(Screen.DesignTypography), actual = router.backStack.toList())
 
-        onNodeWithText(text = "Components").performClick()
+        onNodeWithText(text = "design_components").performClick()
         waitForIdle()
         assertEquals(expected = listOf(Screen.DesignComponents), actual = router.backStack.toList())
 
-        onNodeWithText(text = "App").performClick()
+        onNodeWithText(text = "app").performClick()
         waitForIdle()
         assertEquals(expected = listOf(authenticatedScreen), actual = router.backStack.toList())
     }
