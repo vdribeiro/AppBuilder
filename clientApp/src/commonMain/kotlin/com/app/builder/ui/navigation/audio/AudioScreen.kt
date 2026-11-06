@@ -23,11 +23,9 @@ import com.app.builder.data.resource.AudioResource.Pulse
 import com.app.builder.ui.LocalAudioPlayer
 import com.app.builder.ui.Preview
 import com.app.builder.ui.component.actionbar.ActionBar
-import com.app.builder.ui.component.actionbar.ActionBarAction
-import com.app.builder.ui.component.actionbar.ActionBarState
 import com.app.builder.ui.component.navigation.Navigation
 import com.app.builder.ui.component.navigation.NavigationRoute
-import com.app.builder.ui.component.navigation.NavigationState
+import com.app.builder.ui.component.session.SessionState
 import com.app.builder.ui.core.button.Button
 import com.app.builder.ui.core.button.ButtonStyle
 import com.app.builder.ui.core.button.Checkbox
@@ -44,13 +42,11 @@ import com.app.builder.ui.store.previewStore
 /**
  * The Audio Screen.
  *
- * @param actionBarStore The store for action bar.
- * @param navigationStore Drives the bottom navigation bar.
+ * @param sessionStore The session store shared by every screen.
  */
 @Composable
 fun AudioScreen(
-    actionBarStore: Store<ActionBarState, ActionBarAction>,
-    navigationStore: Store<NavigationState, Unit>,
+    sessionStore: Store<SessionState, Unit>,
 ) {
     val audioPlayer = LocalAudioPlayer.current
     val router = LocalRouter.current
@@ -64,8 +60,8 @@ fun AudioScreen(
 
     Screen(
         onBackClick = { router.navigate(screen = Screen.Home, option = Router.NavOption.CLEAR) },
-        topBar = { ActionBar(store = actionBarStore) },
-        bottomBar = { Navigation(store = navigationStore, selected = NavigationRoute.AUDIO) },
+        topBar = { ActionBar(sessionStore = sessionStore) },
+        bottomBar = { Navigation(sessionStore = sessionStore, selected = NavigationRoute.AUDIO) },
     ) {
         if (!ClientFlags.value.music || !audioPlayer.available) {
             Text(modifier = Modifier.align(alignment = Alignment.Center), text = "audio_unavailable")
@@ -161,7 +157,6 @@ fun AudioScreen(
 @Composable
 private fun AudioScreenPreview() = Preview {
     AudioScreen(
-        actionBarStore = previewStore(initialState = ActionBarState(avatarName = "Audio")),
-        navigationStore = previewStore(initialState = NavigationState()),
+        sessionStore = previewStore(initialState = SessionState()),
     )
 }

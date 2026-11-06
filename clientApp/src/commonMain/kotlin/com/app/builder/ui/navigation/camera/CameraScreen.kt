@@ -23,11 +23,9 @@ import com.app.builder.core.platform.platform
 import com.app.builder.ui.LocalCamera
 import com.app.builder.ui.Preview
 import com.app.builder.ui.component.actionbar.ActionBar
-import com.app.builder.ui.component.actionbar.ActionBarAction
-import com.app.builder.ui.component.actionbar.ActionBarState
 import com.app.builder.ui.component.navigation.Navigation
 import com.app.builder.ui.component.navigation.NavigationRoute
-import com.app.builder.ui.component.navigation.NavigationState
+import com.app.builder.ui.component.session.SessionState
 import com.app.builder.ui.core.button.Button
 import com.app.builder.ui.core.button.ButtonStyle
 import com.app.builder.ui.core.overlay.Snackbar
@@ -45,13 +43,11 @@ import com.app.builder.ui.store.previewStore
 /**
  * The Camera Screen.
  *
- * @param actionBarStore The store for action bar.
- * @param navigationStore Drives the bottom navigation bar.
+ * @param sessionStore The session store shared by every screen.
  */
 @Composable
 fun CameraScreen(
-    actionBarStore: Store<ActionBarState, ActionBarAction>,
-    navigationStore: Store<NavigationState, Unit>,
+    sessionStore: Store<SessionState, Unit>,
 ) {
     val router = LocalRouter.current
     val permissionManager = LocalPermissionManager.current
@@ -65,8 +61,8 @@ fun CameraScreen(
 
     Screen(
         onBackClick = { router.navigate(screen = Screen.Home, option = Router.NavOption.CLEAR) },
-        topBar = { ActionBar(store = actionBarStore) },
-        bottomBar = { Navigation(store = navigationStore, selected = NavigationRoute.CAMERA) },
+        topBar = { ActionBar(sessionStore = sessionStore) },
+        bottomBar = { Navigation(sessionStore = sessionStore, selected = NavigationRoute.CAMERA) },
         snackbarHost = {
             snackbarMessage?.let {
                 Snackbar(message = it, onDismiss = { snackbarMessage = null })
@@ -155,7 +151,6 @@ fun CameraScreen(
 @Composable
 private fun CameraScreenPreview() = Preview {
     CameraScreen(
-        actionBarStore = previewStore(initialState = ActionBarState(avatarName = "Camera")),
-        navigationStore = previewStore(initialState = NavigationState()),
+        sessionStore = previewStore(initialState = SessionState()),
     )
 }

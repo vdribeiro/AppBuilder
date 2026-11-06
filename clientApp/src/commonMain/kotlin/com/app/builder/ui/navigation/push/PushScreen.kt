@@ -6,13 +6,11 @@ import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.app.builder.ui.Preview
 import com.app.builder.ui.component.actionbar.ActionBar
-import com.app.builder.ui.component.actionbar.ActionBarAction
-import com.app.builder.ui.component.actionbar.ActionBarState
 import com.app.builder.ui.component.button.PushPayloadType
 import com.app.builder.ui.component.container.PushForm
 import com.app.builder.ui.component.navigation.Navigation
 import com.app.builder.ui.component.navigation.NavigationRoute
-import com.app.builder.ui.component.navigation.NavigationState
+import com.app.builder.ui.component.session.SessionState
 import com.app.builder.ui.navigation.LocalRouter
 import com.app.builder.ui.navigation.Router
 import com.app.builder.ui.navigation.Screen
@@ -25,14 +23,12 @@ import com.app.builder.ui.store.previewStore
  * a type selector, a broadcast toggle, notification title/description fields (when the type is [PushPayloadType.NOTIFICATION]),
  * a user multi-selector (when not broadcasting), and a send button.
  *
- * @param actionBarStore The store for action bar.
- * @param navigationStore Drives the bottom navigation bar.
+ * @param sessionStore The session store shared by every screen.
  * @param store Provides the push form state and receives its actions.
  */
 @Composable
 fun PushScreen(
-    actionBarStore: Store<ActionBarState, ActionBarAction>,
-    navigationStore: Store<NavigationState, Unit>,
+    sessionStore: Store<SessionState, Unit>,
     store: Store<PushScreenState, PushScreenAction>,
 ) {
     val state by store.stateFlow.collectAsStateWithLifecycle()
@@ -41,8 +37,8 @@ fun PushScreen(
 
     Screen(
         onBackClick = { router.navigate(screen = Screen.Home, option = Router.NavOption.CLEAR) },
-        topBar = { ActionBar(store = actionBarStore) },
-        bottomBar = { Navigation(store = navigationStore, selected = NavigationRoute.NOTIFICATION) },
+        topBar = { ActionBar(sessionStore = sessionStore) },
+        bottomBar = { Navigation(sessionStore = sessionStore, selected = NavigationRoute.NOTIFICATION) },
     ) {
         PushForm(
             type = state.type,
@@ -67,8 +63,7 @@ fun PushScreen(
 @Composable
 private fun PushScreenPreview() = Preview {
     PushScreen(
-        actionBarStore = previewStore(initialState = ActionBarState(avatarName = "Tails")),
-        navigationStore = previewStore(initialState = NavigationState()),
+        sessionStore = previewStore(initialState = SessionState()),
         store = previewStore(initialState = PushScreenState()),
     )
 }

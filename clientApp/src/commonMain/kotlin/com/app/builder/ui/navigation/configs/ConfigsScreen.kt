@@ -17,14 +17,12 @@ import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.app.builder.ui.Preview
 import com.app.builder.ui.component.actionbar.ActionBar
-import com.app.builder.ui.component.actionbar.ActionBarAction
-import com.app.builder.ui.component.actionbar.ActionBarState
 import com.app.builder.ui.component.list.ConfigItem
 import com.app.builder.ui.component.list.ConfigList
 import com.app.builder.ui.component.list.ConfigValue
 import com.app.builder.ui.component.navigation.Navigation
 import com.app.builder.ui.component.navigation.NavigationRoute
-import com.app.builder.ui.component.navigation.NavigationState
+import com.app.builder.ui.component.session.SessionState
 import com.app.builder.ui.core.list.LazyColumn
 import com.app.builder.ui.core.navigation.NavigationItem
 import com.app.builder.ui.core.navigation.NavigationRail
@@ -39,14 +37,12 @@ import com.app.builder.ui.store.previewStore
 /**
  * The Config Screen, stacking the client and server flags and configs the current user may read as one scrollable page, with a side navigation rail jumping to each section.
  *
- * @param actionBarStore The store for action bar.
- * @param navigationStore The store driving the bottom navigation bar.
+ * @param sessionStore The session store shared by every screen.
  * @param store The store driving the config sections displayed in the screen.
  */
 @Composable
 fun ConfigsScreen(
-    actionBarStore: Store<ActionBarState, ActionBarAction>,
-    navigationStore: Store<NavigationState, Unit>,
+    sessionStore: Store<SessionState, Unit>,
     store: Store<ConfigScreenState, ConfigScreenAction>
 ) {
     val state by store.stateFlow.collectAsStateWithLifecycle()
@@ -61,8 +57,8 @@ fun ConfigsScreen(
 
     Screen(
         onBackClick = { router.navigate(screen = Screen.Home, option = Router.NavOption.CLEAR) },
-        topBar = { ActionBar(store = actionBarStore) },
-        bottomBar = { Navigation(store = navigationStore, selected = NavigationRoute.CONFIG) }
+        topBar = { ActionBar(sessionStore = sessionStore) },
+        bottomBar = { Navigation(sessionStore = sessionStore, selected = NavigationRoute.CONFIG) }
     ) {
         Row(modifier = Modifier.fillMaxSize()) {
             NavigationRail(
@@ -108,8 +104,7 @@ fun ConfigsScreen(
 @Composable
 private fun ConfigsScreenPreview() = Preview {
     ConfigsScreen(
-        actionBarStore = previewStore(initialState = ActionBarState(avatarName = "Sonic")),
-        navigationStore = previewStore(initialState = NavigationState()),
+        sessionStore = previewStore(initialState = SessionState()),
         store = previewStore(
             initialState = ConfigScreenState(
                 sections = ConfigType.entries.map { configType ->
