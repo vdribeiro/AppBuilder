@@ -3,26 +3,49 @@ package com.app.builder.ui.navigation.design
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
+import com.app.builder.domain.gateway.UseCases
+import com.app.builder.ui.component.actionbar.ActionBarState
+import com.app.builder.ui.component.actionbar.ActionBarStore
 import com.app.builder.ui.component.navigation.NavigationState
+import com.app.builder.ui.navigation.LocalRouter
 import com.app.builder.ui.navigation.Screen
 import com.app.builder.ui.store.Store
 
 /**
  * The design section routes.
  *
+ * @param useCases The use cases.
  * @param navigationStore The navigation bar store shared by every screen.
  */
-fun EntryProviderScope<NavKey>.designProvider(navigationStore: Store<NavigationState, Unit>) {
+fun EntryProviderScope<NavKey>.designProvider(useCases: UseCases, navigationStore: Store<NavigationState, Unit>) {
     entry<Screen.DesignComponents> {
-        DesignComponentsScreen(navigationStore = navigationStore)
+        val router = LocalRouter.current
+        DesignComponentsScreen(
+            actionBarStore = viewModel { ActionBarStore(state = ActionBarState(), router = router, authenticationUseCases = useCases.authenticationUseCases, statusUseCases = useCases.statusUseCases) },
+            navigationStore = navigationStore,
+        )
     }
     entry<Screen.DesignColors> {
-        DesignColorsScreen(navigationStore = navigationStore, store = viewModel { DesignScreenStore() })
+        val router = LocalRouter.current
+        DesignColorsScreen(
+            actionBarStore = viewModel { ActionBarStore(state = ActionBarState(), router = router, authenticationUseCases = useCases.authenticationUseCases, statusUseCases = useCases.statusUseCases) },
+            navigationStore = navigationStore,
+            store = viewModel { DesignScreenStore() },
+        )
     }
     entry<Screen.DesignShapes> {
-        DesignShapesScreen(navigationStore = navigationStore, store = viewModel { DesignScreenStore() })
+        val router = LocalRouter.current
+        DesignShapesScreen(
+            actionBarStore = viewModel { ActionBarStore(state = ActionBarState(), router = router, authenticationUseCases = useCases.authenticationUseCases, statusUseCases = useCases.statusUseCases) },
+            navigationStore = navigationStore,
+            store = viewModel { DesignScreenStore() },
+        )
     }
     entry<Screen.DesignTypography> {
-        DesignTypographyScreen(navigationStore = navigationStore)
+        val router = LocalRouter.current
+        DesignTypographyScreen(
+            actionBarStore = viewModel { ActionBarStore(state = ActionBarState(), router = router, authenticationUseCases = useCases.authenticationUseCases, statusUseCases = useCases.statusUseCases) },
+            navigationStore = navigationStore,
+        )
     }
 }

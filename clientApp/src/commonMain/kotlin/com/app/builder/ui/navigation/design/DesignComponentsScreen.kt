@@ -4,11 +4,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import com.app.builder.ui.Preview
+import com.app.builder.ui.component.actionbar.ActionBar
+import com.app.builder.ui.component.actionbar.ActionBarAction
+import com.app.builder.ui.component.actionbar.ActionBarState
 import com.app.builder.ui.component.navigation.Navigation
 import com.app.builder.ui.component.navigation.NavigationRoute
 import com.app.builder.ui.component.navigation.NavigationState
-import com.app.builder.ui.core.bar.TopBar
-import com.app.builder.ui.core.text.Text
 import com.app.builder.ui.navigation.LocalRouter
 import com.app.builder.ui.navigation.Router
 import com.app.builder.ui.navigation.Screen
@@ -21,11 +22,13 @@ import com.app.builder.ui.store.previewStore
  * The design system's component catalog.
  *
  * @param modifier [Modifier] applied to the root container.
+ * @param actionBarStore The store for action bar.
  * @param navigationStore Drives the bottom navigation bar.
  */
 @Composable
 fun DesignComponentsScreen(
     modifier: Modifier = Modifier,
+    actionBarStore: Store<ActionBarState, ActionBarAction>,
     navigationStore: Store<NavigationState, Unit>,
 ) {
     val router = LocalRouter.current
@@ -33,7 +36,7 @@ fun DesignComponentsScreen(
     Screen(
         modifier = modifier,
         onBackClick = { router.navigate(screen = Screen.Home, option = Router.NavOption.CLEAR) },
-        topBar = { TopBar(title = { Text(text = "design_components") }) },
+        topBar = { ActionBar(store = actionBarStore) },
         bottomBar = { Navigation(store = navigationStore, selected = NavigationRoute.DESIGN_COMPONENTS) },
     ) {
         ComponentsShowcase()
@@ -43,5 +46,8 @@ fun DesignComponentsScreen(
 @PreviewLightDark
 @Composable
 private fun DesignComponentsScreenPreview() = Preview {
-    DesignComponentsScreen(navigationStore = previewStore(initialState = NavigationState()))
+    DesignComponentsScreen(
+        actionBarStore = previewStore(initialState = ActionBarState(avatarName = "Tails")),
+        navigationStore = previewStore(initialState = NavigationState())
+    )
 }

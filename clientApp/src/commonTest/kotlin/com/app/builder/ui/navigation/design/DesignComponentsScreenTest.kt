@@ -29,12 +29,13 @@ import com.app.builder.ui.showcase.core.text.TextShowcase
 
 class DesignComponentsScreenTest: DesignScreenTestCase() {
 
-    /** Verifies that the design screens show the design section of the navigation bar, with every design route and the app item. */
+    /** Verifies that the design screens show the action bar and the design section of the navigation bar, with every design route and the app item. */
     @Test
     fun designNavigationItems() = runUITest {
-        setShowcase { DesignComponentsScreen(navigationStore = navigationStore) }
+        setShowcase { DesignComponentsScreen(actionBarStore = actionBarStore, navigationStore = navigationStore) }
         waitForIdle()
 
+        onNodeWithTag(testTag = "action_bar").assertIsDisplayed()
         onNodeWithTag(testTag = "navigation_bar").assertIsDisplayed()
         listOf("app", "design_components", "design_colors", "design_shapes", "design_typography").forEach { text ->
             onNode(matcher = hasText(text = text) and hasAnyAncestor(matcher = hasTestTag(testTag = "navigation_bar"))).assertIsDisplayed()
@@ -45,7 +46,7 @@ class DesignComponentsScreenTest: DesignScreenTestCase() {
     /** Verifies that selecting another design route in the navigation bar opens its screen. */
     @Test
     fun designNavigationSectionClick() = runUITest {
-        setShowcase { DesignComponentsScreen(navigationStore = navigationStore) }
+        setShowcase { DesignComponentsScreen(actionBarStore = actionBarStore, navigationStore = navigationStore) }
         waitForIdle()
 
         onNodeWithText(text = "design_colors").performClick()
@@ -57,7 +58,7 @@ class DesignComponentsScreenTest: DesignScreenTestCase() {
     /** Verifies that the navigation bar's app item leaves the design section. */
     @Test
     fun designNavigationAppClick() = runUITest {
-        setShowcase { DesignComponentsScreen(navigationStore = navigationStore) }
+        setShowcase { DesignComponentsScreen(actionBarStore = actionBarStore, navigationStore = navigationStore) }
         waitForIdle()
 
         onNodeWithText(text = "app").performClick()

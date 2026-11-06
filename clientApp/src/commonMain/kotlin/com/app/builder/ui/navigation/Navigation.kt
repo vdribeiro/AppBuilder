@@ -91,7 +91,7 @@ fun UnauthenticatedNavigation(
             errorProvider()
             if (useCases == null) return@Navigation
             if (ClientFlags.value.home) homeProvider(useCases = useCases, navigationStore = navigationStore)
-            if (ClientFlags.value.userProfile) userProfileProvider(useCases = useCases, navigationStore = navigationStore)
+            if (ClientFlags.value.userProfile) userProfileProvider(useCases = useCases)
             if (ClientFlags.value.login) authenticationProvider(useCases = useCases)
         }
     )
@@ -117,8 +117,8 @@ fun AuthenticatedNavigation(
             if (useCases == null || navigationStore == null) return@Navigation
             configsProvider(useCases = useCases, navigationStore = navigationStore)
             if (ClientFlags.value.home) homeProvider(useCases = useCases, navigationStore = navigationStore)
-            if (ClientFlags.value.design) designProvider(navigationStore = navigationStore)
-            if (ClientFlags.value.userProfile) userProfileProvider(useCases = useCases, navigationStore = navigationStore)
+            if (ClientFlags.value.design) designProvider(useCases = useCases, navigationStore = navigationStore)
+            if (ClientFlags.value.userProfile) userProfileProvider(useCases = useCases)
             if (ClientFlags.value.users) userProvider(useCases = useCases, navigationStore = navigationStore)
             if (ClientFlags.value.locationCapture) deviceLocationProvider(useCases = useCases, navigationStore = navigationStore)
             if (ClientFlags.value.nfc) nfcProvider(useCases = useCases, navigationStore = navigationStore)

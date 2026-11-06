@@ -5,6 +5,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.test.ComposeUiTest
 import com.app.builder.data.theme.CustomTheme
 import com.app.builder.test.TestCase
+import com.app.builder.ui.component.actionbar.ActionBarAction
+import com.app.builder.ui.component.actionbar.ActionBarState
 import com.app.builder.ui.component.navigation.NavigationRoute
 import com.app.builder.ui.component.navigation.NavigationState
 import com.app.builder.ui.store.Store
@@ -23,6 +25,9 @@ abstract class DesignScreenTestCase: TestCase() {
             actions.add(element = action)
         }
     }
+
+    /** Action bar store holding a signed in user's avatar. */
+    protected val actionBarStore = Store<ActionBarState, ActionBarAction>(initialState = ActionBarState(avatarName = "Tails"))
 
     /** Navigation store holding every design route. */
     protected val navigationStore = Store<NavigationState, Unit>(

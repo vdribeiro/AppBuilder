@@ -9,8 +9,6 @@ import com.app.builder.AppInfo
 import com.app.builder.ui.Preview
 import com.app.builder.ui.component.bar.TopActionBar
 import com.app.builder.ui.component.container.UserProfile
-import com.app.builder.ui.component.navigation.Navigation
-import com.app.builder.ui.component.navigation.NavigationState
 import com.app.builder.ui.navigation.LocalRouter
 import com.app.builder.ui.navigation.Screen
 import com.app.builder.ui.navigation.open
@@ -21,12 +19,10 @@ import com.app.builder.ui.store.previewStore
 /**
  * The User Profile Screen.
  *
- * @param navigationStore Drives the bottom navigation bar.
  * @param store Provides the user profile state and receives its actions
  */
 @Composable
 fun UserProfileScreen(
-    navigationStore: Store<NavigationState, Unit>,
     store: Store<UserProfileScreenState, UserProfileScreenAction>
 ) {
     val state by store.stateFlow.collectAsStateWithLifecycle()
@@ -42,7 +38,6 @@ fun UserProfileScreen(
                 } else null
             )
         },
-        bottomBar = { Navigation(store = navigationStore) }
     ) {
         UserProfile(
             guest = state.guest,
@@ -66,7 +61,6 @@ fun UserProfileScreen(
 @Composable
 private fun UserProfileScreenPreview() = Preview {
     UserProfileScreen(
-        navigationStore = previewStore(initialState = NavigationState()),
         store = previewStore(initialState = UserProfileScreenState()),
     )
 }
