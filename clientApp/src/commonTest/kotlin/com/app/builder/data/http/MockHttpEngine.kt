@@ -39,7 +39,7 @@ fun createMockHttpEngine(): HttpClientEngine = TestEngine { request ->
                 path.startsWith(prefix = URL.ServerConfigs.path) -> respondMock(content = encode(value = FakeData.serverConfigs))
                 path.startsWith(prefix = URL.Translations.path) -> respondMock(content = encode(value = FakeData.translations))
                 path.startsWith(prefix = URL.Registries.path) -> respondMock(content = encode(value = listOf(FakeData.registry)))
-                path.startsWith(prefix = URL.Accounts.path) -> respondMock(content = encode(value = listOf(FakeData.adminAccount, FakeData.account)))
+                path.startsWith(prefix = "${URL.Accounts.path}/") -> respondMock(content = encode(value = FakeData.account))
                 path.startsWith(prefix = "${URL.Users.path}/") -> respondMock(content = encode(value = FakeData.adminUser))
                 path.startsWith(prefix = URL.Users.path) -> respondMock(content = encode(value = listOf(FakeData.adminUser, FakeData.user)))
                 path.startsWith(prefix = "${URL.Tasks.path}/") -> respondMock(content = encode(value = FakeData.task))
