@@ -1039,15 +1039,8 @@ Every route shares a global rate limit; those marked *rate-limited* have a stric
 | `POST /api/device-location`                                  | Report a device location fix                                | JWT, `DEVICE_LOCATION` `WRITE`                    | `deviceLocation` |
 | `GET /api/[entity]` · `/api/[entity]/{uuid}`                 | Delta-sync a entity / fetch one                             | JWT, `ENTITY` `READ`                              | Feature flag     |
 | `POST /api/[entity]`                                         | Upsert a feature entity                                     | JWT, `ENTITY` `WRITE`                             | Feature flag     |
-| `GET /api/[entity]-accesses`                                 | Delta-sync entity accesses                                  | JWT, `ENTITY` `READ`                              | Feature flag     |
-| `POST /api/[entity]-accesses`                                | Grant or revoke a user's access to a feature (*2)           | JWT, `ENTITY` `WRITE`                             | Feature flag     |
 
 (*1) `USER` `WRITE` may upsert any user. `USER` `READ` may only update itself, keeping its stored `deletedAt`. Deleting a user with an active account is refused. Disabled accounts are narrowed further, see [Account Deletion](#account-deletion).
-
-(*2) A feature entity access is membership only: it makes the entity visible to that user, while what they can do with it still comes from their entity permission.
-Creating an entity grants its creator an access. Managing access needs entity `WRITE` plus an active access to the entity, and covers any user. 
-Revoking is a soft delete that sets the access's `deletedAt`, so the user still syncs its own revoked access and drops the entity, and granting again clears it.
-In the app, the entity detail lists every user with a checkbox for access, editable in edit mode and applied on Save. When an access sync brings a newly granted access for the current user, the app fetches that entity, since a entity older than the last entity sync wouldn't arrive otherwise.
 
 ## Platform Implementations
 
@@ -1184,7 +1177,7 @@ Declarations that resolve to a distinct implementation per source set:
 * `Registry`: A request audit entry.
 * `DeviceLocation`: A captured location fix.
 * `Translation`: A `languageIso`/`key`/`value` triple.
-* Sample feature entities and their user joins.
+* Sample feature entities.
 
 **test**: Annotations that exclude code from coverage.
 

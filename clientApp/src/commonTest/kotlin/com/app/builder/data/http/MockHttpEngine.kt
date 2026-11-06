@@ -12,7 +12,6 @@ import com.app.builder.data.serializer.decode
 import com.app.builder.data.serializer.encode
 import com.app.builder.domain.Account
 import com.app.builder.domain.RegistrationForm
-import com.app.builder.domain.TaskUserAccess
 import com.app.builder.domain.UserCredentials
 import com.app.builder.test.FakeData
 
@@ -45,7 +44,6 @@ fun createMockHttpEngine(): HttpClientEngine = TestEngine { request ->
                 path.startsWith(prefix = URL.Users.path) -> respondMock(content = encode(value = listOf(FakeData.adminUser, FakeData.user)))
                 path.startsWith(prefix = "${URL.Tasks.path}/") -> respondMock(content = encode(value = FakeData.task))
                 path.startsWith(prefix = URL.Tasks.path) -> respondMock(content = encode(value = listOf(FakeData.task)))
-                path.startsWith(prefix = URL.TaskAccesses.path) -> respondMock(content = encode(value = listOf(FakeData.taskAccess)))
                 else -> notFound(request = request)
             }
 
@@ -59,11 +57,6 @@ fun createMockHttpEngine(): HttpClientEngine = TestEngine { request ->
                 path.startsWith(prefix = URL.Accounts.path) -> {
                     val account = request.decodeBody<Account>() ?: return@TestEngine badRequest(request = request)
                     respondMock(content = encode(value = account))
-                }
-
-                path.startsWith(prefix = URL.TaskAccesses.path) -> {
-                    val access = request.decodeBody<TaskUserAccess>() ?: return@TestEngine badRequest(request = request)
-                    respondMock(content = encode(value = access))
                 }
 
                 path.startsWith(prefix = URL.Login.path) -> {

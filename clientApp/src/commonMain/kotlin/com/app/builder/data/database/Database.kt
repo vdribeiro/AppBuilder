@@ -10,7 +10,6 @@ import database.Job
 import database.Registry
 import database.Session
 import database.Task
-import database.TaskUserAccess
 import database.Translation
 import database.User
 
@@ -23,7 +22,6 @@ typealias AccountSchema = Account
 typealias UserSchema = User
 typealias DeviceLocationSchema = DeviceLocation
 typealias TaskSchema = Task
-typealias TaskUserAccessSchema = TaskUserAccess
 
 /**
  * Clears all persisted records across all database tables.
@@ -40,7 +38,6 @@ suspend fun AppDatabase.reset() = withContext(context = Dispatcher.IO) {
             userQueries.truncateUser()
             deviceLocationQueries.truncateDeviceLocation()
             taskQueries.truncateTask()
-            taskUserAccessQueries.truncateTaskUserAccess()
         }
     }.onFailure {
         Telemetry.error(tag = TAG, message = "Unable to clear database", throwable = it)

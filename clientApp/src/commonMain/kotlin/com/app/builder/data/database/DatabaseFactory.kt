@@ -12,7 +12,6 @@ import database.Job
 import database.Registry
 import database.Session
 import database.Task
-import database.TaskUserAccess
 import database.User
 
 /**
@@ -65,13 +64,6 @@ class DatabaseFactory(driver: SqlDriver) {
             modifiedAtAdapter = InstantColumnAdapter,
             deletedAtAdapter = InstantColumnAdapter,
             stateAdapter = EnumColumnAdapter()
-        ),
-        TaskUserAccessAdapter = TaskUserAccess.Adapter(
-            uuidAdapter = UuidColumnAdapter,
-            modifiedAtAdapter = InstantColumnAdapter,
-            deletedAtAdapter = InstantColumnAdapter,
-            taskUuidAdapter = UuidColumnAdapter,
-            userUuidAdapter = UuidColumnAdapter,
         ),
         UserAdapter = User.Adapter(
             uuidAdapter = UuidColumnAdapter,

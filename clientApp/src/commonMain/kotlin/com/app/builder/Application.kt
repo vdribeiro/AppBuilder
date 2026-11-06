@@ -289,7 +289,6 @@ object Application {
         repositories.accountRepository.syncAccounts()
         if (ClientFlags.value.registries) repositories.registryRepository.syncRegistries()
         if (ClientFlags.value.tasks) repositories.taskRepository.syncTasks()
-        if (ClientFlags.value.tasks) repositories.taskRepository.syncTaskAccesses()
     }
 
     /** Register lifecycles of services. */
