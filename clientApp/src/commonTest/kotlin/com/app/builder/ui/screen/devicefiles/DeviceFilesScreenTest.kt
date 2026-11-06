@@ -13,7 +13,6 @@ import com.app.builder.test.FakeData
 import com.app.builder.test.TestCase
 import com.app.builder.ui.component.actionbar.ActionBarState
 import com.app.builder.ui.component.actionbar.ActionBarStore
-import com.app.builder.ui.component.navigation.NavigationRoute
 import com.app.builder.ui.component.navigation.NavigationState
 import com.app.builder.ui.component.navigation.NavigationStore
 
@@ -29,7 +28,7 @@ class DeviceFilesScreenTest: TestCase() {
         AppFile.TaskPreferences.save { AppFile.ActionBarData(search = "query") }
 
         val actionBarStore = ActionBarStore(state = ActionBarState(), router = router, authenticationUseCases = authenticationUseCases)
-        val navigationStore = NavigationStore(state = NavigationState(selected = NavigationRoute.DEVICE_FILE), router = router, authenticationUseCases = authenticationUseCases)
+        val navigationStore = NavigationStore(state = NavigationState(), authenticationUseCases = authenticationUseCases)
         val store = DeviceFilesScreenStore(state = DeviceFilesScreenState())
 
         setUI { DeviceFilesScreen(actionBarStore = actionBarStore, navigationStore = navigationStore, store = store) }
@@ -51,7 +50,7 @@ class DeviceFilesScreenTest: TestCase() {
             .authenticationUseCases
 
         val actionBarStore = ActionBarStore(state = ActionBarState(), router = router, authenticationUseCases = authenticationUseCases)
-        val navigationStore = NavigationStore(state = NavigationState(selected = NavigationRoute.DEVICE_FILE), router = router, authenticationUseCases = authenticationUseCases)
+        val navigationStore = NavigationStore(state = NavigationState(), authenticationUseCases = authenticationUseCases)
         val store = DeviceFilesScreenStore(state = DeviceFilesScreenState())
 
         setUI { DeviceFilesScreen(actionBarStore = actionBarStore, navigationStore = navigationStore, store = store) }

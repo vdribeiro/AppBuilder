@@ -35,6 +35,7 @@ import com.app.builder.ui.component.actionbar.ActionBar
 import com.app.builder.ui.component.actionbar.ActionBarAction
 import com.app.builder.ui.component.actionbar.ActionBarState
 import com.app.builder.ui.component.navigation.Navigation
+import com.app.builder.ui.component.navigation.NavigationRoute
 import com.app.builder.ui.component.navigation.NavigationState
 import com.app.builder.ui.core.button.ButtonGroup
 import com.app.builder.ui.core.button.ButtonGroupItem
@@ -79,7 +80,7 @@ fun DeviceLocationScreen(
 
     Screen(
         topBar = { ActionBar(store = actionBarStore) },
-        bottomBar = { Navigation(store = navigationStore) }
+        bottomBar = { Navigation(store = navigationStore, selected = NavigationRoute.DEVICE_LOCATION) }
     ) {
         LazyColumn(
             modifier = Modifier.fillMaxWidth(),

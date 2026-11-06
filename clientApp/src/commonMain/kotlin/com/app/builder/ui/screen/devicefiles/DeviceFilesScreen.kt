@@ -12,6 +12,7 @@ import com.app.builder.ui.component.actionbar.ActionBarAction
 import com.app.builder.ui.component.actionbar.ActionBarState
 import com.app.builder.ui.component.list.DeviceFileList
 import com.app.builder.ui.component.navigation.Navigation
+import com.app.builder.ui.component.navigation.NavigationRoute
 import com.app.builder.ui.component.navigation.NavigationState
 import com.app.builder.ui.core.overlay.Snackbar
 import com.app.builder.ui.navigation.LocalRouter
@@ -43,7 +44,7 @@ fun DeviceFilesScreen(
     Screen(
         onBackClick = { router.navigate(screen = Screen.Home, option = Router.NavOption.CLEAR) },
         topBar = { ActionBar(store = actionBarStore) },
-        bottomBar = { Navigation(store = navigationStore) },
+        bottomBar = { Navigation(store = navigationStore, selected = NavigationRoute.DEVICE_FILE) },
         snackbarHost = {
             state.message?.let {
                 Snackbar(message = it, onDismiss = { store.send(action = DeviceFilesScreenAction.DismissMessage) })

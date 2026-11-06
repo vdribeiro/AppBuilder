@@ -26,6 +26,7 @@ import com.app.builder.ui.component.actionbar.ActionBar
 import com.app.builder.ui.component.actionbar.ActionBarAction
 import com.app.builder.ui.component.actionbar.ActionBarState
 import com.app.builder.ui.component.navigation.Navigation
+import com.app.builder.ui.component.navigation.NavigationRoute
 import com.app.builder.ui.component.navigation.NavigationState
 import com.app.builder.ui.core.button.Button
 import com.app.builder.ui.core.button.ButtonStyle
@@ -64,7 +65,7 @@ fun AudioScreen(
     Screen(
         onBackClick = { router.navigate(screen = Screen.Home, option = Router.NavOption.CLEAR) },
         topBar = { ActionBar(store = actionBarStore) },
-        bottomBar = { Navigation(store = navigationStore) },
+        bottomBar = { Navigation(store = navigationStore, selected = NavigationRoute.AUDIO) },
     ) {
         if (!ClientFlags.value.music || !audioPlayer.available) {
             Text(modifier = Modifier.align(alignment = Alignment.Center), text = "audio_unavailable")

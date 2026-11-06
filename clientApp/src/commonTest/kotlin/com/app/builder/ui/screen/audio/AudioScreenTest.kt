@@ -15,7 +15,6 @@ import com.app.builder.test.TestCase
 import com.app.builder.ui.LocalAudioPlayer
 import com.app.builder.ui.component.actionbar.ActionBarState
 import com.app.builder.ui.component.actionbar.ActionBarStore
-import com.app.builder.ui.component.navigation.NavigationRoute
 import com.app.builder.ui.component.navigation.NavigationState
 import com.app.builder.ui.component.navigation.NavigationStore
 
@@ -35,7 +34,7 @@ class AudioScreenTest: TestCase() {
         authenticatedUseCases.authenticationUseCases.login(credentials = FakeData.adminCredentials)
 
         val actionBarStore = ActionBarStore(state = ActionBarState(), router = router, authenticationUseCases = authenticatedUseCases.authenticationUseCases)
-        val navigationStore = NavigationStore(state = NavigationState(selected = NavigationRoute.AUDIO), router = router, authenticationUseCases = authenticatedUseCases.authenticationUseCases)
+        val navigationStore = NavigationStore(state = NavigationState(), authenticationUseCases = authenticatedUseCases.authenticationUseCases)
         val audioPlayer = FakeAudioPlayer()
 
         setUI {

@@ -6,26 +6,26 @@ import androidx.navigation3.runtime.NavKey
 import com.app.builder.domain.gateway.UseCases
 import com.app.builder.ui.component.actionbar.ActionBarState
 import com.app.builder.ui.component.actionbar.ActionBarStore
-import com.app.builder.ui.component.navigation.NavigationRoute
 import com.app.builder.ui.component.navigation.NavigationState
-import com.app.builder.ui.component.navigation.NavigationStore
 import com.app.builder.ui.navigation.LocalRouter
 import com.app.builder.ui.navigation.Screen
 import com.app.builder.ui.screen.devicefiles.DeviceFilesScreen
 import com.app.builder.ui.screen.devicefiles.DeviceFilesScreenState
 import com.app.builder.ui.screen.devicefiles.DeviceFilesScreenStore
+import com.app.builder.ui.store.Store
 
 /**
  * The device files routes.
  *
  * @param useCases The use cases.
+ * @param navigationStore The navigation bar store shared by every screen.
  */
-fun EntryProviderScope<NavKey>.deviceFilesProvider(useCases: UseCases) {
+fun EntryProviderScope<NavKey>.deviceFilesProvider(useCases: UseCases, navigationStore: Store<NavigationState, Unit>) {
     entry<Screen.DeviceFiles> {
         val router = LocalRouter.current
         DeviceFilesScreen(
             actionBarStore = viewModel { ActionBarStore(state = ActionBarState(), router = router, authenticationUseCases = useCases.authenticationUseCases, statusUseCases = useCases.statusUseCases) },
-            navigationStore = viewModel { NavigationStore(state = NavigationState(selected = NavigationRoute.DEVICE_FILE), router = router, authenticationUseCases = useCases.authenticationUseCases) },
+            navigationStore = navigationStore,
             store = viewModel { DeviceFilesScreenStore(state = DeviceFilesScreenState()) },
         )
     }

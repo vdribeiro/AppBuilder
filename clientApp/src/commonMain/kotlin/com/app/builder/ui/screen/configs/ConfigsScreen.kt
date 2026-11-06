@@ -23,6 +23,7 @@ import com.app.builder.ui.component.list.ConfigItem
 import com.app.builder.ui.component.list.ConfigList
 import com.app.builder.ui.component.list.ConfigValue
 import com.app.builder.ui.component.navigation.Navigation
+import com.app.builder.ui.component.navigation.NavigationRoute
 import com.app.builder.ui.component.navigation.NavigationState
 import com.app.builder.ui.core.list.LazyColumn
 import com.app.builder.ui.core.navigation.NavigationItem
@@ -61,7 +62,7 @@ fun ConfigsScreen(
     Screen(
         onBackClick = { router.navigate(screen = Screen.Home, option = Router.NavOption.CLEAR) },
         topBar = { ActionBar(store = actionBarStore) },
-        bottomBar = { Navigation(store = navigationStore) }
+        bottomBar = { Navigation(store = navigationStore, selected = NavigationRoute.CONFIG) }
     ) {
         Row(modifier = Modifier.fillMaxSize()) {
             NavigationRail(
