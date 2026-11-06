@@ -17,7 +17,6 @@ import com.app.builder.core.flow.Dispatcher
 import com.app.builder.core.locale.now
 import com.app.builder.core.telemetry.Telemetry
 import com.app.builder.data.database.TaskSchema
-import com.app.builder.data.database.TaskUserJoinSchema
 import com.app.builder.data.database.asFlow
 import com.app.builder.data.database.safeTransaction
 import com.app.builder.data.http.HttpRequest
@@ -30,10 +29,10 @@ import com.app.builder.data.http.post
 import com.app.builder.data.serializer.decode
 import com.app.builder.data.serializer.encode
 import com.app.builder.data.storage.AppFile
+import com.app.builder.domain.Account
 import com.app.builder.domain.EntityType
 import com.app.builder.domain.Permission
 import com.app.builder.domain.Task
-import com.app.builder.domain.User
 import com.app.builder.domain.scheduler.Job
 import com.app.builder.domain.scheduler.JobResult
 import com.app.builder.domain.scheduler.JobResult.NoOp.toJobResult
@@ -44,13 +43,13 @@ import database.AppDatabase
 /**
  * Gateway implementation for Task Use Cases and Repository.
  *
- * @property user The current user.
+ * @property account The account of the current user.
  * @property database The SQLite database instance for task data.
  * @property httpClient The HTTP client used for network operations.
  * @property scheduler The job scheduler for background tasks.
  */
 class TaskGateway(
-    private val user: User,
+    private val account: Account,
     private val database: AppDatabase,
     private val httpClient: HttpClient,
     private val scheduler: Scheduler
@@ -58,21 +57,19 @@ class TaskGateway(
 
     /** Query interface for the tasks table. */
     private val taskDao = database.taskQueries
-    /** Query interface for the task-user join table. */
-    private val taskUserJoinDao = database.taskUserJoinQueries
 
     override fun observeTasks(): Flow<List<Task>> {
-        if (!user.hasPermission(entityType = EntityType.TASK, permission = Permission.READ)) {
+        if (!account.hasPermission(entityType = EntityType.TASK, permission = Permission.READ)) {
             val throwable = Throwable(message = "User does not have ${Permission.READ} permission for ${EntityType.TASK}")
             Telemetry.error(tag = TAG, message = "Invalid permissions", throwable = throwable)
             return emptyFlow()
         }
 
-        return taskDao.getTasks(userUuid = user.uuid, mapper = ::TaskSchema)
+        return taskDao.getTasks(mapper = ::TaskSchema)
             .asFlow { it.toTask() }
             .onStart {
                 val job = Job(
-                    userUuid = user.uuid,
+                    userUuid = account.userUuid,
                     entityType = EntityType.TASK,
                     type = Job.Type.GET,
                 )
@@ -86,13 +83,13 @@ class TaskGateway(
     }
 
     override fun observeTask(uuid: Uuid): Flow<Task?> {
-        if (!user.hasPermission(entityType = EntityType.TASK, permission = Permission.READ)) {
+        if (!account.hasPermission(entityType = EntityType.TASK, permission = Permission.READ)) {
             val throwable = Throwable(message = "User does not have ${Permission.READ} permission for ${EntityType.TASK}")
             Telemetry.error(tag = TAG, message = "Invalid permissions", throwable = throwable)
             return emptyFlow()
         }
 
-        return taskDao.getTask(userUuid = user.uuid, taskUuid = uuid)
+        return taskDao.getTask(taskUuid = uuid)
             .asFlow { it.toTask() }
             .map { it.firstOrNull() }
             .flowOn(context = Dispatcher.IO)
@@ -103,7 +100,7 @@ class TaskGateway(
     }
 
     override suspend fun upsertTask(task: Task) = withContext(context = Dispatcher.IO) {
-        if (!user.hasPermission(entityType = EntityType.TASK, permission = Permission.WRITE)) {
+        if (!account.hasPermission(entityType = EntityType.TASK, permission = Permission.WRITE)) {
             val throwable = Throwable(message = "User does not have ${Permission.WRITE} permission for ${EntityType.TASK}")
             Telemetry.error(tag = TAG, message = "Invalid permissions", throwable = throwable)
             return@withContext
@@ -115,7 +112,7 @@ class TaskGateway(
             Telemetry.error(tag = TAG, message = "Unable to upsert task", throwable = it)
         }
         val job = Job(
-            userUuid = user.uuid,
+            userUuid = account.userUuid,
             entityUuid = task.uuid,
             entityType = EntityType.TASK,
             type = Job.Type.POST,
@@ -125,14 +122,14 @@ class TaskGateway(
     }
 
     override suspend fun syncTasks() = withContext(context = Dispatcher.IO) {
-        if (!user.hasPermission(entityType = EntityType.TASK, permission = Permission.READ)) {
+        if (!account.hasPermission(entityType = EntityType.TASK, permission = Permission.READ)) {
             val throwable = Throwable(message = "User does not have ${Permission.READ} permission for ${EntityType.TASK}")
             Telemetry.error(tag = TAG, message = "Invalid permissions", throwable = throwable)
             return@withContext
         }
 
         val job = Job(
-            userUuid = user.uuid,
+            userUuid = account.userUuid,
             entityType = EntityType.TASK,
             type = Job.Type.GET,
         )
@@ -140,14 +137,14 @@ class TaskGateway(
     }
 
     override suspend fun syncTask(uuid: Uuid) = withContext(context = Dispatcher.IO) {
-        if (!user.hasPermission(entityType = EntityType.TASK, permission = Permission.READ)) {
+        if (!account.hasPermission(entityType = EntityType.TASK, permission = Permission.READ)) {
             val throwable = Throwable(message = "User does not have ${Permission.READ} permission for ${EntityType.TASK}")
             Telemetry.error(tag = TAG, message = "Invalid permissions", throwable = throwable)
             return@withContext
         }
 
         val job = Job(
-            userUuid = user.uuid,
+            userUuid = account.userUuid,
             entityUuid = uuid,
             entityType = EntityType.TASK,
             type = Job.Type.GET,
@@ -156,7 +153,7 @@ class TaskGateway(
     }
 
     override suspend fun executeSyncTasks(job: Job): JobResult = withContext(context = Dispatcher.IO) {
-        if (!user.hasPermission(entityType = EntityType.TASK, permission = Permission.READ)) {
+        if (!account.hasPermission(entityType = EntityType.TASK, permission = Permission.READ)) {
             val throwable = Throwable(message = "User does not have ${Permission.READ} permission for ${EntityType.TASK}")
             Telemetry.error(tag = TAG, message = "Invalid permissions", throwable = throwable)
             return@withContext throwable.toJobResult()
@@ -196,7 +193,7 @@ class TaskGateway(
     }
 
     override suspend fun executeSyncTask(job: Job): JobResult = withContext(context = Dispatcher.IO) {
-        if (!user.hasPermission(entityType = EntityType.TASK, permission = Permission.READ)) {
+        if (!account.hasPermission(entityType = EntityType.TASK, permission = Permission.READ)) {
             val throwable = Throwable(message = "User does not have ${Permission.READ} permission for ${EntityType.TASK}")
             Telemetry.error(tag = TAG, message = "Invalid permissions", throwable = throwable)
             return@withContext throwable.toJobResult()
@@ -230,7 +227,7 @@ class TaskGateway(
     }
 
     override suspend fun executeUpsertTask(job: Job): JobResult = withContext(context = Dispatcher.IO) {
-        if (!user.hasPermission(entityType = EntityType.TASK, permission = Permission.WRITE)) {
+        if (!account.hasPermission(entityType = EntityType.TASK, permission = Permission.WRITE)) {
             val throwable = Throwable(message = "User does not have ${Permission.WRITE} permission for ${EntityType.TASK}")
             Telemetry.error(tag = TAG, message = "Invalid permissions", throwable = throwable)
             return@withContext throwable.toJobResult()
@@ -275,7 +272,7 @@ class TaskGateway(
      * @param task The remote [Task] domain model to evaluate and potentially save.
      */
     private suspend fun syncTaskInDatabase(task: Task) {
-        val localTask = taskDao.getTask(userUuid = user.uuid, taskUuid = task.uuid).awaitAsOneOrNull()
+        val localTask = taskDao.getTask(taskUuid = task.uuid).awaitAsOneOrNull()
         if (localTask == null || task.modifiedAt >= localTask.modifiedAt) upsertTaskInDatabase(task = task)
     }
 
@@ -300,24 +297,23 @@ class TaskGateway(
      * Retrieves tasks matching the given UUIDs from the local database, in chunks.
      * SQLite limits the number of bound parameters allowed in a single statement, so large lists are split into batches before querying.
      *
-     * @param uuids The task UUIDs to look up, scoped to the currently active user.
+     * @param uuids The task UUIDs to look up.
      * @return The matching [TaskSchema] entities, merged across all chunks.
      */
     private suspend fun getTasksByUuidsFromDatabase(uuids: List<Uuid>): List<TaskSchema> = buildList {
         uuids.chunked(size = ClientConfigs.value.batchSize).forEach { uuidChunk ->
-            addAll(elements = taskDao.getTasksByUuids(userUuid = user.uuid, taskUuids = uuidChunk).awaitAsList())
+            addAll(elements = taskDao.getTasksByUuids(taskUuids = uuidChunk).awaitAsList())
         }
     }
 
     /**
-     * Inserts or updates a task and its user association in the local database.
+     * Inserts or updates a task in the local database.
      *
      * @param task The [Task] domain model containing the details to save.
-     * @return `true` if the task and its join record were successfully upserted; `false` if no rows were affected.
+     * @return `true` if the task was successfully upserted; `false` if no rows were affected.
      */
     private suspend fun upsertTaskInDatabase(task: Task): Boolean =
-        (taskDao.upsertTask(Task = task.toTaskSchema())
-                + taskUserJoinDao.upsertTaskUserJoin(TaskUserJoin = TaskUserJoinSchema(taskUuid = task.uuid, userUuid = user.uuid))) > 0
+        taskDao.upsertTask(Task = task.toTaskSchema()) > 0
 
     companion object {
         private const val TAG = "TaskGateway"
