@@ -16,6 +16,7 @@ import com.app.builder.domain.route.receive
 import com.app.builder.domain.route.respondSafely
 import com.app.builder.domain.route.toRegistry
 import com.app.builder.domain.route.validatePermission
+import com.app.builder.domain.usecase.WriteResult
 import com.app.builder.domain.usecase.authentication.AuthenticationUseCases
 import com.app.builder.domain.usecase.registry.RegistryUseCases
 
@@ -35,22 +36,38 @@ fun Route.authenticationRoutes(
 ) {
     authenticate {
         post(path = URL.Register.path) {
-            if (!call.validatePermission(permissionService = permissionService, entityType = EntityType.SESSION, permission = Permission.WRITE)) return@post
+            if (!call.validatePermission(permissionService = permissionService, entityType = EntityType.ACCOUNT, permission = Permission.WRITE)) return@post
             val registrationForm = call.receive<RegistrationForm>() ?: return@post
-
-            val result = authenticationUseCases.register(registrationForm = registrationForm) ?: run {
-                Telemetry.error(tag = TAG, message = "Failed to register user ${registrationForm.user.uuid}")
+            if (registrationForm.account.userUuid != registrationForm.user.uuid) {
                 call.respondSafely(status = HttpStatusCode.BadRequest, message = "Invalid registration form")
                 return@post
             }
 
-            call.respondSafely(status = HttpStatusCode.OK, message = result)
-            Telemetry.info(tag = TAG, message = "Successful registration for user ${registrationForm.user.uuid}")
+            when (authenticationUseCases.register(registrationForm = registrationForm)) {
+                WriteResult.SUCCESS -> Unit
+                WriteResult.INVALID -> {
+                    call.respondSafely(status = HttpStatusCode.BadRequest, message = "Invalid registration form")
+                    return@post
+                }
+                WriteResult.NOT_FOUND, WriteResult.CONFLICT -> {
+                    call.respondSafely(status = HttpStatusCode.Conflict, message = "The user already has an account or the username is taken")
+                    return@post
+                }
+                WriteResult.ERROR -> {
+                    Telemetry.error(tag = TAG, message = "Failed to register an account for user ${registrationForm.user.uuid}")
+                    call.respondSafely(status = HttpStatusCode.InternalServerError, message = "Error registering account")
+                    return@post
+                }
+            }
+            val account = registrationForm.account
+
+            call.respondSafely(status = HttpStatusCode.OK, message = account)
+            Telemetry.info(tag = TAG, message = "Successful registration for user ${account.userUuid}")
 
             call.toRegistry(
-                entityType = EntityType.USER,
-                entityUuid = result.user.uuid,
-                payload = encode(value = result.user)
+                entityType = EntityType.ACCOUNT,
+                entityUuid = account.userUuid,
+                payload = encode(value = account)
             )?.let { registryUseCases.upsertRegistry(registry = it) }
         }
     }
@@ -68,7 +85,7 @@ fun Route.authenticationRoutes(
         Telemetry.info(tag = TAG, message = "Successful login for user ${result.user.uuid}")
 
         call.toRegistry(
-            entityType = EntityType.SESSION,
+            entityType = EntityType.ACCOUNT,
             entityUuid = result.user.uuid,
             userUuid = result.user.uuid,
             payload = "login"
@@ -89,7 +106,7 @@ fun Route.authenticationRoutes(
         Telemetry.info(tag = TAG, message = "Successfully logged out")
 
         call.toRegistry(
-            entityType = EntityType.SESSION,
+            entityType = EntityType.ACCOUNT,
             entityUuid = userUuid,
             userUuid = userUuid,
             payload = "logout"

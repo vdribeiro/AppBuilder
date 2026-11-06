@@ -5,17 +5,19 @@ import com.app.builder.domain.Authentication
 import com.app.builder.domain.BearerToken
 import com.app.builder.domain.RegistrationForm
 import com.app.builder.domain.UserCredentials
+import com.app.builder.domain.usecase.WriteResult
 
 /** Defines the business workflows for user registration, login, and session management. */
 interface AuthenticationUseCases {
 
     /**
-     * Creates a new user account using a submitted [registrationForm].
+     * Creates the account of a submitted [registrationForm], storing its user too when it doesn't exist yet. An existing user is left unchanged.
+     * No session is created for the new account.
      *
-     * @param registrationForm The user's registration details.
-     * @return The [Authentication], or null if registration fails.
+     * @param registrationForm The registration details.
+     * @return [WriteResult.SUCCESS] when created, [WriteResult.INVALID] when the account belongs to another user, [WriteResult.CONFLICT] when the user already has an account or the username is taken, or [WriteResult.ERROR] when the operation failed.
      */
-    suspend fun register(registrationForm: RegistrationForm): Authentication?
+    suspend fun register(registrationForm: RegistrationForm): WriteResult
 
     /**
      * Authenticates a user using their unique [credentials].
@@ -36,7 +38,7 @@ interface AuthenticationUseCases {
     /**
      * Issues a new access token using a valid [refreshToken], rotating it in the process.
      *
-     * @param refreshToken The long-lived token previously issued during login or registration.
+     * @param refreshToken The long-lived token previously issued during login.
      * @return A fresh [BearerToken] pair, or null if the refresh token is invalid or expired.
      */
     suspend fun refreshTokens(refreshToken: String): BearerToken?

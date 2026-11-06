@@ -32,14 +32,15 @@ import com.app.builder.data.http.URL.Companion.DEV_PORT
 import com.app.builder.data.http.installHttpPlugins
 import com.app.builder.data.signal.LocalSignal
 import com.app.builder.data.signal.PostgresSignal
+import com.app.builder.domain.Account
 import com.app.builder.domain.EntityType
 import com.app.builder.domain.Permission
 import com.app.builder.domain.RegistrationForm
 import com.app.builder.domain.User
-import com.app.builder.domain.UserCredentials
 import com.app.builder.domain.push.FcmManager
 import com.app.builder.domain.push.NoOpFcmService
 import com.app.builder.domain.route.installRouting
+import com.app.builder.domain.usecase.WriteResult
 import com.app.builder.test.ExcludeFromTesting
 import com.google.auth.oauth2.GoogleCredentials
 import com.google.firebase.FirebaseApp
@@ -209,19 +210,42 @@ private suspend fun seed(dependency: Dependency) {
     val username = Env.adminUsername
     val password = Env.adminPassword
     if (uuid == null || username.isNullOrBlank() || password.isNullOrBlank()) error(message = "Missing admin configurations")
-    val superUserCredentials = UserCredentials(username = username, password = password)
+    val now = now()
     val superUser = User(
         uuid = uuid,
-        modifiedAt = now(),
+        modifiedAt = now,
         deletedAt = null,
-        permissions = EntityType.entries.associateWith { Permission.WRITE },
         name = username,
         avatar = null
     )
-    val result = dependency.useCases.authenticationUseCases.register(registrationForm = RegistrationForm(user = superUser, credentials = superUserCredentials))
-    when (result) {
-        null -> Telemetry.info(tag = TAG, message = "Unable to create su account")
-        else -> Telemetry.info(tag = TAG, message = "Su account created")
+    val superAccount = Account(
+        userUuid = uuid,
+        modifiedAt = now,
+        deletedAt = null,
+        username = username,
+        permissions = EntityType.entries.associateWith { Permission.WRITE }
+    )
+
+    val result = dependency.useCases.authenticationUseCases.register(registrationForm = RegistrationForm(user = superUser, account = superAccount, password = password))
+    if (result == WriteResult.SUCCESS) {
+        Telemetry.info(tag = TAG, message = "Su account created")
+        return
+    }
+
+    val accountUseCases = dependency.useCases.accountUseCases
+    val account = accountUseCases.getAccount(userUuid = uuid) ?: run {
+        Telemetry.error(tag = TAG, message = "Su account not created")
+        return
+    }
+
+    if (account.permissions == superAccount.permissions) {
+        Telemetry.info(tag = TAG, message = "Su account already exists")
+        return
+    }
+
+    when (accountUseCases.upsertAccount(account = account.copy(modifiedAt = now, permissions = superAccount.permissions))) {
+        WriteResult.SUCCESS -> Telemetry.info(tag = TAG, message = "Su account permissions restored")
+        else -> Telemetry.error(tag = TAG, message = "Unable to restore su account permissions")
     }
 }
 
