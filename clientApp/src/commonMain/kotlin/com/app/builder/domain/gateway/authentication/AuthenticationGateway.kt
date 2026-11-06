@@ -26,11 +26,10 @@ import com.app.builder.data.http.post
 import com.app.builder.data.serializer.decode
 import com.app.builder.data.serializer.encode
 import com.app.builder.data.storage.AppFile
+import com.app.builder.domain.Account
 import com.app.builder.domain.Authentication
 import com.app.builder.domain.BearerToken
 import com.app.builder.domain.EntityType
-import com.app.builder.domain.Permission
-import com.app.builder.domain.RegistrationForm
 import com.app.builder.domain.User
 import com.app.builder.domain.UserCredentials
 import com.app.builder.domain.UserSession
@@ -44,13 +43,11 @@ import database.AppDatabase
 /**
  * Gateway implementation for Authentication Use Cases and Repository.
  *
- * @property user The current user.
  * @property database The SQLite database instance for user and session data.
  * @property httpClient The HTTP client used for network operations.
  * @property scheduler The job scheduler for background tasks.
  */
 class AuthenticationGateway(
-    private val user: User,
     private val database: AppDatabase,
     private val httpClient: HttpClient,
     private val scheduler: Scheduler
@@ -60,12 +57,11 @@ class AuthenticationGateway(
     private val userDao = database.userQueries
     /** Query interface for the sessions table. */
     private val sessionDao = database.sessionQueries
+    /** Query interface for the accounts table. */
+    private val accountDao = database.accountQueries
 
     override fun observeCurrentUser(): Flow<User?> =
-        flow { emitAll(flow = AppFile.Preferences.cache()) }
-            .map { cache -> cache.orEmpty()[AppFile.Preferences.Key.CURRENT_USER] }
-            .distinctUntilChanged()
-            .map { it?.toUuid() }
+        observeCurrentUserUuid()
             .flatMapLatest { userUuid ->
                 when (userUuid) {
                     null -> flowOf(value = null)
@@ -81,35 +77,22 @@ class AuthenticationGateway(
                 emit(value = null)
             }
 
-    override suspend fun register(registrationForm: RegistrationForm): User? = withContext(context = Dispatcher.IO) {
-        if (!user.hasPermission(entityType = EntityType.USER, permission = Permission.WRITE)) {
-            val throwable = Throwable(message = "User does not have ${Permission.WRITE} permission for ${EntityType.USER}")
-            Telemetry.error(tag = TAG, message = "Invalid permissions", throwable = throwable)
-            return@withContext null
-        }
-
-        val result = when (val result = httpClient.post<RegistrationForm, Authentication>(
-            request = HttpRequest(url = URL.Register),
-            body = registrationForm
-        )) {
-            is HttpResult.Error -> {
-                Telemetry.error(tag = TAG, message = "Unable to register", throwable = result.error)
-                return@withContext null
+    override fun observeCurrentAccount(): Flow<Account?> =
+        observeCurrentUserUuid()
+            .flatMapLatest { userUuid ->
+                when (userUuid) {
+                    null -> flowOf(value = null)
+                    else -> accountDao.getAccount(userUuid = userUuid)
+                        .asFlow { it.toAccount() }
+                        .map { it.firstOrNull() }
+                }
             }
-
-            is HttpResult.Success -> result.data
-        }
-        Telemetry.info(tag = TAG, message = "Successfully registered user")
-        val userSession = getUserSession(credentials = registrationForm.credentials, result = result) ?: run {
-            Telemetry.error(tag = TAG, message = "Unable to get user session")
-            return@withContext null
-        }
-        database.safeTransaction {
-            saveUserAndSession(userSession = userSession)
-        }.onFailure {
-            Telemetry.error(tag = TAG, message = "Unable to save user and session", throwable = it)
-        }.getOrNull()
-    }
+            .distinctUntilChanged()
+            .flowOn(context = Dispatcher.IO)
+            .catch {
+                Telemetry.error(tag = TAG, message = "Unable to observe current account", throwable = it)
+                emit(value = null)
+            }
 
     override suspend fun login(credentials: UserCredentials): User? = withContext(context = Dispatcher.IO) {
         val result = when (val result = httpClient.post<UserCredentials, Authentication>(
@@ -148,7 +131,7 @@ class AuthenticationGateway(
     override suspend fun logout(userUuid: Uuid) = withContext(context = Dispatcher.IO) {
         val job = Job(
             userUuid = userUuid,
-            entityType = EntityType.SESSION,
+            entityType = EntityType.ACCOUNT,
             type = Job.Type.DELETE,
             conflictPolicy = Job.ConflictPolicy.REPLACE,
             payload = swapUser(userUuid = null) ?: return@withContext
@@ -292,7 +275,7 @@ class AuthenticationGateway(
     private suspend fun loginOffline(credentials: UserCredentials): User? {
         val job = Job(
             userUuid = Uuid.NIL,
-            entityType = EntityType.SESSION,
+            entityType = EntityType.ACCOUNT,
             type = Job.Type.POST,
             conflictPolicy = Job.ConflictPolicy.REPLACE,
             payload = encode(value = credentials)
@@ -328,7 +311,7 @@ class AuthenticationGateway(
         }
         return UserSession(
             user = result.user,
-            username = credentials.username,
+            account = result.account,
             salt = salt,
             verifier = verifier,
             accessToken = encryptedBearer.accessToken,
@@ -376,13 +359,15 @@ class AuthenticationGateway(
         sessionDao.deleteSession(userUuid = userUuid) > 0
 
     /**
-     * Upserts a user and a session in the local database.
+     * Upserts a user, its account and a session in the local database.
      *
      * @param userSession The [UserSession] domain model containing the data to save.
      * @return `true` if the session was successfully upserted into the database; `false` if no rows were affected.
      */
     private suspend fun upsertUserAndSession(userSession: UserSession): Boolean =
-        userDao.upsertUser(User = userSession.user.toUserSchema()) + sessionDao.upsertSession(Session = userSession.toSessionSchema()) > 0
+        userDao.upsertUser(User = userSession.user.toUserSchema()) +
+                accountDao.upsertAccount(Account = userSession.account.toAccountSchema()) +
+                sessionDao.upsertSession(Session = userSession.toSessionSchema()) > 0
 
     /**
      * Updates the authentication session tokens for a specific user in the local database.
@@ -399,6 +384,17 @@ class AuthenticationGateway(
         refreshToken = bearerToken.refreshToken,
         userUuid = userUuid,
     ) > 0
+
+    /**
+     * Observes the unique identifier of the authenticated user.
+     *
+     * @return A [Flow] emitting the authenticated user's uuid, or null when no user is authenticated.
+     */
+    private fun observeCurrentUserUuid(): Flow<Uuid?> =
+        flow { emitAll(flow = AppFile.Preferences.cache()) }
+            .map { cache -> cache.orEmpty()[AppFile.Preferences.Key.CURRENT_USER] }
+            .distinctUntilChanged()
+            .map { it?.toUuid() }
 
     /**
      * Sets the authenticated user in storage.
