@@ -19,9 +19,6 @@ CREATE TABLE IF NOT EXISTS Registry (
     payload TEXT
 );
 
-truncateRegistry:
-DELETE FROM Registry;
-
 upsertRegistry:
 INSERT OR REPLACE INTO Registry VALUES ?;
 

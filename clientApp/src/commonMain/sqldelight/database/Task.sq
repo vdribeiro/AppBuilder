@@ -11,9 +11,6 @@ CREATE TABLE IF NOT EXISTS Task (
     state TEXT AS Task.State NOT NULL
 );
 
-truncateTask:
-DELETE FROM Task;
-
 deleteTask:
 UPDATE Task
 SET modifiedAt = :utc,

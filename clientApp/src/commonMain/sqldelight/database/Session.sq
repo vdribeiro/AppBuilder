@@ -11,9 +11,6 @@ CREATE TABLE IF NOT EXISTS Session (
 
 CREATE INDEX IF NOT EXISTS session_username ON Session(username);
 
-truncateSession:
-DELETE FROM Session;
-
 deleteSession:
 DELETE FROM Session
 WHERE userUuid = :userUuid;

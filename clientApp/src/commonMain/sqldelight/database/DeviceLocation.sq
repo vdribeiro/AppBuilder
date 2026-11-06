@@ -15,8 +15,5 @@ CREATE TABLE IF NOT EXISTS DeviceLocation (
     speed REAL
 );
 
-truncateDeviceLocation:
-DELETE FROM DeviceLocation;
-
 upsertDeviceLocation:
 INSERT OR REPLACE INTO DeviceLocation VALUES ?;

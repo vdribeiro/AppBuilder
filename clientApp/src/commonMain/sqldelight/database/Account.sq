@@ -9,9 +9,6 @@ CREATE TABLE IF NOT EXISTS Account (
     permissions TEXT NOT NULL
 );
 
-truncateAccount:
-DELETE FROM Account;
-
 upsertAccount:
 INSERT OR REPLACE INTO Account VALUES ?;
 

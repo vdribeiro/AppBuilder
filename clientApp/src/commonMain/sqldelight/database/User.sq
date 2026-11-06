@@ -9,9 +9,6 @@ CREATE TABLE IF NOT EXISTS User (
     avatar TEXT
 );
 
-truncateUser:
-DELETE FROM User;
-
 upsertUser:
 INSERT OR REPLACE INTO User VALUES ?;
 
