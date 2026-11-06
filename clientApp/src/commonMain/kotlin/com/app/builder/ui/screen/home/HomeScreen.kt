@@ -10,6 +10,7 @@ import com.app.builder.ui.component.actionbar.ActionBarAction
 import com.app.builder.ui.component.actionbar.ActionBarState
 import com.app.builder.ui.component.image.toImage
 import com.app.builder.ui.component.navigation.Navigation
+import com.app.builder.ui.component.navigation.NavigationRoute
 import com.app.builder.ui.component.navigation.NavigationState
 import com.app.builder.ui.core.image.Image
 import com.app.builder.ui.core.text.Text
@@ -31,7 +32,7 @@ fun HomeScreen(
     Screen(
         contentAlignment = Alignment.Center,
         topBar = { ActionBar(store = actionBarStore) },
-        bottomBar = { Navigation(store = navigationStore) },
+        bottomBar = { Navigation(store = navigationStore, selected = NavigationRoute.HOME) },
     ) {
         Image(image = ImageResource.Kotlin.toImage())
         Text(text = "Home")

@@ -11,7 +11,6 @@ import com.app.builder.test.FakeData
 import com.app.builder.test.TestCase
 import com.app.builder.ui.component.actionbar.ActionBarState
 import com.app.builder.ui.component.actionbar.ActionBarStore
-import com.app.builder.ui.component.navigation.NavigationRoute
 import com.app.builder.ui.component.navigation.NavigationState
 import com.app.builder.ui.component.navigation.NavigationStore
 import com.app.builder.ui.navigation.Screen
@@ -27,7 +26,7 @@ class HomeScreenTest: TestCase() {
             .authenticationUseCases
 
         val actionBarStore = ActionBarStore(state = ActionBarState(), router = router, authenticationUseCases = authenticationUseCases)
-        val navigationStore = NavigationStore(state = NavigationState(selected = NavigationRoute.HOME), router = router, authenticationUseCases = authenticationUseCases)
+        val navigationStore = NavigationStore(state = NavigationState(), authenticationUseCases = authenticationUseCases)
 
         setUI { HomeScreen(actionBarStore = actionBarStore, navigationStore = navigationStore) }
 
@@ -49,7 +48,7 @@ class HomeScreenTest: TestCase() {
         authenticationUseCases.login(credentials = FakeData.adminCredentials)
 
         val actionBarStore = ActionBarStore(state = ActionBarState(), router = router, authenticationUseCases = authenticationUseCases)
-        val navigationStore = NavigationStore(state = NavigationState(selected = NavigationRoute.HOME), router = router, authenticationUseCases = authenticationUseCases)
+        val navigationStore = NavigationStore(state = NavigationState(), authenticationUseCases = authenticationUseCases)
 
         setUI { HomeScreen(actionBarStore = actionBarStore, navigationStore = navigationStore) }
 
