@@ -1,7 +1,6 @@
 package com.app.builder.ui.screen.audio
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
@@ -32,6 +31,7 @@ import com.app.builder.ui.core.button.Button
 import com.app.builder.ui.core.button.ButtonStyle
 import com.app.builder.ui.core.button.Checkbox
 import com.app.builder.ui.core.button.Switch
+import com.app.builder.ui.core.list.LazyColumn
 import com.app.builder.ui.core.text.Text
 import com.app.builder.ui.navigation.LocalRouter
 import com.app.builder.ui.navigation.Router
@@ -71,85 +71,85 @@ fun AudioScreen(
             return@Screen
         }
 
-        Column(
+        LazyColumn(
             modifier = Modifier.fillMaxWidth(),
             verticalArrangement = Arrangement.spacedBy(space = 8.dp)
         ) {
-            Text(text = state.toString(), translate = false)
+            item { Text(text = state.toString(), translate = false) }
 
-            Text(text = "audio_tracks")
+            item { Text(text = "audio_tracks") }
             entries.forEach { track ->
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(space = 8.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Checkbox(
-                        checked = track in selected,
-                        onCheckedChange = { checked -> selected = if (checked) selected + track else selected - track }
-                    )
-                    Text(
-                        text = track.path
-                            .substringAfterLast(delimiter = '/')
-                            .substringBeforeLast(delimiter = '.')
-                            .replace(oldValue = "_", newValue = " ")
-                            .replaceFirstChar { it.uppercase() },
-                        translate = false
-                    )
+                item {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(space = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Checkbox(
+                            checked = track in selected,
+                            onCheckedChange = { checked -> selected = if (checked) selected + track else selected - track }
+                        )
+                        Text(
+                            text = track.path
+                                .substringAfterLast(delimiter = '/')
+                                .substringBeforeLast(delimiter = '.')
+                                .replace(oldValue = "_", newValue = " ")
+                                .replaceFirstChar { it.uppercase() },
+                            translate = false
+                        )
+                    }
                 }
             }
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(space = 8.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(modifier = Modifier.weight(weight = 1f), text = "audio_loop")
+            item {
+                Text(text = "audio_loop")
                 Switch(checked = loop, onCheckedChange = { loop = it })
-                Text(modifier = Modifier.weight(weight = 1f), text = "audio_shuffle")
+                Text(text = "audio_shuffle")
                 Switch(checked = shuffle, onCheckedChange = { shuffle = it })
             }
 
-            Button(
-                modifier = Modifier.fillMaxWidth(),
-                style = ButtonStyle.FILLED,
-                text = "Set playlist",
-                enabled = selected.isNotEmpty(),
-            ) {
-                audioPlayer.setPlaylist(
-                    playlist = entries.filter { it in selected }.map { it.path },
-                    loop = loop,
-                    shuffle = shuffle
-                )
-            }
+            item {
+                Button(
+                    modifier = Modifier.fillMaxWidth(),
+                    style = ButtonStyle.FILLED,
+                    text = "Set playlist",
+                    enabled = selected.isNotEmpty(),
+                ) {
+                    audioPlayer.setPlaylist(
+                        playlist = entries.filter { it in selected }.map { it.path },
+                        loop = loop,
+                        shuffle = shuffle
+                    )
+                }
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(space = 8.dp)
-            ) {
-                Button(
-                    modifier = Modifier.weight(weight = 1f),
-                    style = ButtonStyle.FILLED,
-                    text = "Play",
-                    enabled = state != AudioPlayer.State.Playing,
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(space = 8.dp)
                 ) {
-                    audioPlayer.play()
-                }
-                Button(
-                    modifier = Modifier.weight(weight = 1f),
-                    style = ButtonStyle.FILLED,
-                    text = "Pause",
-                    enabled = state == AudioPlayer.State.Playing,
-                ) {
-                    audioPlayer.pause()
-                }
-                Button(
-                    modifier = Modifier.weight(weight = 1f),
-                    style = ButtonStyle.FILLED,
-                    text = "Stop",
-                    enabled = state != AudioPlayer.State.Idle,
-                ) {
-                    audioPlayer.stop()
+                    Button(
+                        modifier = Modifier.weight(weight = 1f),
+                        style = ButtonStyle.FILLED,
+                        text = "Play",
+                        enabled = state != AudioPlayer.State.Playing,
+                    ) {
+                        audioPlayer.play()
+                    }
+                    Button(
+                        modifier = Modifier.weight(weight = 1f),
+                        style = ButtonStyle.FILLED,
+                        text = "Pause",
+                        enabled = state == AudioPlayer.State.Playing,
+                    ) {
+                        audioPlayer.pause()
+                    }
+                    Button(
+                        modifier = Modifier.weight(weight = 1f),
+                        style = ButtonStyle.FILLED,
+                        text = "Stop",
+                        enabled = state != AudioPlayer.State.Idle,
+                    ) {
+                        audioPlayer.stop()
+                    }
                 }
             }
         }
