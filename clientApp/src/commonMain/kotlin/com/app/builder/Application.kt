@@ -189,6 +189,13 @@ object Application {
             Telemetry.info(tag = TAG, message = "Loading theme")
             val customTheme = AppFile.Theme.load() ?: CustomTheme()
             ThemeCache.set { customTheme }
+            Telemetry.info(tag = TAG, message = "Loading list filters")
+            listOf(
+                AppFile.TranslationPreferences,
+                AppFile.RegistryPreferences,
+                AppFile.UserPreferences,
+                AppFile.TaskPreferences
+            ).forEach { it.cache() }
 
             Telemetry.info(tag = TAG, message = "Initializing dependencies")
             val dependency = appGraph.get().apply { start(); observeCurrentAccount(scope = this@launch) }

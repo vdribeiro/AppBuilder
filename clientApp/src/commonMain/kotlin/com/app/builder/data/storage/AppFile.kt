@@ -92,6 +92,11 @@ object AppFile {
         val showDeleted: Boolean = false,
     )
 
+    /** Translation preferences. */
+    data object TranslationPreferences: StorageFile<ActionBarData>(path = "translation_preferences", encrypted = false) {
+        override val serializer: KSerializer<ActionBarData> = ActionBarData.serializer()
+    }
+
     /** Registry preferences. */
     data object RegistryPreferences: StorageFile<ActionBarData>(path = "registry_preferences", encrypted = false) {
         override val serializer: KSerializer<ActionBarData> = ActionBarData.serializer()
@@ -104,11 +109,6 @@ object AppFile {
 
     /** Task preferences. */
     data object TaskPreferences: StorageFile<ActionBarData>(path = "task_preferences", encrypted = false) {
-        override val serializer: KSerializer<ActionBarData> = ActionBarData.serializer()
-    }
-
-    /** Translation preferences. */
-    data object TranslationPreferences: StorageFile<ActionBarData>(path = "translation_preferences", encrypted = false) {
         override val serializer: KSerializer<ActionBarData> = ActionBarData.serializer()
     }
 
