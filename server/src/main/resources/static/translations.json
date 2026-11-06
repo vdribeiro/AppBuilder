@@ -116,6 +116,16 @@
   },
   {
     "languageIso": "en",
+    "key": "home",
+    "value": "Home"
+  },
+  {
+    "languageIso": "en",
+    "key": "config",
+    "value": "Config"
+  },
+  {
+    "languageIso": "en",
     "key": "camera",
     "value": "Camera"
   },
