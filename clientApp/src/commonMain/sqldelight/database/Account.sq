@@ -15,15 +15,6 @@ DELETE FROM Account;
 upsertAccount:
 INSERT OR REPLACE INTO Account VALUES ?;
 
-getAccounts:
-SELECT Account.*
-FROM Account;
-
-getAccountsByUuids:
-SELECT Account.*
-FROM Account
-WHERE Account.userUuid IN :userUuids;
-
 getAccount:
 SELECT Account.*
 FROM Account

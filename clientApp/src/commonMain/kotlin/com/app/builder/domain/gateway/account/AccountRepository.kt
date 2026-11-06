@@ -6,14 +6,11 @@ import com.app.builder.domain.scheduler.JobResult
 /** Defines the repository for accounts. */
 interface AccountRepository {
 
-    /** Enqueues accounts synchronization. */
-    suspend fun syncAccounts()
-
     /**
-     * Attempts to fetch the latest accounts from the remote server.
+     * Attempts to fetch the account of the user in the [Job.entityUuid] from the remote server.
      *
      * @param job The job configuration blueprint.
      * @return The [JobResult].
      */
-    suspend fun executeSyncAccounts(job: Job): JobResult
+    suspend fun executeSyncAccount(job: Job): JobResult
 }

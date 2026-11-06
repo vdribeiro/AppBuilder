@@ -733,8 +733,8 @@ Authorization is per `EntityType`: each account carries a `READ`/`WRITE` permiss
 `USER` and `ACCOUNT` work like every other entity:
 
 * `USER` covers people. `WRITE` creates, edits, deletes and restores any user; `READ` lists them and still lets you update your own name and avatar.
-* `ACCOUNT` covers logins. `WRITE` creates an account for a user, changes its username and permissions, and disables or re-enables it; `READ` lists accounts.
-* Creating an account sends a password, so it is an online call that opens no session. The account list delta-syncs like any other entity.
+* `ACCOUNT` covers logins. `WRITE` creates an account for a user, changes its username and permissions, and disables or re-enables it; `READ` lets you view them.
+* Creating an account sends a password, so it is an online call that opens no session.
 * A user can't be deleted while its account is active: disable the account first.
 * In the user detail screen, either `WRITE` opens edit mode, which unlocks only the fields that permission covers. Adding a user still needs `USER` `WRITE`, and deleting one also needs `ACCOUNT` `READ`, so the app can tell its account isn't active.
 
@@ -744,7 +744,7 @@ Offline login is covered in [Cryptography](#cryptography).
 
 ### Account Deletion
 
-Disabling an account is a soft delete: the account's `deletedAt` is set and the row stays, so the change delta-syncs to every device. A disabled account:
+Disabling an account is a soft delete: the account's `deletedAt` is set and the row stays, so other devices see the change the next time they fetch that account. A disabled account:
 
 * **cannot log in again**. The password still verifies, so this check is the only thing stopping a new session;
 * **keeps refreshing the session it already had**, with no deadline;
@@ -1034,7 +1034,7 @@ Every route shares a global rate limit; those marked *rate-limited* have a stric
 | `POST /api/push`                                             | Send a targeted push                                        | JWT, `NOTIFICATION` `WRITE`                       | `push`           |
 | `GET /api/users` · `/api/users/{uuid}`                       | Delta-sync users / fetch one                                | JWT, `USER` `READ`                                | `users`          |
 | `POST /api/users`                                            | Upsert a user (*1)                                          | JWT, `USER` `READ`                                | `users`          |
-| `GET /api/accounts` · `/api/accounts/{userUuid}`             | Delta-sync accounts / fetch one                             | JWT, `ACCOUNT` `READ`                             | `users`          |
+| `GET /api/accounts/{userUuid}`                               | Fetch one account                                           | JWT, `ACCOUNT` `READ`                             | `users`          |
 | `POST /api/accounts`                                         | Update an account's username, permissions or disabled state | JWT, `ACCOUNT` `WRITE`                            | `users`          |
 | `POST /api/device-location`                                  | Report a device location fix                                | JWT, `DEVICE_LOCATION` `WRITE`                    | `deviceLocation` |
 | `GET /api/[entity]` · `/api/[entity]/{uuid}`                 | Delta-sync a entity / fetch one                             | JWT, `ENTITY` `READ`                              | Feature flag     |

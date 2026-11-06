@@ -52,7 +52,6 @@ class JobProvider(
             EntityType.TRANSLATION -> translationRepository.executeSyncTranslations(job = job)
             EntityType.DEVICE_LOCATION -> deviceLocationRepository.executeSyncDeviceLocations(job = job)
             EntityType.USER -> userRepository.executeSyncUsers(job = job)
-            EntityType.ACCOUNT -> accountRepository.executeSyncAccounts(job = job)
             EntityType.TASK -> taskRepository.executeSyncTasks(job = job)
             else -> null
         }
@@ -67,6 +66,7 @@ class JobProvider(
     private suspend fun handleGet(job: Job): JobResult = appGraph.getRepositories(job = job)?.run {
         when (job.entityType) {
             EntityType.USER -> userRepository.executeSyncUser(job = job)
+            EntityType.ACCOUNT -> accountRepository.executeSyncAccount(job = job)
             EntityType.TASK -> taskRepository.executeSyncTask(job = job)
             else -> null
         }

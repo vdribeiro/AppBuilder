@@ -9,14 +9,7 @@ import com.app.builder.domain.RegistrationForm
 interface AccountUseCases {
 
     /**
-     * Observes the complete list of accounts.
-     *
-     * @return [Flow] emitting the current list of [Account] objects.
-     */
-    fun observeAccounts(): Flow<List<Account>>
-
-    /**
-     * Observes the account of a specific user.
+     * Observes the account of a specific user, fetching it from the server in the background.
      *
      * @param userUuid The unique identifier of the user whose account to observe.
      * @return [Flow] emitting the [Account] if found, or null if the user has no account.

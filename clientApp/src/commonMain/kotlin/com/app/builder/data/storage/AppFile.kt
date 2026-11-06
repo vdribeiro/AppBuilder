@@ -40,8 +40,6 @@ object AppFile {
             REGISTRIES_LAST_SYNC_UTC,
             /** The UTC instant when users were last synchronized. */
             USERS_LAST_SYNC_UTC,
-            /** The UTC instant when accounts were last synchronized. */
-            ACCOUNTS_LAST_SYNC_UTC,
             /** The UTC instant when tasks were last synchronized. */
             TASKS_LAST_SYNC_UTC
         }

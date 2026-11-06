@@ -9,25 +9,19 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.withContext
 import io.ktor.client.HttpClient
-import app.cash.sqldelight.async.coroutines.awaitAsList
 import app.cash.sqldelight.async.coroutines.awaitAsOneOrNull
-import com.app.builder.core.config.ClientConfigs
-import com.app.builder.core.config.ServerConfigs
 import com.app.builder.core.flow.Dispatcher
 import com.app.builder.core.locale.now
 import com.app.builder.core.security.uuid
 import com.app.builder.core.telemetry.Telemetry
-import com.app.builder.data.database.AccountSchema
 import com.app.builder.data.database.asFlow
 import com.app.builder.data.database.safeTransaction
 import com.app.builder.data.http.Header
 import com.app.builder.data.http.HttpRequest
 import com.app.builder.data.http.HttpResult
-import com.app.builder.data.http.Query
 import com.app.builder.data.http.URL
-import com.app.builder.data.http.getPaginated
+import com.app.builder.data.http.get
 import com.app.builder.data.http.post
-import com.app.builder.data.storage.AppFile
 import com.app.builder.domain.Account
 import com.app.builder.domain.EntityType
 import com.app.builder.domain.Permission
@@ -44,7 +38,7 @@ import database.AppDatabase
 
 /**
  * Gateway implementation for Account Use Cases and Repository.
- * Accounts are synced in the background, while creating and updating one is an online call, since creating one carries a password.
+ * An account is fetched in the background when it is observed, so only the accounts that were viewed are stored, while creating and updating one is an online call, since creating one carries a password.
  *
  * @property account The account of the current user.
  * @property database The SQLite database instance for account data.
@@ -63,30 +57,6 @@ class AccountGateway(
     /** Query interface for the users table. */
     private val userDao = database.userQueries
 
-    override fun observeAccounts(): Flow<List<Account>> {
-        if (!account.hasPermission(entityType = EntityType.ACCOUNT, permission = Permission.READ)) {
-            val throwable = Throwable(message = "User does not have ${Permission.READ} permission for ${EntityType.ACCOUNT}")
-            Telemetry.error(tag = TAG, message = "Invalid permissions", throwable = throwable)
-            return emptyFlow()
-        }
-
-        return accountDao.getAccounts()
-            .asFlow { it.toAccount() }
-            .onStart {
-                val job = Job(
-                    userUuid = account.userUuid,
-                    entityType = EntityType.ACCOUNT,
-                    type = Job.Type.GET,
-                )
-                scheduler.queue(job = job)
-            }
-            .flowOn(context = Dispatcher.IO)
-            .catch {
-                Telemetry.error(tag = TAG, message = "Unable to observe accounts", throwable = it)
-                emit(value = emptyList())
-            }
-    }
-
     override fun observeAccount(userUuid: Uuid): Flow<Account?> {
         if (!account.hasPermission(entityType = EntityType.ACCOUNT, permission = Permission.READ)) {
             val throwable = Throwable(message = "User does not have ${Permission.READ} permission for ${EntityType.ACCOUNT}")
@@ -97,6 +67,15 @@ class AccountGateway(
         return accountDao.getAccount(userUuid = userUuid)
             .asFlow { it.toAccount() }
             .map { it.firstOrNull() }
+            .onStart {
+                val job = Job(
+                    userUuid = account.userUuid,
+                    entityUuid = userUuid,
+                    entityType = EntityType.ACCOUNT,
+                    type = Job.Type.GET,
+                )
+                scheduler.queue(job = job)
+            }
             .flowOn(context = Dispatcher.IO)
             .catch {
                 Telemetry.error(tag = TAG, message = "Unable to observe account", throwable = it)
@@ -163,56 +142,35 @@ class AccountGateway(
         updated
     }
 
-    override suspend fun syncAccounts() = withContext(context = Dispatcher.IO) {
-        if (!account.hasPermission(entityType = EntityType.ACCOUNT, permission = Permission.READ)) {
-            val throwable = Throwable(message = "User does not have ${Permission.READ} permission for ${EntityType.ACCOUNT}")
-            Telemetry.error(tag = TAG, message = "Invalid permissions", throwable = throwable)
-            return@withContext
-        }
-
-        val job = Job(
-            userUuid = account.userUuid,
-            entityType = EntityType.ACCOUNT,
-            type = Job.Type.GET,
-        )
-        scheduler.queue(job = job)
-    }
-
-    override suspend fun executeSyncAccounts(job: Job): JobResult = withContext(context = Dispatcher.IO) {
+    override suspend fun executeSyncAccount(job: Job): JobResult = withContext(context = Dispatcher.IO) {
         if (!account.hasPermission(entityType = EntityType.ACCOUNT, permission = Permission.READ)) {
             val throwable = Throwable(message = "User does not have ${Permission.READ} permission for ${EntityType.ACCOUNT}")
             Telemetry.error(tag = TAG, message = "Invalid permissions", throwable = throwable)
             return@withContext throwable.toJobResult()
         }
 
-        val syncStartUtc = now().toString()
-        val sync = AppFile.Sync.cache().value.orEmpty()
-        val lastSync = sync[AppFile.Sync.Key.ACCOUNTS_LAST_SYNC_UTC]
-        val queryMap: Map<Query, String> = buildMap { if (!lastSync.isNullOrBlank()) put(key = Query.LastSyncUtc, value = lastSync) }
+        val entityUuid = job.entityUuid ?: return@withContext Throwable(message = "Missing entity uuid").toJobResult()
 
-        val result = httpClient.getPaginated<Account>(
+        when (val result = httpClient.get<Account>(
             request = HttpRequest(
                 url = URL.Accounts,
-                headerMap = job.toHeaderMap(),
-                queryMap = queryMap
+                headerMap = job.toHeaderMap()
             ),
-            pageSize = ServerConfigs.value.pageSize,
-            cursorOf = { it.modifiedAt.toString() to it.userUuid.toString() }
-        ) { accounts ->
-            database.safeTransaction {
-                syncAccountsInDatabase(accounts = accounts)
-            }.fold(onSuccess = { HttpResult.Success(data = Unit) }, onFailure = { HttpResult.Error(error = it) })
-        }
-
-        when (result) {
+            uuid = entityUuid
+        )) {
             is HttpResult.Error -> {
-                Telemetry.error(tag = TAG, message = "Unable to sync accounts", throwable = result.error)
+                Telemetry.error(tag = TAG, message = "Unable to get the remote account of user $entityUuid", throwable = result.error)
                 result.error.toJobResult()
             }
 
             is HttpResult.Success -> {
-                AppFile.Sync.save { it.orEmpty().plus(pair = (AppFile.Sync.Key.ACCOUNTS_LAST_SYNC_UTC to syncStartUtc)) }
-                Telemetry.info(tag = TAG, message = "Successfully fetched accounts")
+                database.safeTransaction {
+                    syncAccountInDatabase(account = result.data)
+                }.onFailure {
+                    Telemetry.error(tag = TAG, message = "Unable to sync the account of user $entityUuid", throwable = it)
+                    return@withContext it.toJobResult()
+                }
+                Telemetry.info(tag = TAG, message = "Successfully fetched the account of user $entityUuid")
                 JobResult.Success
             }
         }
@@ -229,28 +187,13 @@ class AccountGateway(
     )
 
     /**
-     * Synchronizes a batch of remote accounts with the local database, keeping any local account that is newer than its remote counterpart.
+     * Synchronizes a remote account with the local database, keeping the local account when it is newer.
      *
-     * @param accounts The list of remote [Account] objects to synchronize locally.
+     * @param account The remote [Account] to synchronize locally.
      */
-    private suspend fun syncAccountsInDatabase(accounts: List<Account>) {
-        val localAccountsMap = getAccountsByUuidsFromDatabase(userUuids = accounts.map { it.userUuid }).associateBy { it.userUuid }
-        for (account in accounts) {
-            val localAccount = localAccountsMap[account.userUuid]
-            if (localAccount == null || account.modifiedAt >= localAccount.modifiedAt) upsertAccountInDatabase(account = account)
-        }
-    }
-
-    /**
-     * Retrieves accounts matching the given user UUIDs from the local database, in chunks, since SQLite limits the number of bound parameters in a statement.
-     *
-     * @param userUuids The user UUIDs to look up.
-     * @return The matching [AccountSchema] entities, merged across all chunks.
-     */
-    private suspend fun getAccountsByUuidsFromDatabase(userUuids: List<Uuid>): List<AccountSchema> = buildList {
-        userUuids.chunked(size = ClientConfigs.value.batchSize).forEach { uuidChunk ->
-            addAll(elements = accountDao.getAccountsByUuids(userUuids = uuidChunk).awaitAsList())
-        }
+    private suspend fun syncAccountInDatabase(account: Account) {
+        val localAccount = accountDao.getAccount(userUuid = account.userUuid).awaitAsOneOrNull()
+        if (localAccount == null || account.modifiedAt >= localAccount.modifiedAt) upsertAccountInDatabase(account = account)
     }
 
     /**
