@@ -1,4 +1,4 @@
-package com.app.builder.ui.screen.translations
+package com.app.builder.ui.navigation.translations
 
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf

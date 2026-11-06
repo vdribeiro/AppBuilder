@@ -1,4 +1,4 @@
-package com.app.builder.ui.navigation.provider
+package com.app.builder.ui.navigation.user
 
 import kotlinx.collections.immutable.toImmutableMap
 import kotlinx.collections.immutable.toPersistentList
@@ -18,13 +18,6 @@ import com.app.builder.ui.navigation.LocalRouter
 import com.app.builder.ui.navigation.Router
 import com.app.builder.ui.navigation.Screen
 import com.app.builder.ui.navigation.scene.SplitSceneStrategy.Companion.split
-import com.app.builder.ui.screen.userdetail.UserDetailScreen
-import com.app.builder.ui.screen.userdetail.UserDetailScreenAction
-import com.app.builder.ui.screen.userdetail.UserDetailScreenState
-import com.app.builder.ui.screen.userdetail.UserDetailScreenStore
-import com.app.builder.ui.screen.userlist.UserListScreen
-import com.app.builder.ui.screen.userlist.UserListScreenState
-import com.app.builder.ui.screen.userlist.UserListScreenStore
 import com.app.builder.ui.store.Store
 
 /**

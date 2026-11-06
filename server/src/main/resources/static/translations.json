@@ -86,6 +86,26 @@
   },
   {
     "languageIso": "en",
+    "key": "design_components",
+    "value": "Components"
+  },
+  {
+    "languageIso": "en",
+    "key": "design_colors",
+    "value": "Colors"
+  },
+  {
+    "languageIso": "en",
+    "key": "design_shapes",
+    "value": "Shapes"
+  },
+  {
+    "languageIso": "en",
+    "key": "design_typography",
+    "value": "Typography"
+  },
+  {
+    "languageIso": "en",
     "key": "system",
     "value": "System"
   },

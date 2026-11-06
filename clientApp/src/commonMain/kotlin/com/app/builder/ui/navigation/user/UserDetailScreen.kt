@@ -1,4 +1,4 @@
-package com.app.builder.ui.screen.userdetail
+package com.app.builder.ui.navigation.user
 
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toPersistentList

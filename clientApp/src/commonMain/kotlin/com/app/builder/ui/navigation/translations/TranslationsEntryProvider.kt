@@ -1,4 +1,4 @@
-package com.app.builder.ui.navigation.provider
+package com.app.builder.ui.navigation.translations
 
 import kotlinx.collections.immutable.toImmutableMap
 import kotlinx.collections.immutable.toPersistentList
@@ -14,9 +14,6 @@ import com.app.builder.ui.component.actionbar.ActionBarStore
 import com.app.builder.ui.component.navigation.NavigationState
 import com.app.builder.ui.navigation.LocalRouter
 import com.app.builder.ui.navigation.Screen
-import com.app.builder.ui.screen.translations.TranslationsScreen
-import com.app.builder.ui.screen.translations.TranslationsScreenState
-import com.app.builder.ui.screen.translations.TranslationsScreenStore
 import com.app.builder.ui.store.Store
 
 /**

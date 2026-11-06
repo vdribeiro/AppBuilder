@@ -1,4 +1,4 @@
-package com.app.builder.ui.screen.userdetail
+package com.app.builder.ui.navigation.user
 
 import com.app.builder.domain.Account
 import com.app.builder.domain.User

@@ -1,4 +1,4 @@
-package com.app.builder.ui.screen.userprofile
+package com.app.builder.ui.navigation.userprofile
 
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.firstOrNull

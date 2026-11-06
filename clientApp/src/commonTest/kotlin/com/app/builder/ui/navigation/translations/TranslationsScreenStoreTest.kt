@@ -1,4 +1,4 @@
-package com.app.builder.ui.screen.translations
+package com.app.builder.ui.navigation.translations
 
 import kotlin.test.Test
 import kotlin.test.assertEquals

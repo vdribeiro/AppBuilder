@@ -1,4 +1,4 @@
-package com.app.builder.ui.screen.userlist
+package com.app.builder.ui.navigation.user
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue

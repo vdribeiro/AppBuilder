@@ -1,4 +1,4 @@
-package com.app.builder.ui.screen.userprofile
+package com.app.builder.ui.navigation.userprofile
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue

@@ -1,4 +1,4 @@
-package com.app.builder.ui.screen.userdetail
+package com.app.builder.ui.navigation.user
 
 import kotlinx.coroutines.Job
 import com.app.builder.core.locale.now

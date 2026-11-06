@@ -1,4 +1,4 @@
-package com.app.builder.ui.screen.userprofile
+package com.app.builder.ui.navigation.userprofile
 
 import com.app.builder.AppInfo
 import com.app.builder.core.locale.getLanguage

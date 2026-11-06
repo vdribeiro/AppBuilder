@@ -1,4 +1,4 @@
-package com.app.builder.ui.screen.userlist
+package com.app.builder.ui.navigation.user
 
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.Job
