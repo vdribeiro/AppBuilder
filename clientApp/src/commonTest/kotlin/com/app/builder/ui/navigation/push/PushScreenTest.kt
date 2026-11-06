@@ -11,11 +11,9 @@ import androidx.compose.ui.test.onNodeWithText
 import com.app.builder.Dependency.getUserDependency
 import com.app.builder.test.FakeData
 import com.app.builder.test.TestCase
-import com.app.builder.ui.component.actionbar.ActionBarState
-import com.app.builder.ui.component.actionbar.ActionBarStore
 import com.app.builder.ui.component.button.PushPayloadType
-import com.app.builder.ui.component.navigation.NavigationState
-import com.app.builder.ui.component.navigation.NavigationStore
+import com.app.builder.ui.component.session.SessionState
+import com.app.builder.ui.component.session.SessionStore
 
 class PushScreenTest: TestCase() {
 
@@ -27,12 +25,11 @@ class PushScreenTest: TestCase() {
             .useCases
         authenticatedUseCases.authenticationUseCases.login(credentials = FakeData.adminCredentials)
 
-        val navigationStore = NavigationStore(state = NavigationState(), authenticationUseCases = authenticatedUseCases.authenticationUseCases)
         val pushScreenStore = PushScreenStore(state = PushScreenState(), pushUseCases = authenticatedUseCases.pushUseCases, userUseCases = authenticatedUseCases.userUseCases)
 
-        val actionBarStore = ActionBarStore(state = ActionBarState(), router = router, authenticationUseCases = authenticatedUseCases.authenticationUseCases)
+        val sessionStore = SessionStore(state = SessionState(), authenticationUseCases = authenticatedUseCases.authenticationUseCases)
 
-        setUI { PushScreen(actionBarStore = actionBarStore, navigationStore = navigationStore, store = pushScreenStore) }
+        setUI { PushScreen(sessionStore = sessionStore, store = pushScreenStore) }
 
         onNodeWithTag(testTag = "navigation_bar").assertIsDisplayed()
         onNode(matcher = isSelected() and hasText(text = "push")).assertIsDisplayed()

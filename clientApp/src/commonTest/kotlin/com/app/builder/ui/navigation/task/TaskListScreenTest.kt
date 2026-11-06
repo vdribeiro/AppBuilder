@@ -14,15 +14,14 @@ import androidx.compose.ui.test.performClick
 import com.app.builder.Dependency.getUserDependency
 import com.app.builder.core.security.uuid
 import com.app.builder.data.storage.AppFile
-import com.app.builder.domain.EntityType
 import com.app.builder.domain.Task
 import com.app.builder.test.FakeData
 import com.app.builder.test.TestCase
 import com.app.builder.test.count
-import com.app.builder.ui.component.actionbar.ActionBarState
-import com.app.builder.ui.component.actionbar.ActionBarStore
-import com.app.builder.ui.component.navigation.NavigationState
-import com.app.builder.ui.component.navigation.NavigationStore
+import com.app.builder.ui.component.filters.FiltersState
+import com.app.builder.ui.component.filters.FiltersStore
+import com.app.builder.ui.component.session.SessionState
+import com.app.builder.ui.component.session.SessionStore
 import com.app.builder.ui.navigation.Router
 import com.app.builder.ui.navigation.Screen
 
@@ -37,8 +36,7 @@ class TaskListScreenTest: TestCase() {
         authenticatedUseCases.authenticationUseCases.login(credentials = FakeData.adminCredentials)
         authenticatedUseCases.taskUseCases.upsertTask(task = FakeData.task)
 
-        val navigationStore = NavigationStore(state = NavigationState(), authenticationUseCases = authenticatedUseCases.authenticationUseCases)
-        // The list store only emits once TaskPreferences holds data, and it is the action bar store that seeds that file, so it has to be wired up as the provider does.
+        // The list store only emits once TaskPreferences holds data, and it is the filters store that seeds that file, so it has to be wired up as the provider does.
         val properties = Task.Property.entries.map { it.name }.toPersistentList()
         val defaults = AppFile.ActionBarData(
             search = "",
@@ -47,20 +45,17 @@ class TaskListScreenTest: TestCase() {
             visibleProperties = properties,
             searchableProperties = properties,
         )
-        val actionBarStore = ActionBarStore(
-            state = ActionBarState(visibleProperties = properties, searchableProperties = properties),
-            router = router,
-            authenticationUseCases = authenticatedUseCases.authenticationUseCases,
+        val sessionStore = SessionStore(state = SessionState(), authenticationUseCases = authenticatedUseCases.authenticationUseCases)
+        val filtersStore = FiltersStore(
+            state = FiltersState(visibleProperties = properties, searchableProperties = properties),
             storageFile = AppFile.TaskPreferences,
-            defaults = defaults,
-            entityType = EntityType.TASK,
-        )
+            defaults = defaults)
         val taskListScreenStore = TaskListScreenStore(state = TaskListScreenState(), router = router, taskUseCases = authenticatedUseCases.taskUseCases)
 
         setUI {
             TaskListScreen(
-                actionBarStore = actionBarStore,
-                navigationStore = navigationStore,
+                sessionStore = sessionStore,
+                filtersStore = filtersStore,
                 store = taskListScreenStore
             )
         }
@@ -92,8 +87,7 @@ class TaskListScreenTest: TestCase() {
         authenticatedUseCases.taskUseCases.upsertTask(task = FakeData.task)
         authenticatedUseCases.taskUseCases.upsertTask(task = otherTask)
 
-        val navigationStore = NavigationStore(state = NavigationState(), authenticationUseCases = authenticatedUseCases.authenticationUseCases)
-        // The list store only emits once TaskPreferences holds data, and it is the action bar store that seeds that file, so it has to be wired up as the provider does.
+        // The list store only emits once TaskPreferences holds data, and it is the filters store that seeds that file, so it has to be wired up as the provider does.
         val properties = Task.Property.entries.map { it.name }.toPersistentList()
         val defaults = AppFile.ActionBarData(
             search = "",
@@ -102,20 +96,17 @@ class TaskListScreenTest: TestCase() {
             visibleProperties = properties,
             searchableProperties = properties,
         )
-        val actionBarStore = ActionBarStore(
-            state = ActionBarState(visibleProperties = properties, searchableProperties = properties),
-            router = router,
-            authenticationUseCases = authenticatedUseCases.authenticationUseCases,
+        val sessionStore = SessionStore(state = SessionState(), authenticationUseCases = authenticatedUseCases.authenticationUseCases)
+        val filtersStore = FiltersStore(
+            state = FiltersState(visibleProperties = properties, searchableProperties = properties),
             storageFile = AppFile.TaskPreferences,
-            defaults = defaults,
-            entityType = EntityType.TASK,
-        )
+            defaults = defaults)
         val taskListScreenStore = TaskListScreenStore(state = TaskListScreenState(), router = router, taskUseCases = authenticatedUseCases.taskUseCases)
 
         setUI {
             TaskListScreen(
-                actionBarStore = actionBarStore,
-                navigationStore = navigationStore,
+                sessionStore = sessionStore,
+                filtersStore = filtersStore,
                 store = taskListScreenStore
             )
         }
@@ -146,7 +137,6 @@ class TaskListScreenTest: TestCase() {
             .useCases
         authenticatedUseCases.authenticationUseCases.login(credentials = FakeData.adminCredentials)
 
-        val navigationStore = NavigationStore(state = NavigationState(), authenticationUseCases = authenticatedUseCases.authenticationUseCases)
         val properties = Task.Property.entries.map { it.name }.toPersistentList()
         val defaults = AppFile.ActionBarData(
             search = "",
@@ -155,21 +145,17 @@ class TaskListScreenTest: TestCase() {
             visibleProperties = properties,
             searchableProperties = properties,
         )
-        val actionBarStore = ActionBarStore(
-            state = ActionBarState(visibleProperties = properties, searchableProperties = properties),
-            router = router,
-            authenticationUseCases = authenticatedUseCases.authenticationUseCases,
+        val sessionStore = SessionStore(state = SessionState(), authenticationUseCases = authenticatedUseCases.authenticationUseCases)
+        val filtersStore = FiltersStore(
+            state = FiltersState(visibleProperties = properties, searchableProperties = properties),
             storageFile = AppFile.TaskPreferences,
-            defaults = defaults,
-            entityType = EntityType.TASK,
-            onAddClick = { router.navigate(screen = Screen.TaskDetail(uuid = uuid().toString(), new = true), option = Router.NavOption.REPLACE_LAST) }
-        )
+            defaults = defaults)
         val taskListScreenStore = TaskListScreenStore(state = TaskListScreenState(), router = router, taskUseCases = authenticatedUseCases.taskUseCases)
 
         setUI {
             TaskListScreen(
-                actionBarStore = actionBarStore,
-                navigationStore = navigationStore,
+                sessionStore = sessionStore,
+                filtersStore = filtersStore,
                 store = taskListScreenStore
             )
         }

@@ -11,8 +11,6 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import com.app.builder.test.FakeData
 import com.app.builder.test.TestCase
-import com.app.builder.ui.component.navigation.NavigationState
-import com.app.builder.ui.component.navigation.NavigationStore
 import com.app.builder.ui.navigation.Screen
 
 class UserProfileScreenTest: TestCase() {
@@ -25,10 +23,9 @@ class UserProfileScreenTest: TestCase() {
             .useCases
             .authenticationUseCases
 
-        val navigationStore = NavigationStore(state = NavigationState(), authenticationUseCases = authenticationUseCases)
         val store = UserProfileScreenStore(state = UserProfileScreenState(guest = false), authenticationUseCases = authenticationUseCases)
 
-        setUI { UserProfileScreen(navigationStore = navigationStore, store = store) }
+        setUI { UserProfileScreen(store = store) }
 
         waitUntil { store.state.guest }
         assertNull(actual = store.state.name)
@@ -51,10 +48,9 @@ class UserProfileScreenTest: TestCase() {
             .authenticationUseCases
         authenticationUseCases.login(credentials = FakeData.adminCredentials)
 
-        val navigationStore = NavigationStore(state = NavigationState(), authenticationUseCases = authenticationUseCases)
         val store = UserProfileScreenStore(state = UserProfileScreenState(), authenticationUseCases = authenticationUseCases)
 
-        setUI { UserProfileScreen(navigationStore = navigationStore, store = store) }
+        setUI { UserProfileScreen(store = store) }
 
         waitUntil { !store.state.guest }
         assertEquals(expected = FakeData.adminUser.name, actual = store.state.name)
