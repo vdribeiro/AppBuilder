@@ -1,24 +1,11 @@
 package com.app.builder.domain.usecase.account
 
-import kotlin.time.Instant
 import kotlin.uuid.Uuid
-import com.app.builder.core.config.ServerConfigs
 import com.app.builder.domain.Account
 import com.app.builder.domain.usecase.WriteResult
 
 /** Defines the business workflows for managing accounts. */
 interface AccountUseCases {
-
-    /**
-     * Gets a page of accounts updated after the given timestamp, newest first.
-     *
-     * @param lastSyncUtc The fixed lower bound below which results are already synced.
-     * @param cursorUtc The `modifiedAt` of the last account consumed in the previous page, for descending cursor continuation.
-     * @param cursorUuid The user UUID of the last account consumed in the previous page, tie-breaking [cursorUtc].
-     * @param pageSize The maximum number of entries to return, clamped to [ServerConfigs.maxPageSize].
-     * @return The list of [Account] objects.
-     */
-    suspend fun getAccounts(lastSyncUtc: Instant, cursorUtc: Instant?, cursorUuid: Uuid?, pageSize: Int): List<Account>
 
     /**
      * Gets the account of a single user.

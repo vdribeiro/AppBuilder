@@ -1,17 +1,13 @@
 package com.app.builder.domain.route.provider
 
-import kotlin.time.Instant
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.auth.authenticate
 import io.ktor.server.routing.Route
 import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import io.ktor.server.routing.route
-import com.app.builder.core.config.ServerConfigs
-import com.app.builder.core.locale.toInstant
 import com.app.builder.core.security.toUuid
 import com.app.builder.core.telemetry.Telemetry
-import com.app.builder.data.http.Query
 import com.app.builder.data.http.URL
 import com.app.builder.data.serializer.encode
 import com.app.builder.domain.Account
@@ -20,7 +16,6 @@ import com.app.builder.domain.Permission
 import com.app.builder.domain.permission.PermissionService
 import com.app.builder.domain.permission.UserAccess
 import com.app.builder.domain.route.getParameters
-import com.app.builder.domain.route.getQueryMap
 import com.app.builder.domain.route.receive
 import com.app.builder.domain.route.respondSafely
 import com.app.builder.domain.route.toRegistry
@@ -44,22 +39,6 @@ fun Route.accountRoutes(
 ) {
     authenticate {
         route(path = URL.Accounts.path) {
-            get {
-                if (!call.validatePermission(permissionService = permissionService, entityType = EntityType.ACCOUNT, permission = Permission.READ)) return@get
-
-                val queryMap = call.getQueryMap()
-                val lastSyncUtc = queryMap[Query.LastSyncUtc.parameter]?.toInstant() ?: Instant.fromEpochSeconds(epochSeconds = 0)
-                val cursorUtc = queryMap[Query.CursorUtc.parameter]?.toInstant()
-                val cursorUuid = queryMap[Query.CursorUuid.parameter]?.toUuid()
-                val pageSize = queryMap[Query.PageSize.parameter]?.toIntOrNull() ?: ServerConfigs.value.pageSize
-
-                val accounts = accountUseCases.getAccounts(lastSyncUtc = lastSyncUtc, cursorUtc = cursorUtc, cursorUuid = cursorUuid, pageSize = pageSize)
-                call.respondSafely(status = HttpStatusCode.OK, message = accounts)
-                Telemetry.info(tag = TAG, message = "Fetched ${accounts.size} accounts")
-
-                call.toRegistry(entityType = EntityType.ACCOUNT)?.let { registryUseCases.upsertRegistry(registry = it) }
-            }
-
             get(path = "/{uuid}") {
                 if (!call.validatePermission(permissionService = permissionService, entityType = EntityType.ACCOUNT, permission = Permission.READ)) return@get
 
