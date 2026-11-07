@@ -37,7 +37,13 @@ abstract class StorageFile<T>(
 
     /** Backing state flow maintaining the active volatile layer. */
     private val _cacheFlow: MutableStateFlow<T?> = MutableStateFlow(value = null)
-    /** Read only stream, emitting the current value on collection and every change after. */
+    /**
+     * Read only stream of the cached payload, emitting the current value on collection and every change after.
+     * Unlike every other operation it is not guarded by a mutex, so it can be read without suspending but never hydrates the cache by itself:
+     * it holds `null` until [load], [save] or [cache] has read the file, and always `null` when the cache is disabled.
+     * While a [save] is writing, it already holds the new payload, and rolls back if the write fails.
+     * Prefer [cache] unless the payload is needed synchronously.
+     */
     val cacheFlow: StateFlow<T?> = _cacheFlow.asStateFlow()
 
     /** Whether the cache has already been hydrated. */

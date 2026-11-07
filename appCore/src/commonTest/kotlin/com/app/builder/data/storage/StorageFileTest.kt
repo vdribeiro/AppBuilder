@@ -123,16 +123,16 @@ class StorageFileTest: TestCase() {
         assertEquals(expected = TestFile.Document(name = "doc", count = 2), actual = TestFile.Plain.load())
     }
 
-    /** Verifies that [StorageFile.value] holds nothing until the cache is hydrated, then the saved value without suspending. */
+    /** Verifies that [StorageFile.cacheFlow] holds nothing until the cache is hydrated, then the saved value without suspending. */
     @Test
-    fun valueFollowsTheHydratedCache() = runUnitTest {
+    fun cacheFlowFollowsTheHydratedCache() = runUnitTest {
         val document = TestFile.Document(name = "value", count = 2)
-        assertNull(actual = TestFile.Secret.value)
+        assertNull(actual = TestFile.Secret.cacheFlow.value)
 
         TestFile.Secret.save { document }
 
-        assertEquals(expected = document, actual = TestFile.Secret.value)
-        assertNull(actual = TestFile.Plain.value)
+        assertEquals(expected = document, actual = TestFile.Secret.cacheFlow.value)
+        assertNull(actual = TestFile.Plain.cacheFlow.value)
     }
 
     /** Verifies that a file without a cache layer never hydrates its cache flow, so [StorageFile.cache] holds null even with a value on disk. */
