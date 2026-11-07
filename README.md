@@ -510,7 +510,7 @@ Gate every new feature behind a flag, and give it the flag before its first scre
 2. **Screen**: `ui/navigation/{feature}` with `{Feature}Screen`, `{Feature}ScreenStateAction`, `{Feature}ScreenStore` and the feature's `{Feature}EntryProvider`. One package per navigation item, so a list and its detail screen share it.
 3. **Gateway**: `domain/gateway/{feature}` with a `{Feature}Gateway` implementing `{Feature}UseCases` and/or `{Feature}Repository`, mappers between the domain model and the SQLDelight schema, and the `.sq` files under `sqldelight`. Register it in `Gateways`, and its interfaces in `UseCases` and/or `Repositories`.
 4. **Scheduler**: handle the entity in `domain/scheduler/JobProvider`, which switches on `EntityType` and `Job.Type` and delegates to the feature's **`Repository`**.
-5. **Navigation**: add the screen to `Screen`, its route to the feature's entry provider, and link it in `Navigation`, gated by the flag. For a navigation bar item, add a `NavigationRoute` in its `NavigationSection` and resolve it in `NavigationStore`.
+5. **Navigation**: add the screen to `Screen`, its route to the feature's entry provider, and link it in `Navigation`, gated by the flag. For a navigation bar item, add a `NavigationRoute` in its `NavigationSection` and resolve it in `permittedRoutes`.
 
 **Server**
 
