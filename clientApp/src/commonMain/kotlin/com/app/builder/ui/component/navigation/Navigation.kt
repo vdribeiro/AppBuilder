@@ -32,7 +32,13 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.app.builder.core.locale.now
+import com.app.builder.core.security.uuid
+import com.app.builder.domain.Account
+import com.app.builder.domain.EntityType
+import com.app.builder.domain.Permission
 import com.app.builder.ui.Preview
+import com.app.builder.ui.component.session.SessionState
 import com.app.builder.ui.core.navigation.NavigationBar
 import com.app.builder.ui.core.navigation.NavigationItem
 import com.app.builder.ui.navigation.LocalRouter
@@ -43,22 +49,23 @@ import com.app.builder.ui.store.Store
 import com.app.builder.ui.store.previewStore
 
 /**
- * Renders the app's navigation bar from the routes in the given [store]'s [NavigationState], or nothing while it holds no routes.
+ * Renders the app's navigation bar from the routes the current account can open, or nothing while there is no account.
  * The bar shows the [NavigationSection] of the [selected] route. The main section holds the app's domain features plus an item entering each other section,
  * and every other section holds its own routes plus an app item returning to the main section.
  *
- * @param store The store providing the [NavigationState] routes to render.
+ * @param sessionStore The store holding the current user's account, whose permissions decide the routes.
  * @param selected The route of the screen showing the bar, or null if it has none.
  */
 @Composable
 fun Navigation(
-    store: Store<NavigationState, Unit>,
+    sessionStore: Store<SessionState, Unit>,
     selected: NavigationRoute? = null,
 ) {
-    val state by store.stateFlow.collectAsStateWithLifecycle()
+    val session by sessionStore.stateFlow.collectAsStateWithLifecycle()
     val router = LocalRouter.current
-    val items = remember(key1 = state.routes, key2 = selected, key3 = router) {
-        navigationItems(routes = state.routes, selected = selected, router = router)
+    val routes = remember(key1 = session.account) { permittedRoutes(account = session.account) }
+    val items = remember(key1 = routes, key2 = selected, key3 = router) {
+        navigationItems(routes = routes, selected = selected, router = router)
     }
     if (items.isEmpty()) return
     NavigationBar(
@@ -193,9 +200,12 @@ private val NavigationRoute.screen: Screen
 @PreviewLightDark
 @Composable
 private fun NavigationPreview() = Preview {
-    Navigation(
-        store = previewStore(
-            initialState = NavigationState()
-        )
+    val account = Account(
+        userUuid = uuid(),
+        modifiedAt = now(),
+        deletedAt = null,
+        username = "preview",
+        permissions = EntityType.entries.associateWith { Permission.WRITE },
     )
+    Navigation(sessionStore = previewStore(initialState = SessionState(loaded = true, account = account)), selected = NavigationRoute.TASK)
 }
