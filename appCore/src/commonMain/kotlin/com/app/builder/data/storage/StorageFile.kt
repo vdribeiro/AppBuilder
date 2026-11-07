@@ -36,7 +36,9 @@ abstract class StorageFile<T>(
     private val mutex = Mutex()
 
     /** Backing state flow maintaining the active volatile layer. */
-    private val _state: MutableStateFlow<T?> = MutableStateFlow(value = null)
+    private val _cacheFlow: MutableStateFlow<T?> = MutableStateFlow(value = null)
+    /** Read only stream, emitting the current value on collection and every change after. */
+    val cacheFlow: StateFlow<T?> = _cacheFlow.asStateFlow()
 
     /** Whether the cache has already been hydrated. */
     private var hydrated: Boolean = false
@@ -49,7 +51,7 @@ abstract class StorageFile<T>(
     suspend fun reset(): Boolean = withContext(context = Dispatcher.IO) {
         mutex.withLock {
             if (cache) {
-                _state.update { null }
+                _cacheFlow.update { null }
                 hydrated = true
             }
             deleteFile(path = path)
@@ -68,11 +70,11 @@ abstract class StorageFile<T>(
         mutex.withLock {
             val previous = if (cache) {
                 hydrate()
-                _state.value
+                _cacheFlow.value
             } else readFromDisk()
 
-            val value = if (cache) _state.updateAndGet(function = function) else function(previous)
-            (if (value == null) deleteFile(path) else writeToDisk(value = value)).also { success -> if (cache && !success) _state.update { previous } }
+            val value = if (cache) _cacheFlow.updateAndGet(function = function) else function(previous)
+            (if (value == null) deleteFile(path) else writeToDisk(value = value)).also { success -> if (cache && !success) _cacheFlow.update { previous } }
         }
     }
 
@@ -86,7 +88,7 @@ abstract class StorageFile<T>(
         mutex.withLock {
             readFromDisk().also { result ->
                 if (cache) {
-                    _state.update { result }
+                    _cacheFlow.update { result }
                     hydrated = true
                 }
             }
@@ -101,7 +103,7 @@ abstract class StorageFile<T>(
     suspend fun cache(): StateFlow<T?> = withContext(context = Dispatcher.IO) {
         mutex.withLock {
             hydrate()
-            _state.asStateFlow()
+            _cacheFlow.asStateFlow()
         }
     }
 
@@ -131,7 +133,7 @@ abstract class StorageFile<T>(
     private suspend fun hydrate() {
         if (cache && !hydrated) {
             val result = readFromDisk()
-            _state.update { result }
+            _cacheFlow.update { result }
             hydrated = true
         }
     }

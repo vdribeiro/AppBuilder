@@ -1,216 +1,44 @@
 package com.app.builder.ui.component.bar
 
-import kotlinx.collections.immutable.ImmutableList
-import kotlinx.collections.immutable.ImmutableMap
+import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.persistentMapOf
-import kotlinx.collections.immutable.toPersistentList
-import kotlinx.coroutines.flow.debounce
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.drop
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.Login
-import androidx.compose.material.icons.automirrored.filled.ManageSearch
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowDownward
-import androidx.compose.material.icons.filled.ArrowUpward
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.ExpandLess
-import androidx.compose.material.icons.filled.ExpandMore
-import androidx.compose.material.icons.filled.FilterList
-import androidx.compose.material.icons.filled.Restore
-import androidx.compose.material.icons.filled.Save
-import androidx.compose.material.icons.filled.Schedule
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.SyncDisabled
-import androidx.compose.material.icons.filled.Visibility
-import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
-import com.app.builder.ui.LocalColorScheme
 import com.app.builder.ui.Preview
-import com.app.builder.ui.component.image.Avatar
 import com.app.builder.ui.core.bar.TopBar
 import com.app.builder.ui.core.bar.TopBarVariant
 import com.app.builder.ui.core.button.Button
-import com.app.builder.ui.core.button.Dropdown
-import com.app.builder.ui.core.button.DropdownItem
 import com.app.builder.ui.core.image.Icon
-import com.app.builder.ui.core.image.Image
-import com.app.builder.ui.core.text.Input
 import com.app.builder.ui.core.text.Text
 
 /**
- * Renders the top action bar, switching between the default, search and confirmation layouts based on the current mode.
+ * Renders the top action bar, a [TopBar] with a back button, a title and slots for what leads the title, the actions and a secondary row of actions.
  *
  * @param modifier The [Modifier] to be applied to the root layout.
  * @param title Text shown as the action bar's title.
- * @param properties Map of property keys to their display labels, used to populate the sort, visibility and search menus.
  * @param onBackClick Shows a back arrow when not null and executes this callback when clicked.
- * @param avatarName The name to fit in the avatar. Only the first letter of the first and last name will show capitalized if no image is provided.
- * @param avatarImage The image resource.
- * @param onAvatarClick Callback for the avatar click action.
- * @param synced Shows a sync disabled status icon in the error color after the avatar when `false`.
- * @param clockTrusted Shows a clock status icon in the error color after the avatar when `false`.
- * @param onAddClick Shows an add button when not null and executes this callback when clicked.
- * @param onEditClick Shows an edit button when not null and executes this callback when clicked.
- * @param onSaveClick Shows a save button when not null and executes this callback when clicked.
- * @param onCancelClick Shows a cancel button when not null and executes this callback when clicked.
- * @param deleted Whether the current domain is deleted.
- * @param onDeleteClick Shows a delete toggle button when not null and is called with the new deletion value when it is clicked.
- * @param onLoginClick Shows a login button when not null and executes this callback when clicked.
- * @param onSearch Shows a search button when not null and is called with the debounced search query as the user types in search mode.
- * @param filtersExpanded Whether the filters start expanded.
- * @param onFiltersExpandClick Called with the new expansion when the filters are expanded or collapsed.
- * @param search The search query the search input starts with, and follows when it changes from outside.
- * @param searchExpanded Whether the search input starts open.
- * @param onSearchExpandClick Called with the new value when the search input is opened or closed.
- * @param searchableProperties Property keys currently included when searching.
- * @param onSearchablePropertiesChange Shows a searchable properties selection button when not null and is called with the updated set of searchable property keys when one is toggled.
- * @param sortAscending Whether the list is currently sorted in ascending order.
- * @param onSortAscendingClick Shows a sort button when not null and is called with the new sort direction when the sort-direction button is clicked.
- * @param sortProperty Key of the property currently used to sort the list.
- * @param onSelectSortProperty Shows a sort properties selection button when not null and is called with the selected property key when a sort-property menu item is clicked.
- * @param visibleProperties Property keys currently shown as visible columns.
- * @param onVisiblePropertiesChange Shows a visible properties selection button when not null and is called with the updated set of visible property keys when one is toggled.
- * @param showDeleted Whether deleted items are currently shown.
- * @param onShowDeletedClick Shows a deleted items toggle button when not null and is called with the new value when it is clicked.
+ * @param leading Content shown before the title, such as an [AvatarButton] and [StatusIcons].
+ * @param actions Content shown at the end of the bar, such as [EntityActions], a [FiltersButton] and a [LoginButton].
+ * @param secondaryActions Content shown in a row below the bar, such as [Filters], or `null` to hide the row.
  */
 @Composable
 fun TopActionBar(
     modifier: Modifier = Modifier,
     title: String = "",
-    properties: ImmutableMap<String, String> = persistentMapOf(),
     onBackClick: (() -> Unit)? = null,
-    avatarName: String? = null,
-    avatarImage: Image? = null,
-    onAvatarClick: (() -> Unit)? = null,
-    synced: Boolean = true,
-    clockTrusted: Boolean = true,
-    onAddClick: (() -> Unit)? = null,
-    onEditClick: (() -> Unit)? = null,
-    onSaveClick: (() -> Unit)? = null,
-    onCancelClick: (() -> Unit)? = null,
-    deleted: Boolean = false,
-    onDeleteClick: ((Boolean) -> Unit)? = null,
-    onLoginClick: (() -> Unit)? = null,
-    onSearch: ((String) -> Unit)? = null,
-    filtersExpanded: Boolean = false,
-    onFiltersExpandClick: ((Boolean) -> Unit)? = null,
-    search: String = "",
-    searchExpanded: Boolean = false,
-    onSearchExpandClick: ((Boolean) -> Unit)? = null,
-    searchableProperties: ImmutableList<String> = properties.keys.toPersistentList(),
-    onSearchablePropertiesChange: ((String) -> Unit)? = null,
-    sortAscending: Boolean = true,
-    onSortAscendingClick: ((Boolean) -> Unit)? = null,
-    sortProperty: String = "",
-    onSelectSortProperty: ((String) -> Unit)? = null,
-    visibleProperties: ImmutableList<String> = properties.keys.toPersistentList(),
-    onVisiblePropertiesChange: ((String) -> Unit)? = null,
-    showDeleted: Boolean = false,
-    onShowDeletedClick: ((Boolean) -> Unit)? = null,
+    leading: @Composable RowScope.() -> Unit = {},
+    actions: @Composable RowScope.() -> Unit = {},
+    secondaryActions: (@Composable RowScope.() -> Unit)? = null,
 ) {
-    val color = LocalColorScheme.current
-
-    var actionsExpanded by remember(key1 = filtersExpanded) { mutableStateOf(value = filtersExpanded) }
-    var searchMenuExpanded by remember(key1 = searchExpanded) { mutableStateOf(value = searchExpanded) }
-    var searchableMenuExpanded by remember { mutableStateOf(value = false) }
-    var searchQuery by remember { mutableStateOf(value = search) }
-    var sentSearch by remember { mutableStateOf(value = search) }
-    var sortingMenuExpanded by remember { mutableStateOf(value = false) }
-    var visibilityMenuExpanded by remember { mutableStateOf(value = false) }
-
-    LaunchedEffect(key1 = search) {
-        if (search != sentSearch) {
-            sentSearch = search
-            searchQuery = search
-        }
-    }
-    onSearch?.let {
-        LaunchedEffect(key1 = Unit) {
-            snapshotFlow { searchQuery }
-                .drop(count = 1)
-                .debounce(timeoutMillis = 300L)
-                .distinctUntilChanged()
-                .collect {
-                    sentSearch = it
-                    onSearch(it)
-                }
-        }
-    }
-
-    val searchableProperties = onSearchablePropertiesChange?.let {
-        properties.map { property ->
-            DropdownItem(
-                text = property.value,
-                onClick = { onSearchablePropertiesChange(property.key) },
-                leadingIcon = {
-                    if (searchableProperties.contains(element = property.key)) {
-                        Icon(
-                            imageVector = Icons.Default.Check,
-                            contentDescription = "checked"
-                        )
-                    } else Spacer(modifier = Modifier.size(size = 24.dp))
-                }
-            )
-        }
-    }.orEmpty().toPersistentList()
-
-    val sortingProperties = onSelectSortProperty?.let {
-        properties.map { property ->
-            DropdownItem(
-                text = property.value,
-                onClick = { onSelectSortProperty(property.key) },
-                leadingIcon = {
-                    if (sortProperty == property.key) {
-                        Icon(
-                            imageVector = Icons.Default.Check,
-                            contentDescription = "checked"
-                        )
-                    } else Spacer(modifier = Modifier.size(size = 24.dp))
-                }
-            )
-        }
-    }.orEmpty().toPersistentList()
-
-    val visibilityProperties = onVisiblePropertiesChange?.let {
-        properties.map { property ->
-            DropdownItem(
-                text = property.value,
-                onClick = { onVisiblePropertiesChange(property.key) },
-                leadingIcon = {
-                    if (visibleProperties.contains(element = property.key)) {
-                        Icon(
-                            imageVector = Icons.Default.Check,
-                            contentDescription = "checked"
-                        )
-                    } else Spacer(modifier = Modifier.size(size = 24.dp))
-                }
-            )
-        }
-    }.orEmpty().toPersistentList()
-
     TopBar(
         modifier = modifier.testTag(tag = "action_bar"),
         variant = TopBarVariant.SMALL,
@@ -219,24 +47,7 @@ fun TopActionBar(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(space = 8.dp),
             ) {
-                if (avatarName != null || avatarImage != null || onAvatarClick != null) Avatar(
-                    modifier = Modifier
-                        .testTag(tag = "action_avatar")
-                        .clickable { onAvatarClick?.invoke() },
-                    name = avatarName,
-                    image = avatarImage,
-                    size = 40.dp,
-                )
-                if (!synced) Icon(
-                    modifier = Modifier.testTag(tag = "status_not_synced"),
-                    imageVector = Icons.Default.SyncDisabled,
-                    tint = color.error
-                )
-                if (!clockTrusted) Icon(
-                    modifier = Modifier.testTag(tag = "status_clock_untrusted"),
-                    imageVector = Icons.Default.Schedule,
-                    tint = color.error
-                )
+                leading()
                 Text(text = title)
             }
         },
@@ -247,136 +58,8 @@ fun TopActionBar(
                 content = { Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack) }
             )
         },
-        actions = {
-            if (onAddClick != null) Button(
-                modifier = Modifier.testTag(tag = "action_add"),
-                onClick = { onAddClick() },
-                content = { Icon(imageVector = Icons.Default.Add) }
-            )
-
-            if (onEditClick != null) Button(
-                modifier = Modifier.testTag(tag = "action_edit"),
-                onClick = { onEditClick() },
-                content = { Icon(imageVector = Icons.Default.Edit) }
-            )
-
-            if (onSaveClick != null) Button(
-                modifier = Modifier.testTag(tag = "action_save"),
-                onClick = { onSaveClick() },
-                content = { Icon(imageVector = Icons.Default.Save) }
-            )
-
-            if (onCancelClick != null) Button(
-                modifier = Modifier.testTag(tag = "action_cancel"),
-                onClick = { onCancelClick() },
-                content = { Icon(imageVector = Icons.Default.Close) }
-            )
-
-            if (onDeleteClick != null) Button(
-                modifier = Modifier.testTag(tag = "action_delete"),
-                onClick = { onDeleteClick(!deleted) },
-                content = { Icon(imageVector = if (deleted) Icons.Default.Restore else Icons.Default.Delete) }
-            )
-
-            if (onSearch != null || onSortAscendingClick != null || onSelectSortProperty != null || onVisiblePropertiesChange != null || onShowDeletedClick != null) Button(
-                modifier = Modifier.testTag(tag = "action_expand"),
-                onClick = {
-                    actionsExpanded = !actionsExpanded
-                    onFiltersExpandClick?.invoke(actionsExpanded)
-                },
-                content = { Icon(imageVector = if (actionsExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore) }
-            )
-
-            if (onLoginClick != null) Button(
-                modifier = Modifier.testTag(tag = "action_login"),
-                onClick = { onLoginClick() },
-                content = { Icon(imageVector = Icons.AutoMirrored.Filled.Login) }
-            )
-        },
-        secondaryActions = if (!actionsExpanded) null else {
-            {
-                if (!searchMenuExpanded) {
-                    if (onSearch != null) Button(
-                        modifier = Modifier.testTag(tag = "action_search"),
-                        onClick = {
-                            searchQuery = ""
-                            searchMenuExpanded = true
-                            onSearchExpandClick?.invoke(true)
-                        },
-                        content = { Icon(imageVector = Icons.Default.Search) }
-                    )
-                    if (onSortAscendingClick != null) Button(
-                        modifier = Modifier.testTag(tag = "action_sort"),
-                        onClick = { onSortAscendingClick(!sortAscending) },
-                        content = { Icon(imageVector = if (sortAscending) Icons.Default.ArrowUpward else Icons.Default.ArrowDownward) }
-                    )
-                    if (onSelectSortProperty != null) Box {
-                        Button(
-                            modifier = Modifier.testTag(tag = "action_sort_property"),
-                            onClick = { sortingMenuExpanded = !sortingMenuExpanded },
-                            content = { Icon(imageVector = Icons.Default.FilterList) }
-                        )
-                        Dropdown(
-                            modifier = Modifier.testTag(tag = "action_sort_property_menu"),
-                            expanded = sortingMenuExpanded,
-                            onDismissRequest = { sortingMenuExpanded = !sortingMenuExpanded },
-                            items = sortingProperties
-                        )
-                    }
-                    if (onVisiblePropertiesChange != null) Box {
-                        Button(
-                            modifier = Modifier.testTag(tag = "action_visible_properties"),
-                            onClick = { visibilityMenuExpanded = !visibilityMenuExpanded },
-                            content = { Icon(imageVector = Icons.Default.Visibility) }
-                        )
-                        Dropdown(
-                            modifier = Modifier.testTag(tag = "action_visible_properties_menu"),
-                            expanded = visibilityMenuExpanded,
-                            onDismissRequest = { visibilityMenuExpanded = !visibilityMenuExpanded },
-                            items = visibilityProperties
-                        )
-                    }
-                    if (onShowDeletedClick != null) Button(
-                        modifier = Modifier.testTag(tag = "action_show_deleted"),
-                        checked = showDeleted,
-                        onClick = { onShowDeletedClick(it) },
-                        content = { Icon(imageVector = Icons.Outlined.Delete) }
-                    )
-                } else {
-                    Input(
-                        modifier = Modifier
-                            .testTag(tag = "action_search_input")
-                            .padding(end = 4.dp),
-                        value = searchQuery,
-                        onValueChange = { searchQuery = it },
-                        maxLines = 1,
-                        leadingIcon = { Icon(imageVector = Icons.Default.Search) }
-                    )
-                    if (onSearchablePropertiesChange != null) Box {
-                        Button(
-                            modifier = Modifier.testTag(tag = "action_searchable_properties"),
-                            onClick = { searchableMenuExpanded = !searchableMenuExpanded },
-                            content = { Icon(imageVector = Icons.AutoMirrored.Filled.ManageSearch) }
-                        )
-                        Dropdown(
-                            modifier = Modifier.testTag(tag = "action_searchable_properties_menu"),
-                            expanded = searchableMenuExpanded,
-                            onDismissRequest = { searchableMenuExpanded = !searchableMenuExpanded },
-                            items = searchableProperties
-                        )
-                    }
-                    Button(
-                        modifier = Modifier.testTag(tag = "action_search_close"),
-                        onClick = {
-                            searchMenuExpanded = false
-                            searchQuery = ""
-                            onSearchExpandClick?.invoke(false)
-                        },
-                        content = { Icon(imageVector = Icons.Default.Close) }
-                    )
-                }
-            }
-        }
+        actions = actions,
+        secondaryActions = secondaryActions
     )
 }
 
@@ -392,8 +75,8 @@ private fun TopActionBarBackLoginPreview() = Preview {
     TopActionBar(
         title = "All",
         onBackClick = {},
-        avatarName = "V R",
-        onLoginClick = {},
+        leading = { AvatarButton(name = "V R") },
+        actions = { LoginButton(onClick = {}) },
     )
 }
 
@@ -402,23 +85,25 @@ private fun TopActionBarBackLoginPreview() = Preview {
 private fun TopActionBarWritePreview() = Preview {
     TopActionBar(
         title = "All",
-        properties = persistentMapOf(
-            "name" to "Name",
-            "type" to "Type",
-        ),
-        avatarName = "V R",
-        synced = false,
-        clockTrusted = false,
-        onAddClick = {},
-        onEditClick = {},
-        onDeleteClick = {},
-        onSearch = {},
-        onSearchablePropertiesChange = {},
-        onSortAscendingClick = {},
-        sortProperty = "name",
-        onSelectSortProperty = {},
-        onVisiblePropertiesChange = {},
-        onShowDeletedClick = {}
+        leading = {
+            AvatarButton(name = "V R")
+            StatusIcons(synced = false, clockTrusted = false)
+        },
+        actions = {
+            EntityActions(onAddClick = {}, onEditClick = {}) {}
+            FiltersButton(expanded = true, onClick = {})
+        },
+        secondaryActions = {
+            Filters(
+                properties = persistentMapOf("name" to "Name", "type" to "Type"),
+                onSearch = {},
+                onSearchablePropertiesChange = {},
+                onSortAscendingClick = {},
+                sortProperty = "name",
+                onSelectSortProperty = {},
+                onVisiblePropertiesChange = {}
+            ) {}
+        }
     )
 }
 
@@ -426,21 +111,23 @@ private fun TopActionBarWritePreview() = Preview {
 @Composable
 private fun TopActionBarEditPreview() = Preview {
     TopActionBar(
-        properties = persistentMapOf(
-            "name" to "Name",
-            "type" to "Type",
-        ),
-        avatarName = "V R",
-        synced = false,
-        clockTrusted = false,
-        onSaveClick = {},
-        onCancelClick = {},
-        onSearch = {},
-        onSearchablePropertiesChange = {},
-        onSortAscendingClick = {},
-        sortProperty = "name",
-        onSelectSortProperty = {},
-        onVisiblePropertiesChange = {},
-        onShowDeletedClick = {}
+        leading = {
+            AvatarButton(name = "V R")
+            StatusIcons(synced = false, clockTrusted = false)
+        },
+        actions = {
+            EntityActions(onSaveClick = {}, onCancelClick = {})
+            FiltersButton(expanded = true, onClick = {})
+        },
+        secondaryActions = {
+            Filters(
+                properties = persistentMapOf("name" to "Name", "type" to "Type"),
+                search = "query",
+                searchExpanded = true,
+                onSearch = {},
+                searchableProperties = persistentListOf("name"),
+                onSearchablePropertiesChange = {},
+            )
+        }
     )
 }
