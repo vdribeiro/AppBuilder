@@ -13,13 +13,13 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.app.builder.ui.InjectTranslations
 import com.app.builder.ui.Preview
 import com.app.builder.ui.component.actionbar.ActionBar
-import com.app.builder.ui.component.actionbar.ActionBarAction
-import com.app.builder.ui.component.actionbar.ActionBarState
+import com.app.builder.ui.component.filters.FiltersAction
+import com.app.builder.ui.component.filters.FiltersState
 import com.app.builder.ui.component.list.TranslationItem
 import com.app.builder.ui.component.list.TranslationList
 import com.app.builder.ui.component.navigation.Navigation
 import com.app.builder.ui.component.navigation.NavigationRoute
-import com.app.builder.ui.component.navigation.NavigationState
+import com.app.builder.ui.component.session.SessionState
 import com.app.builder.ui.core.navigation.Tab
 import com.app.builder.ui.core.navigation.Tabs
 import com.app.builder.ui.navigation.LocalRouter
@@ -32,14 +32,14 @@ import com.app.builder.ui.store.previewStore
 /**
  * The Translations Screen, showing one tab per available language above the translations of the selected one.
  *
- * @param actionBarStore The store for action bar.
- * @param navigationStore Drives the bottom navigation bar.
+ * @param sessionStore The session store shared by every screen.
+ * @param filtersStore The translation filters.
  * @param store Provides the translations state and receives its actions.
  */
 @Composable
 fun TranslationsScreen(
-    actionBarStore: Store<ActionBarState, ActionBarAction>,
-    navigationStore: Store<NavigationState, Unit>,
+    sessionStore: Store<SessionState, Unit>,
+    filtersStore: Store<FiltersState, FiltersAction>,
     store: Store<TranslationsScreenState, TranslationsScreenAction>
 ) {
     val state by store.stateFlow.collectAsStateWithLifecycle()
@@ -48,8 +48,8 @@ fun TranslationsScreen(
 
     Screen(
         onBackClick = { router.navigate(screen = Screen.Home, option = Router.NavOption.CLEAR) },
-        topBar = { ActionBar(store = actionBarStore) },
-        bottomBar = { Navigation(store = navigationStore, selected = NavigationRoute.TRANSLATION) },
+        topBar = { ActionBar(sessionStore = sessionStore, filtersStore = filtersStore) },
+        bottomBar = { Navigation(sessionStore = sessionStore, selected = NavigationRoute.TRANSLATION) },
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
             if (state.languages.isNotEmpty()) {
@@ -81,8 +81,8 @@ private fun TranslationsScreenPreview() = Preview {
         )
     )
     TranslationsScreen(
-        actionBarStore = previewStore(initialState = ActionBarState(avatarName = "Translations")),
-        navigationStore = previewStore(initialState = NavigationState()),
+        sessionStore = previewStore(initialState = SessionState()),
+        filtersStore = previewStore(initialState = FiltersState()),
         store = previewStore(
             initialState = TranslationsScreenState(
                 languages = persistentListOf("en", "pt"),

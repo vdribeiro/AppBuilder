@@ -14,17 +14,20 @@ import com.app.builder.domain.EntityType
 import com.app.builder.domain.Permission
 import com.app.builder.domain.User
 import com.app.builder.ui.InjectTranslations
+import com.app.builder.ui.LocalSplitScreen
 import com.app.builder.ui.Preview
 import com.app.builder.ui.component.actionbar.ActionBar
-import com.app.builder.ui.component.actionbar.ActionBarAction
-import com.app.builder.ui.component.actionbar.ActionBarState
 import com.app.builder.ui.component.button.PermissionItem
 import com.app.builder.ui.component.card.UserCard
+import com.app.builder.ui.component.filters.FiltersAction
+import com.app.builder.ui.component.filters.FiltersState
 import com.app.builder.ui.component.navigation.Navigation
 import com.app.builder.ui.component.navigation.NavigationRoute
-import com.app.builder.ui.component.navigation.NavigationState
+import com.app.builder.ui.component.session.SessionState
 import com.app.builder.ui.core.image.Image
 import com.app.builder.ui.navigation.LocalRouter
+import com.app.builder.ui.navigation.Router
+import com.app.builder.ui.navigation.Screen
 import com.app.builder.ui.screen.Screen
 import com.app.builder.ui.store.Store
 import com.app.builder.ui.store.previewStore
@@ -32,35 +35,54 @@ import com.app.builder.ui.store.previewStore
 /**
  * The user-facing User Detail Screen, showing a single user.
  *
- * @param actionBarStore The store for action bar.
- * @param navigationStore Drives the bottom navigation bar.
+ * @param sessionStore The session store shared by every screen.
+ * @param filtersStore The user filters shared by every user screen, shown when the user list is beside this screen.
  * @param store Provides the user detail state and receives its actions.
  */
 @Composable
 fun UserDetailScreen(
-    actionBarStore: Store<ActionBarState, ActionBarAction>,
-    navigationStore: Store<NavigationState, Unit>,
+    sessionStore: Store<SessionState, Unit>,
+    filtersStore: Store<FiltersState, FiltersAction>,
     store: Store<UserDetailScreenState, UserDetailScreenAction>,
 ) {
     val state by store.stateFlow.collectAsStateWithLifecycle()
     val user = state.user
     val account = state.account
     val savedAccount = state.savedAccount
+    val deleted = user?.deletedAt != null
+    val deletable = state.accountReadable && (savedAccount == null || savedAccount.deletedAt != null)
     val permissions = remember(key1 = account?.permissions) { account?.toPermissionItems() }
 
     val router = LocalRouter.current
+    val splitScreen = LocalSplitScreen.current
 
     Screen(
         onBackClick = { router.back() },
         topBar = {
             ActionBar(
-                store = actionBarStore,
-                editing = state.editing,
-                deleted = user?.let { it.deletedAt != null },
-                deletable = state.accountReadable && (savedAccount == null || savedAccount.deletedAt != null)
+                sessionStore = sessionStore,
+                filtersStore = filtersStore.takeIf { splitScreen },
+                entityType = EntityType.USER,
+                editEntityTypes = setOf(EntityType.ACCOUNT),
+                deleted = deleted,
+                onAddClick = if (splitScreen && !state.editing) {
+                    { router.navigate(screen = Screen.UserDetail(uuid = uuid().toString(), new = true), option = Router.NavOption.REPLACE_LAST) }
+                } else null,
+                onEditClick = if (user != null && !state.editing && !deleted) {
+                    { store.send(action = UserDetailScreenAction.Edit) }
+                } else null,
+                onSaveClick = if (state.editing) {
+                    { store.send(action = UserDetailScreenAction.Save) }
+                } else null,
+                onCancelClick = if (state.editing) {
+                    { store.send(action = UserDetailScreenAction.Cancel) }
+                } else null,
+                onDeleteClick = if (user != null && !state.editing && (deletable || deleted)) {
+                    { store.send(action = if (it) UserDetailScreenAction.Delete else UserDetailScreenAction.Restore) }
+                } else null,
             )
         },
-        bottomBar = { Navigation(store = navigationStore, selected = NavigationRoute.USER) },
+        bottomBar = { Navigation(sessionStore = sessionStore, selected = NavigationRoute.USER) },
     ) {
         UserCard(
             enabled = user != null && state.editing && state.userWritable,
@@ -113,8 +135,8 @@ private fun UserDetailScreenPreview() = Preview {
         avatar = null
     )
     UserDetailScreen(
-        actionBarStore = previewStore(initialState = ActionBarState(avatarName = "User")),
-        navigationStore = previewStore(initialState = NavigationState()),
+        sessionStore = previewStore(initialState = SessionState()),
+        filtersStore = previewStore(initialState = FiltersState()),
         store = previewStore(
             initialState = UserDetailScreenState(
                 user = user

@@ -10,14 +10,15 @@ import com.app.builder.core.security.uuid
 import com.app.builder.domain.EntityType
 import com.app.builder.domain.Registry
 import com.app.builder.ui.InjectTranslations
+import com.app.builder.ui.LocalSplitScreen
 import com.app.builder.ui.Preview
 import com.app.builder.ui.component.actionbar.ActionBar
-import com.app.builder.ui.component.actionbar.ActionBarAction
-import com.app.builder.ui.component.actionbar.ActionBarState
 import com.app.builder.ui.component.card.RegistryCard
+import com.app.builder.ui.component.filters.FiltersAction
+import com.app.builder.ui.component.filters.FiltersState
 import com.app.builder.ui.component.navigation.Navigation
 import com.app.builder.ui.component.navigation.NavigationRoute
-import com.app.builder.ui.component.navigation.NavigationState
+import com.app.builder.ui.component.session.SessionState
 import com.app.builder.ui.navigation.LocalRouter
 import com.app.builder.ui.screen.Screen
 import com.app.builder.ui.store.Store
@@ -26,25 +27,26 @@ import com.app.builder.ui.store.previewStore
 /**
  * The user-facing Registry Detail Screen, showing a single registry.
  *
- * @param actionBarStore The store for action bar.
- * @param navigationStore Drives the bottom navigation bar.
+ * @param sessionStore The session store shared by every screen.
+ * @param filtersStore The registry filters, shown when the registry list is beside this screen.
  * @param store Provides the registry detail state.
  */
 @Composable
 fun RegistryDetailScreen(
-    actionBarStore: Store<ActionBarState, ActionBarAction>,
-    navigationStore: Store<NavigationState, Unit>,
+    sessionStore: Store<SessionState, Unit>,
+    filtersStore: Store<FiltersState, FiltersAction>,
     store: Store<RegistryDetailScreenState, Unit>,
 ) {
     val state by store.stateFlow.collectAsStateWithLifecycle()
     val registry = state.registry
 
     val router = LocalRouter.current
+    val splitScreen = LocalSplitScreen.current
 
     Screen(
         onBackClick = { router.back() },
-        topBar = { ActionBar(store = actionBarStore) },
-        bottomBar = { Navigation(store = navigationStore, selected = NavigationRoute.REGISTRY) },
+        topBar = { ActionBar(sessionStore = sessionStore, filtersStore = filtersStore.takeIf { splitScreen }) },
+        bottomBar = { Navigation(sessionStore = sessionStore, selected = NavigationRoute.REGISTRY) },
     ) {
         RegistryCard(
             requestUuid = registry?.requestUuid?.toString(),
@@ -91,8 +93,8 @@ private fun RegistryDetailScreenPreview() = Preview {
         payload = null
     )
     RegistryDetailScreen(
-        actionBarStore = previewStore(initialState = ActionBarState(avatarName = "Registry")),
-        navigationStore = previewStore(initialState = NavigationState()),
+        sessionStore = previewStore(initialState = SessionState()),
+        filtersStore = previewStore(initialState = FiltersState()),
         store = previewStore(initialState = RegistryDetailScreenState(registry = registry))
     )
 }
