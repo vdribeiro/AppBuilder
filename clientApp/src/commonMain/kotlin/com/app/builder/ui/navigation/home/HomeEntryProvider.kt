@@ -2,19 +2,19 @@ package com.app.builder.ui.navigation.home
 
 import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
-import com.app.builder.ui.component.session.SessionState
+import com.app.builder.domain.gateway.UseCases
 import com.app.builder.ui.navigation.Screen
-import com.app.builder.ui.store.Store
+import com.app.builder.ui.navigation.hostSessionStore
 
 /**
  * The home routes.
  *
- * @param sessionStore The session store shared by every screen.
+ * @param useCases The use cases.
  */
-fun EntryProviderScope<NavKey>.homeProvider(sessionStore: Store<SessionState, Unit>) {
+fun EntryProviderScope<NavKey>.homeProvider(useCases: UseCases) {
     entry<Screen.Home> {
         HomeScreen(
-            sessionStore = sessionStore,
+            sessionStore = hostSessionStore(useCases = useCases),
         )
     }
 }
