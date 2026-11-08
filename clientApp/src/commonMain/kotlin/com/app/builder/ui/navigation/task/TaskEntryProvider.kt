@@ -1,14 +1,13 @@
 package com.app.builder.ui.navigation.task
 
 import kotlinx.collections.immutable.toImmutableMap
-import kotlinx.collections.immutable.toPersistentList
+import androidx.compose.runtime.Composable
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
 import com.app.builder.data.storage.AppFile
 import com.app.builder.domain.Task
 import com.app.builder.domain.gateway.UseCases
-import com.app.builder.ui.component.filters.FiltersState
 import com.app.builder.ui.component.filters.FiltersStore
 import com.app.builder.ui.component.session.SessionStore
 import com.app.builder.ui.lifecycle.hostViewModel
@@ -26,7 +25,7 @@ fun EntryProviderScope<NavKey>.taskProvider(useCases: UseCases) {
         val router = LocalRouter.current
         TaskListScreen(
             sessionStore = hostViewModel(key = SessionStore.KEY) { SessionStore.get(useCases = useCases) },
-            filtersStore = hostViewModel(key = FILTERS_KEY) { filtersStore() },
+            filtersStore = filtersStore(),
             store = viewModel { TaskListScreenStore(router = router, state = TaskListScreenState(), taskUseCases = useCases.taskUseCases) }
         )
     }
@@ -34,38 +33,19 @@ fun EntryProviderScope<NavKey>.taskProvider(useCases: UseCases) {
         val router = LocalRouter.current
         TaskDetailScreen(
             sessionStore = hostViewModel(key = SessionStore.KEY) { SessionStore.get(useCases = useCases) },
-            filtersStore = hostViewModel(key = FILTERS_KEY) { filtersStore() },
+            filtersStore = filtersStore(),
             store = viewModel { TaskDetailScreenStore(state = TaskDetailScreenState(), router = router, taskUseCases = useCases.taskUseCases, taskUuid = it.uuid, new = it.new) }
         )
     }
 }
 
-/** The key of the task filters among the stores shared by the navigation host. */
-private const val FILTERS_KEY = "task_filters"
-/** The task properties by name. */
-private val properties = Task.Property.entries.map { it.name }.toPersistentList()
-/** The default task filters. */
-private val defaults = AppFile.ActionBarData(
-    search = "",
-    searchableProperties = properties,
-    sortAscending = false,
-    sortProperty = Task.Property.MODIFIED_AT.name,
-    visibleProperties = properties,
-)
+/** The task properties by key, labelled by their translation keys. */
+private val properties = Task.Property.entries.associate { entry -> entry.name to entry.translationKey }.toImmutableMap()
 
 /**
- * Creates the task filters store.
+ * Gets the task filters store shared by the navigation host, creating it on first use.
  *
  * @return The task filters store.
  */
-private fun filtersStore(): FiltersStore = FiltersStore(
-    state = FiltersState(
-        properties = Task.Property.entries.associate { entry -> entry.name to entry.translationKey }.toImmutableMap(),
-        searchableProperties = properties,
-        sortAscending = defaults.sortAscending,
-        sortProperty = defaults.sortProperty,
-        visibleProperties = properties
-    ),
-    storageFile = AppFile.TaskPreferences,
-    defaults = defaults,
-)
+@Composable
+private fun filtersStore(): FiltersStore = hostViewModel(key = FiltersStore.key(storageFile = AppFile.TaskPreferences)) { FiltersStore.get(properties = properties, storageFile = AppFile.TaskPreferences, sortProperty = Task.Property.MODIFIED_AT.name, sortAscending = false) }

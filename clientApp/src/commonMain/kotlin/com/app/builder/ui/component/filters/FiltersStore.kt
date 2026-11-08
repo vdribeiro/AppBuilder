@@ -1,5 +1,6 @@
 package com.app.builder.ui.component.filters
 
+import kotlinx.collections.immutable.ImmutableMap
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -189,5 +190,51 @@ class FiltersStore(
 
     companion object {
         private const val TAG = "FiltersStore"
+
+        /**
+         * Gets the key of the filters store persisted to [storageFile] among the stores shared by the navigation host.
+         *
+         * @param storageFile File the filters are persisted to.
+         * @return The key, unique per file.
+         */
+        fun key(storageFile: StorageFile<AppFile.ActionBarData>): String = "filters_${storageFile.path}"
+
+        /**
+         * Creates a filters store over [properties], searching and showing all of them by default.
+         *
+         * @param properties Map of property keys to their display labels.
+         * @param storageFile File the filters are persisted to.
+         * @param sortProperty Key of the property the list is sorted by default.
+         * @param sortAscending Whether the list is sorted in ascending order by default.
+         * @param showDeletedToggle Whether the filters offer the show deleted toggle.
+         * @return The filters store.
+         */
+        fun get(
+            properties: ImmutableMap<String, String>,
+            storageFile: StorageFile<AppFile.ActionBarData>,
+            sortProperty: String,
+            sortAscending: Boolean,
+            showDeletedToggle: Boolean = true,
+        ): FiltersStore {
+            val keys = properties.keys.toPersistentList()
+            return FiltersStore(
+                state = FiltersState(
+                    properties = properties,
+                    searchableProperties = keys,
+                    sortAscending = sortAscending,
+                    sortProperty = sortProperty,
+                    visibleProperties = keys,
+                    showDeletedToggle = showDeletedToggle,
+                ),
+                storageFile = storageFile,
+                defaults = AppFile.ActionBarData(
+                    search = "",
+                    searchableProperties = keys,
+                    sortAscending = sortAscending,
+                    sortProperty = sortProperty,
+                    visibleProperties = keys,
+                ),
+            )
+        }
     }
 }

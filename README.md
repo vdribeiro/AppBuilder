@@ -614,10 +614,6 @@ Stores that several screens share live one level up, in the navigation host, so 
 
 * `HostViewModelStoreOwner(key)` wraps each host and provides `LocalHostViewModelStoreOwner`.
 * `hostViewModel(key)` gets or creates a store in the host under `key`. The entry that runs first creates it, and every other entry asking for the same key gets that instance.
-* `SessionStore` is created with `SessionStore.get(useCases)`. Every screen's action and navigation bars read it: the current user, their account and the application status.
-* Each list feature keeps its `FiltersStore` in the host under its own key, created by its entry provider with the feature's defaults and preferences file.
-
-Entry providers take only `UseCases` and resolve both kinds of store inside their entries. Screens still receive stores as parameters, so tests and previews pass them directly without a host.
 
 ## Design System & Showcase
 
