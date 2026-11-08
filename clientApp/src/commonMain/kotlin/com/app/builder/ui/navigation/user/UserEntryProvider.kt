@@ -10,10 +10,10 @@ import com.app.builder.domain.User
 import com.app.builder.domain.gateway.UseCases
 import com.app.builder.ui.component.filters.FiltersState
 import com.app.builder.ui.component.filters.FiltersStore
+import com.app.builder.ui.component.session.SessionStore
 import com.app.builder.ui.lifecycle.hostViewModel
 import com.app.builder.ui.navigation.LocalRouter
 import com.app.builder.ui.navigation.Screen
-import com.app.builder.ui.navigation.hostSessionStore
 import com.app.builder.ui.navigation.scene.SplitSceneStrategy.Companion.split
 
 /**
@@ -25,7 +25,7 @@ fun EntryProviderScope<NavKey>.userProvider(useCases: UseCases) {
     entry<Screen.UserList>(metadata = split()) {
         val router = LocalRouter.current
         UserListScreen(
-            sessionStore = hostSessionStore(useCases = useCases),
+            sessionStore = hostViewModel(key = SessionStore.KEY) { SessionStore.get(useCases = useCases) },
             filtersStore = hostViewModel(key = FILTERS_KEY) { filtersStore() },
             store = viewModel { UserListScreenStore(router = router, state = UserListScreenState(), userUseCases = useCases.userUseCases) }
         )
@@ -33,7 +33,7 @@ fun EntryProviderScope<NavKey>.userProvider(useCases: UseCases) {
     entry<Screen.UserDetail>(metadata = split()) {
         val router = LocalRouter.current
         UserDetailScreen(
-            sessionStore = hostSessionStore(useCases = useCases),
+            sessionStore = hostViewModel(key = SessionStore.KEY) { SessionStore.get(useCases = useCases) },
             filtersStore = hostViewModel(key = FILTERS_KEY) { filtersStore() },
             store = viewModel {
                 UserDetailScreenStore(

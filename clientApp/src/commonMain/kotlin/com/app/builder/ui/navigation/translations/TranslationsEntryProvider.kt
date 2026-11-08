@@ -10,9 +10,9 @@ import com.app.builder.domain.Translation
 import com.app.builder.domain.gateway.UseCases
 import com.app.builder.ui.component.filters.FiltersState
 import com.app.builder.ui.component.filters.FiltersStore
+import com.app.builder.ui.component.session.SessionStore
 import com.app.builder.ui.lifecycle.hostViewModel
 import com.app.builder.ui.navigation.Screen
-import com.app.builder.ui.navigation.hostSessionStore
 
 /**
  * The translations route.
@@ -22,7 +22,7 @@ import com.app.builder.ui.navigation.hostSessionStore
 fun EntryProviderScope<NavKey>.translationsProvider(useCases: UseCases) {
     entry<Screen.Translations> {
         TranslationsScreen(
-            sessionStore = hostSessionStore(useCases = useCases),
+            sessionStore = hostViewModel(key = SessionStore.KEY) { SessionStore.get(useCases = useCases) },
             filtersStore = hostViewModel(key = FILTERS_KEY) { filtersStore() },
             store = viewModel { TranslationsScreenStore(state = TranslationsScreenState(), translationUseCases = useCases.translationUseCases) },
         )

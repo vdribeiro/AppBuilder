@@ -3,6 +3,7 @@ package com.app.builder.ui.component.session
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.combine
 import com.app.builder.core.telemetry.Telemetry
+import com.app.builder.domain.gateway.UseCases
 import com.app.builder.domain.gateway.authentication.AuthenticationUseCases
 import com.app.builder.domain.gateway.status.StatusUseCases
 import com.app.builder.ui.store.Store
@@ -50,5 +51,17 @@ class SessionStore(
 
     companion object {
         private const val TAG = "SessionStore"
+
+        /** The key of the session store among the stores shared by the navigation host. */
+        const val KEY = "session"
+
+        /**
+         * Creates a session store following the session of [useCases].
+         *
+         * @param useCases The use cases the store observes.
+         * @return The session store.
+         */
+        fun get(useCases: UseCases): Store<SessionState, Unit> =
+            SessionStore(state = SessionState(), authenticationUseCases = useCases.authenticationUseCases, statusUseCases = useCases.statusUseCases)
     }
 }

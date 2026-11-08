@@ -4,8 +4,9 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
 import com.app.builder.domain.gateway.UseCases
+import com.app.builder.ui.component.session.SessionStore
+import com.app.builder.ui.lifecycle.hostViewModel
 import com.app.builder.ui.navigation.Screen
-import com.app.builder.ui.navigation.hostSessionStore
 
 /**
  * The design section routes.
@@ -15,24 +16,24 @@ import com.app.builder.ui.navigation.hostSessionStore
 fun EntryProviderScope<NavKey>.designProvider(useCases: UseCases) {
     entry<Screen.DesignComponents> {
         DesignComponentsScreen(
-            sessionStore = hostSessionStore(useCases = useCases),
+            sessionStore = hostViewModel(key = SessionStore.KEY) { SessionStore.get(useCases = useCases) },
         )
     }
     entry<Screen.DesignColors> {
         DesignColorsScreen(
-            sessionStore = hostSessionStore(useCases = useCases),
+            sessionStore = hostViewModel(key = SessionStore.KEY) { SessionStore.get(useCases = useCases) },
             store = viewModel { DesignScreenStore() },
         )
     }
     entry<Screen.DesignShapes> {
         DesignShapesScreen(
-            sessionStore = hostSessionStore(useCases = useCases),
+            sessionStore = hostViewModel(key = SessionStore.KEY) { SessionStore.get(useCases = useCases) },
             store = viewModel { DesignScreenStore() },
         )
     }
     entry<Screen.DesignTypography> {
         DesignTypographyScreen(
-            sessionStore = hostSessionStore(useCases = useCases),
+            sessionStore = hostViewModel(key = SessionStore.KEY) { SessionStore.get(useCases = useCases) },
         )
     }
 }

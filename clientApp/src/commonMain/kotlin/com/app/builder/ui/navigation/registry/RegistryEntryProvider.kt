@@ -10,10 +10,10 @@ import com.app.builder.domain.Registry
 import com.app.builder.domain.gateway.UseCases
 import com.app.builder.ui.component.filters.FiltersState
 import com.app.builder.ui.component.filters.FiltersStore
+import com.app.builder.ui.component.session.SessionStore
 import com.app.builder.ui.lifecycle.hostViewModel
 import com.app.builder.ui.navigation.LocalRouter
 import com.app.builder.ui.navigation.Screen
-import com.app.builder.ui.navigation.hostSessionStore
 import com.app.builder.ui.navigation.scene.SplitSceneStrategy.Companion.split
 
 /**
@@ -25,14 +25,14 @@ fun EntryProviderScope<NavKey>.registryProvider(useCases: UseCases) {
     entry<Screen.RegistryList>(metadata = split()) {
         val router = LocalRouter.current
         RegistryListScreen(
-            sessionStore = hostSessionStore(useCases = useCases),
+            sessionStore = hostViewModel(key = SessionStore.KEY) { SessionStore.get(useCases = useCases) },
             filtersStore = hostViewModel(key = FILTERS_KEY) { filtersStore() },
             store = viewModel { RegistryListScreenStore(router = router, state = RegistryListScreenState(), registryUseCases = useCases.registryUseCases) }
         )
     }
     entry<Screen.RegistryDetail>(metadata = split()) {
         RegistryDetailScreen(
-            sessionStore = hostSessionStore(useCases = useCases),
+            sessionStore = hostViewModel(key = SessionStore.KEY) { SessionStore.get(useCases = useCases) },
             filtersStore = hostViewModel(key = FILTERS_KEY) { filtersStore() },
             store = viewModel { RegistryDetailScreenStore(state = RegistryDetailScreenState(), registryUseCases = useCases.registryUseCases, registryUuid = it.uuid) }
         )
