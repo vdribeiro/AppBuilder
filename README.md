@@ -181,13 +181,13 @@ flowchart LR
 
 Every module uses the same packages, and dependencies only point down the stack:
 
-| Package  | Responsibility                                                    | May depend on               |
-|----------|-------------------------------------------------------------------|-----------------------------|
-| `core`   | Business-agnostic foundations: platform APIs, security, telemetry | nothing                     |
-| `data`   | Persistence and retrieval: network, database, storage             | `core`                      |
-| `domain` | Business workflows, rules and the domain models                   | `data`, `core`              |
-| `ui`     | Presentation                                                      | `domain`, `data`, `core`    |
-| `test`   | Annotations and fake data shared across test source sets          | all of the above            |
+| Package  | Responsibility                                                    | May depend on            |
+|----------|-------------------------------------------------------------------|--------------------------|
+| `core`   | Business-agnostic foundations: platform APIs, security, telemetry | nothing                  |
+| `data`   | Persistence and retrieval: network, database, storage             | `core`                   |
+| `domain` | Business workflows, rules and the domain models                   | `data`, `core`           |
+| `ui`     | Presentation                                                      | `domain`, `data`, `core` |
+| `test`   | Annotations and fake data shared across test source sets          | all of the above         |
 
 Not every module has every package. See [Package Index](#package-index) and [Module Index](#module-index) for the full breakdown.
 
@@ -245,11 +245,11 @@ stateDiagram-v2
 
 Applied when a job is queued, before anything is written:
 
-| Policy    | Behaviour                                                | Default for       |
-|-----------|----------------------------------------------------------|-------------------|
-| `APPEND`  | Enqueue alongside any pending duplicates                 | `POST`, `DELETE`  |
-| `REPLACE` | Cancel pending duplicates, then enqueue                  | —                 |
-| `IGNORE`  | Drop the new job if a duplicate is already pending       | `GET`             |
+| Policy    | Behaviour                                          | Default for      |
+|-----------|----------------------------------------------------|------------------|
+| `APPEND`  | Enqueue alongside any pending duplicates           | `POST`, `DELETE` |
+| `REPLACE` | Cancel pending duplicates, then enqueue            | —                |
+| `IGNORE`  | Drop the new job if a duplicate is already pending | `GET`            |
 
 Two jobs are **duplicates** when they share `userUuid`, `entityType`, `entityUuid` and `type`, and the existing one is still `PENDING`. **`payload` is not compared.**
 
@@ -507,7 +507,7 @@ Gate every new feature behind a flag, and give it the flag before its first scre
 **Client App**
 
 1. **Components**: `ui/component/{component}` with `{Component}`, `{Component}StateAction` and `{Component}Store`.
-2. **Screen**: `ui/navigation/{feature}` with `{Feature}Screen`, `{Feature}ScreenStateAction`, `{Feature}ScreenStore` and the feature's `{Feature}EntryProvider`. One package per navigation item, so a list and its detail screen share it.
+2. **Screen**: `ui/navigation/{feature}` with `{Feature}Screen`, `{Feature}ScreenStateAction`, `{Feature}ScreenStore` and the feature's `{Feature}EntryProvider`.
 3. **Gateway**: `domain/gateway/{feature}` with a `{Feature}Gateway` implementing `{Feature}UseCases` and/or `{Feature}Repository`, mappers between the domain model and the SQLDelight schema, and the `.sq` files under `sqldelight`. Register it in `Gateways`, and its interfaces in `UseCases` and/or `Repositories`.
 4. **Scheduler**: handle the entity in `domain/scheduler/JobProvider`, which switches on `EntityType` and `Job.Type` and delegates to the feature's **`Repository`**.
 5. **Navigation**: add the screen to `Screen`, its route to the feature's entry provider, and link it in `Navigation`, gated by the flag. For a navigation bar item, add a `NavigationRoute` in its `NavigationSection` and resolve it in `permittedRoutes`.
@@ -607,6 +607,18 @@ The same navigation code produces a stacked flow on a phone and a list-detail la
 
 `App` picks between `LoadingNavigation`, `UnauthenticatedNavigation` and `AuthenticatedNavigation` based on app state. The `splash`, `home` and `error` screens are thin placeholders, so replacing one means editing its composable, not wiring a new destination.
 
+### Host Stores
+
+A plain `viewModel` inside an entry is scoped to that backstack entry: it is created when the entry appears and cleared when it is popped.
+Stores that several screens share live one level up, in the navigation host, so a list and its detail in a split scene see the same instance and navigating between them never recreates it.
+
+* `HostViewModelStoreOwner(key)` wraps each host and provides `LocalHostViewModelStoreOwner`.
+* `hostViewModel(key)` gets or creates a store in the host under `key`. The entry that runs first creates it, and every other entry asking for the same key gets that instance.
+* `SessionStore` is created with `SessionStore.get(useCases)`. Every screen's action and navigation bars read it: the current user, their account and the application status.
+* Each list feature keeps its `FiltersStore` in the host under its own key, created by its entry provider with the feature's defaults and preferences file.
+
+Entry providers take only `UseCases` and resolve both kinds of store inside their entries. Screens still receive stores as parameters, so tests and previews pass them directly without a host.
+
 ## Design System & Showcase
 
 The `design` module splits into:
@@ -688,7 +700,8 @@ Manifests are still yours: `AndroidManifest.xml` on Android, the usage-descripti
 
 ## Platform-Specific Code
 
-KMP lets you drop to native code wherever you need it. Declare the contract with `expect` in `commonMain` and implement it in `androidMain`, `appleMain`, `desktopMain` or `webMain`, each calling its platform APIs directly (the JVM ecosystem, UIKit and Core Foundation through Kotlin/Native interop, or JavaScript).
+KMP lets you drop to native code wherever you need it. Declare the contract with `expect` in `commonMain` and implement it in `androidMain`, `appleMain`, `desktopMain` or `webMain`,
+each calling its platform APIs directly (the JVM ecosystem, UIKit and Core Foundation through Kotlin/Native interop, or JavaScript).
 
 The convention the codebase follows:
 
@@ -713,12 +726,12 @@ Each runs `beforeTest()`, the test body, then `afterTest()`, cancelling the scop
 
 `PlatformTestCase` is an `expect abstract class` between `SharedTestCase` and each module's `TestCase`. Its Android actual runs under `RobolectricTestRunner` and stubs connectivity, while the other targets are one-liners, which is what lets Android tests live in `commonTest` too.
 
-| Module     | Command                                 |
-|------------|-----------------------------------------|
-| Shared     | `./gradlew clean testSharedAndReport`   |
-| App Core   | `./gradlew clean testAppCoreAndReport`  |
-| Client App | `./gradlew clean testClientAndReport`   |
-| Server     | `./gradlew clean testServerAndReport`   |
+| Module     | Command                                |
+|------------|----------------------------------------|
+| Shared     | `./gradlew clean testSharedAndReport`  |
+| App Core   | `./gradlew clean testAppCoreAndReport` |
+| Client App | `./gradlew clean testClientAndReport`  |
+| Server     | `./gradlew clean testServerAndReport`  |
 
 > [!WARNING]
 > Kover verifies a minimum of **90% coverage per module**, and a run below that **fails the build**.
@@ -728,7 +741,7 @@ Each runs `beforeTest()`, the test body, then `afterTest()`, cancelling the scop
 
 A `User` is a person, with a name and an avatar, that other entities can refer to whether or not it can log in.
 An `Account` is what lets a user log in: its username, password hash and permissions live in the server's `user_account` table, and its sessions in `user_session`.
-The server seeds one super-user account on boot when it doesn't exist yet (`admin`/`admin` in development, the `ADMIN_*` values in production). 
+The server seeds one super-user account on boot when it doesn't exist yet (`admin`/`admin` in development, the `ADMIN_*` values in production).
 When it already exists, the boot grants it write permission on every entity type again, so entity types added later reach it and permissions removed from it come back.
 
 Authorization is per `EntityType`: each account carries a `READ`/`WRITE` permission map, checked on every protected route instead of a fixed role.
@@ -783,14 +796,14 @@ Every key falls back to an empty default, so a missing file costs you signed rel
 
 **The server** reads OS environment variables via `Env.kt`:
 
-| Purpose       | Variables                                                                  |
-|---------------|----------------------------------------------------------------------------|
-| Server        | `DEVELOPMENT`, `PORT`, `SENTRY_DSN`, `CORS_HOSTS`                          |
-| Admin         | `ADMIN_UUID`, `ADMIN_USERNAME`, `ADMIN_PASSWORD`                           |
-| Database      | `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `DB_SSL_MODE`   |
-| JWT           | `JWT_ISSUER`, `JWT_AUDIENCE`, `JWT_SECRET`                                 |
-| Push          | `GCP_PROJECT_ID`                                                           |
-| Rate limiting | `TRUSTED_PROXY_HOPS`                                                       |
+| Purpose       | Variables                                                                |
+|---------------|--------------------------------------------------------------------------|
+| Server        | `DEVELOPMENT`, `PORT`, `SENTRY_DSN`, `CORS_HOSTS`                        |
+| Admin         | `ADMIN_UUID`, `ADMIN_USERNAME`, `ADMIN_PASSWORD`                         |
+| Database      | `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `DB_SSL_MODE` |
+| JWT           | `JWT_ISSUER`, `JWT_AUDIENCE`, `JWT_SECRET`                               |
+| Push          | `GCP_PROJECT_ID`                                                         |
+| Rate limiting | `TRUSTED_PROXY_HOPS`                                                     |
 
 Rate limits are keyed on the caller's address: the socket address by default, or the `X-Forwarded-For` entry `TRUSTED_PROXY_HOPS` hops back. Behind a proxy without it, every caller shares one bucket.
 
@@ -854,15 +867,15 @@ Bump every version in one command:
 
 It updates `appVersion`, `appVersionNumber` and `appServerVersion` in `build-logic/convention/src/main/kotlin/Shared.kt`, and `MARKETING_VERSION` and `CURRENT_PROJECT_VERSION` in `iosApp/iosApp.xcodeproj/project.pbxproj`.
 
-| Target  | Command                                                              |
-|---------|----------------------------------------------------------------------|
-| iOS     | Xcode archive                                                        |
-| Android | `./gradlew clean :clientApp:bundleRelease`                           |
-| macOS   | `./gradlew clean :clientApp:notarizeDmg --no-configuration-cache`    |
-| Windows | `./gradlew clean :clientApp:packageMsi`                              |
-| Linux   | `./gradlew clean :clientApp:packageDeb`                              |
-| Web     | `./gradlew clean :clientApp:wasmJsBrowserDistribution`               |
-| Server  | `./gradlew :server:buildFatJar`                                      |
+| Target  | Command                                                           |
+|---------|-------------------------------------------------------------------|
+| iOS     | Xcode archive                                                     |
+| Android | `./gradlew clean :clientApp:bundleRelease`                        |
+| macOS   | `./gradlew clean :clientApp:notarizeDmg --no-configuration-cache` |
+| Windows | `./gradlew clean :clientApp:packageMsi`                           |
+| Linux   | `./gradlew clean :clientApp:packageDeb`                           |
+| Web     | `./gradlew clean :clientApp:wasmJsBrowserDistribution`            |
+| Server  | `./gradlew :server:buildFatJar`                                   |
 
 Always module-qualify tasks: several modules share the same unqualified task names.
 
@@ -963,12 +976,12 @@ The update loop exists only to keep the platform's location cache warm: `getLast
 
 `encrypt`, `decrypt` and `hash` backed by real platform keystores, never a bundled key. Strings in and out: Base64 for ciphertext, hex for hashes.
 
-| Platform | Backing                                                       |
-|----------|---------------------------------------------------------------|
-| Android  | AES-GCM with an Android Keystore key                          |
-| iOS      | `CCCrypt` with the key held in the iOS Keychain               |
-| Desktop  | AES-GCM key in a PKCS12 `KeyStore` file in the app data dir   |
-| Web      | WebCrypto with a non-extractable key in IndexedDB             |
+| Platform | Backing                                                     |
+|----------|-------------------------------------------------------------|
+| Android  | AES-GCM with an Android Keystore key                        |
+| iOS      | `CCCrypt` with the key held in the iOS Keychain             |
+| Desktop  | AES-GCM key in a PKCS12 `KeyStore` file in the app data dir |
+| Web      | WebCrypto with a non-extractable key in IndexedDB           |
 
 **Desktop** has no keystore of its own, so rather than ship a hardcoded password for `security.p12`, it unlocks it with a random secret held by the OS for the current user: DPAPI on Windows, the login keychain on macOS, the Secret Service via `secret-tool` on Linux.
 Without a secret store it falls back to the machine identity (`machine-id`, `MachineGuid` or `IOPlatformUUID`), and a keystore opened that way is re-locked under the stored secret once one exists.
