@@ -30,7 +30,8 @@ import com.app.builder.ui.core.image.Icon
 import com.app.builder.ui.core.text.Text
 
 /**
- * A property with a fixed set of options. While [editing], up to [maxSegments] options show as a connected button group and more than that as a dropdown.
+ * A property with a fixed set of options.
+ * While [editing], up to [maxSegments] options show as a connected button group and more than that as a dropdown.
  * Otherwise, the selected option shows as a [FieldValue].
  *
  * @param modifier The [Modifier] to be applied to the root layout.
