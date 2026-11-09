@@ -45,8 +45,6 @@ private val properties = Registry.Property.entries.associate { entry -> entry.na
 private val visibleProperties = listOf(
     Registry.Property.REQUEST_TYPE,
     Registry.Property.USER_UUID,
-    Registry.Property.OS,
-    Registry.Property.OS_VERSION,
     Registry.Property.ENTITY_TYPE,
 ).map { it.name }
 
