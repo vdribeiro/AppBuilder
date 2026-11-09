@@ -102,6 +102,15 @@ fun UserCard(
                     style = typography.titleSmall
                 )
             }
+            accountActive?.let {
+                BooleanField(
+                    modifier = Modifier.testTag(tag = "account_active"),
+                    label = "account_active",
+                    checked = it,
+                    editing = accountEnabled,
+                    onCheckedChange = onAccountActiveChange
+                )
+            }
             username?.let {
                 TextField(
                     label = "username",
@@ -117,15 +126,6 @@ fun UserCard(
                     editing = accountEnabled,
                     onValueChange = onPasswordChange,
                     keyboardType = KeyboardType.Password
-                )
-            }
-            accountActive?.let {
-                BooleanField(
-                    modifier = Modifier.testTag(tag = "account_active"),
-                    label = "account_active",
-                    checked = it,
-                    editing = accountEnabled,
-                    onCheckedChange = onAccountActiveChange
                 )
             }
             permissions?.let {

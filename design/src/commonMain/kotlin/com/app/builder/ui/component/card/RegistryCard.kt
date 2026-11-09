@@ -62,6 +62,7 @@ fun RegistryCard(
             "registry_request_sent_utc" to requestSentUtc,
         ),
         listOf(
+            "registry_request_uuid" to requestUuid,
             "registry_user_uuid" to userUuid,
             "registry_device_uuid" to deviceUuid,
             "registry_brand" to brand,
@@ -89,7 +90,6 @@ fun RegistryCard(
                 if (index > 0) Divider(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
                 group.forEach { (label, value) -> FieldValue(label = label, value = value) }
             }
-            MetadataSection(entries = persistentListOf("registry_request_uuid" to requestUuid))
         }
     }
 }
