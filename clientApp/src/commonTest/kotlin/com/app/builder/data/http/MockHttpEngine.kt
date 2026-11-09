@@ -3,8 +3,8 @@ package com.app.builder.data.http
 import kotlin.uuid.Uuid
 import io.ktor.client.engine.HttpClientEngine
 import io.ktor.client.request.HttpRequestData
-import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
+import io.ktor.http.HttpStatusCode
 import io.ktor.http.URLProtocol
 import io.ktor.http.content.TextContent
 import com.app.builder.core.locale.now
@@ -71,11 +71,11 @@ fun createMockHttpEngine(): HttpClientEngine = TestEngine { request ->
 
                 path.startsWith(prefix = URL.Logout.path) -> respondMock(content = encode(value = "Successful logged out"))
                 path.startsWith(prefix = URL.RefreshTokens.path) -> {
-                    val bearerToken = request.headers[HttpHeaders.Authorization]?.removePrefix(prefix = "Bearer ") ?: return@TestEngine badRequest(request = request)
-                    when (bearerToken) {
-                        FakeData.adminBearerToken.accessToken -> respondMock(content = encode(value = FakeData.adminBearerToken))
-                        FakeData.bearerToken.accessToken -> respondMock(content = encode(value = FakeData.bearerToken))
-                        else -> badRequest(request = request)
+                    val refreshToken = request.decodeBody<String>() ?: return@TestEngine badRequest(request = request)
+                    when (refreshToken) {
+                        FakeData.adminBearerToken.refreshToken -> respondMock(content = encode(value = FakeData.adminBearerToken))
+                        FakeData.bearerToken.refreshToken -> respondMock(content = encode(value = FakeData.bearerToken))
+                        else -> respondMock(status = HttpStatusCode.Unauthorized, content = encode(value = "Invalid or expired refresh token"))
                     }
                 }
 

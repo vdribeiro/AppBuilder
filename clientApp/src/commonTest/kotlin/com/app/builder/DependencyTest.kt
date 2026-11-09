@@ -7,18 +7,22 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNotSame
 import kotlin.test.assertNull
 import kotlin.test.assertSame
+import io.ktor.http.HttpStatusCode
 import com.app.builder.Dependency.getUserDependency
 import com.app.builder.Dependency.getUserGraph
 import com.app.builder.core.config.ClientFlags
 import com.app.builder.core.locale.now
 import com.app.builder.core.security.uuid
 import com.app.builder.data.database.NoOpSqlDriver
+import com.app.builder.data.database.createMockSqlDriver
 import com.app.builder.data.database.SessionSchema
 import com.app.builder.data.http.HttpRequest
 import com.app.builder.data.http.HttpResult
 import com.app.builder.data.http.NoOpHttpClientEngine
+import com.app.builder.data.http.TestEngine
 import com.app.builder.data.http.URL
 import com.app.builder.data.http.get
+import com.app.builder.data.http.respondMock
 import com.app.builder.data.http.plugin.UnauthorizedException
 import com.app.builder.domain.EntityType
 import com.app.builder.domain.Permission
@@ -74,7 +78,10 @@ class DependencyTest: TestCase() {
     /** Verifies that a request whose access and refresh tokens are both rejected fails with the unauthorized response instead of waiting on the refresh forever. */
     @Test
     fun rejectedRefreshFailsRequest() = runUnitTest {
-        val appGraph = dependency.get()
+        val appGraph = Dependency.AppGraph(
+            sqlDriver = createMockSqlDriver(),
+            httpClientEngine = TestEngine { respondMock(status = HttpStatusCode.Unauthorized) }
+        )
         val userGraph = appGraph.getUserDependency(account = FakeData.adminAccount)
         val bearer = assertNotNull(actual = FakeData.expiredBearerToken.encrypt())
         appGraph.database.sessionQueries.upsertSession(
