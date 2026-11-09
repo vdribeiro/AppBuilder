@@ -38,13 +38,15 @@ import database.AppDatabase
  *
  * @param account The account of the user tied with the gateways.
  * @param database The SQLite database instance.
- * @param httpClient The HTTP client used for network operations.
+ * @param plainHttpClient The HTTP client without bearer token handling.
+ * @param httpClient The HTTP client with bearer token handling.
  * @param scheduler The job scheduler for background tasks.
  * @param clockService The service managing the device's clock.
  */
 class Gateways(
     account: Account,
     database: AppDatabase,
+    plainHttpClient: HttpClient,
     httpClient: HttpClient,
     scheduler: Scheduler,
     clockService: ClockService
@@ -90,7 +92,7 @@ class Gateways(
 
     private val authenticationGateway: AuthenticationGateway = AuthenticationGateway(
         database = database,
-        httpClient = httpClient,
+        httpClient = plainHttpClient,
         scheduler = scheduler
     )
     override val authenticationUseCases: AuthenticationUseCases = authenticationGateway

@@ -113,7 +113,7 @@ object Dependency {
         val account: Account,
         val dependency: AppGraph,
     ) {
-        /** The HTTP client configured with the authenticated user's bearer token handling. */
+        /** HTTP client configured with bearer token handling. */
         val httpClient: HttpClient = HttpClientFactory(
             engine = dependency.httpClientEngine,
             configurations = Configurations(
@@ -129,6 +129,7 @@ object Dependency {
         private val gateways = Gateways(
             account = account,
             database = dependency.database,
+            plainHttpClient = dependency.httpClient,
             httpClient = httpClient,
             scheduler = dependency.scheduler,
             clockService = dependency.clockService
