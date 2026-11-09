@@ -11,11 +11,13 @@ import kotlinx.coroutines.flow.firstOrNull
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.SemanticsMatcher
+import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertIsOff
 import androidx.compose.ui.test.assertIsOn
+import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
@@ -97,8 +99,9 @@ class UserDetailScreenTest: TestCase() {
         assertFalse(actual = store.state.editing)
         onNodeWithTag(testTag = "action_bar").assertIsDisplayed()
         onNodeWithTag(testTag = "navigation_bar").assertIsDisplayed()
-        onNodeWithText(text = FakeData.user.name).assertIsNotEnabled()
-        onNode(matcher = SemanticsMatcher.keyIsDefined(key = SemanticsProperties.EditableText) and hasText(text = FakeData.account.username)).assertIsNotEnabled()
+        onNodeWithText(text = FakeData.user.name).assert(matcher = !hasSetTextAction())
+        onNodeWithText(text = "username").assertIsDisplayed()
+        onNode(matcher = SemanticsMatcher.keyIsDefined(key = SemanticsProperties.EditableText) and hasText(text = FakeData.account.username)).assertDoesNotExist()
         onNodeWithText(text = "password").assertDoesNotExist()
         onNodeWithTag(testTag = "account_active").assertIsOn().assertIsNotEnabled()
         onNodeWithTag(testTag = "${EntityType.TASK.name}_read").assertIsOn().assertIsNotEnabled()
@@ -115,7 +118,7 @@ class UserDetailScreenTest: TestCase() {
         waitUntil { store.state.user != null && store.state.accountReadable && sessionStore.state.user?.name == FakeData.user.name }
         assertFalse(actual = store.state.userWritable)
         assertFalse(actual = store.state.accountWritable)
-        onNodeWithText(text = FakeData.user.name).assertIsNotEnabled()
+        onNodeWithText(text = FakeData.user.name).assert(matcher = !hasSetTextAction())
         onNodeWithTag(testTag = "action_edit").assertDoesNotExist()
         onNodeWithTag(testTag = "action_save").assertDoesNotExist()
         onNodeWithTag(testTag = "action_delete").assertDoesNotExist()
@@ -164,7 +167,7 @@ class UserDetailScreenTest: TestCase() {
         assertEquals(expected = Permission.WRITE, actual = savedAccount?.permissions?.get(EntityType.TASK))
         assertNull(actual = savedAccount?.permissions?.get(EntityType.ACCOUNT))
         assertEquals(expected = savedAccount, actual = store.state.savedAccount)
-        onNodeWithText(text = "New name").assertIsNotEnabled()
+        onNodeWithText(text = "New name").assert(matcher = !hasSetTextAction())
         onNodeWithTag(testTag = "action_edit").assertIsDisplayed()
     }
 
@@ -225,7 +228,7 @@ class UserDetailScreenTest: TestCase() {
 
         assertEquals(expected = FakeData.user.name, actual = store.state.user?.name)
         assertEquals(expected = FakeData.account.username, actual = store.state.account?.username)
-        onNodeWithText(text = FakeData.user.name).assertIsNotEnabled()
+        onNodeWithText(text = FakeData.user.name).assert(matcher = !hasSetTextAction())
         assertEquals(expected = FakeData.user.name, actual = useCases.userUseCases.observeUser(uuid = FakeData.user.uuid).first()?.name)
     }
 

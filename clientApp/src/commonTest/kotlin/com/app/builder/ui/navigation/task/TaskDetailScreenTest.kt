@@ -9,9 +9,9 @@ import kotlin.test.assertTrue
 import kotlin.uuid.Uuid
 import kotlinx.coroutines.flow.first
 import androidx.compose.ui.test.ComposeUiTest
+import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
-import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.isSelected
@@ -112,8 +112,8 @@ class TaskDetailScreenTest: TestCase() {
 
         waitUntil { store.state.task != null }
         assertFalse(actual = store.state.editing)
-        onNodeWithText(text = FakeData.task.title).assertIsNotEnabled()
-        onNodeWithText(text = FakeData.task.description).assertIsNotEnabled()
+        onNodeWithText(text = FakeData.task.title).assert(matcher = !hasSetTextAction())
+        onNodeWithText(text = FakeData.task.description).assert(matcher = !hasSetTextAction())
         onNodeWithTag(testTag = "action_edit").assertIsDisplayed()
         onNodeWithTag(testTag = "action_delete").assertIsDisplayed()
         onNodeWithTag(testTag = "action_save").assertDoesNotExist()
@@ -126,8 +126,8 @@ class TaskDetailScreenTest: TestCase() {
         val (store, sessionStore) = setTaskDetailScreen(useCases = storedTaskUseCases(credentials = FakeData.credentials))
 
         waitUntil { store.state.task != null && sessionStore.state.user?.name == FakeData.user.name }
-        onNodeWithText(text = FakeData.task.title).assertIsNotEnabled()
-        onNodeWithText(text = FakeData.task.description).assertIsNotEnabled()
+        onNodeWithText(text = FakeData.task.title).assert(matcher = !hasSetTextAction())
+        onNodeWithText(text = FakeData.task.description).assert(matcher = !hasSetTextAction())
         onNodeWithTag(testTag = "action_edit").assertDoesNotExist()
         onNodeWithTag(testTag = "action_save").assertDoesNotExist()
         onNodeWithTag(testTag = "action_cancel").assertDoesNotExist()
@@ -190,7 +190,7 @@ class TaskDetailScreenTest: TestCase() {
 
         val saved = useCases.taskUseCases.observeTask(uuid = FakeData.task.uuid).first { it?.title == "New title" }
         assertEquals(expected = "New description", actual = saved?.description)
-        onNodeWithText(text = "New title").assertIsNotEnabled()
+        onNodeWithText(text = "New title").assert(matcher = !hasSetTextAction())
         onNodeWithTag(testTag = "action_edit").assertIsDisplayed()
         onNodeWithTag(testTag = "action_save").assertDoesNotExist()
     }
@@ -209,7 +209,7 @@ class TaskDetailScreenTest: TestCase() {
         waitUntil { !store.state.editing }
 
         waitUntil { store.state.task?.title == FakeData.task.title }
-        onNodeWithText(text = FakeData.task.title).assertIsNotEnabled()
+        onNodeWithText(text = FakeData.task.title).assert(matcher = !hasSetTextAction())
         onNodeWithTag(testTag = "action_edit").assertIsDisplayed()
         onNodeWithTag(testTag = "action_cancel").assertDoesNotExist()
         val stored = useCases.taskUseCases.observeTask(uuid = FakeData.task.uuid).first()
@@ -304,7 +304,7 @@ class TaskDetailScreenTest: TestCase() {
         assertFalse(actual = store.state.new)
         val saved = useCases.taskUseCases.observeTask(uuid = taskUuid).first { it != null }
         assertEquals(expected = "New title", actual = saved?.title)
-        onNodeWithText(text = "New title").assertIsNotEnabled()
+        onNodeWithText(text = "New title").assert(matcher = !hasSetTextAction())
         onNodeWithTag(testTag = "action_edit").assertIsDisplayed()
     }
 
@@ -335,8 +335,8 @@ class TaskDetailScreenTest: TestCase() {
 
         waitUntil { store.state.task != null }
         onNodeWithText(text = "task_state").assertIsDisplayed()
-        onNodeWithText(text = "task_state_complete", useUnmergedTree = true).assertIsDisplayed()
-        onNodeWithText(text = "task_state_complete").assertIsNotEnabled()
+        onNodeWithText(text = "task_state_todo").assertIsDisplayed()
+        onNodeWithText(text = "task_state_complete").assertDoesNotExist()
 
         onNodeWithTag(testTag = "action_edit").performClick()
         waitUntil { store.state.editing }

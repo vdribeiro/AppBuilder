@@ -182,13 +182,13 @@ class NavigationTest: TestCase() {
                 AuthenticatedNavigation(useCases = authenticatedUseCases)
             }
         }
-        waitUntil { onAllNodesWithTag(testTag = "task_card_0").fetchSemanticsNodes().isNotEmpty() }
-        onNodeWithTag(testTag = "task_card_1").assertDoesNotExist()
+        waitUntil { onAllNodesWithTag(testTag = "task_row_0").fetchSemanticsNodes().isNotEmpty() }
+        onNodeWithTag(testTag = "task_row_1").assertDoesNotExist()
 
         onNodeWithTag(testTag = "action_expand").performClick()
         onNodeWithTag(testTag = "action_search").assertIsDisplayed()
         onNodeWithTag(testTag = "action_show_deleted").assertIsDisplayed().performClick()
-        waitUntil { onAllNodesWithTag(testTag = "task_card_1").fetchSemanticsNodes().isNotEmpty() }
+        waitUntil { onAllNodesWithTag(testTag = "task_row_1").fetchSemanticsNodes().isNotEmpty() }
     }
 
     /** Verifies that, on a split screen, expanding the filters on the task detail keeps them expanded on the list once the detail is closed, and the other way round. */

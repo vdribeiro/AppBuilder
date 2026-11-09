@@ -70,7 +70,7 @@ class TaskListScreenTest: TestCase() {
         onNodeWithTag(testTag = "task_list").assertIsDisplayed()
         onNodeWithTag(testTag = "task_list").count(count = 1)
 
-        onNodeWithTag(testTag = "task_card_0").assertIsDisplayed().performClick()
+        onNodeWithTag(testTag = "task_row_0").assertIsDisplayed().performClick()
         val taskDetailScreen = Screen.TaskDetail(uuid = taskListScreenStore.state.tasks.first().uuid)
         assertEquals(expected = listOf(taskDetailScreen), actual = router.backStack.toList())
         waitUntil { taskListScreenStore.state.tasks.first().selected }
