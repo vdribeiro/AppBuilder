@@ -20,7 +20,6 @@ import com.app.builder.ui.core.text.Input
 
 /**
  * A text property: an outlined input with a floating label while [editing], and a [FieldValue] otherwise.
- * A [KeyboardType.Password] value is masked in both modes.
  *
  * @param modifier The [Modifier] to be applied to the root layout.
  * @param label The label of the field, translated.
