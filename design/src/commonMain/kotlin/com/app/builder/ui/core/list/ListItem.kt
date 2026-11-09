@@ -8,7 +8,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.PreviewLightDark
+import androidx.compose.material3.ListItemDefaults
 import androidx.compose.ui.unit.dp
+import com.app.builder.ui.LocalColorScheme
 import com.app.builder.ui.LocalTypography
 import com.app.builder.ui.Preview
 import com.app.builder.ui.core.image.Icon
@@ -19,6 +21,9 @@ import androidx.compose.material3.ListItem as MaterialListItem
  * A single row entry for lists and menus, standardizing headline, supporting text, and leading/trailing decoration slots.
  *
  * @param modifier The [Modifier] to be applied to the row's layout.
+ * @param selected When `true`, the row is drawn on the secondary container color.
+ * @param translate True to translate the texts, false to show them as given. Defaults to true.
+ * @param overlineText An optional small text rendered above the headline.
  * @param headlineText The primary text label for the row.
  * @param supportingText An optional secondary text description rendered below the headline.
  * @param leadingContent An optional composable slot rendered at the start of the row, typically an [Icon].
@@ -27,19 +32,36 @@ import androidx.compose.material3.ListItem as MaterialListItem
 @Composable
 fun ListItem(
     modifier: Modifier = Modifier,
+    selected: Boolean = false,
+    translate: Boolean = true,
+    overlineText: String? = null,
     headlineText: String? = null,
     supportingText: String? = null,
     leadingContent: (@Composable () -> Unit)? = null,
     trailingContent: (@Composable () -> Unit)? = null,
 ) {
     val typography = LocalTypography.current
+    val colorScheme = LocalColorScheme.current
 
     MaterialListItem(
         modifier = modifier,
+        colors = if (selected) ListItemDefaults.colors(containerColor = colorScheme.secondaryContainer) else ListItemDefaults.colors(),
+        overlineContent = overlineText?.let {
+            {
+                Text(
+                    text = it,
+                    translate = translate,
+                    textAlign = TextAlign.Start,
+                    maxLines = 1,
+                    style = typography.labelSmall
+                )
+            }
+        },
         headlineContent = {
             headlineText?.let {
                 Text(
                     text = it,
+                    translate = translate,
                     textAlign = TextAlign.Start,
                     maxLines = 1,
                     style = typography.bodyLarge
@@ -50,6 +72,7 @@ fun ListItem(
             {
                 Text(
                     text = it,
+                    translate = translate,
                     textAlign = TextAlign.Start,
                     style = typography.bodyMedium
                 )
