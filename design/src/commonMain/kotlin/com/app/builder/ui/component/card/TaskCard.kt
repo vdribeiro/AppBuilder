@@ -2,32 +2,27 @@ package com.app.builder.ui.component.card
 
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
-import kotlinx.collections.immutable.toPersistentList
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import com.app.builder.ui.InjectTranslations
-import com.app.builder.ui.LocalTypography
 import com.app.builder.ui.Preview
-import com.app.builder.ui.component.text.InputField
-import com.app.builder.ui.core.button.ButtonGroup
-import com.app.builder.ui.core.button.ButtonGroupItem
+import com.app.builder.ui.component.field.ChoiceField
+import com.app.builder.ui.component.field.MetadataSection
+import com.app.builder.ui.component.field.TextField
 import com.app.builder.ui.core.card.Card
-import com.app.builder.ui.core.text.Text
 
 /**
- * A task card.
+ * A task card, showing only the properties that are not `null`.
  *
  * @param modifier The [Modifier] to be applied to the root layout.
- * @param enabled Controls whether the input can accept user focus, selection gestures, or keystroke input updates.
- * @param selected The visual emphasis state of the card.
+ * @param enabled Whether the task's properties can be edited.
  * @param uuid The UUID of the task.
  * @param modifiedAt The modification timestamp of the task.
  * @param deletedAt The deletion timestamp of the task.
@@ -43,7 +38,6 @@ import com.app.builder.ui.core.text.Text
 fun TaskCard(
     modifier: Modifier = Modifier,
     enabled: Boolean = false,
-    selected: Boolean = false,
     uuid: String? = null,
     modifiedAt: String? = null,
     deletedAt: String? = null,
@@ -55,80 +49,50 @@ fun TaskCard(
     states: ImmutableList<String> = persistentListOf(),
     onStateChange: (String) -> Unit = {},
 ) {
-    val typography = LocalTypography.current
-
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .padding(all = 8.dp),
-        selected = selected
+            .padding(all = 8.dp)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(all = 8.dp),
-            verticalArrangement = Arrangement.spacedBy(space = 8.dp, alignment = Alignment.Top),
-            horizontalAlignment = Alignment.Start,
+                .padding(vertical = 8.dp),
         ) {
-            uuid?.let {
-                InputField(
-                    enabled = false,
-                    title = "task_uuid",
-                    value = it,
-                )
-            }
             title?.let {
-                InputField(
-                    enabled = enabled,
-                    title = "task_title",
+                TextField(
+                    label = "task_title",
                     value = it,
+                    editing = enabled,
                     onValueChange = onTitleChange
                 )
             }
             description?.let {
-                InputField(
-                    enabled = enabled,
-                    title = "task_description",
+                TextField(
+                    label = "task_description",
                     value = it,
-                    onValueChange = onDescriptionChange
+                    editing = enabled,
+                    onValueChange = onDescriptionChange,
+                    maxLines = Int.MAX_VALUE
                 )
             }
             state?.let {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(all = 8.dp),
-                    verticalArrangement = Arrangement.spacedBy(space = 8.dp, alignment = Alignment.Top),
-                    horizontalAlignment = Alignment.Start,
-                ) {
-                    Text(text = "task_state", style = typography.titleLarge)
-                    ButtonGroup(
-                        modifier = Modifier.testTag(tag = "task_state"),
-                        items = states.map { item ->
-                            ButtonGroupItem(
-                                enabled = enabled,
-                                selected = item == it,
-                                text = item,
-                                onClick = { onStateChange(item) }
-                            )
-                        }.toPersistentList()
-                    )
-                }
-            }
-            modifiedAt?.let {
-                InputField(
-                    enabled = false,
-                    title = "task_modified_at",
-                    value = it,
+                ChoiceField(
+                    modifier = Modifier.testTag(tag = "task_state"),
+                    label = "task_state",
+                    selected = it,
+                    options = states,
+                    editing = enabled,
+                    onSelect = onStateChange
                 )
             }
-            deletedAt?.let {
-                InputField(
-                    enabled = false,
-                    title = "task_deleted_at",
-                    value = it,
+            MetadataSection(
+                entries = persistentListOf(
+                    "task_uuid" to uuid,
+                    "task_modified_at" to modifiedAt,
+                    "task_deleted_at" to deletedAt,
                 )
-            }
+            )
         }
     }
 }
@@ -143,12 +107,13 @@ private fun TaskCardPreview() = Preview {
             "task_state" to "State",
             "task_state_todo" to "To do",
             "task_state_complete" to "Complete",
+            "task_modified_at" to "Modified At",
         )
     )
     Column(verticalArrangement = Arrangement.spacedBy(space = 8.dp)) {
         TaskCard(
             enabled = false,
-            selected = false,
+            modifiedAt = "2026-11-09T10:00:00Z",
             title = "Task",
             description = "Noice!",
             state = "task_state_todo",
@@ -156,36 +121,10 @@ private fun TaskCardPreview() = Preview {
         )
         TaskCard(
             enabled = true,
-            selected = false,
             title = "Task",
             description = "Noice!",
             state = "task_state_complete",
             states = persistentListOf("task_state_todo", "task_state_complete")
-        )
-    }
-}
-
-@PreviewLightDark
-@Composable
-private fun TaskCardSelectedPreview() = Preview {
-    InjectTranslations(
-        translations = mapOf(
-            "task_title" to "Title",
-            "task_description" to "Description",
-        )
-    )
-    Column(verticalArrangement = Arrangement.spacedBy(space = 8.dp)) {
-        TaskCard(
-            enabled = true,
-            selected = true,
-            title = "Task",
-            description = "Noice!"
-        )
-        TaskCard(
-            enabled = false,
-            selected = true,
-            title = "Task",
-            description = "Noice!"
         )
     }
 }

@@ -1,9 +1,15 @@
 package com.app.builder.ui.navigation.task
 
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.app.builder.core.locale.getLocalDateTime
 import com.app.builder.core.locale.now
 import com.app.builder.core.security.uuid
 import com.app.builder.domain.EntityType
@@ -72,19 +78,21 @@ fun TaskDetailScreen(
         },
         bottomBar = { Navigation(sessionStore = sessionStore, selected = NavigationRoute.TASK) },
     ) {
-        TaskCard(
-            enabled = task != null && state.editing,
-            uuid = task?.uuid?.toString(),
-            modifiedAt = task?.modifiedAt?.toString(),
-            deletedAt = task?.deletedAt?.toString(),
-            title = task?.title,
-            onTitleChange = { store.send(action = TaskDetailScreenAction.ChangeTitle(title = it)) },
-            description = task?.description,
-            onDescriptionChange = { store.send(action = TaskDetailScreenAction.ChangeDescription(description = it)) },
-            state = task?.state?.translationKey,
-            states = state.states,
-            onStateChange = { key -> Task.State.entries.firstOrNull { it.translationKey == key }?.let { store.send(action = TaskDetailScreenAction.ChangeState(state = it)) } },
-        )
+        Column(modifier = Modifier.fillMaxSize().verticalScroll(state = rememberScrollState())) {
+            TaskCard(
+                enabled = task != null && state.editing,
+                uuid = task?.uuid?.toString(),
+                modifiedAt = task?.modifiedAt?.let { getLocalDateTime(utc = it.toString()) },
+                deletedAt = task?.deletedAt?.let { getLocalDateTime(utc = it.toString()) },
+                title = task?.title,
+                onTitleChange = { store.send(action = TaskDetailScreenAction.ChangeTitle(title = it)) },
+                description = task?.description,
+                onDescriptionChange = { store.send(action = TaskDetailScreenAction.ChangeDescription(description = it)) },
+                state = task?.state?.translationKey,
+                states = state.states,
+                onStateChange = { key -> Task.State.entries.firstOrNull { it.translationKey == key }?.let { store.send(action = TaskDetailScreenAction.ChangeState(state = it)) } },
+            )
+        }
     }
 }
 

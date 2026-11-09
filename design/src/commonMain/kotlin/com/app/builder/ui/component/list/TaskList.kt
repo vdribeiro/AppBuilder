@@ -3,19 +3,20 @@ package com.app.builder.ui.component.list
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.outlined.RadioButtonUnchecked
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.PreviewLightDark
-import androidx.compose.ui.unit.dp
 import com.app.builder.core.security.uuid
 import com.app.builder.ui.Preview
-import com.app.builder.ui.component.card.TaskCard
+import com.app.builder.ui.core.image.Icon
 import com.app.builder.ui.core.list.LazyColumn
 
 /**
@@ -36,19 +37,18 @@ fun TaskList(
             .testTag(tag = "task_list")
             .fillMaxSize(),
         horizontalAlignment = Alignment.Start,
-        verticalArrangement = Arrangement.spacedBy(space = 2.dp)
     ) {
         itemsIndexed(items = items, key = { _, item -> item.uuid }) { index, item ->
-            TaskCard(
+            EntityRow(
                 modifier = Modifier
-                    .testTag(tag = "task_card_$index")
+                    .testTag(tag = "task_row_$index")
                     .clickable { onClick(item) },
                 selected = item.selected,
-                uuid = item.uuid.takeIf { item.uuidVisible },
-                modifiedAt = item.modifiedAt,
-                deletedAt = item.deletedAt,
-                title = item.title,
-                description = item.description,
+                deleted = item.deleted,
+                headline = item.title,
+                supporting = item.description,
+                metadata = listOf(item.modifiedAt),
+                leadingContent = { Icon(imageVector = if (item.completed) Icons.Default.CheckCircle else Icons.Outlined.RadioButtonUnchecked) }
             )
         }
     }
@@ -58,24 +58,26 @@ fun TaskList(
  * Task item.
  *
  * @property uuid A unique identifier of the task. Defaults to a random UUID.
- * @property selected The visual emphasis state of the card.
- * @property uuidVisible Whether the UUID is shown on the card.
+ * @property selected Whether the task is the one currently open.
+ * @property deleted Whether the task is deleted.
+ * @property uuidVisible Whether the UUID is shown on the row.
  * @property modifiedAt The timestamp indicating when this task was last updated.
  * @property deletedAt The timestamp indicating when this task was last deleted.
  * @property title The title of the task. Defaults to `null`.
  * @property description The description of the task. Defaults to `null`.
- * @property state Name of the task's state. Defaults to `null`.
+ * @property completed Whether the task is complete.
  */
 @Stable
 data class TaskItem(
     val uuid: String = uuid().toString(),
     val selected: Boolean = false,
+    val deleted: Boolean = false,
     val uuidVisible: Boolean = false,
     val modifiedAt: String? = null,
     val deletedAt: String? = null,
     val title: String? = null,
     val description: String? = null,
-    val state: String? = null
+    val completed: Boolean = false
 )
 
 @PreviewLightDark
@@ -88,7 +90,13 @@ private fun TaskListPreview() = Preview {
             ),
             TaskItem(
                 title = "More things",
-                description = "Shiny"
+                description = "Shiny",
+                completed = true,
+                selected = true
+            ),
+            TaskItem(
+                title = "Gone",
+                deleted = true
             )
         )
     )
