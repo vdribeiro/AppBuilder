@@ -117,6 +117,11 @@ object FakeData {
         refreshToken = "refreshToken"
     )
 
+    val expiredBearerToken: BearerToken = BearerToken(
+        accessToken = "expiredAccessToken",
+        refreshToken = "rejectedRefreshToken"
+    )
+
     val adminCredentials = UserCredentials(
         username = adminAccount.username,
         password = "admin"
