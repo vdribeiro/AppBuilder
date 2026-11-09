@@ -198,14 +198,51 @@ class AuthenticationRepositoryTest: TestCase() {
         assertEquals(expected = FakeData.adminBearerToken, actual = bearer)
     }
 
-    /** Verifies that refreshing the bearer token returns null when the http client flag is disabled. */
+    /** Verifies that a refresh token the server rejects returns null, keeping the session and the current user. */
     @Test
-    fun refreshBearerTokenOffline() = runUnitTest {
-        ClientFlags.set { it.copy(http = false) }
+    fun refreshBearerTokenRejected() = runUnitTest {
+        val authenticationUseCases = dependency.get()
+            .userGraph
+            .useCases
+            .authenticationUseCases
         val authenticationRepository = dependency.get()
             .userGraph
             .repositories
             .authenticationRepository
+        val sessionDao = dependency.get()
+            .database
+            .sessionQueries
+
+        assertNotNull(actual = authenticationUseCases.login(credentials = FakeData.adminCredentials))
+        assertEquals(expected = FakeData.adminUser.uuid, actual = authenticationUseCases.observeCurrentUser().firstOrNull()?.uuid)
+
+        assertNull(actual = authenticationRepository.refreshBearerToken(userUuid = FakeData.adminUser.uuid, refreshToken = FakeData.expiredBearerToken.refreshToken))
+
+        assertEquals(expected = FakeData.adminUser.uuid, actual = sessionDao.getSession(userUuid = FakeData.adminUser.uuid).awaitAsOneOrNull()?.userUuid)
+        assertEquals(expected = FakeData.adminUser.uuid, actual = authenticationUseCases.observeCurrentUser().firstOrNull()?.uuid)
+    }
+
+    /** Verifies that refreshing the bearer token returns null when the http client flag is disabled, keeping the session and the current user. */
+    @Test
+    fun refreshBearerTokenOffline() = runUnitTest {
+        val authenticationUseCases = dependency.get()
+            .userGraph
+            .useCases
+            .authenticationUseCases
+        val authenticationRepository = dependency.get()
+            .userGraph
+            .repositories
+            .authenticationRepository
+        val sessionDao = dependency.get()
+            .database
+            .sessionQueries
+
+        assertNotNull(actual = authenticationUseCases.login(credentials = FakeData.adminCredentials))
+        ClientFlags.set { it.copy(http = false) }
+
         assertNull(actual = authenticationRepository.refreshBearerToken(userUuid = FakeData.adminUser.uuid, refreshToken = FakeData.adminBearerToken.refreshToken))
+
+        assertEquals(expected = FakeData.adminUser.uuid, actual = sessionDao.getSession(userUuid = FakeData.adminUser.uuid).awaitAsOneOrNull()?.userUuid)
+        assertEquals(expected = FakeData.adminUser.uuid, actual = authenticationUseCases.observeCurrentUser().firstOrNull()?.uuid)
     }
 }

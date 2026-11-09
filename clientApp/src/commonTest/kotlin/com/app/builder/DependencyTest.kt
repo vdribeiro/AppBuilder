@@ -2,17 +2,27 @@ package com.app.builder
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertIs
+import kotlin.test.assertNotNull
 import kotlin.test.assertNotSame
 import kotlin.test.assertNull
 import kotlin.test.assertSame
 import com.app.builder.Dependency.getUserDependency
 import com.app.builder.Dependency.getUserGraph
+import com.app.builder.core.config.ClientFlags
 import com.app.builder.core.locale.now
 import com.app.builder.core.security.uuid
 import com.app.builder.data.database.NoOpSqlDriver
+import com.app.builder.data.database.SessionSchema
+import com.app.builder.data.http.HttpRequest
+import com.app.builder.data.http.HttpResult
 import com.app.builder.data.http.NoOpHttpClientEngine
+import com.app.builder.data.http.URL
+import com.app.builder.data.http.get
+import com.app.builder.data.http.plugin.UnauthorizedException
 import com.app.builder.domain.EntityType
 import com.app.builder.domain.Permission
+import com.app.builder.domain.gateway.authentication.encrypt
 import com.app.builder.domain.gateway.authentication.toAccountSchema
 import com.app.builder.test.FakeData
 import com.app.builder.test.TestCase
@@ -59,5 +69,27 @@ class DependencyTest: TestCase() {
 
         val disabled = granted.copy(deletedAt = now())
         assertNotSame(illegal = grantedGraph, actual = appGraph.getUserDependency(account = disabled))
+    }
+
+    /** Verifies that a request whose access and refresh tokens are both rejected fails with the unauthorized response instead of waiting on the refresh forever. */
+    @Test
+    fun rejectedRefreshFailsRequest() = runUnitTest {
+        val appGraph = dependency.get()
+        val userGraph = appGraph.getUserDependency(account = FakeData.adminAccount)
+        val bearer = assertNotNull(actual = FakeData.expiredBearerToken.encrypt())
+        appGraph.database.sessionQueries.upsertSession(
+            SessionSchema(
+                userUuid = FakeData.adminUser.uuid,
+                username = FakeData.adminCredentials.username,
+                salt = "salt",
+                verifier = "verifier",
+                accessToken = bearer.accessToken,
+                refreshToken = bearer.refreshToken
+            )
+        )
+
+        val result = userGraph.httpClient.get<ClientFlags>(request = HttpRequest(url = URL.ClientFlags))
+
+        assertIs<UnauthorizedException>(value = assertIs<HttpResult.Error<ClientFlags>>(value = result).error)
     }
 }
