@@ -41,6 +41,15 @@ fun EntryProviderScope<NavKey>.registryProvider(useCases: UseCases) {
 /** The registry properties by key, labelled by their translation keys. */
 private val properties = Registry.Property.entries.associate { entry -> entry.name to entry.translationKey }.toImmutableMap()
 
+/** The registry properties shown by default. */
+private val visibleProperties = listOf(
+    Registry.Property.REQUEST_TYPE,
+    Registry.Property.USER_UUID,
+    Registry.Property.OS,
+    Registry.Property.OS_VERSION,
+    Registry.Property.ENTITY_TYPE,
+).map { it.name }
+
 /**
  * Gets the registry filters store shared by the navigation host, creating it on first use.
  *
@@ -53,6 +62,7 @@ private fun filtersStore(): FiltersStore = hostViewModel(key = FiltersStore.key(
         storageFile = AppFile.RegistryPreferences,
         sortProperty = Registry.Property.REQUEST_UTC.name,
         sortAscending = false,
-        showDeletedToggle = false
+        showDeletedToggle = false,
+        visibleProperties = visibleProperties
     )
 }
