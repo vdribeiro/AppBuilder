@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.mapNotNull
 import androidx.compose.runtime.snapshotFlow
+import com.app.builder.core.locale.getLocalDateTime
 import com.app.builder.core.flow.Dispatcher
 import com.app.builder.core.telemetry.Telemetry
 import com.app.builder.data.storage.AppFile
@@ -163,8 +164,8 @@ class RegistryListScreenStore(
             selected = requestUuid.toString() == selectedUuid,
             uuidVisible = Property.REQUEST_UUID.name in visibilityProperties,
             requestType = visible(property = Property.REQUEST_TYPE),
-            requestUtc = visible(property = Property.REQUEST_UTC),
-            requestSentUtc = visible(property = Property.REQUEST_SENT_UTC),
+            requestUtc = visible(property = Property.REQUEST_UTC)?.let { getLocalDateTime(utc = it) },
+            requestSentUtc = visible(property = Property.REQUEST_SENT_UTC)?.let { getLocalDateTime(utc = it) },
             userUuid = visible(property = Property.USER_UUID),
             appVersion = visible(property = Property.APP_VERSION),
             os = visible(property = Property.OS),

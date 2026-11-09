@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.mapNotNull
 import androidx.compose.runtime.snapshotFlow
+import com.app.builder.core.locale.getLocalDateTime
 import com.app.builder.core.flow.Dispatcher
 import com.app.builder.core.telemetry.Telemetry
 import com.app.builder.data.storage.AppFile
@@ -144,9 +145,10 @@ class UserListScreenStore(
     private fun User.toUserItem(visibilityProperties: List<String>, selectedUuid: String?): UserItem = UserItem(
         uuid = uuid.toString(),
         selected = uuid.toString() == selectedUuid,
+        deleted = deletedAt != null,
         uuidVisible = Property.UUID.name in visibilityProperties,
-        modifiedAt = modifiedAt.takeIf { Property.MODIFIED_AT.name in visibilityProperties }?.toString(),
-        deletedAt = deletedAt.takeIf { Property.DELETED_AT.name in visibilityProperties }?.toString(),
+        modifiedAt = modifiedAt.takeIf { Property.MODIFIED_AT.name in visibilityProperties }?.let { getLocalDateTime(utc = it.toString()) },
+        deletedAt = deletedAt.takeIf { Property.DELETED_AT.name in visibilityProperties }?.let { getLocalDateTime(utc = it.toString()) },
         name = name.takeIf { Property.NAME.name in visibilityProperties },
         avatar = avatar?.let { Image(url = it) }
     )
