@@ -1,24 +1,25 @@
 package com.app.builder.ui.component.card
 
+import kotlinx.collections.immutable.persistentListOf
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import com.app.builder.ui.InjectTranslations
 import com.app.builder.ui.Preview
-import com.app.builder.ui.component.text.InputField
+import com.app.builder.ui.component.field.FieldValue
+import com.app.builder.ui.component.field.MetadataSection
 import com.app.builder.ui.core.card.Card
+import com.app.builder.ui.core.divider.Divider
 
 /**
- * A read-only registry card, showing only the properties that are not `null`.
+ * A read-only registry card, showing only the properties that are not `null`, grouped into the request, the client that made it, and its body.
  *
  * @param modifier The [Modifier] to be applied to the root layout.
- * @param selected The visual emphasis state of the card.
  * @param requestUuid The UUID of the request.
  * @param requestType The HTTP method of the request.
  * @param requestUtc When the request was made on the client.
@@ -37,7 +38,6 @@ import com.app.builder.ui.core.card.Card
 @Composable
 fun RegistryCard(
     modifier: Modifier = Modifier,
-    selected: Boolean = false,
     requestUuid: String? = null,
     requestType: String? = null,
     requestUtc: String? = null,
@@ -53,45 +53,43 @@ fun RegistryCard(
     entityType: String? = null,
     payload: String? = null,
 ) {
-    val fields = listOf(
-        "registry_request_uuid" to requestUuid,
-        "registry_request_type" to requestType,
-        "registry_request_utc" to requestUtc,
-        "registry_request_sent_utc" to requestSentUtc,
-        "registry_user_uuid" to userUuid,
-        "registry_app_version" to appVersion,
-        "registry_os" to os,
-        "registry_os_version" to osVersion,
-        "registry_brand" to brand,
-        "registry_model" to model,
-        "registry_device_uuid" to deviceUuid,
-        "registry_entity_uuid" to entityUuid,
-        "registry_entity_type" to entityType,
-        "registry_payload" to payload,
-    )
+    val groups = listOf(
+        listOf(
+            "registry_request_type" to requestType,
+            "registry_entity_type" to entityType,
+            "registry_entity_uuid" to entityUuid,
+            "registry_request_utc" to requestUtc,
+            "registry_request_sent_utc" to requestSentUtc,
+        ),
+        listOf(
+            "registry_user_uuid" to userUuid,
+            "registry_device_uuid" to deviceUuid,
+            "registry_brand" to brand,
+            "registry_model" to model,
+            "registry_os" to os,
+            "registry_os_version" to osVersion,
+            "registry_app_version" to appVersion,
+        ),
+        listOf(
+            "registry_payload" to payload,
+        ),
+    ).map { group -> group.filter { it.second != null } }.filter { it.isNotEmpty() }
 
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .padding(all = 8.dp),
-        selected = selected
+            .padding(all = 8.dp)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(all = 8.dp),
-            verticalArrangement = Arrangement.spacedBy(space = 8.dp, alignment = Alignment.Top),
-            horizontalAlignment = Alignment.Start,
+                .padding(vertical = 8.dp),
         ) {
-            fields.forEach { (title, value) ->
-                value?.let {
-                    InputField(
-                        enabled = false,
-                        title = title,
-                        value = it,
-                    )
-                }
+            groups.forEachIndexed { index, group ->
+                if (index > 0) Divider(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
+                group.forEach { (label, value) -> FieldValue(label = label, value = value) }
             }
+            MetadataSection(entries = persistentListOf("registry_request_uuid" to requestUuid))
         }
     }
 }
@@ -105,18 +103,18 @@ private fun RegistryCardPreview() = Preview {
             "registry_entity_type" to "Entity Type",
             "registry_request_utc" to "Request At",
             "registry_os" to "OS",
+            "registry_payload" to "Payload",
         )
     )
     Column(verticalArrangement = Arrangement.spacedBy(space = 8.dp)) {
         RegistryCard(
-            selected = false,
             requestType = "POST",
             entityType = "TASK",
-            requestUtc = "2026-10-30T10:00:00Z",
-            os = "Android"
+            requestUtc = "30/10/2026, 10:00",
+            os = "Android",
+            payload = "{\"title\":\"Task\"}"
         )
         RegistryCard(
-            selected = true,
             requestType = "GET",
             entityType = "USER",
         )

@@ -47,7 +47,7 @@ fun TaskList(
                 deleted = item.deleted,
                 headline = item.title,
                 supporting = item.description,
-                metadata = listOf(item.modifiedAt),
+                metadata = listOf(item.uuid.takeIf { item.uuidVisible }, item.modifiedAt, item.deletedAt),
                 leadingContent = { Icon(imageVector = if (item.completed) Icons.Default.CheckCircle else Icons.Outlined.RadioButtonUnchecked) }
             )
         }

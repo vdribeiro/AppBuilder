@@ -1,9 +1,15 @@
 package com.app.builder.ui.navigation.registry
 
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.app.builder.core.locale.getLocalDateTime
 import com.app.builder.core.locale.now
 import com.app.builder.core.platform.OS
 import com.app.builder.core.security.uuid
@@ -48,22 +54,24 @@ fun RegistryDetailScreen(
         topBar = { ActionBar(sessionStore = sessionStore, filtersStore = filtersStore.takeIf { splitScreen }) },
         bottomBar = { Navigation(sessionStore = sessionStore, selected = NavigationRoute.REGISTRY) },
     ) {
-        RegistryCard(
-            requestUuid = registry?.requestUuid?.toString(),
-            requestType = registry?.requestType,
-            requestUtc = registry?.requestUtc?.toString(),
-            requestSentUtc = registry?.requestSentUtc?.toString(),
-            userUuid = registry?.userUuid?.toString(),
-            appVersion = registry?.appVersion,
-            os = registry?.os?.toString(),
-            osVersion = registry?.osVersion,
-            brand = registry?.brand,
-            model = registry?.model,
-            deviceUuid = registry?.deviceUuid?.toString(),
-            entityUuid = registry?.entityUuid?.toString(),
-            entityType = registry?.entityType?.name,
-            payload = registry?.payload,
-        )
+        Column(modifier = Modifier.fillMaxSize().verticalScroll(state = rememberScrollState())) {
+            RegistryCard(
+                requestUuid = registry?.requestUuid?.toString(),
+                requestType = registry?.requestType,
+                requestUtc = registry?.requestUtc?.let { getLocalDateTime(utc = it.toString()) },
+                requestSentUtc = registry?.requestSentUtc?.let { getLocalDateTime(utc = it.toString()) },
+                userUuid = registry?.userUuid?.toString(),
+                appVersion = registry?.appVersion,
+                os = registry?.os?.toString(),
+                osVersion = registry?.osVersion,
+                brand = registry?.brand,
+                model = registry?.model,
+                deviceUuid = registry?.deviceUuid?.toString(),
+                entityUuid = registry?.entityUuid?.toString(),
+                entityType = registry?.entityType?.name,
+                payload = registry?.payload,
+            )
+        }
     }
 }
 

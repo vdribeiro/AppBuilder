@@ -11,6 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import com.app.builder.ui.InjectTranslations
@@ -18,26 +19,26 @@ import com.app.builder.ui.LocalTypography
 import com.app.builder.ui.Preview
 import com.app.builder.ui.component.button.PermissionItem
 import com.app.builder.ui.component.button.PermissionSelector
+import com.app.builder.ui.component.field.BooleanField
+import com.app.builder.ui.component.field.MetadataSection
+import com.app.builder.ui.component.field.TextField
 import com.app.builder.ui.component.image.Avatar
-import com.app.builder.ui.component.text.InputField
-import com.app.builder.ui.core.button.Switch
 import com.app.builder.ui.core.card.Card
 import com.app.builder.ui.core.image.Image
 import com.app.builder.ui.core.text.Text
 
 /**
- * A user card.
+ * A user card, with the user's avatar and name on top, followed by their account. Only the properties that are not `null` are shown.
  *
  * @param modifier The [Modifier] to be applied to the root layout.
- * @param enabled Controls whether the user fields can accept user focus, selection gestures, or keystroke input updates.
- * @param selected The visual emphasis state of the card.
+ * @param enabled Whether the user's properties can be edited.
  * @param uuid The UUID of the user.
  * @param modifiedAt The modification timestamp of the user.
  * @param deletedAt The deletion timestamp of the user.
  * @param name The name of the user.
  * @param onNameChange Callback for when the name changes.
  * @param avatar The avatar image of the user, falling back to the initials of [name].
- * @param accountEnabled Controls whether the account fields can accept user focus, selection gestures, or keystroke input updates.
+ * @param accountEnabled Whether the account's properties can be edited.
  * @param username The username of the user's account, or `null` to hide it.
  * @param onUsernameChange Callback for when the username changes.
  * @param password The password of a new account, or `null` to hide it.
@@ -51,7 +52,6 @@ import com.app.builder.ui.core.text.Text
 fun UserCard(
     modifier: Modifier = Modifier,
     enabled: Boolean = false,
-    selected: Boolean = false,
     uuid: String? = null,
     modifiedAt: String? = null,
     deletedAt: String? = null,
@@ -69,102 +69,82 @@ fun UserCard(
     onPermissionToggled: (PermissionItem) -> Unit = {},
 ) {
     val typography = LocalTypography.current
+
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .padding(all = 8.dp),
-        selected = selected
+            .padding(all = 8.dp)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(all = 8.dp),
-            verticalArrangement = Arrangement.spacedBy(space = 8.dp, alignment = Alignment.Top),
-            horizontalAlignment = Alignment.Start,
+                .padding(vertical = 8.dp),
         ) {
-            Avatar(name = name, image = avatar, contentDescription = name)
-            uuid?.let {
-                InputField(
-                    enabled = false,
-                    title = "user_uuid",
-                    value = it,
-                )
-            }
-            name?.let {
-                InputField(
-                    enabled = enabled,
-                    title = "user_name",
-                    value = it,
-                    onValueChange = onNameChange
-                )
+            Row(
+                modifier = Modifier.padding(start = 16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Avatar(name = name, image = avatar, contentDescription = name, size = 56.dp)
+                name?.let {
+                    TextField(
+                        modifier = Modifier.weight(weight = 1f),
+                        label = "user_name",
+                        value = it,
+                        editing = enabled,
+                        onValueChange = onNameChange
+                    )
+                }
             }
             if (username != null || password != null || accountActive != null || permissions != null) {
                 Text(
-                    modifier = Modifier.padding(all = 8.dp),
+                    modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 4.dp),
                     text = "account",
-                    style = typography.titleLarge
+                    style = typography.titleSmall
                 )
             }
             username?.let {
-                InputField(
-                    enabled = accountEnabled,
-                    title = "username",
+                TextField(
+                    label = "username",
                     value = it,
+                    editing = accountEnabled,
                     onValueChange = onUsernameChange
                 )
             }
             password?.let {
-                InputField(
-                    enabled = accountEnabled,
-                    title = "password",
+                TextField(
+                    label = "password",
                     value = it,
-                    onValueChange = onPasswordChange
+                    editing = accountEnabled,
+                    onValueChange = onPasswordChange,
+                    keyboardType = KeyboardType.Password
                 )
             }
             accountActive?.let {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(all = 8.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        modifier = Modifier.weight(weight = 1f),
-                        text = "account_active",
-                        style = typography.titleLarge
-                    )
-                    Switch(
-                        modifier = Modifier.testTag(tag = "account_active"),
-                        enabled = accountEnabled,
-                        checked = it,
-                        onCheckedChange = onAccountActiveChange
-                    )
-                }
+                BooleanField(
+                    modifier = Modifier.testTag(tag = "account_active"),
+                    label = "account_active",
+                    checked = it,
+                    editing = accountEnabled,
+                    onCheckedChange = onAccountActiveChange
+                )
             }
             permissions?.let {
                 PermissionSelector(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(all = 8.dp),
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
                     enabled = accountEnabled,
                     permissions = it,
                     onPermissionToggled = onPermissionToggled
                 )
             }
-            modifiedAt?.let {
-                InputField(
-                    enabled = false,
-                    title = "user_modified_at",
-                    value = it,
+            MetadataSection(
+                entries = persistentListOf(
+                    "user_uuid" to uuid,
+                    "user_modified_at" to modifiedAt,
+                    "user_deleted_at" to deletedAt,
                 )
-            }
-            deletedAt?.let {
-                InputField(
-                    enabled = false,
-                    title = "user_deleted_at",
-                    value = it,
-                )
-            }
+            )
         }
     }
 }
@@ -188,18 +168,17 @@ private fun UserCardPreview() = Preview {
     Column(verticalArrangement = Arrangement.spacedBy(space = 8.dp)) {
         UserCard(
             enabled = false,
-            selected = false,
             name = "Vitor Ribeiro",
+            username = "vribeiro",
+            accountActive = true,
             modifiedAt = "2026-11-04T10:00:00Z"
         )
         UserCard(
             enabled = true,
-            selected = true,
             accountEnabled = true,
             name = "Vitor Ribeiro",
             username = "vribeiro",
             password = "",
-            accountActive = true,
             permissions = persistentListOf(
                 PermissionItem(id = "TASK", name = "Task", read = true, write = true),
                 PermissionItem(id = "USER", name = "User", read = true),

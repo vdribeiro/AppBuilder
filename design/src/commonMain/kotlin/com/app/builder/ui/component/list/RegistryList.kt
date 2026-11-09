@@ -3,19 +3,23 @@ package com.app.builder.ui.component.list
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.AddCircleOutline
+import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material.icons.outlined.SwapVert
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.PreviewLightDark
-import androidx.compose.ui.unit.dp
 import com.app.builder.core.security.uuid
 import com.app.builder.ui.Preview
-import com.app.builder.ui.component.card.RegistryCard
+import com.app.builder.ui.core.image.Icon
 import com.app.builder.ui.core.list.LazyColumn
 
 /**
@@ -36,39 +40,51 @@ fun RegistryList(
             .testTag(tag = "registry_list")
             .fillMaxSize(),
         horizontalAlignment = Alignment.Start,
-        verticalArrangement = Arrangement.spacedBy(space = 2.dp)
     ) {
         itemsIndexed(items = items, key = { _, item -> item.uuid }) { index, item ->
-            RegistryCard(
+            EntityRow(
                 modifier = Modifier
-                    .testTag(tag = "registry_card_$index")
+                    .testTag(tag = "registry_row_$index")
                     .clickable { onClick(item) },
                 selected = item.selected,
-                requestUuid = item.uuid.takeIf { item.uuidVisible },
-                requestType = item.requestType,
-                requestUtc = item.requestUtc,
-                requestSentUtc = item.requestSentUtc,
-                userUuid = item.userUuid,
-                appVersion = item.appVersion,
-                os = item.os,
-                osVersion = item.osVersion,
-                brand = item.brand,
-                model = item.model,
-                deviceUuid = item.deviceUuid,
-                entityUuid = item.entityUuid,
-                entityType = item.entityType,
-                payload = item.payload,
+                headline = listOfNotNull(item.requestType, item.entityType).joinToString(separator = " "),
+                supporting = listOfNotNull(
+                    listOfNotNull(item.brand, item.model, item.os, item.osVersion, item.appVersion).joinToString(separator = " · ").takeIf { it.isNotEmpty() },
+                    item.payload
+                ).joinToString(separator = "\n"),
+                metadata = listOf(
+                    item.uuid.takeIf { item.uuidVisible },
+                    item.requestUtc,
+                    item.requestSentUtc,
+                    item.userUuid,
+                    item.deviceUuid,
+                    item.entityUuid,
+                ),
+                leadingContent = { Icon(imageVector = requestIcon(requestType = item.requestType)) }
             )
         }
     }
 }
 
 /**
+ * Picks the icon of a request from its HTTP method.
+ *
+ * @param requestType The HTTP method of the request, or `null` when hidden.
+ * @return The icon for creating, editing or deleting, or a generic one for any other method.
+ */
+private fun requestIcon(requestType: String?): ImageVector = when (requestType?.uppercase()) {
+    "POST" -> Icons.Outlined.AddCircleOutline
+    "PUT", "PATCH" -> Icons.Outlined.Edit
+    "DELETE" -> Icons.Outlined.Delete
+    else -> Icons.Outlined.SwapVert
+}
+
+/**
  * Registry item, where a `null` property is hidden.
  *
  * @property uuid The request UUID of the registry. Defaults to a random UUID.
- * @property selected The visual emphasis state of the card.
- * @property uuidVisible Whether the request UUID is shown on the card.
+ * @property selected Whether the registry is the one currently open.
+ * @property uuidVisible Whether the request UUID is shown on the row.
  * @property requestType The HTTP method of the request.
  * @property requestUtc When the request was made on the client.
  * @property requestSentUtc When the request was sent by the client.
@@ -113,9 +129,11 @@ private fun RegistryListPreview() = Preview {
                 entityType = "TASK"
             ),
             RegistryItem(
-                requestType = "GET",
+                selected = true,
+                requestType = "PUT",
                 entityType = "USER",
-                os = "Android"
+                os = "Android",
+                payload = "{\"name\":\"Jane\"}"
             )
         )
     )

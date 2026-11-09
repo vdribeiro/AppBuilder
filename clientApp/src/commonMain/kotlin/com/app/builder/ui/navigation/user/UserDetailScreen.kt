@@ -2,11 +2,17 @@ package com.app.builder.ui.navigation.user
 
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toPersistentList
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.app.builder.core.locale.getLocalDateTime
 import com.app.builder.core.locale.now
 import com.app.builder.core.security.uuid
 import com.app.builder.domain.Account
@@ -84,24 +90,26 @@ fun UserDetailScreen(
         },
         bottomBar = { Navigation(sessionStore = sessionStore, selected = NavigationRoute.USER) },
     ) {
-        UserCard(
-            enabled = user != null && state.editing && state.userWritable,
-            uuid = user?.uuid?.toString(),
-            modifiedAt = user?.modifiedAt?.toString(),
-            deletedAt = user?.deletedAt?.toString(),
-            name = user?.name,
-            onNameChange = { store.send(action = UserDetailScreenAction.ChangeName(name = it)) },
-            avatar = user?.avatar?.let { Image(url = it) },
-            accountEnabled = state.editing && state.accountWritable,
-            username = account?.username,
-            onUsernameChange = { store.send(action = UserDetailScreenAction.ChangeUsername(username = it)) },
-            password = state.password.takeIf { account != null && savedAccount == null },
-            onPasswordChange = { store.send(action = UserDetailScreenAction.ChangePassword(password = it)) },
-            accountActive = account?.let { it.deletedAt == null }?.takeIf { savedAccount != null },
-            onAccountActiveChange = { store.send(action = UserDetailScreenAction.ChangeAccountActive(active = it)) },
-            permissions = permissions,
-            onPermissionToggled = { store.send(action = UserDetailScreenAction.TogglePermission(permission = it)) },
-        )
+        Column(modifier = Modifier.fillMaxSize().verticalScroll(state = rememberScrollState())) {
+            UserCard(
+                enabled = user != null && state.editing && state.userWritable,
+                uuid = user?.uuid?.toString(),
+                modifiedAt = user?.modifiedAt?.let { getLocalDateTime(utc = it.toString()) },
+                deletedAt = user?.deletedAt?.let { getLocalDateTime(utc = it.toString()) },
+                name = user?.name,
+                onNameChange = { store.send(action = UserDetailScreenAction.ChangeName(name = it)) },
+                avatar = user?.avatar?.let { Image(url = it) },
+                accountEnabled = state.editing && state.accountWritable,
+                username = account?.username,
+                onUsernameChange = { store.send(action = UserDetailScreenAction.ChangeUsername(username = it)) },
+                password = state.password.takeIf { account != null && savedAccount == null },
+                onPasswordChange = { store.send(action = UserDetailScreenAction.ChangePassword(password = it)) },
+                accountActive = account?.let { it.deletedAt == null }?.takeIf { savedAccount != null },
+                onAccountActiveChange = { store.send(action = UserDetailScreenAction.ChangeAccountActive(active = it)) },
+                permissions = permissions,
+                onPermissionToggled = { store.send(action = UserDetailScreenAction.TogglePermission(permission = it)) },
+            )
+        }
     }
 }
 
