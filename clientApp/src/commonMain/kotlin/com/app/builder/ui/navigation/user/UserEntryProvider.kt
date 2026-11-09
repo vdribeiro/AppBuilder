@@ -53,7 +53,9 @@ fun EntryProviderScope<NavKey>.userProvider(useCases: UseCases) {
 private val properties = User.Property.entries.associate { entry -> entry.name to entry.translationKey }.toImmutableMap()
 
 /** The user properties shown by default. */
-private val visibleProperties = (User.Property.entries - User.Property.UUID - User.Property.MODIFIED_AT - User.Property.DELETED_AT).map { it.name }
+private val visibleProperties = listOf(
+    User.Property.NAME,
+).map { it.name }
 
 /**
  * Gets the user filters store shared by the navigation host, creating it on first use.

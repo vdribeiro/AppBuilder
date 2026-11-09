@@ -43,7 +43,12 @@ fun EntryProviderScope<NavKey>.taskProvider(useCases: UseCases) {
 private val properties = Task.Property.entries.associate { entry -> entry.name to entry.translationKey }.toImmutableMap()
 
 /** The task properties shown by default. */
-private val visibleProperties = (Task.Property.entries - Task.Property.UUID - Task.Property.DELETED_AT).map { it.name }
+private val visibleProperties = listOf(
+    Task.Property.MODIFIED_AT,
+    Task.Property.TITLE,
+    Task.Property.DESCRIPTION,
+    Task.Property.STATE,
+).map { it.name }
 
 /**
  * Gets the task filters store shared by the navigation host, creating it on first use.
