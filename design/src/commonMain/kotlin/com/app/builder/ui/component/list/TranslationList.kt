@@ -2,7 +2,6 @@ package com.app.builder.ui.component.list
 
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.runtime.Composable
@@ -11,9 +10,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.PreviewLightDark
-import androidx.compose.ui.unit.dp
 import com.app.builder.ui.Preview
-import com.app.builder.ui.component.card.TranslationCard
 import com.app.builder.ui.core.list.LazyColumn
 
 /**
@@ -32,13 +29,12 @@ fun TranslationList(
             .testTag(tag = "translation_list")
             .fillMaxSize(),
         horizontalAlignment = Alignment.Start,
-        verticalArrangement = Arrangement.spacedBy(space = 2.dp)
     ) {
         itemsIndexed(items = items, key = { _, item -> item.id }) { index, item ->
-            TranslationCard(
-                modifier = Modifier.testTag(tag = "translation_card_$index"),
-                key = item.key,
-                value = item.value,
+            EntityRow(
+                modifier = Modifier.testTag(tag = "translation_row_$index"),
+                headline = item.key,
+                supporting = item.value,
             )
         }
     }
