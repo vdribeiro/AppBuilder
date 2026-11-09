@@ -2,6 +2,7 @@ package com.app.builder.ui.core.text
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.LocalTextStyle
@@ -13,6 +14,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import com.app.builder.ui.Preview
@@ -26,7 +29,10 @@ import com.app.builder.ui.core.image.Icon
  * @param enabled Controls whether the input can accept user focus, selection gestures, or keystroke input updates.
  * @param value The text buffer string value currently displayed inside the layout window.
  * @param onValueChange Callback dispatched instantly on every localized keyboard input stroke update.
- * @param maxLines The maximum vertical span limit allocation constraints before wrapping layout text blocks into scrolling viewports.
+ * @param label An optional label, translated, shown inside the field and floating above the value once it has focus or content.
+ * @param maxLines The maximum number of lines before the input scrolls vertically. With `1`, the input is single line: it scrolls horizontally and the Enter key triggers the keyboard action instead of a line break.
+ * @param keyboardType The type of software keyboard requested, such as text, number, email or password.
+ * @param visualTransformation Transforms how the value is displayed, such as masking a password.
  * @param style Typography styling applied to the text field content. Defaults to [LocalTextStyle].
  * @param leadingIcon An optional composable slot rendering decorative action widgets or iconography assets at the front boundary of the input field.
  * @param isError Controls whether the input is in an error state.
@@ -37,7 +43,10 @@ fun Input(
     enabled: Boolean = true,
     value: String = "",
     onValueChange: (String) -> Unit = {},
+    label: String? = null,
     maxLines: Int = Int.MAX_VALUE,
+    keyboardType: KeyboardType = KeyboardType.Unspecified,
+    visualTransformation: VisualTransformation = VisualTransformation.None,
     style: TextStyle = LocalTextStyle.current,
     leadingIcon: (@Composable () -> Unit)? = null,
     isError: Boolean = false
@@ -47,7 +56,11 @@ fun Input(
         enabled = enabled,
         value = value,
         onValueChange = onValueChange,
+        label = label?.let { { Text(text = it, maxLines = 1) } },
+        singleLine = maxLines == 1,
         maxLines = maxLines,
+        keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
+        visualTransformation = visualTransformation,
         textStyle = style,
         leadingIcon = leadingIcon,
         isError = isError
@@ -83,8 +96,13 @@ private fun InputPreview() = Preview {
         )
         Input(
             enabled = true,
-            value = "A very very long text in this compose preview",
+            value = "A very very long text in this compose preview to test the line limits",
             maxLines = 1
+        )
+        Input(
+            enabled = true,
+            value = "A very very long text in this compose preview to test the line limits",
+            maxLines = 3
         )
     }
 }
