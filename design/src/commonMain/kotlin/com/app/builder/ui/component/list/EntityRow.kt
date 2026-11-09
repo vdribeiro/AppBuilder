@@ -8,7 +8,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.tooling.preview.PreviewLightDark
-import com.app.builder.ui.LocalColorScheme
 import com.app.builder.ui.Preview
 import com.app.builder.ui.core.image.Icon
 import com.app.builder.ui.core.list.ListItem
@@ -35,8 +34,6 @@ fun EntityRow(
     metadata: List<String?> = emptyList(),
     leadingContent: (@Composable () -> Unit)? = null,
 ) {
-    val colorScheme = LocalColorScheme.current
-
     ListItem(
         modifier = modifier.alpha(alpha = if (deleted) DELETED_ALPHA else 1f),
         selected = selected,
@@ -46,7 +43,7 @@ fun EntityRow(
         supportingText = supporting?.takeIf { it.isNotBlank() },
         leadingContent = leadingContent,
         trailingContent = if (deleted) {
-            { Icon(imageVector = Icons.Outlined.Delete, tint = colorScheme.error, contentDescription = "deleted") }
+            { Icon(imageVector = Icons.Outlined.Delete, contentDescription = "deleted") }
         } else null
     )
 }

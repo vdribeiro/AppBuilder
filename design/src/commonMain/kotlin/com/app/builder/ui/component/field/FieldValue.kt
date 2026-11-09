@@ -8,7 +8,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
-import com.app.builder.ui.LocalColorScheme
 import com.app.builder.ui.LocalTypography
 import com.app.builder.ui.Preview
 import com.app.builder.ui.core.text.Text
@@ -32,7 +31,6 @@ fun FieldValue(
     maxLines: Int = Int.MAX_VALUE,
 ) {
     val typography = LocalTypography.current
-    val colorScheme = LocalColorScheme.current
 
     Column(
         modifier = modifier
@@ -43,8 +41,7 @@ fun FieldValue(
         Text(
             text = label,
             maxLines = 1,
-            style = typography.labelMedium,
-            color = colorScheme.onSurfaceVariant
+            style = typography.labelMedium
         )
         Text(
             text = value?.takeIf { it.isNotBlank() } ?: EMPTY_VALUE,

@@ -18,7 +18,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
-import com.app.builder.ui.LocalColorScheme
 import com.app.builder.ui.LocalTypography
 import com.app.builder.ui.Preview
 import com.app.builder.ui.core.button.ButtonGroup
@@ -53,7 +52,6 @@ fun ChoiceField(
     maxSegments: Int = 4,
 ) {
     val typography = LocalTypography.current
-    val colorScheme = LocalColorScheme.current
 
     if (!editing) {
         FieldValue(modifier = modifier, label = label, value = selected, translateValue = true)
@@ -69,8 +67,7 @@ fun ChoiceField(
         Text(
             text = label,
             maxLines = 1,
-            style = typography.labelMedium,
-            color = colorScheme.onSurfaceVariant
+            style = typography.labelMedium
         )
         if (options.size <= maxSegments) ButtonGroup(
             items = options.map { option ->

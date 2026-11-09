@@ -45,7 +45,14 @@ fun ListItem(
 
     MaterialListItem(
         modifier = modifier,
-        colors = if (selected) ListItemDefaults.colors(containerColor = colorScheme.secondaryContainer) else ListItemDefaults.colors(),
+        colors = if (selected) ListItemDefaults.colors(
+            containerColor = colorScheme.secondaryContainer,
+            headlineColor = colorScheme.onSecondaryContainer,
+            supportingColor = colorScheme.onSecondaryContainer,
+            overlineColor = colorScheme.onSecondaryContainer,
+            leadingIconColor = colorScheme.onSecondaryContainer,
+            trailingIconColor = colorScheme.onSecondaryContainer,
+        ) else ListItemDefaults.colors(),
         overlineContent = overlineText?.let {
             {
                 Text(
