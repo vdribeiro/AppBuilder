@@ -27,7 +27,6 @@ import com.app.builder.ui.core.text.Text
  *
  * @property id Identifier of the entity the permission applies to.
  * @property name The displayed name of the entity the permission applies to.
- * @property description The displayed description of the entity the permission applies to.
  * @property read Whether the entity can be read. Defaults to false.
  * @property write Whether the entity can be written. Defaults to false.
  */
@@ -35,7 +34,6 @@ import com.app.builder.ui.core.text.Text
 data class PermissionItem(
     val id: String = "",
     val name: String = "",
-    val description: String = "",
     val read: Boolean = false,
     val write: Boolean = false,
 )
@@ -72,11 +70,6 @@ fun PermissionSelector(
                 style = typography.labelMedium
             )
             Text(
-                modifier = Modifier.weight(weight = 1f),
-                text = "description",
-                style = typography.labelMedium
-            )
-            Text(
                 modifier = Modifier.width(width = TOGGLE_WIDTH),
                 text = "read",
                 textAlign = TextAlign.Center,
@@ -98,12 +91,6 @@ fun PermissionSelector(
                 Text(
                     modifier = Modifier.weight(weight = 1f),
                     text = permission.name,
-                    maxLines = 1,
-                    style = typography.bodyMedium
-                )
-                Text(
-                    modifier = Modifier.weight(weight = 1f),
-                    text = permission.description,
                     maxLines = 1,
                     style = typography.bodyMedium
                 )
@@ -149,7 +136,7 @@ private fun PermissionSelectorPreview() = Preview {
     )
     PermissionSelector(
         permissions = persistentListOf(
-            PermissionItem(id = "CLIENT_FLAG", name = "Client Flag", description = "Access to client flags", read = true, write = true),
+            PermissionItem(id = "CLIENT_FLAG", name = "Client Flag", read = true, write = true),
             PermissionItem(id = "CLIENT_CONFIG", name = "Client Config", read = true),
             PermissionItem(id = "USER", name = "User")
         )

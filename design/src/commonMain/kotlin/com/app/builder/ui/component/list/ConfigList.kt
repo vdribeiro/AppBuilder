@@ -2,19 +2,28 @@ package com.app.builder.ui.component.list
 
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.PreviewLightDark
+import androidx.compose.ui.unit.dp
 import com.app.builder.core.security.uuid
 import com.app.builder.ui.Preview
-import com.app.builder.ui.component.card.ConfigCardInput
-import com.app.builder.ui.component.card.ConfigCardSwitch
+import com.app.builder.ui.core.button.Switch
+import com.app.builder.ui.core.list.ListItem
+import com.app.builder.ui.core.progress.ProgressIndicator
+import com.app.builder.ui.core.text.Input
 
 /**
  * A config entry.
@@ -75,27 +84,54 @@ fun ConfigList(
         verticalArrangement = Arrangement.Top
     ) {
         items.forEachIndexed { index, item ->
-            when (item.value) {
-                is ConfigValue.Toggle -> ConfigCardSwitch(
-                    modifier = Modifier.testTag(tag = "config_card_$index"),
-                    name = item.name,
-                    description = item.description,
-                    value = item.value.value,
-                    pending = item.pending,
-                    enabled = enabled,
-                    onValueChange = { onValueChange(item, ConfigValue.Toggle(value = it)) }
-                )
+            ListItem(
+                modifier = Modifier.testTag(tag = "config_row_$index"),
+                selected = item.pending,
+                translate = false,
+                headlineText = item.name.toLabel(),
+                supportingText = item.description.takeIf { it.isNotBlank() },
+                trailingContent = {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(space = 12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        AnimatedVisibility(visible = item.pending, enter = fadeIn(), exit = fadeOut()) {
+                            ProgressIndicator(modifier = Modifier.size(size = 16.dp))
+                        }
+                        when (item.value) {
+                            is ConfigValue.Toggle -> Switch(
+                                checked = item.value.value,
+                                enabled = enabled,
+                                onCheckedChange = { onValueChange(item, ConfigValue.Toggle(value = it)) }
+                            )
 
-                is ConfigValue.Form -> ConfigCardInput(
-                    modifier = Modifier.testTag(tag = "config_card_$index"),
-                    name = item.name,
-                    description = item.description,
-                    value = item.value.value,
-                    pending = item.pending,
-                    enabled = enabled,
-                    onValueChange = { onValueChange(item, ConfigValue.Form(value = it)) }
-                )
-            }
+                            is ConfigValue.Form -> Input(
+                                modifier = Modifier.width(width = 160.dp),
+                                maxLines = 1,
+                                value = item.value.value,
+                                enabled = enabled,
+                                onValueChange = { onValueChange(item, ConfigValue.Form(value = it)) }
+                            )
+                        }
+                    }
+                }
+            )
+        }
+    }
+}
+
+/**
+ * Converts a camelCase config field name into a human-readable label, splitting it on each capital and capitalizing the first letter.
+ *
+ * @receiver The raw config field name, as declared in the flags/configs class.
+ * @return The label to display, so `featureFlag` reads as `Feature Flag`.
+ */
+private fun String.toLabel(): String = buildString {
+    this@toLabel.forEachIndexed { index, char ->
+        when {
+            index == 0 -> append(char.uppercaseChar())
+            char.isUpperCase() -> append(' ').append(char)
+            else -> append(char)
         }
     }
 }
