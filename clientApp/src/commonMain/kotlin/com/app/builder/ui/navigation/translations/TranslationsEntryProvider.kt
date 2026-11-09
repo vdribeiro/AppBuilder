@@ -37,4 +37,12 @@ private val properties = Translation.Property.entries.associate { entry -> entry
  * @return The translation filters store.
  */
 @Composable
-private fun filtersStore(): FiltersStore = hostViewModel(key = FiltersStore.key(storageFile = AppFile.TranslationPreferences)) { FiltersStore.get(properties = properties, storageFile = AppFile.TranslationPreferences, sortProperty = Translation.Property.KEY.name, sortAscending = true, showDeletedToggle = false) }
+private fun filtersStore(): FiltersStore = hostViewModel(key = FiltersStore.key(storageFile = AppFile.TranslationPreferences)) {
+    FiltersStore.get(
+        properties = properties,
+        storageFile = AppFile.TranslationPreferences,
+        sortProperty = Translation.Property.KEY.name,
+        sortAscending = true,
+        showDeletedToggle = false
+    )
+}

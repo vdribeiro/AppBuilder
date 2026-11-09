@@ -2,6 +2,8 @@ package com.app.builder.ui.navigation.task
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.time.Instant
 import kotlinx.coroutines.flow.first
@@ -151,8 +153,18 @@ class TaskListScreenStoreTest: TestCase() {
             assertNull(actual = item.modifiedAt)
             assertNull(actual = item.deletedAt)
             assertNull(actual = item.description)
+            assertNull(actual = item.completed)
+            assertFalse(actual = item.uuidVisible)
         }
         assertEquals(expected = setOf("Alpha", "Beta"), actual = items.map { it.title }.toSet())
+    }
+
+    /** Verifies that the task state is projected onto the listed items once its property is visible. */
+    @Test
+    fun visibleStateIsProjected() = runUnitTest {
+        val items = listedTasks(preferences = AppFile.ActionBarData(visibleProperties = listOf(Property.STATE.name)), count = 2)
+
+        items.forEach { item -> assertNotNull(actual = item.completed) }
     }
 
     /** Verifies that deleted tasks are not listed. */

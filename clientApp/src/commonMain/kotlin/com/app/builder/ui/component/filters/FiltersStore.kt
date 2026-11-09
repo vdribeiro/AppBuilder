@@ -200,13 +200,14 @@ class FiltersStore(
         fun key(storageFile: StorageFile<AppFile.ActionBarData>): String = "filters_${storageFile.path}"
 
         /**
-         * Creates a filters store over [properties], searching and showing all of them by default.
+         * Creates a filters store over [properties], searching all of them by default.
          *
          * @param properties Map of property keys to their display labels.
          * @param storageFile File the filters are persisted to.
          * @param sortProperty Key of the property the list is sorted by default.
          * @param sortAscending Whether the list is sorted in ascending order by default.
          * @param showDeletedToggle Whether the filters offer the show deleted toggle.
+         * @param visibleProperties Keys of the properties shown by default. Defaults to all of [properties].
          * @return The filters store.
          */
         fun get(
@@ -215,15 +216,17 @@ class FiltersStore(
             sortProperty: String,
             sortAscending: Boolean,
             showDeletedToggle: Boolean = true,
+            visibleProperties: List<String> = properties.keys.toList(),
         ): FiltersStore {
             val keys = properties.keys.toPersistentList()
+            val visible = visibleProperties.toPersistentList()
             return FiltersStore(
                 state = FiltersState(
                     properties = properties,
                     searchableProperties = keys,
                     sortAscending = sortAscending,
                     sortProperty = sortProperty,
-                    visibleProperties = keys,
+                    visibleProperties = visible,
                     showDeletedToggle = showDeletedToggle,
                 ),
                 storageFile = storageFile,
@@ -232,7 +235,7 @@ class FiltersStore(
                     searchableProperties = keys,
                     sortAscending = sortAscending,
                     sortProperty = sortProperty,
-                    visibleProperties = keys,
+                    visibleProperties = visible,
                 ),
             )
         }

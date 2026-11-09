@@ -152,7 +152,7 @@ class TaskListScreenStore(
         deletedAt = deletedAt.takeIf { Property.DELETED_AT.name in visibilityProperties }?.let { getLocalDateTime(utc = it.toString()) },
         title = title.takeIf { Property.TITLE.name in visibilityProperties },
         description = description.takeIf { Property.DESCRIPTION.name in visibilityProperties },
-        completed = state == Task.State.COMPLETE
+        completed = (state == Task.State.COMPLETE).takeIf { Property.STATE.name in visibilityProperties }
     )
 
     companion object {

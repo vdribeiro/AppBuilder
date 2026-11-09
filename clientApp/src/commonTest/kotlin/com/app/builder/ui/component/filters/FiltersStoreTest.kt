@@ -6,6 +6,7 @@ import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.TestScope
@@ -49,6 +50,18 @@ class FiltersStoreTest: TestCase() {
         assertEquals(expected = defaults.sortAscending, actual = store.state.sortAscending)
         assertEquals(expected = defaults.sortProperty, actual = store.state.sortProperty)
         assertEquals(expected = defaults.visibleProperties, actual = store.state.visibleProperties)
+    }
+
+    /** Verifies that a store created with default visible properties searches every property but shows and persists only those. */
+    @Test
+    fun getWithVisibleProperties() = runUnitTest {
+        val properties = persistentMapOf("UUID" to "task_uuid", "TITLE" to "task_title", "DELETED_AT" to "task_deleted_at")
+        val store = FiltersStore.get(properties = properties, storageFile = AppFile.TaskPreferences, sortProperty = "TITLE", sortAscending = true, visibleProperties = listOf("TITLE"))
+        testScheduler.advanceUntilIdle()
+
+        assertEquals(expected = listOf("UUID", "TITLE", "DELETED_AT"), actual = store.state.searchableProperties)
+        assertEquals(expected = listOf("TITLE"), actual = store.state.visibleProperties)
+        assertEquals(expected = listOf("TITLE"), actual = AppFile.TaskPreferences.load()?.visibleProperties)
     }
 
     /** Verifies that a partially persisted payload keeps its own values and has only its missing ones backfilled with the defaults. */

@@ -42,10 +42,21 @@ fun EntryProviderScope<NavKey>.taskProvider(useCases: UseCases) {
 /** The task properties by key, labelled by their translation keys. */
 private val properties = Task.Property.entries.associate { entry -> entry.name to entry.translationKey }.toImmutableMap()
 
+/** The task properties shown by default. */
+private val visibleProperties = (Task.Property.entries - Task.Property.UUID - Task.Property.DELETED_AT).map { it.name }
+
 /**
  * Gets the task filters store shared by the navigation host, creating it on first use.
  *
  * @return The task filters store.
  */
 @Composable
-private fun filtersStore(): FiltersStore = hostViewModel(key = FiltersStore.key(storageFile = AppFile.TaskPreferences)) { FiltersStore.get(properties = properties, storageFile = AppFile.TaskPreferences, sortProperty = Task.Property.MODIFIED_AT.name, sortAscending = false) }
+private fun filtersStore(): FiltersStore = hostViewModel(key = FiltersStore.key(storageFile = AppFile.TaskPreferences)) {
+    FiltersStore.get(
+        properties = properties,
+        storageFile = AppFile.TaskPreferences,
+        sortProperty = Task.Property.MODIFIED_AT.name,
+        sortAscending = false,
+        visibleProperties = visibleProperties
+    )
+}

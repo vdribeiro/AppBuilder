@@ -58,4 +58,11 @@ private val properties = User.Property.entries.associate { entry -> entry.name t
  * @return The user filters store.
  */
 @Composable
-private fun filtersStore(): FiltersStore = hostViewModel(key = FiltersStore.key(storageFile = AppFile.UserPreferences)) { FiltersStore.get(properties = properties, storageFile = AppFile.UserPreferences, sortProperty = User.Property.NAME.name, sortAscending = true) }
+private fun filtersStore(): FiltersStore = hostViewModel(key = FiltersStore.key(storageFile = AppFile.UserPreferences)) {
+    FiltersStore.get(
+        properties = properties,
+        storageFile = AppFile.UserPreferences,
+        sortProperty = User.Property.NAME.name,
+        sortAscending = true
+    )
+}

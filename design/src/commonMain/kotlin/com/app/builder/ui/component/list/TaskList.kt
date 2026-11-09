@@ -48,7 +48,7 @@ fun TaskList(
                 headline = item.title,
                 supporting = item.description,
                 metadata = listOf(item.uuid.takeIf { item.uuidVisible }, item.modifiedAt, item.deletedAt),
-                leadingContent = { Icon(imageVector = if (item.completed) Icons.Default.CheckCircle else Icons.Outlined.RadioButtonUnchecked) }
+                leadingContent = item.completed?.let { completed -> { Icon(imageVector = if (completed) Icons.Default.CheckCircle else Icons.Outlined.RadioButtonUnchecked) } }
             )
         }
     }
@@ -65,7 +65,7 @@ fun TaskList(
  * @property deletedAt The timestamp indicating when this task was last deleted.
  * @property title The title of the task. Defaults to `null`.
  * @property description The description of the task. Defaults to `null`.
- * @property completed Whether the task is complete.
+ * @property completed Whether the task is complete, or `null` to hide its state. Defaults to `null`.
  */
 @Stable
 data class TaskItem(
@@ -77,7 +77,7 @@ data class TaskItem(
     val deletedAt: String? = null,
     val title: String? = null,
     val description: String? = null,
-    val completed: Boolean = false
+    val completed: Boolean? = null
 )
 
 @PreviewLightDark

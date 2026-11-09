@@ -47,4 +47,12 @@ private val properties = Registry.Property.entries.associate { entry -> entry.na
  * @return The registry filters store.
  */
 @Composable
-private fun filtersStore(): FiltersStore = hostViewModel(key = FiltersStore.key(storageFile = AppFile.RegistryPreferences)) { FiltersStore.get(properties = properties, storageFile = AppFile.RegistryPreferences, sortProperty = Registry.Property.REQUEST_UTC.name, sortAscending = false, showDeletedToggle = false) }
+private fun filtersStore(): FiltersStore = hostViewModel(key = FiltersStore.key(storageFile = AppFile.RegistryPreferences)) {
+    FiltersStore.get(
+        properties = properties,
+        storageFile = AppFile.RegistryPreferences,
+        sortProperty = Registry.Property.REQUEST_UTC.name,
+        sortAscending = false,
+        showDeletedToggle = false
+    )
+}
