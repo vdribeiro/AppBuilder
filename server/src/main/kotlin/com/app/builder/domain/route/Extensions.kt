@@ -24,6 +24,7 @@ import com.app.builder.domain.Registry
 import com.app.builder.domain.permission.PermissionService
 import com.app.builder.domain.permission.UserAccess
 import com.app.builder.domain.permission.getAccess
+import com.app.builder.domain.usecase.Outcome
 import com.auth0.jwt.interfaces.Payload
 
 /**
@@ -38,6 +39,39 @@ suspend inline fun <reified T: Any> ApplicationCall.respondSafely(status: HttpSt
 }.onFailure {
     Telemetry.error(tag = "Route", message = "Unable to respond", throwable = it)
 }.getOrNull()
+
+/**
+ * Unwraps a successful [outcome], or responds to the call with the status code of its failure and the matching message.
+ *
+ * @receiver [ApplicationCall] The context of the call.
+ * @param outcome The outcome of the use case.
+ * @param invalid The response body for 400 Bad Request [Outcome.Invalid].
+ * @param rejected The response body for 401 Unauthorized [Outcome.Rejected].
+ * @param notFound The response body for 404 Not Found [Outcome.NotFound].
+ * @param conflict The response body for 409 Conflict [Outcome.Conflict].
+ * @param error The response body for 500 Internal Server Error [Outcome.Error].
+ * @return The data of a successful [outcome], or `null` once the failure was responded to.
+ */
+suspend fun <T: Any> ApplicationCall.getOrRespond(
+    outcome: Outcome<T>,
+    invalid: String = "Invalid request",
+    rejected: String = "Unauthorized",
+    notFound: String = "Not found",
+    conflict: String = "Conflict",
+    error: String = "Internal server error",
+): T? {
+    val (status, message) = when (outcome) {
+        is Outcome.Success -> return outcome.data
+        Outcome.Invalid -> HttpStatusCode.BadRequest to invalid
+        Outcome.Rejected -> HttpStatusCode.Unauthorized to rejected
+        Outcome.NotFound -> HttpStatusCode.NotFound to notFound
+        Outcome.Conflict -> HttpStatusCode.Conflict to conflict
+        Outcome.Error -> HttpStatusCode.InternalServerError to error
+    }
+    Telemetry.error(tag = "Route", message = "Responding ${status.value} to ${request.httpMethod.value} ${request.local.uri}: $message")
+    respondSafely(status = status, message = message)
+    return null
+}
 
 /**
  * Safely receives and deserializes the HTTP request body.

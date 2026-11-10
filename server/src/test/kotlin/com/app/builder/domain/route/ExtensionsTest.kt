@@ -27,6 +27,7 @@ import com.app.builder.domain.Permission
 import com.app.builder.domain.Registry
 import com.app.builder.domain.Task
 import com.app.builder.domain.permission.UserAccess
+import com.app.builder.domain.usecase.Outcome
 import com.app.builder.test.FakeData
 import com.app.builder.test.TestCase
 import com.auth0.jwt.JWT
@@ -60,6 +61,44 @@ class ExtensionsTest: TestCase() {
         }
         assertEquals(expected = HttpStatusCode.OK, actual = validResponse.status)
         assertEquals(expected = FakeData.task, actual = validResponse.body<Task>())
+    }
+
+    /** Verifies that dataOrRespond() passes the data of a success through and answers each failure with its status code and message. */
+    @Test
+    fun dataOrRespond() = runServerTest {
+        val outcomes = mapOf(
+            "success" to Outcome.Success(data = "data"),
+            "invalid" to Outcome.Invalid,
+            "rejected" to Outcome.Rejected,
+            "not-found" to Outcome.NotFound,
+            "conflict" to Outcome.Conflict,
+            "error" to Outcome.Error,
+        )
+        installRouting()
+        application {
+            routing {
+                get("/test/outcome/{name}") {
+                    val outcome = outcomes.getValue(key = call.parameters["name"].orEmpty())
+                    val data = call.getOrRespond(outcome = outcome, conflict = "Custom conflict") ?: return@get
+                    call.respondSafely(status = HttpStatusCode.OK, message = data)
+                }
+            }
+        }
+
+        val client = createClient(token = null)
+        val expected = mapOf(
+            "success" to (HttpStatusCode.OK to "data"),
+            "invalid" to (HttpStatusCode.BadRequest to "Invalid request"),
+            "rejected" to (HttpStatusCode.Unauthorized to "Unauthorized"),
+            "not-found" to (HttpStatusCode.NotFound to "Not found"),
+            "conflict" to (HttpStatusCode.Conflict to "Custom conflict"),
+            "error" to (HttpStatusCode.InternalServerError to "Internal server error"),
+        )
+        expected.forEach { (name, response) ->
+            val actual = client.get(urlString = "/test/outcome/$name")
+            assertEquals(expected = response.first, actual = actual.status, message = name)
+            assertEquals(expected = response.second, actual = actual.body<String>(), message = name)
+        }
     }
 
     /** Verifies that getUserUuid() extracts the subject from a valid token and rejects a token whose subject is not a uuid. */
