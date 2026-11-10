@@ -66,6 +66,15 @@ class AccessTest: TestCase() {
         assertNotEquals(illegal = first, actual = second)
     }
 
+    /** Verifies that refresh tokens hash to the hex-encoded SHA-256 digest, the same for the same token. */
+    @Test
+    fun hashRefreshTokens() = runServerTest {
+        assertEquals(expected = "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad", actual = hashRefreshToken(refreshToken = "abc"))
+        val token = assertNotNull(actual = createRefreshToken())
+        assertEquals(expected = hashRefreshToken(refreshToken = token), actual = hashRefreshToken(refreshToken = token))
+        assertNotEquals(illegal = token, actual = hashRefreshToken(refreshToken = token))
+    }
+
     /** Verifies that the verifier rejects a token signed with a different secret. */
     @Test
     fun verifierRejectsForeignSignature() = runServerTest {

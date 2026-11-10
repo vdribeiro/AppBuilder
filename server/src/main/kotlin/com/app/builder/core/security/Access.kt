@@ -1,5 +1,6 @@
 package com.app.builder.core.security
 
+import java.security.MessageDigest
 import java.security.SecureRandom
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.toJavaInstant
@@ -13,8 +14,10 @@ import com.auth0.jwt.JWTVerifier
 import com.auth0.jwt.algorithms.Algorithm
 import com.auth0.jwt.interfaces.Payload
 
+/** Refresh token hash algorithm. */
+private const val DIGEST_ALGORITHM = "SHA-256"
 /** JWT signing algorithm. */
-private val algorithm: Algorithm = Algorithm.HMAC512(Env.jwtSecret)
+private val jwtAlgorithm: Algorithm = Algorithm.HMAC512(Env.jwtSecret)
 
 /**
  * Creates a JWT verifier with the configured audience and issuer.
@@ -22,7 +25,7 @@ private val algorithm: Algorithm = Algorithm.HMAC512(Env.jwtSecret)
  * @return A JWT verifier instance.
  */
 fun createVerifier(): JWTVerifier = JWT
-    .require(algorithm)
+    .require(jwtAlgorithm)
     .withAudience(Env.jwtAudience)
     .withIssuer(Env.jwtIssuer)
     .build()
@@ -44,7 +47,7 @@ fun createAccessToken(userUuid: Uuid, claimName: String, claimValue: String): St
         .withAudience(Env.jwtAudience)
         .withIssuer(Env.jwtIssuer)
         .withExpiresAt((now() + ServerConfigs.value.accessTokenValidity.milliseconds).toJavaInstant())
-        .sign(algorithm)
+        .sign(jwtAlgorithm)
 }.onFailure {
     Telemetry.error(tag = TAG, message = "Unable to create access token", throwable = it)
 }.getOrNull()
@@ -71,5 +74,16 @@ fun createRefreshToken(): String? = runCatching {
 }.onFailure {
     Telemetry.error(tag = TAG, message = "Unable to create refresh token", throwable = it)
 }.getOrNull()
+
+/**
+ * Hashes a refresh token.
+ *
+ * @param refreshToken The refresh token handed to the client.
+ * @return The hex-encoded SHA-256 hash of [refreshToken].
+ */
+fun hashRefreshToken(refreshToken: String): String =
+    MessageDigest.getInstance(DIGEST_ALGORITHM)
+        .digest(refreshToken.encodeToByteArray())
+        .joinToString(separator = "") { "%02x".format(it) }
 
 private const val TAG = "Authentication"
