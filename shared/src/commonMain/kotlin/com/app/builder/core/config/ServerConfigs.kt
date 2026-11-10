@@ -12,6 +12,8 @@ data class ServerConfigs(
     val accessTokenValidity: Long,
     /** Refresh token validity in milliseconds. Should be meaningfully larger than [accessTokenValidity], since it's the true session lifetime the access token is refreshed within. */
     val refreshTokenValidity: Long,
+    /** Time in milliseconds a refresh token stays accepted after it was rotated, so a client that never received the rotated pair, such as when the response was lost, can still recover its session. */
+    val refreshTokenGracePeriod: Long,
     /** Global per-IP rate limiter maximum requests per period, applied to every route not covered by a specific limiter. */
     val rateLimiterLimit: Int,
     /** Global rate limiter refill period in milliseconds. */
@@ -61,6 +63,7 @@ data class ServerConfigs(
             timestampFutureTolerance = 60_000L,
             accessTokenValidity = 3_600_000L,
             refreshTokenValidity = 2_592_000_000L,
+            refreshTokenGracePeriod = 60_000L,
             rateLimiterLimit = 200,
             rateLimiterRefillPeriod = 60_000L,
             rateLimiterProbeLimit = 5,

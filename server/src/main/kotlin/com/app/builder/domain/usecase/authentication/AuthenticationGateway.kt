@@ -1,10 +1,12 @@
 package com.app.builder.domain.usecase.authentication
 
 import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Instant
 import kotlin.uuid.Uuid
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.withContext
 import org.jetbrains.exposed.v1.core.ResultRow
+import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.core.or
 import org.jetbrains.exposed.v1.r2dbc.R2dbcDatabase
@@ -17,6 +19,7 @@ import com.app.builder.core.flow.Dispatcher
 import com.app.builder.core.locale.now
 import com.app.builder.core.security.createRefreshToken
 import com.app.builder.core.security.hashPassword
+import com.app.builder.core.security.hashRefreshToken
 import com.app.builder.core.security.uuid
 import com.app.builder.core.security.verifyPassword
 import com.app.builder.core.telemetry.Telemetry
@@ -36,7 +39,7 @@ import com.app.builder.domain.User
 import com.app.builder.domain.UserCredentials
 import com.app.builder.domain.permission.UserAccess
 import com.app.builder.domain.permission.createAccessToken
-import com.app.builder.domain.usecase.WriteResult
+import com.app.builder.domain.usecase.Outcome
 
 /**
  * Gateway implementation for authentication use cases.
@@ -47,14 +50,14 @@ class AuthenticationGateway(
     private val database: R2dbcDatabase
 ): AuthenticationUseCases {
 
-    override suspend fun register(registrationForm: RegistrationForm): WriteResult = withContext(context = Dispatcher.IO) {
+    override suspend fun register(registrationForm: RegistrationForm): Outcome<Unit> = withContext(context = Dispatcher.IO) {
         val user = registrationForm.user
         val account = registrationForm.account
         if (account.userUuid != user.uuid) {
             Telemetry.error(tag = TAG, message = "Rejected registration for user ${user.uuid} with an account of user ${account.userUuid}")
-            return@withContext WriteResult.INVALID
+            return@withContext Outcome.Invalid
         }
-        val password = hashPassword(password = registrationForm.password) ?: return@withContext WriteResult.ERROR
+        val password = hashPassword(password = registrationForm.password) ?: return@withContext Outcome.Error
 
         database.safeTransaction {
             val accountExists = UserAccountTable.selectAll()
@@ -62,7 +65,7 @@ class AuthenticationGateway(
                 .firstOrNull() != null
             if (accountExists) {
                 Telemetry.error(tag = TAG, message = "Rejected registration for user ${user.uuid}, the user already has an account or the username is taken")
-                return@safeTransaction WriteResult.CONFLICT
+                return@safeTransaction Outcome.Conflict
             }
 
             val userExists = UserTable.selectAll()
@@ -86,34 +89,35 @@ class AuthenticationGateway(
                 it[UserAccountTable.passwordHash] = password
                 it[UserAccountTable.permissions] = encode(value = account.permissions).orEmpty()
             }
-            WriteResult.SUCCESS
+            Outcome.Success(data = Unit)
         }.onFailure {
             Telemetry.error(tag = TAG, message = "Unable to register an account for user ${user.uuid}", throwable = it)
-        }.getOrDefault(defaultValue = WriteResult.ERROR)
+        }.getOrDefault(defaultValue = Outcome.Error)
     }
 
-    override suspend fun login(credentials: UserCredentials): Authentication? = withContext(context = Dispatcher.IO) {
+    override suspend fun login(credentials: UserCredentials): Outcome<Authentication> = withContext(context = Dispatcher.IO) {
         val row = database.safeTransaction {
             (UserAccountTable innerJoin UserTable)
                 .selectAll()
                 .where { UserAccountTable.username eq credentials.username }
                 .firstOrNull()
-        }.onFailure {
+        }.getOrElse {
             Telemetry.error(tag = TAG, message = "Unable to get account", throwable = it)
-        }.getOrNull() ?: return@withContext null
+            return@withContext Outcome.Error
+        } ?: return@withContext Outcome.Rejected
 
-        val storedHash = runCatching { row[UserAccountTable.passwordHash] }.getOrNull() ?: return@withContext null
-        if (!verifyPassword(password = credentials.password, hash = storedHash)) return@withContext null
+        val storedHash = runCatching { row[UserAccountTable.passwordHash] }.getOrNull() ?: return@withContext Outcome.Error
+        if (!verifyPassword(password = credentials.password, hash = storedHash)) return@withContext Outcome.Rejected
 
-        val user = runCatching { row.toUser() }.getOrNull() ?: return@withContext null
-        val account = runCatching { row.toAccount() }.getOrNull() ?: return@withContext null
+        val user = runCatching { row.toUser() }.getOrNull() ?: return@withContext Outcome.Error
+        val account = runCatching { row.toAccount() }.getOrNull() ?: return@withContext Outcome.Error
         if (account.deletedAt != null) {
             Telemetry.error(tag = TAG, message = "Rejected login for disabled account of user ${user.uuid}")
-            return@withContext null
+            return@withContext Outcome.Rejected
         }
 
-        val newAccessToken = createAccessToken(userUuid = user.uuid, access = UserAccess(permissions = account.permissions, deletedAt = null)) ?: return@withContext null
-        val newRefreshToken = createRefreshToken() ?: return@withContext null
+        val newAccessToken = createAccessToken(userUuid = user.uuid, access = UserAccess(permissions = account.permissions, deletedAt = null)) ?: return@withContext Outcome.Error
+        val newRefreshToken = createRefreshToken() ?: return@withContext Outcome.Error
         val now = now()
         val uuid = uuid()
 
@@ -121,84 +125,127 @@ class AuthenticationGateway(
             UserSessionTable.insert {
                 it[UserSessionTable.uuid] = uuid
                 it[UserSessionTable.userUuid] = user.uuid
-                it[UserSessionTable.refreshToken] = newRefreshToken
+                it[UserSessionTable.refreshToken] = hashRefreshToken(refreshToken = newRefreshToken)
                 it[UserSessionTable.createdAt] = now
                 it[UserSessionTable.expiresAt] = now + ServerConfigs.value.refreshTokenValidity.milliseconds
             }
         }.onFailure {
             Telemetry.error(tag = TAG, message = "Unable to insert session", throwable = it)
-            return@withContext null
+            return@withContext Outcome.Error
         }
 
-        Authentication(
-            user = user,
-            account = account,
-            bearer = BearerToken(
+        Outcome.Success(
+            data = Authentication(
+                user = user,
+                account = account,
+                bearer = BearerToken(
+                    accessToken = newAccessToken,
+                    refreshToken = newRefreshToken
+                )
+            )
+        )
+    }
+
+    override suspend fun logout(refreshToken: String): Outcome<Uuid> = withContext(context = Dispatcher.IO) {
+        val now = now()
+        database.safeTransaction {
+            val session = findSession(refreshToken = refreshToken, now = now) ?: return@safeTransaction null
+            UserSessionTable.deleteWhere { UserSessionTable.uuid eq session[UserSessionTable.uuid] }
+            session[UserSessionTable.userUuid]
+        }.fold(
+            onSuccess = { userUuid -> userUuid?.let { Outcome.Success(data = it) } ?: Outcome.Rejected },
+            onFailure = {
+                Telemetry.error(tag = TAG, message = "Unable to delete session", throwable = it)
+                Outcome.Error
+            }
+        )
+    }
+
+    override suspend fun refreshTokens(refreshToken: String): Outcome<BearerToken> = withContext(context = Dispatcher.IO) {
+        val now = now()
+
+        val session = database.safeTransaction {
+            findSession(refreshToken = refreshToken, now = now)
+        }.getOrElse {
+            Telemetry.error(tag = TAG, message = "Unable to get session", throwable = it)
+            return@withContext Outcome.Error
+        } ?: return@withContext Outcome.Rejected
+
+        val sessionUuid = session[UserSessionTable.uuid]
+        if (session[UserSessionTable.expiresAt] < now) {
+            database.safeTransaction {
+                UserSessionTable.deleteWhere { UserSessionTable.uuid eq sessionUuid }
+            }.onFailure {
+                Telemetry.error(tag = TAG, message = "Unable to delete expired session", throwable = it)
+            }
+            return@withContext Outcome.Rejected
+        }
+        val userUuid = session[UserSessionTable.userUuid]
+
+        val accountRow = database.safeTransaction {
+            UserAccountTable.selectAll()
+                .where { UserAccountTable.userUuid eq userUuid }
+                .firstOrNull()
+        }.getOrElse {
+            Telemetry.error(tag = TAG, message = "Unable to get the account of user $userUuid", throwable = it)
+            return@withContext Outcome.Error
+        } ?: return@withContext Outcome.Rejected
+
+        val access = UserAccess(
+            permissions = decode<Map<EntityType, Permission>>(value = accountRow[UserAccountTable.permissions]) ?: return@withContext Outcome.Error,
+            deletedAt = accountRow[UserAccountTable.deletedAt]
+        )
+        val newAccessToken = createAccessToken(userUuid = userUuid, access = access) ?: return@withContext Outcome.Error
+
+        val presentedHash = hashRefreshToken(refreshToken = refreshToken)
+        val currentHash = session[UserSessionTable.refreshToken]
+        val replayed = currentHash != presentedHash
+        if (replayed) Telemetry.info(tag = TAG, message = "Refreshing session $sessionUuid with its previous refresh token")
+
+        val newRefreshToken = createRefreshToken() ?: return@withContext Outcome.Error
+        val rotated = database.safeTransaction {
+            UserSessionTable.update(where = { (UserSessionTable.uuid eq sessionUuid) and (UserSessionTable.refreshToken eq currentHash) }) {
+                it[UserSessionTable.refreshToken] = hashRefreshToken(refreshToken = newRefreshToken)
+                if (!replayed) {
+                    it[UserSessionTable.previousRefreshToken] = presentedHash
+                    it[UserSessionTable.rotatedAt] = now
+                }
+                it[UserSessionTable.expiresAt] = now + ServerConfigs.value.refreshTokenValidity.milliseconds
+            } > 0
+        }.getOrElse {
+            Telemetry.error(tag = TAG, message = "Unable to update session", throwable = it)
+            return@withContext Outcome.Error
+        }
+        if (!rotated) {
+            Telemetry.info(tag = TAG, message = "Session $sessionUuid was rotated concurrently, refreshing it again")
+            return@withContext refreshTokens(refreshToken = refreshToken)
+        }
+
+        Outcome.Success(
+            data = BearerToken(
                 accessToken = newAccessToken,
                 refreshToken = newRefreshToken
             )
         )
     }
 
-    override suspend fun logout(refreshToken: String): Uuid? = withContext(context = Dispatcher.IO) {
-        database.safeTransaction {
-            val userUuid = UserSessionTable.selectAll()
-                .where { UserSessionTable.refreshToken eq refreshToken }
-                .firstOrNull()?.get(expression = UserSessionTable.userUuid) ?: return@safeTransaction null
-            UserSessionTable.deleteWhere { UserSessionTable.refreshToken eq refreshToken }
-            userUuid
-        }.onFailure {
-            Telemetry.error(tag = TAG, message = "Unable to delete session", throwable = it)
-        }.getOrNull()
-    }
-
-    override suspend fun refreshTokens(refreshToken: String): BearerToken? = withContext(context = Dispatcher.IO) {
-        val now = now()
-
-        val userUuid = database.safeTransaction {
-            val sessionRow = UserSessionTable.selectAll()
-                .where { UserSessionTable.refreshToken eq refreshToken }
-                .firstOrNull() ?: return@safeTransaction null
-
-            if (sessionRow[UserSessionTable.expiresAt] < now) {
-                UserSessionTable.deleteWhere { UserSessionTable.refreshToken eq refreshToken }
-                return@safeTransaction null
-            }
-            sessionRow[UserSessionTable.userUuid]
-        }.onFailure {
-            Telemetry.error(tag = TAG, message = "Unable to get user uuid", throwable = it)
-        }.getOrNull() ?: return@withContext null
-
-        val accountRow = database.safeTransaction {
-            UserAccountTable.selectAll()
-                .where { UserAccountTable.userUuid eq userUuid }
+    /**
+     * Finds the session [refreshToken] belongs to, as its current refresh token or as the previous one within [ServerConfigs.refreshTokenGracePeriod] of its rotation.
+     * The last operation is so that clients that miss the rotated pair can still recover.
+     *
+     * @param refreshToken The refresh token presented by the client.
+     * @param now The time the request is handled at.
+     * @return The session row, or `null` if no session accepts [refreshToken].
+     */
+    private suspend fun findSession(refreshToken: String, now: Instant): ResultRow? {
+        val hash = hashRefreshToken(refreshToken = refreshToken)
+        return UserSessionTable.selectAll()
+            .where { UserSessionTable.refreshToken eq hash }
+            .firstOrNull()
+            ?: UserSessionTable.selectAll()
+                .where { UserSessionTable.previousRefreshToken eq hash }
                 .firstOrNull()
-        }.onFailure {
-            Telemetry.error(tag = TAG, message = "Unable to get the account of user $userUuid", throwable = it)
-        }.getOrNull() ?: return@withContext null
-
-        val access = UserAccess(
-            permissions = decode<Map<EntityType, Permission>>(value = accountRow[UserAccountTable.permissions]) ?: return@withContext null,
-            deletedAt = accountRow[UserAccountTable.deletedAt]
-        )
-
-        val newAccessToken = createAccessToken(userUuid = userUuid, access = access) ?: return@withContext null
-        val newRefreshToken = createRefreshToken() ?: return@withContext null
-
-        database.safeTransaction {
-            UserSessionTable.update(where = { UserSessionTable.refreshToken eq refreshToken }) {
-                it[UserSessionTable.refreshToken] = newRefreshToken
-                it[UserSessionTable.expiresAt] = now + ServerConfigs.value.refreshTokenValidity.milliseconds
-            }
-        }.onFailure {
-            Telemetry.error(tag = TAG, message = "Unable to update session", throwable = it)
-            return@withContext null
-        }
-
-        BearerToken(
-            accessToken = newAccessToken,
-            refreshToken = newRefreshToken
-        )
+                ?.takeIf { session -> session[UserSessionTable.rotatedAt]?.let { now < it + ServerConfigs.value.refreshTokenGracePeriod.milliseconds } == true }
     }
 
     /**

@@ -12,7 +12,7 @@ Everything is pre-wired, so you can skip the boilerplate and ship to every platf
 | **[Real-time delivery](#push-notifications)**        | FCM, WebSocket and SSE push merged into one de-duplicated stream.                                                                   |
 | **[Backend and scaling](#multi-instance-scaling)**   | A Ktor server with no per-instance state, coordinated through a pluggable cross-instance signal.                                    |
 | **[Security](#cryptography)**                        | Encryption backed by each platform's native cryptography.                                                                           |
-| **[Device hardware](#hardware-controllers)**         | Audio, camera, NFC and location controllers, flag-gated and failing safe on every platform.                                         |
+| **[Device hardware](#hardware-controllers)**         | Audio, Camera, NFC and Location controllers.                                                                                        |
 | **[Accounts and sessions](#accounts--sessions)**     | Accounts, sessions and per-entity permissions.                                                                                      |
 | **[Design system](#design-system--showcase)**        | A configurable design system with an in-app catalog of every component.                                                             |
 | **[Translations](#translations)**                    | Server-served translations that update live, with a bundled offline fallback.                                                       |
@@ -20,7 +20,7 @@ Everything is pre-wired, so you can skip the boilerplate and ship to every platf
 | **[Telemetry](#telemetry-hub)**                      | One logging API fanning out to pluggable engines, so any telemetry service can be added.                                            |
 | **[UI architecture](#ui-store--navigation)**         | An MVI Store plus Navigation scene strategies.                                                                                      |
 | **[Testing](#testing)**                              | Unit, UI and server tests from one hermetic harness.                                                                                |
-| **[Build and release](#versioning--release-builds)** | Convention plugins, one-command version bumps and notarised desktop packaging.                                                      |
+| **[Build and release](#versioning--release-builds)** | Convention plugins, one-command version bumps and notarised packaging.                                                              |
 
 > [!IMPORTANT]
 > The project is licensed **AGPL-3.0**. Derivative works must be distributed under the same license with source available, and that applies to network services too, not just distributed binaries.
@@ -105,7 +105,7 @@ Everything below works with zero configuration: no Firebase project, no Postgres
 
 * **JDK 21.** Gradle comes from the wrapper, but no toolchain resolver is configured, so Gradle will not download a JDK for you.
 * **Android**: the Android SDK.
-* **iOS**: Xcode and CocoaPods (`brew install cocoapods`).
+* **iOS**: Xcode and CocoaPods.
 * **Desktop and Web**: nothing else.
 
 **Run it**
@@ -113,12 +113,12 @@ Everything below works with zero configuration: no Firebase project, no Postgres
 1. **Start the server**: `./gradlew :server:run`. It boots on `http://localhost:8080` with a full dev environment, including an admin account.
 2. **Run a client**. Dev builds target `http://localhost:8080` automatically.
 
-   | Target  | Command                                                         |
-   |---------|-----------------------------------------------------------------|
-   | Desktop | `./gradlew :clientApp:run`                                      |
-   | Web     | `./gradlew :clientApp:wasmJsBrowserDevelopmentRun`              |
-   | Android | `./gradlew :clientApp:installDebug`                             |
-   | iOS     | `cd iosApp && pod install`, then open `iosApp.xcworkspace`      |
+   | Target  | Command                                                                  |
+   |---------|--------------------------------------------------------------------------|
+   | Desktop | `./gradlew :clientApp:run`                                               |
+   | Web     | `./gradlew :clientApp:wasmJsBrowserDevelopmentRun`                       |
+   | Android | `./gradlew :clientApp:installDebug`                                      |
+   | iOS     | `./gradlew :clientApp:podInstall`, then open `iosApp/iosApp.xcworkspace` |
 
 3. **Log in** with `admin`/`admin`. The account is seeded with all permissions, so it can create further users and accounts from inside the app.
 
@@ -129,7 +129,8 @@ Everything below works with zero configuration: no Firebase project, no Postgres
 
 * The server port falls back to the same `URL.DEV_PORT` constant the client's `URL.DEV_HOST` is built from, so both sides agree on `8080` by construction.
 * The web dev server's `8010` is in the server's development CORS allowlist. Change the port and browser API calls start failing CORS.
-* Both CocoaPods podspecs are committed, so `pod install` resolves on a fresh clone without running a Gradle task first. It also pulls the `FirebaseCore` and `FirebaseMessaging` pods, so the first run needs a network connection.
+* `podInstall` regenerates `clientApp.podspec` and then runs `pod install` in `iosApp/`. Both CocoaPods podspecs are committed, so a plain `cd iosApp && pod install` also resolves on a fresh clone without Gradle.
+Either way it pulls the `Firebase` pods, so the first run needs a network connection.
 
 </details>
 
@@ -195,7 +196,8 @@ Not every module has every package. See [Package Index](#package-index) and [Mod
 
 Dependencies are wired by hand. KMP support in popular DI frameworks adds complexity and limitations on every target, and generated code is especially troublesome on WASM.
 
-* **Client**: `Dependency.AppGraph` holds everything that exists before login (`SqlDriver` → `AppDatabase`, `HttpClient`, `Scheduler`, push and translation services, a default guest account). `Dependency.UserGraph` is built per authenticated user on top of it, cached by user uuid, so switching accounts swaps only the authenticated half.
+* **Client**: `Dependency.AppGraph` holds everything that exists before login (`SqlDriver`, `HttpClient`, `Scheduler`, push and translation services, a default guest account).
+`Dependency.UserGraph` is built per authenticated user on top of it, cached by user uuid, so switching accounts swaps only the authenticated half.
 It is rebuilt when the account's permissions or disabled state change; screens opened from then on get the new graph, while screens already open keep the previous one until they're left.
 * **Server**: `Dependency` receives an already-built `R2dbcDatabase` and wires the `UseCases` through `Gateways`.
 
@@ -268,7 +270,7 @@ If that oldest job is waiting out a retry backoff, the whole chain waits with it
 
 There are two kinds of job:
 
-* **Targeted** (`entityUuid != null`): a `POST`, `DELETE`, or the `GET` of a push-triggered sync on one entity.
+* **Targeted** (`entityUuid != null`): a `POST`, `DELETE`, or the `GET` of one entity.
 * **Global** (`entityUuid == null`): a full collection sync that reads and rewrites the whole table.
 
 They are **mutually exclusive per entity type**, in both directions:
@@ -848,7 +850,7 @@ The commands assume the [Firebase CLI](https://firebase.google.com/docs/cli) is 
 
 1. Create or reuse a Firebase project and register one app per platform: `firebase apps:create ANDROID <appId>`, `firebase apps:create IOS <appId>`, `firebase apps:create WEB "<appName>"`.
 2. **Android**: save `firebase apps:sdkconfig ANDROID <appId>` as `clientApp/google-services.json`.
-3. **iOS**: save `firebase apps:sdkconfig IOS <appId>` as `iosApp/iosApp/GoogleService-Info.plist`. Then in Xcode, open `iosApp.xcworkspace` → `iosApp` target → **Signing & Capabilities** → pick a Team → **+ Capability** → **Push Notifications**. 
+3. **iOS**: save `firebase apps:sdkconfig IOS <appId>` as `iosApp/iosApp/GoogleService-Info.plist`. Then in Xcode, open `iosApp/iosApp.xcworkspace` → `iosApp` target → **Signing & Capabilities** → pick a Team → **+ Capability** → **Push Notifications**. 
  Adding the capability registers it on the App ID and wires the existing `iosApp.entitlements` through the `CODE_SIGN_ENTITLEMENTS` build setting.
  `Info.plist` already declares `UIBackgroundModes: remote-notification`, which silent payloads need to reach a backgrounded app. Visible payloads are rendered by iOS itself from the APNs `alert` field and don't need it.
 4. **Web**: set `firebase apps:sdkconfig WEB <appId>`, minified to one line, as `web.firebaseConfig` in `local.properties`. Then generate a VAPID key in Firebase Console → Project Settings → Cloud Messaging → Web configuration → **Generate key pair** (there is no CLI for this) and set it as `web.vapidKey`.
