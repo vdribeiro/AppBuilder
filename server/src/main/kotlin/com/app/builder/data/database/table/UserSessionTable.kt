@@ -9,9 +9,9 @@ object UserSessionTable: Table(name = "user_session") {
     val uuid = uuid(name = "uuid")
     /** The unique identifier of the user the session belongs to. */
     val userUuid = reference(name = "user_uuid", refColumn = UserTable.uuid)
-    /** The SHA-256 hash of the refresh token used to obtain new access tokens for this session. */
+    /** The hash of the refresh token used to obtain new access tokens for this session. */
     val refreshToken = text(name = "refresh_token").uniqueIndex()
-    /** The SHA-256 hash of the refresh token [refreshToken] replaced at its last rotation. */
+    /** The hash of the refresh token [refreshToken] replaced at its last rotation. */
     val previousRefreshToken = text(name = "previous_refresh_token").nullable().index()
     /** The timestamp of the last rotation of [refreshToken], or `null` if it was never rotated. */
     val rotatedAt = timestamp(name = "rotated_at").nullable()
