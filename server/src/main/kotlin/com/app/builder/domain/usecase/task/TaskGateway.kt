@@ -29,7 +29,9 @@ import com.app.builder.domain.EntityType
 import com.app.builder.domain.Permission
 import com.app.builder.domain.PushPayload
 import com.app.builder.domain.Task
+import com.app.builder.domain.usecase.Outcome
 import com.app.builder.domain.usecase.notification.NotificationsUseCases
+import com.app.builder.domain.usecase.toWriteOutcome
 import com.app.builder.toEnumOrNull
 
 /**
@@ -48,7 +50,7 @@ class TaskGateway(
         cursorUtc: Instant?,
         cursorUuid: Uuid?,
         pageSize: Int
-    ): List<Task> = withContext(context = Dispatcher.IO) {
+    ): Outcome<List<Task>> = withContext(context = Dispatcher.IO) {
         val effectivePageSize = pageSize.coerceIn(minimumValue = 1, maximumValue = ServerConfigs.value.maxPageSize)
         database.safeTransaction {
             TaskTable
@@ -64,24 +66,29 @@ class TaskGateway(
                 .limit(count = effectivePageSize)
                 .toList()
                 .mapNotNull { it.toTask() }
-        }.onFailure {
+                .let { Outcome.Success(data = it) }
+        }.getOrElse {
             Telemetry.error(tag = TAG, message = "Unable to get tasks since $lastSyncUtc", throwable = it)
-        }.getOrDefault(defaultValue = emptyList())
+            Outcome.Error
+        }
     }
 
-    override suspend fun getTask(uuid: Uuid): Task? = withContext(context = Dispatcher.IO) {
+    override suspend fun getTask(uuid: Uuid): Outcome<Task> = withContext(context = Dispatcher.IO) {
         database.safeTransaction {
             TaskTable
                 .selectAll()
                 .where { TaskTable.uuid eq uuid }
                 .firstOrNull()
                 ?.toTask()
-        }.onFailure {
+                ?.let { Outcome.Success(data = it) }
+                ?: Outcome.NotFound
+        }.getOrElse {
             Telemetry.error(tag = TAG, message = "Unable to get task $uuid", throwable = it)
-        }.getOrNull()
+            Outcome.Error
+        }
     }
 
-    override suspend fun upsertTask(task: Task): Boolean = withContext(context = Dispatcher.IO) {
+    override suspend fun upsertTask(task: Task): Outcome<Unit> = withContext(context = Dispatcher.IO) {
         val result = database.safeTransaction {
             TaskTable.upsert {
                 it[TaskTable.uuid] = task.uuid
@@ -93,7 +100,7 @@ class TaskGateway(
             }.insertedCount > 0
         }.onFailure {
             Telemetry.error(tag = TAG, message = "Unable to upsert task ${task.uuid}", throwable = it)
-        }.getOrDefault(defaultValue = false)
+        }.getOrDefault(defaultValue = false).toWriteOutcome()
 
         saveNotification(task = task)
 

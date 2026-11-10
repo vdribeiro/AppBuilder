@@ -17,6 +17,7 @@ import com.app.builder.core.security.uuid
 import com.app.builder.core.telemetry.Telemetry
 import com.app.builder.data.database.safeTransaction
 import com.app.builder.data.database.table.TicketTable
+import com.app.builder.domain.usecase.Outcome
 
 /**
  * Gateway implementation for ticket use cases.
@@ -27,7 +28,7 @@ class TicketGateway(
     private val database: R2dbcDatabase
 ): TicketUseCases {
 
-    override suspend fun createTicket(userUuid: Uuid): Uuid? = withContext(context = Dispatcher.IO) {
+    override suspend fun createTicket(userUuid: Uuid): Outcome<Uuid> = withContext(context = Dispatcher.IO) {
         val ticketUuid = uuid()
         val now = now()
         val ticketTtl = ServerConfigs.value.ticketTtl.milliseconds
@@ -42,24 +43,25 @@ class TicketGateway(
         }.onFailure {
             Telemetry.error(tag = TAG, message = "Unable to create ticket for user $userUuid", throwable = it)
         }.getOrDefault(defaultValue = false).let { created ->
-            if (created) ticketUuid else null
+            if (created) Outcome.Success(data = ticketUuid) else Outcome.Error
         }
     }
 
-    override suspend fun consumeTicket(ticketUuid: Uuid): Uuid? = withContext(context = Dispatcher.IO) {
+    override suspend fun consumeTicket(ticketUuid: Uuid): Outcome<Uuid> = withContext(context = Dispatcher.IO) {
         val now = now()
 
         database.safeTransaction {
             val row = TicketTable
                 .selectAll()
                 .where { TicketTable.uuid eq ticketUuid }
-                .firstOrNull() ?: return@safeTransaction null
-            if (TicketTable.deleteWhere { TicketTable.uuid eq ticketUuid } == 0) return@safeTransaction null
-            if (row[TicketTable.expiresAt] < now) return@safeTransaction null
-            row[TicketTable.userUuid]
-        }.onFailure {
+                .firstOrNull() ?: return@safeTransaction Outcome.Rejected
+            if (TicketTable.deleteWhere { TicketTable.uuid eq ticketUuid } == 0) return@safeTransaction Outcome.Rejected
+            if (row[TicketTable.expiresAt] < now) return@safeTransaction Outcome.Rejected
+            Outcome.Success(data = row[TicketTable.userUuid])
+        }.getOrElse {
             Telemetry.error(tag = TAG, message = "Unable to consume ticket $ticketUuid", throwable = it)
-        }.getOrNull()
+            Outcome.Error
+        }
     }
 
     companion object {

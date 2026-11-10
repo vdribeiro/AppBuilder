@@ -19,6 +19,7 @@ import com.app.builder.domain.Permission
 import com.app.builder.domain.User
 import com.app.builder.domain.permission.PermissionService
 import com.app.builder.domain.route.getAccess
+import com.app.builder.domain.route.getOrRespond
 import com.app.builder.domain.route.getParameters
 import com.app.builder.domain.route.getQueryMap
 import com.app.builder.domain.route.getUserUuid
@@ -27,6 +28,7 @@ import com.app.builder.domain.route.respondSafely
 import com.app.builder.domain.route.toRegistry
 import com.app.builder.domain.route.validatePermission
 import com.app.builder.domain.route.validateTime
+import com.app.builder.domain.usecase.Outcome
 import com.app.builder.domain.usecase.account.AccountUseCases
 import com.app.builder.domain.usecase.registry.RegistryUseCases
 import com.app.builder.domain.usecase.user.UserUseCases
@@ -56,7 +58,10 @@ fun Route.userRoutes(
                 val cursorUuid = queryMap[Query.CursorUuid.parameter]?.toUuid()
                 val pageSize = queryMap[Query.PageSize.parameter]?.toIntOrNull() ?: ServerConfigs.value.pageSize
 
-                val users = userUseCases.getUsers(lastSyncUtc = lastSyncUtc, cursorUtc = cursorUtc, cursorUuid = cursorUuid, pageSize = pageSize)
+                val users = call.getOrRespond(
+                    outcome = userUseCases.getUsers(lastSyncUtc = lastSyncUtc, cursorUtc = cursorUtc, cursorUuid = cursorUuid, pageSize = pageSize),
+                    error = "Error getting users"
+                ) ?: return@get
                 call.respondSafely(status = HttpStatusCode.OK, message = users)
                 Telemetry.info(tag = TAG, message = "Fetched ${users.size} users")
 
@@ -71,10 +76,11 @@ fun Route.userRoutes(
                     return@get
                 }
 
-                val user = userUseCases.getUser(uuid = uuid) ?: run {
-                    call.respondSafely(status = HttpStatusCode.NotFound, message = "User not found")
-                    return@get
-                }
+                val user = call.getOrRespond(
+                    outcome = userUseCases.getUser(uuid = uuid),
+                    notFound = "User not found",
+                    error = "Error getting user"
+                ) ?: return@get
                 call.respondSafely(status = HttpStatusCode.OK, message = user)
                 Telemetry.info(tag = TAG, message = "Fetched user $uuid")
 
@@ -96,31 +102,39 @@ fun Route.userRoutes(
                     call.respondSafely(status = HttpStatusCode.Forbidden, message = "Not authorized to modify user ${user.uuid}")
                     return@post
                 }
-                val dbUser = userUseCases.getUser(uuid = user.uuid)
+                val dbUser = when (val outcome = userUseCases.getUser(uuid = user.uuid)) {
+                    is Outcome.Success -> outcome.data
+                    Outcome.NotFound -> null
+                    is Outcome.Failure -> {
+                        call.getOrRespond(outcome = outcome, error = "Error getting user ${user.uuid}")
+                        return@post
+                    }
+                }
                 // Also, only a user with write permission can change the deleted state.
                 val validatedUser = if (hasPermission) user else {
                     dbUser ?: run {
-                        Telemetry.error(tag = TAG, message = "Unable to get user ${user.uuid}")
-                        call.respondSafely(status = HttpStatusCode.InternalServerError, message = "Error getting user ${user.uuid}")
+                        call.respondSafely(status = HttpStatusCode.NotFound, message = "User not found")
                         return@post
                     }
                     user.copy(deletedAt = dbUser.deletedAt)
                 }
                 // A user can only be deleted once its account is disabled
                 if (validatedUser.deletedAt != null && dbUser?.deletedAt == null) {
-                    val account = accountUseCases.getAccount(userUuid = validatedUser.uuid)
+                    val account = when (val outcome = accountUseCases.getAccount(userUuid = validatedUser.uuid)) {
+                        is Outcome.Success -> outcome.data
+                        Outcome.NotFound -> null
+                        is Outcome.Failure -> {
+                            call.getOrRespond(outcome = outcome, error = "Error getting the account of user ${validatedUser.uuid}")
+                            return@post
+                        }
+                    }
                     if (account != null && account.deletedAt == null) {
                         call.respondSafely(status = HttpStatusCode.Conflict, message = "Disable the account of user ${validatedUser.uuid} first")
                         return@post
                     }
                 }
 
-                val success = userUseCases.upsertUser(user = validatedUser)
-                if (!success) {
-                    Telemetry.error(tag = TAG, message = "Error upserting user ${validatedUser.uuid}")
-                    call.respondSafely(status = HttpStatusCode.InternalServerError, message = "Error upserting user")
-                    return@post
-                }
+                call.getOrRespond(outcome = userUseCases.upsertUser(user = validatedUser), error = "Error upserting user") ?: return@post
 
                 call.respondSafely(status = HttpStatusCode.OK, message = validatedUser)
                 Telemetry.info(tag = TAG, message = "Upserted user ${validatedUser.uuid}")

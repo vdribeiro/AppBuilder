@@ -2,15 +2,16 @@ package com.app.builder.domain.usecase.task
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlin.time.Duration.Companion.days
 import kotlinx.coroutines.flow.firstOrNull
 import com.app.builder.core.config.ServerConfigs
 import com.app.builder.core.locale.now
 import com.app.builder.core.security.uuid
+import com.app.builder.domain.usecase.Outcome
 import com.app.builder.test.FakeData
 import com.app.builder.test.TestCase
+import com.app.builder.test.successData
 
 class TaskUseCasesTest: TestCase() {
 
@@ -26,9 +27,9 @@ class TaskUseCasesTest: TestCase() {
         val lastSyncUtc = now() - 1.days
 
         assertTrue(actual = notificationsUseCases.observeNotifications(userUuid = FakeData.adminUser.uuid).firstOrNull().orEmpty().isEmpty())
-        assertTrue(actual = taskUseCases.getTasks(lastSyncUtc = lastSyncUtc, cursorUtc = null, cursorUuid = null, pageSize = ServerConfigs.value.pageSize).isEmpty())
-        assertTrue(actual = taskUseCases.upsertTask(task = FakeData.task))
-        assertEquals(expected = listOf(element = FakeData.task), actual = taskUseCases.getTasks(lastSyncUtc = lastSyncUtc, cursorUtc = null, cursorUuid = null, pageSize = ServerConfigs.value.pageSize))
+        assertTrue(actual = taskUseCases.getTasks(lastSyncUtc = lastSyncUtc, cursorUtc = null, cursorUuid = null, pageSize = ServerConfigs.value.pageSize).successData().isEmpty())
+        assertEquals(expected = Outcome.Success(data = Unit), actual = taskUseCases.upsertTask(task = FakeData.task))
+        assertEquals(expected = listOf(element = FakeData.task), actual = taskUseCases.getTasks(lastSyncUtc = lastSyncUtc, cursorUtc = null, cursorUuid = null, pageSize = ServerConfigs.value.pageSize).successData())
         assertTrue(actual = notificationsUseCases.observeNotifications(userUuid = FakeData.adminUser.uuid).firstOrNull().orEmpty().isNotEmpty())
     }
 
@@ -39,8 +40,8 @@ class TaskUseCasesTest: TestCase() {
             .useCases
             .taskUseCases
 
-        assertTrue(actual = taskUseCases.upsertTask(task = FakeData.task))
-        assertEquals(expected = FakeData.task, actual = taskUseCases.getTask(uuid = FakeData.task.uuid))
-        assertNull(actual = taskUseCases.getTask(uuid = uuid()))
+        assertEquals(expected = Outcome.Success(data = Unit), actual = taskUseCases.upsertTask(task = FakeData.task))
+        assertEquals(expected = FakeData.task, actual = taskUseCases.getTask(uuid = FakeData.task.uuid).successData())
+        assertEquals(expected = Outcome.NotFound, actual = taskUseCases.getTask(uuid = uuid()))
     }
 }

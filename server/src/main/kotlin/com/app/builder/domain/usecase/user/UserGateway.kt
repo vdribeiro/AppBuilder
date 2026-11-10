@@ -21,6 +21,8 @@ import com.app.builder.core.telemetry.Telemetry
 import com.app.builder.data.database.safeTransaction
 import com.app.builder.data.database.table.UserTable
 import com.app.builder.domain.User
+import com.app.builder.domain.usecase.Outcome
+import com.app.builder.domain.usecase.toWriteOutcome
 
 /**
  * Gateway implementation for users use cases.
@@ -36,7 +38,7 @@ class UserGateway(
         cursorUtc: Instant?,
         cursorUuid: Uuid?,
         pageSize: Int
-    ): List<User> = withContext(context = Dispatcher.IO) {
+    ): Outcome<List<User>> = withContext(context = Dispatcher.IO) {
         val effectivePageSize = pageSize.coerceIn(minimumValue = 1, maximumValue = ServerConfigs.value.maxPageSize)
         database.safeTransaction {
             UserTable
@@ -52,24 +54,29 @@ class UserGateway(
                 .limit(count = effectivePageSize)
                 .toList()
                 .map { it.toUser() }
-        }.onFailure {
+                .let { Outcome.Success(data = it) }
+        }.getOrElse {
             Telemetry.error(tag = TAG, message = "Unable to get users since $lastSyncUtc", throwable = it)
-        }.getOrDefault(defaultValue = emptyList())
+            Outcome.Error
+        }
     }
 
-    override suspend fun getUser(uuid: Uuid): User? = withContext(context = Dispatcher.IO) {
+    override suspend fun getUser(uuid: Uuid): Outcome<User> = withContext(context = Dispatcher.IO) {
         database.safeTransaction {
             UserTable
                 .selectAll()
                 .where { UserTable.uuid eq uuid }
                 .firstOrNull()
                 ?.toUser()
-        }.onFailure {
+                ?.let { Outcome.Success(data = it) }
+                ?: Outcome.NotFound
+        }.getOrElse {
             Telemetry.error(tag = TAG, message = "Unable to get user $uuid", throwable = it)
-        }.getOrNull()
+            Outcome.Error
+        }
     }
 
-    override suspend fun upsertUser(user: User): Boolean = withContext(context = Dispatcher.IO) {
+    override suspend fun upsertUser(user: User): Outcome<Unit> = withContext(context = Dispatcher.IO) {
         database.safeTransaction {
             UserTable.upsert {
                 it[UserTable.uuid] = user.uuid
@@ -80,7 +87,7 @@ class UserGateway(
             }.insertedCount > 0
         }.onFailure {
             Telemetry.error(tag = TAG, message = "Unable to upsert user ${user.uuid}", throwable = it)
-        }.getOrDefault(defaultValue = false)
+        }.getOrDefault(defaultValue = false).toWriteOutcome()
     }
 
     /**

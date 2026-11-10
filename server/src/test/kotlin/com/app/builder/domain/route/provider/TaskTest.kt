@@ -8,6 +8,7 @@ import io.ktor.client.call.body
 import io.ktor.http.HttpStatusCode
 import com.app.builder.core.locale.now
 import com.app.builder.core.security.uuid
+import com.app.builder.data.database.reset
 import com.app.builder.data.http.HttpRequest
 import com.app.builder.data.http.Query
 import com.app.builder.data.http.URL
@@ -143,5 +144,15 @@ class TaskTest: TestCase() {
 
         assertEquals(expected = HttpStatusCode.Forbidden, actual = client.get(request = HttpRequest(url = URL.Tasks)).status)
         assertEquals(expected = HttpStatusCode.Forbidden, actual = client.ktorGet(urlString = "${URL.Tasks.path}/${FakeData.task.uuid}").status)
+    }
+
+    /** Verifies that a database failure while listing tasks answers 500 rather than an empty list, so a client never takes it as having nothing new to sync. */
+    @Test
+    fun getTasksDatabaseFailure() = runServerTest {
+        installRouting()
+        val authenticatedClient = createClient(token = adminBearerToken.accessToken)
+        dependency.get().database.reset()
+
+        assertEquals(expected = HttpStatusCode.InternalServerError, actual = authenticatedClient.get(request = HttpRequest(url = URL.Tasks)).status)
     }
 }
