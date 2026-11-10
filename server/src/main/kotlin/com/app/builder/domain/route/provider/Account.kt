@@ -15,13 +15,13 @@ import com.app.builder.domain.EntityType
 import com.app.builder.domain.Permission
 import com.app.builder.domain.permission.PermissionService
 import com.app.builder.domain.permission.UserAccess
+import com.app.builder.domain.route.getOrRespond
 import com.app.builder.domain.route.getParameters
 import com.app.builder.domain.route.receive
 import com.app.builder.domain.route.respondSafely
 import com.app.builder.domain.route.toRegistry
 import com.app.builder.domain.route.validatePermission
 import com.app.builder.domain.route.validateTime
-import com.app.builder.domain.usecase.WriteResult
 import com.app.builder.domain.usecase.account.AccountUseCases
 import com.app.builder.domain.usecase.registry.RegistryUseCases
 
@@ -65,24 +65,12 @@ fun Route.accountRoutes(
                 if (!call.validatePermission(permissionService = permissionService, entityType = EntityType.ACCOUNT, permission = Permission.WRITE)) return@post
                 val account = call.receive<Account>() ?: return@post
 
-                when (accountUseCases.upsertAccount(account = account)) {
-                    WriteResult.SUCCESS -> Unit
-                    WriteResult.NOT_FOUND -> {
-                        call.respondSafely(status = HttpStatusCode.NotFound, message = "Account not found")
-                        return@post
-                    }
-
-                    WriteResult.INVALID, WriteResult.CONFLICT -> {
-                        call.respondSafely(status = HttpStatusCode.Conflict, message = "The username is taken")
-                        return@post
-                    }
-
-                    WriteResult.ERROR -> {
-                        Telemetry.error(tag = TAG, message = "Error upserting the account of user ${account.userUuid}")
-                        call.respondSafely(status = HttpStatusCode.InternalServerError, message = "Error upserting account")
-                        return@post
-                    }
-                }
+                call.getOrRespond(
+                    outcome = accountUseCases.upsertAccount(account = account),
+                    notFound = "Account not found",
+                    conflict = "The username is taken",
+                    error = "Error upserting account"
+                ) ?: return@post
                 permissionService.set(userUuid = account.userUuid, access = UserAccess(permissions = account.permissions, deletedAt = account.deletedAt))
 
                 call.respondSafely(status = HttpStatusCode.OK, message = account)

@@ -12,11 +12,11 @@ import com.app.builder.domain.Permission
 import com.app.builder.domain.RegistrationForm
 import com.app.builder.domain.UserCredentials
 import com.app.builder.domain.permission.PermissionService
+import com.app.builder.domain.route.getOrRespond
 import com.app.builder.domain.route.receive
 import com.app.builder.domain.route.respondSafely
 import com.app.builder.domain.route.toRegistry
 import com.app.builder.domain.route.validatePermission
-import com.app.builder.domain.usecase.WriteResult
 import com.app.builder.domain.usecase.authentication.AuthenticationUseCases
 import com.app.builder.domain.usecase.registry.RegistryUseCases
 
@@ -43,24 +43,12 @@ fun Route.authenticationRoutes(
                 return@post
             }
 
-            when (authenticationUseCases.register(registrationForm = registrationForm)) {
-                WriteResult.SUCCESS -> Unit
-                WriteResult.INVALID -> {
-                    call.respondSafely(status = HttpStatusCode.BadRequest, message = "Invalid registration form")
-                    return@post
-                }
-
-                WriteResult.NOT_FOUND, WriteResult.CONFLICT -> {
-                    call.respondSafely(status = HttpStatusCode.Conflict, message = "The user already has an account or the username is taken")
-                    return@post
-                }
-
-                WriteResult.ERROR -> {
-                    Telemetry.error(tag = TAG, message = "Failed to register an account for user ${registrationForm.user.uuid}")
-                    call.respondSafely(status = HttpStatusCode.InternalServerError, message = "Error registering account")
-                    return@post
-                }
-            }
+            call.getOrRespond(
+                outcome = authenticationUseCases.register(registrationForm = registrationForm),
+                invalid = "Invalid registration form",
+                conflict = "The user already has an account or the username is taken",
+                error = "Error registering account"
+            ) ?: return@post
             val account = registrationForm.account
 
             call.respondSafely(status = HttpStatusCode.OK, message = account)
@@ -77,11 +65,11 @@ fun Route.authenticationRoutes(
     post(path = URL.Login.path) {
         val credentials = call.receive<UserCredentials>() ?: return@post
 
-        val result = authenticationUseCases.login(credentials = credentials) ?: run {
-            Telemetry.error(tag = TAG, message = "Failed login attempt")
-            call.respondSafely(status = HttpStatusCode.Unauthorized, message = "Invalid credentials")
-            return@post
-        }
+        val result = call.getOrRespond(
+            outcome = authenticationUseCases.login(credentials = credentials),
+            rejected = "Invalid credentials",
+            error = "Unable to login"
+        ) ?: return@post
 
         call.respondSafely(status = HttpStatusCode.OK, message = result)
         Telemetry.info(tag = TAG, message = "Successful login for user ${result.user.uuid}")
@@ -97,12 +85,11 @@ fun Route.authenticationRoutes(
     post(path = URL.Logout.path) {
         val refreshToken = call.receive<String>() ?: return@post
 
-        val userUuid = authenticationUseCases.logout(refreshToken = refreshToken)
-        if (userUuid == null) {
-            Telemetry.error(tag = TAG, message = "Failed to logout")
-            call.respondSafely(status = HttpStatusCode.Unauthorized, message = "Invalid or expired refresh token")
-            return@post
-        }
+        val userUuid = call.getOrRespond(
+            outcome = authenticationUseCases.logout(refreshToken = refreshToken),
+            rejected = "Invalid or expired refresh token",
+            error = "Unable to logout"
+        ) ?: return@post
 
         call.respondSafely(status = HttpStatusCode.OK, message = userUuid)
         Telemetry.info(tag = TAG, message = "Successfully logged out")
@@ -118,11 +105,11 @@ fun Route.authenticationRoutes(
     post(path = URL.RefreshTokens.path) {
         val refreshToken = call.receive<String>() ?: return@post
 
-        val bearerToken = authenticationUseCases.refreshTokens(refreshToken = refreshToken) ?: run {
-            Telemetry.error(tag = TAG, message = "Token refresh failed")
-            call.respondSafely(status = HttpStatusCode.Unauthorized, message = "Invalid or expired refresh token")
-            return@post
-        }
+        val bearerToken = call.getOrRespond(
+            outcome = authenticationUseCases.refreshTokens(refreshToken = refreshToken),
+            rejected = "Invalid or expired refresh token",
+            error = "Unable to refresh tokens"
+        ) ?: return@post
 
         call.respondSafely(status = HttpStatusCode.OK, message = bearerToken)
         Telemetry.info(tag = TAG, message = "Successfully refreshed tokens")
