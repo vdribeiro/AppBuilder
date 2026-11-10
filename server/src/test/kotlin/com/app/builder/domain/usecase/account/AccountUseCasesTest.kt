@@ -10,7 +10,7 @@ import com.app.builder.domain.DeviceToken
 import com.app.builder.domain.EntityType
 import com.app.builder.domain.Permission
 import com.app.builder.domain.UserCredentials
-import com.app.builder.domain.usecase.WriteResult
+import com.app.builder.domain.usecase.Outcome
 import com.app.builder.test.FakeData
 import com.app.builder.test.TestCase
 
@@ -27,11 +27,11 @@ class AccountUseCasesTest: TestCase() {
         assertNull(actual = accountUseCases.getAccount(userUuid = uuid()))
 
         val updated = FakeData.account.copy(username = "renamed", permissions = mapOf(EntityType.TASK to Permission.WRITE))
-        assertEquals(expected = WriteResult.SUCCESS, actual = accountUseCases.upsertAccount(account = updated))
+        assertEquals(expected = Outcome.Success(data = Unit), actual = accountUseCases.upsertAccount(account = updated))
         assertEquals(expected = updated, actual = accountUseCases.getAccount(userUuid = FakeData.user.uuid))
 
         val missing = FakeData.account.copy(userUuid = uuid(), username = "missing")
-        assertEquals(expected = WriteResult.NOT_FOUND, actual = accountUseCases.upsertAccount(account = missing))
+        assertEquals(expected = Outcome.NotFound, actual = accountUseCases.upsertAccount(account = missing))
         assertNull(actual = accountUseCases.getAccount(userUuid = missing.userUuid))
     }
 
@@ -40,10 +40,10 @@ class AccountUseCasesTest: TestCase() {
     fun upsertAccountKeepsPassword() = runServerTest {
         val useCases = dependency.get().useCases
 
-        assertEquals(expected = WriteResult.SUCCESS, actual = useCases.accountUseCases.upsertAccount(account = FakeData.account.copy(username = "renamed")))
+        assertEquals(expected = Outcome.Success(data = Unit), actual = useCases.accountUseCases.upsertAccount(account = FakeData.account.copy(username = "renamed")))
         assertEquals(
             expected = FakeData.account.copy(username = "renamed"),
-            actual = useCases.authenticationUseCases.login(credentials = UserCredentials(username = "renamed", password = FakeData.credentials.password))?.account
+            actual = (useCases.authenticationUseCases.login(credentials = UserCredentials(username = "renamed", password = FakeData.credentials.password)) as? Outcome.Success)?.data?.account
         )
     }
 
@@ -54,7 +54,7 @@ class AccountUseCasesTest: TestCase() {
             .useCases
             .accountUseCases
 
-        assertEquals(expected = WriteResult.CONFLICT, actual = accountUseCases.upsertAccount(account = FakeData.account.copy(username = FakeData.adminAccount.username)))
+        assertEquals(expected = Outcome.Conflict, actual = accountUseCases.upsertAccount(account = FakeData.account.copy(username = FakeData.adminAccount.username)))
         assertEquals(expected = FakeData.account, actual = accountUseCases.getAccount(userUuid = FakeData.user.uuid))
     }
 
@@ -72,10 +72,10 @@ class AccountUseCasesTest: TestCase() {
         assertEquals(expected = 1, actual = deviceTokenUseCases.getTokens(userUuid = FakeData.user.uuid).size)
 
         // An ordinary update leaves them alone.
-        assertEquals(expected = WriteResult.SUCCESS, actual = accountUseCases.upsertAccount(account = FakeData.account.copy(username = "renamed")))
+        assertEquals(expected = Outcome.Success(data = Unit), actual = accountUseCases.upsertAccount(account = FakeData.account.copy(username = "renamed")))
         assertEquals(expected = 1, actual = deviceTokenUseCases.getTokens(userUuid = FakeData.user.uuid).size)
 
-        assertEquals(expected = WriteResult.SUCCESS, actual = accountUseCases.upsertAccount(account = FakeData.account.copy(deletedAt = now())))
+        assertEquals(expected = Outcome.Success(data = Unit), actual = accountUseCases.upsertAccount(account = FakeData.account.copy(deletedAt = now())))
         assertTrue(actual = deviceTokenUseCases.getTokens(userUuid = FakeData.user.uuid).isEmpty())
     }
 }

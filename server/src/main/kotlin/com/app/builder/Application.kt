@@ -40,7 +40,7 @@ import com.app.builder.domain.User
 import com.app.builder.domain.push.FcmManager
 import com.app.builder.domain.push.NoOpFcmService
 import com.app.builder.domain.route.installRouting
-import com.app.builder.domain.usecase.WriteResult
+import com.app.builder.domain.usecase.Outcome
 import com.app.builder.test.ExcludeFromTesting
 import com.google.auth.oauth2.GoogleCredentials
 import com.google.firebase.FirebaseApp
@@ -227,7 +227,7 @@ private suspend fun seed(dependency: Dependency) {
     )
 
     val result = dependency.useCases.authenticationUseCases.register(registrationForm = RegistrationForm(user = superUser, account = superAccount, password = password))
-    if (result == WriteResult.SUCCESS) {
+    if (result is Outcome.Success) {
         Telemetry.info(tag = TAG, message = "Su account created")
         return
     }
@@ -244,7 +244,7 @@ private suspend fun seed(dependency: Dependency) {
     }
 
     when (accountUseCases.upsertAccount(account = account.copy(modifiedAt = now, permissions = superAccount.permissions))) {
-        WriteResult.SUCCESS -> Telemetry.info(tag = TAG, message = "Su account permissions restored")
+        is Outcome.Success -> Telemetry.info(tag = TAG, message = "Su account permissions restored")
         else -> Telemetry.error(tag = TAG, message = "Unable to restore su account permissions")
     }
 }
