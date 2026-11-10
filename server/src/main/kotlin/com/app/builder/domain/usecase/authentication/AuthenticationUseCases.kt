@@ -1,7 +1,6 @@
 package com.app.builder.domain.usecase.authentication
 
 import kotlin.uuid.Uuid
-import com.app.builder.core.config.ServerConfigs
 import com.app.builder.domain.Authentication
 import com.app.builder.domain.BearerToken
 import com.app.builder.domain.RegistrationForm
@@ -37,8 +36,6 @@ interface AuthenticationUseCases {
 
     /**
      * Issues a new access token using a valid [refreshToken], rotating it in the process.
-     * The refresh token it replaces stays accepted for [ServerConfigs.refreshTokenGracePeriod], so a client that never received the rotated pair can still recover:
-     * presenting it again issues a new access token with the session's current refresh token, without rotating again.
      *
      * @param refreshToken The long-lived token previously issued during login.
      * @return [Outcome.Success] with a fresh [BearerToken] pair, [Outcome.Rejected] when the refresh token is unknown or expired, or [Outcome.Error] when the operation failed.

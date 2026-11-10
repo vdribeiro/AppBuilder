@@ -6,11 +6,17 @@ import kotlin.test.assertIs
 import kotlin.test.assertNotEquals
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import kotlinx.coroutines.flow.firstOrNull
+import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.r2dbc.selectAll
 import com.app.builder.core.config.ServerConfigs
 import com.app.builder.core.locale.now
 import com.app.builder.core.security.createVerifier
+import com.app.builder.core.security.hashRefreshToken
 import com.app.builder.core.security.uuid
 import com.app.builder.data.database.create
+import com.app.builder.data.database.safeTransaction
+import com.app.builder.data.database.table.UserSessionTable
 import com.app.builder.data.database.reset
 import com.app.builder.domain.Authentication
 import com.app.builder.domain.BearerToken
@@ -127,7 +133,7 @@ class AuthenticationUseCasesTest: TestCase() {
         assertIs<Outcome.Success<BearerToken>>(value = authenticationUseCases.refreshTokens(refreshToken = bearer.refreshToken))
     }
 
-    /** Verifies that within the grace period the consumed refresh token still refreshes, handing back the session's current refresh token without rotating it again. */
+    /** Verifies that within the grace period the consumed refresh token still refreshes, rotating the session once more so the refresh token issued in between stops working. */
     @Test
     fun refreshTokensAcceptsThePreviousRefreshTokenWithinTheGracePeriod() = runServerTest {
         ServerConfigs.set { it.copy(refreshTokenGracePeriod = 60_000L) }
@@ -138,8 +144,28 @@ class AuthenticationUseCasesTest: TestCase() {
         val rotated = assertIs<Outcome.Success<BearerToken>>(value = authenticationUseCases.refreshTokens(refreshToken = bearerToken.refreshToken)).data
         val replayed = assertIs<Outcome.Success<BearerToken>>(value = authenticationUseCases.refreshTokens(refreshToken = bearerToken.refreshToken)).data
 
-        assertEquals(expected = rotated.refreshToken, actual = replayed.refreshToken)
-        assertIs<Outcome.Success<BearerToken>>(value = authenticationUseCases.refreshTokens(refreshToken = rotated.refreshToken))
+        assertNotEquals(illegal = rotated.refreshToken, actual = replayed.refreshToken)
+        assertEquals(expected = Outcome.Rejected, actual = authenticationUseCases.refreshTokens(refreshToken = rotated.refreshToken))
+        assertIs<Outcome.Success<BearerToken>>(value = authenticationUseCases.refreshTokens(refreshToken = replayed.refreshToken))
+    }
+
+    /** Verifies that sessions store the hash of their refresh token rather than the token itself, across login and rotation. */
+    @Test
+    fun refreshTokensAreStoredHashed() = runServerTest {
+        val authenticationUseCases = dependency.get()
+            .useCases
+            .authenticationUseCases
+        suspend fun storedRefreshToken(): String? = dependency.get().database.safeTransaction {
+            UserSessionTable.selectAll()
+                .where { UserSessionTable.userUuid eq FakeData.user.uuid }
+                .firstOrNull()
+                ?.get(UserSessionTable.refreshToken)
+        }.getOrNull()
+
+        assertEquals(expected = hashRefreshToken(refreshToken = bearerToken.refreshToken), actual = storedRefreshToken())
+
+        val rotated = assertIs<Outcome.Success<BearerToken>>(value = authenticationUseCases.refreshTokens(refreshToken = bearerToken.refreshToken)).data
+        assertEquals(expected = hashRefreshToken(refreshToken = rotated.refreshToken), actual = storedRefreshToken())
     }
 
     /** Verifies that a session can be logged out with its previous refresh token within the grace period, ending it for its current refresh token too. */
