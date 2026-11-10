@@ -28,7 +28,7 @@ import com.app.builder.domain.Permission
 import com.app.builder.domain.RegistrationForm
 import com.app.builder.domain.push.NoOpFcmService
 import com.app.builder.domain.route.installRouting
-import com.app.builder.domain.usecase.WriteResult
+import com.app.builder.domain.usecase.Outcome
 
 /** Abstract class for defining test cases. It provides a hermetic testing environment. */
 abstract class TestCase: SharedTestCase() {
@@ -66,8 +66,10 @@ abstract class TestCase: SharedTestCase() {
      */
     protected suspend fun seedUser(registrationForm: RegistrationForm): Authentication {
         val authenticationUseCases = dependency.get().useCases.authenticationUseCases
-        require(value = authenticationUseCases.register(registrationForm = registrationForm) == WriteResult.SUCCESS) { "Unable to seed the user account." }
-        return requireNotNull(value = authenticationUseCases.login(credentials = registrationForm.credentials)) { "Unable to log in the seeded user account." }
+        require(value = authenticationUseCases.register(registrationForm = registrationForm) is Outcome.Success) { "Unable to seed the user account." }
+        val login = authenticationUseCases.login(credentials = registrationForm.credentials)
+        require(value = login is Outcome.Success) { "Unable to log in the seeded user account." }
+        return login.data
     }
 
     /**
