@@ -5,6 +5,7 @@ import kotlin.test.assertEquals
 import org.jetbrains.exposed.v1.r2dbc.selectAll
 import com.app.builder.core.config.ServerConfigs
 import com.app.builder.core.security.uuid
+import com.app.builder.data.database.reset
 import com.app.builder.data.database.safeTransaction
 import com.app.builder.data.database.table.TicketTable
 import com.app.builder.domain.usecase.Outcome
@@ -56,5 +57,19 @@ class TicketUseCasesTest: TestCase() {
 
         assertEquals(expected = 1L, actual = database.safeTransaction { TicketTable.selectAll().count() }.getOrThrow())
         assertEquals(expected = Outcome.Rejected, actual = ticketUseCases.consumeTicket(ticketUuid = expiredTicketUuid))
+    }
+
+    /** Verifies that when the database fails, creating and consuming a ticket report [Outcome.Error] rather than a refused ticket. */
+    @Test
+    fun databaseFailureIsAnError() = runServerTest {
+        val ticketUseCases = dependency.get()
+            .useCases
+            .ticketUseCases
+        dependency.get().database.reset()
+
+        listOf(
+            "createTicket" to ticketUseCases.createTicket(userUuid = FakeData.adminUser.uuid),
+            "consumeTicket" to ticketUseCases.consumeTicket(ticketUuid = uuid())
+        ).forEach { (name, outcome) -> assertEquals(expected = Outcome.Error, actual = outcome, message = name) }
     }
 }

@@ -4,6 +4,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import com.app.builder.core.security.uuid
+import com.app.builder.data.database.reset
 import com.app.builder.domain.DeviceToken
 import com.app.builder.domain.usecase.Outcome
 import com.app.builder.test.FakeData
@@ -104,5 +105,20 @@ class DeviceTokenUseCasesTest: TestCase() {
         // As does dropping one.
         assertEquals(expected = Outcome.Success(data = Unit), actual = deviceTokenUseCases.removeToken(token = rotatedPhone.token))
         assertEquals(expected = listOf(tablet), actual = deviceTokenUseCases.getTokens(userUuid = userUuid).successData())
+    }
+
+    /** Verifies that when the database fails, its reads and writes report [Outcome.Error] rather than an empty list, an unknown token or a refused write. */
+    @Test
+    fun databaseFailureIsAnError() = runServerTest {
+        val deviceTokenUseCases = dependency.get()
+            .useCases
+            .deviceTokenUseCases
+        dependency.get().database.reset()
+
+        listOf(
+            "registerToken" to deviceTokenUseCases.registerToken(userUuid = FakeData.user.uuid, registration = DeviceToken(deviceUuid = uuid(), token = "token")),
+            "getTokens" to deviceTokenUseCases.getTokens(userUuid = FakeData.user.uuid),
+            "removeToken" to deviceTokenUseCases.removeToken(token = "token")
+        ).forEach { (name, outcome) -> assertEquals(expected = Outcome.Error, actual = outcome, message = name) }
     }
 }

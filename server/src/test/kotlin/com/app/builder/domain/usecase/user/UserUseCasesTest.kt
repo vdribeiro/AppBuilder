@@ -88,4 +88,19 @@ class UserUseCasesTest: TestCase() {
         ).successData()
         assertEquals(expected = listOf(old), actual = secondPage)
     }
+
+    /** Verifies that when the database fails, its reads and writes report [Outcome.Error] rather than an empty list, a missing user or a refused write. */
+    @Test
+    fun databaseFailureIsAnError() = runServerTest {
+        val userUseCases = dependency.get()
+            .useCases
+            .userUseCases
+        dependency.get().database.reset()
+
+        listOf(
+            "getUsers" to userUseCases.getUsers(lastSyncUtc = Instant.fromEpochSeconds(epochSeconds = 0), cursorUtc = null, cursorUuid = null, pageSize = ServerConfigs.value.pageSize),
+            "getUser" to userUseCases.getUser(uuid = FakeData.user.uuid),
+            "upsertUser" to userUseCases.upsertUser(user = FakeData.user)
+        ).forEach { (name, outcome) -> assertEquals(expected = Outcome.Error, actual = outcome, message = name) }
+    }
 }

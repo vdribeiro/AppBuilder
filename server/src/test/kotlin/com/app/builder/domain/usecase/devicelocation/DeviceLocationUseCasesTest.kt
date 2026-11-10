@@ -9,6 +9,7 @@ import kotlin.time.Instant
 import com.app.builder.core.config.ServerConfigs
 import com.app.builder.core.locale.now
 import com.app.builder.core.security.uuid
+import com.app.builder.data.database.reset
 import com.app.builder.domain.usecase.Outcome
 import com.app.builder.test.FakeData
 import com.app.builder.test.TestCase
@@ -103,5 +104,19 @@ class DeviceLocationUseCasesTest: TestCase() {
                 pageSize = ServerConfigs.value.pageSize
             ).successData().isEmpty()
         )
+    }
+
+    /** Verifies that when the database fails, its read and write report [Outcome.Error] rather than an empty list or a refused write. */
+    @Test
+    fun databaseFailureIsAnError() = runServerTest {
+        val deviceLocationUseCases = dependency.get()
+            .useCases
+            .deviceLocationUseCases
+        dependency.get().database.reset()
+
+        listOf(
+            "getDeviceLocations" to deviceLocationUseCases.getDeviceLocations(userUuid = FakeData.adminUser.uuid, lastSyncUtc = Instant.fromEpochSeconds(epochSeconds = 0), cursorUtc = null, cursorUuid = null, pageSize = ServerConfigs.value.pageSize),
+            "upsertDeviceLocation" to deviceLocationUseCases.upsertDeviceLocation(userUuid = FakeData.adminUser.uuid, deviceLocation = FakeData.deviceLocation)
+        ).forEach { (name, outcome) -> assertEquals(expected = Outcome.Error, actual = outcome, message = name) }
     }
 }

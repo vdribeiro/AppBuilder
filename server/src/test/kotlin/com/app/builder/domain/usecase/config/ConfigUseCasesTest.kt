@@ -6,6 +6,7 @@ import com.app.builder.core.config.ClientConfigs
 import com.app.builder.core.config.ClientFlags
 import com.app.builder.core.config.ServerConfigs
 import com.app.builder.core.config.ServerFlags
+import com.app.builder.data.database.reset
 import com.app.builder.domain.usecase.Outcome
 import com.app.builder.test.FakeData
 import com.app.builder.test.TestCase
@@ -55,5 +56,21 @@ class ConfigUseCasesTest: TestCase() {
         assertEquals(expected = clientConfigs, actual = ClientConfigs.value)
         assertEquals(expected = serverFlags, actual = ServerFlags.value)
         assertEquals(expected = serverConfigs, actual = ServerConfigs.value)
+    }
+
+    /** Verifies that when the database fails, its updates report [Outcome.Error] rather than a refused write. */
+    @Test
+    fun databaseFailureIsAnError() = runServerTest {
+        val configUseCases = dependency.get()
+            .useCases
+            .configUseCases
+        dependency.get().database.reset()
+
+        listOf(
+            "updateClientFeatureFlags" to configUseCases.updateClientFeatureFlags(flags = ClientFlags.value),
+            "updateClientConfigs" to configUseCases.updateClientConfigs(configs = ClientConfigs.value),
+            "updateServerFeatureFlags" to configUseCases.updateServerFeatureFlags(flags = ServerFlags.value),
+            "updateServerConfigs" to configUseCases.updateServerConfigs(configs = ServerConfigs.value)
+        ).forEach { (name, outcome) -> assertEquals(expected = Outcome.Error, actual = outcome, message = name) }
     }
 }

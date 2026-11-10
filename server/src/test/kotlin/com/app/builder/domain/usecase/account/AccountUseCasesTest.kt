@@ -5,6 +5,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import com.app.builder.core.locale.now
 import com.app.builder.core.security.uuid
+import com.app.builder.data.database.reset
 import com.app.builder.domain.DeviceToken
 import com.app.builder.domain.EntityType
 import com.app.builder.domain.Permission
@@ -76,5 +77,19 @@ class AccountUseCasesTest: TestCase() {
 
         assertEquals(expected = Outcome.Success(data = Unit), actual = accountUseCases.upsertAccount(account = FakeData.account.copy(deletedAt = now())))
         assertTrue(actual = deviceTokenUseCases.getTokens(userUuid = FakeData.user.uuid).successData().isEmpty())
+    }
+
+    /** Verifies that when the database fails, its read and write report [Outcome.Error] rather than a missing account. */
+    @Test
+    fun databaseFailureIsAnError() = runServerTest {
+        val accountUseCases = dependency.get()
+            .useCases
+            .accountUseCases
+        dependency.get().database.reset()
+
+        listOf(
+            "getAccount" to accountUseCases.getAccount(userUuid = FakeData.user.uuid),
+            "upsertAccount" to accountUseCases.upsertAccount(account = FakeData.account)
+        ).forEach { (name, outcome) -> assertEquals(expected = Outcome.Error, actual = outcome, message = name) }
     }
 }

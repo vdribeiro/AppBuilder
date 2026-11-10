@@ -76,4 +76,18 @@ class RegistryUseCasesTest: TestCase() {
         val registries = registryUseCases.getRegistries(lastSyncUtc = Instant.fromEpochSeconds(epochSeconds = 0), cursorUtc = null, cursorUuid = null, pageSize = ServerConfigs.value.pageSize).successData()
         assertEquals(expected = listOf(updated), actual = registries)
     }
+
+    /** Verifies that when the database fails, its read and write report [Outcome.Error] rather than an empty list or a refused write. */
+    @Test
+    fun databaseFailureIsAnError() = runServerTest {
+        val registryUseCases = dependency.get()
+            .useCases
+            .registryUseCases
+        dependency.get().database.reset()
+
+        listOf(
+            "getRegistries" to registryUseCases.getRegistries(lastSyncUtc = Instant.fromEpochSeconds(epochSeconds = 0), cursorUtc = null, cursorUuid = null, pageSize = ServerConfigs.value.pageSize),
+            "upsertRegistry" to registryUseCases.upsertRegistry(registry = FakeData.registry)
+        ).forEach { (name, outcome) -> assertEquals(expected = Outcome.Error, actual = outcome, message = name) }
+    }
 }
