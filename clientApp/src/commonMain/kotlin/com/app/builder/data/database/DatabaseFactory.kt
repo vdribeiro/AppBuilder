@@ -58,6 +58,7 @@ class DatabaseFactory(driver: SqlDriver) {
         ),
         SessionAdapter = Session.Adapter(
             userUuidAdapter = UuidColumnAdapter,
+            expiredAtAdapter = InstantColumnAdapter,
         ),
         TaskAdapter = Task.Adapter(
             uuidAdapter = UuidColumnAdapter,

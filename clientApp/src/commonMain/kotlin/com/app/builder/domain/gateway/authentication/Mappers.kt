@@ -80,7 +80,8 @@ fun UserSession.toSessionSchema(): SessionSchema = SessionSchema(
     salt = salt,
     verifier = verifier,
     accessToken = accessToken,
-    refreshToken = refreshToken
+    refreshToken = refreshToken,
+    expiredAt = null
 )
 
 /**

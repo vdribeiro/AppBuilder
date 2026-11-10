@@ -6,11 +6,17 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlin.uuid.Uuid
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
+import io.ktor.http.HttpStatusCode
 import app.cash.sqldelight.async.coroutines.awaitAsOneOrNull
+import com.app.builder.Dependency
 import com.app.builder.Dependency.getUserDependency
 import com.app.builder.core.config.ClientFlags
 import com.app.builder.data.database.SessionSchema
+import com.app.builder.data.database.createMockSqlDriver
+import com.app.builder.data.http.TestEngine
+import com.app.builder.data.http.respondMock
 import com.app.builder.data.serializer.encode
 import com.app.builder.domain.EntityType
 import com.app.builder.domain.scheduler.Job
@@ -95,7 +101,8 @@ class AuthenticationRepositoryTest: TestCase() {
                 salt = "salt",
                 verifier = "verifier",
                 accessToken = encryptedBearer.accessToken,
-                refreshToken = encryptedBearer.refreshToken
+                refreshToken = encryptedBearer.refreshToken,
+                expiredAt = null
             )
         )
         assertEquals(expected = FakeData.adminUser.uuid, actual = sessionDao.getSession(userUuid = FakeData.adminUser.uuid).awaitAsOneOrNull()?.userUuid)
@@ -129,7 +136,8 @@ class AuthenticationRepositoryTest: TestCase() {
                 salt = "salt",
                 verifier = "verifier",
                 accessToken = encryptedBearer.accessToken,
-                refreshToken = encryptedBearer.refreshToken
+                refreshToken = encryptedBearer.refreshToken,
+                expiredAt = null
             )
         )
 
@@ -163,7 +171,8 @@ class AuthenticationRepositoryTest: TestCase() {
                 salt = "salt",
                 verifier = "verifier",
                 accessToken = encryptedBearer.accessToken,
-                refreshToken = encryptedBearer.refreshToken
+                refreshToken = encryptedBearer.refreshToken,
+                expiredAt = null
             )
         )
         assertEquals(expected = FakeData.adminBearerToken, actual = authenticationRepository.getBearerToken(userUuid = FakeData.adminUser.uuid))
@@ -190,7 +199,8 @@ class AuthenticationRepositoryTest: TestCase() {
                 salt = "salt",
                 verifier = "verifier",
                 accessToken = encryptedBearer.accessToken,
-                refreshToken = encryptedBearer.refreshToken
+                refreshToken = encryptedBearer.refreshToken,
+                expiredAt = null
             )
         )
 
@@ -216,10 +226,42 @@ class AuthenticationRepositoryTest: TestCase() {
         assertNotNull(actual = authenticationUseCases.login(credentials = FakeData.adminCredentials))
         assertEquals(expected = FakeData.adminUser.uuid, actual = authenticationUseCases.observeCurrentUser().firstOrNull()?.uuid)
 
+        assertEquals(expected = false, actual = authenticationUseCases.observeSessionExpired().first())
         assertNull(actual = authenticationRepository.refreshBearerToken(userUuid = FakeData.adminUser.uuid, refreshToken = FakeData.expiredBearerToken.refreshToken))
 
         assertEquals(expected = FakeData.adminUser.uuid, actual = sessionDao.getSession(userUuid = FakeData.adminUser.uuid).awaitAsOneOrNull()?.userUuid)
         assertEquals(expected = FakeData.adminUser.uuid, actual = authenticationUseCases.observeCurrentUser().firstOrNull()?.uuid)
+        assertEquals(expected = true, actual = authenticationUseCases.observeSessionExpired().first())
+
+        assertNotNull(actual = authenticationUseCases.login(credentials = FakeData.adminCredentials))
+        assertEquals(expected = false, actual = authenticationUseCases.observeSessionExpired().first())
+    }
+
+    /** Verifies that logging out of a session the server already refused completes and removes the local session. */
+    @Test
+    fun executeLogoutOfARefusedSession() = runUnitTest {
+        val appGraph = Dependency.AppGraph(
+            sqlDriver = createMockSqlDriver(),
+            httpClientEngine = TestEngine { respondMock(status = HttpStatusCode.Unauthorized) }
+        )
+        val authenticationRepository = appGraph.userGraph.repositories.authenticationRepository
+        val sessionDao = appGraph.database.sessionQueries
+        val encryptedBearer = assertNotNull(actual = FakeData.expiredBearerToken.encrypt())
+        sessionDao.upsertSession(
+            SessionSchema(
+                userUuid = FakeData.adminUser.uuid,
+                username = FakeData.adminCredentials.username,
+                salt = "salt",
+                verifier = "verifier",
+                accessToken = encryptedBearer.accessToken,
+                refreshToken = encryptedBearer.refreshToken,
+                expiredAt = null
+            )
+        )
+
+        val job = Job(userUuid = Uuid.NIL, entityType = EntityType.ACCOUNT, type = Job.Type.DELETE, payload = FakeData.adminUser.uuid.toString())
+        assertTrue(actual = authenticationRepository.executeLogout(job = job) is JobResult.Success)
+        assertNull(actual = sessionDao.getSession(userUuid = FakeData.adminUser.uuid).awaitAsOneOrNull())
     }
 
     /** Verifies that refreshing the bearer token returns null when the http client flag is disabled, keeping the session and the current user. */
@@ -244,5 +286,6 @@ class AuthenticationRepositoryTest: TestCase() {
 
         assertEquals(expected = FakeData.adminUser.uuid, actual = sessionDao.getSession(userUuid = FakeData.adminUser.uuid).awaitAsOneOrNull()?.userUuid)
         assertEquals(expected = FakeData.adminUser.uuid, actual = authenticationUseCases.observeCurrentUser().firstOrNull()?.uuid)
+        assertEquals(expected = false, actual = authenticationUseCases.observeSessionExpired().first())
     }
 }

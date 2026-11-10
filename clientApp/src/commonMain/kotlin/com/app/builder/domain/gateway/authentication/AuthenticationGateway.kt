@@ -14,6 +14,7 @@ import kotlinx.coroutines.withContext
 import io.ktor.client.HttpClient
 import app.cash.sqldelight.async.coroutines.awaitAsOneOrNull
 import com.app.builder.core.flow.Dispatcher
+import com.app.builder.core.locale.now
 import com.app.builder.core.security.toUuid
 import com.app.builder.core.security.uuid
 import com.app.builder.core.telemetry.Telemetry
@@ -22,6 +23,7 @@ import com.app.builder.data.database.safeTransaction
 import com.app.builder.data.http.HttpRequest
 import com.app.builder.data.http.HttpResult
 import com.app.builder.data.http.URL
+import com.app.builder.data.http.plugin.UnauthorizedException
 import com.app.builder.data.http.post
 import com.app.builder.data.serializer.decode
 import com.app.builder.data.serializer.encode
@@ -92,6 +94,23 @@ class AuthenticationGateway(
             .catch {
                 Telemetry.error(tag = TAG, message = "Unable to observe current account", throwable = it)
                 emit(value = null)
+            }
+
+    override fun observeSessionExpired(): Flow<Boolean> =
+        observeCurrentUserUuid()
+            .flatMapLatest { userUuid ->
+                when (userUuid) {
+                    null -> flowOf(value = false)
+                    else -> sessionDao.getSession(userUuid = userUuid)
+                        .asFlow { it.expiredAt != null }
+                        .map { it.firstOrNull() ?: false }
+                }
+            }
+            .distinctUntilChanged()
+            .flowOn(context = Dispatcher.IO)
+            .catch {
+                Telemetry.error(tag = TAG, message = "Unable to observe the session state", throwable = it)
+                emit(value = false)
             }
 
     override suspend fun login(credentials: UserCredentials): User? = withContext(context = Dispatcher.IO) {
@@ -206,21 +225,24 @@ class AuthenticationGateway(
             body = decryptedBearer.refreshToken
         )) {
             is HttpResult.Error -> {
-                Telemetry.error(tag = TAG, message = "Unable to post logout", throwable = result.error)
-                result.error.toJobResult()
+                if (result.error !is UnauthorizedException) {
+                    Telemetry.error(tag = TAG, message = "Unable to post logout", throwable = result.error)
+                    return@withContext result.error.toJobResult()
+                }
+                Telemetry.info(tag = TAG, message = "The server already ended the session of user $userUuid")
             }
 
-            is HttpResult.Success -> {
-                database.safeTransaction {
-                    deleteSession(userUuid = userUuid)
-                }.onFailure {
-                    Telemetry.error(tag = TAG, message = "Unable to delete session", throwable = it)
-                    return@withContext it.toJobResult()
-                }
-                Telemetry.info(tag = TAG, message = "Successful logout")
-                JobResult.Success
-            }
+            is HttpResult.Success -> Unit
         }
+
+        database.safeTransaction {
+            deleteSession(userUuid = userUuid)
+        }.onFailure {
+            Telemetry.error(tag = TAG, message = "Unable to delete session", throwable = it)
+            return@withContext it.toJobResult()
+        }
+        Telemetry.info(tag = TAG, message = "Successful logout")
+        JobResult.Success
     }
 
     override suspend fun getBearerToken(userUuid: Uuid): BearerToken? = withContext(context = Dispatcher.IO) {
@@ -238,6 +260,7 @@ class AuthenticationGateway(
         )) {
             is HttpResult.Error -> {
                 Telemetry.error(tag = TAG, message = "Unable to get new tokens", throwable = result.error)
+                if (result.error is UnauthorizedException) expireSession(userUuid = userUuid)
                 return@withContext null
             }
 
@@ -384,6 +407,20 @@ class AuthenticationGateway(
         refreshToken = bearerToken.refreshToken,
         userUuid = userUuid,
     ) > 0
+
+    /**
+     * Marks a session as expired once the server refused its refresh token.
+     *
+     * @param userUuid The unique identifier of the user whose session was refused.
+     */
+    private suspend fun expireSession(userUuid: Uuid) {
+        database.safeTransaction {
+            sessionDao.expireSession(expiredAt = now(), userUuid = userUuid)
+        }.onFailure {
+            Telemetry.error(tag = TAG, message = "Unable to mark the session of user $userUuid as expired", throwable = it)
+        }
+        Telemetry.info(tag = TAG, message = "Session of user $userUuid expired")
+    }
 
     /**
      * Observes the unique identifier of the authenticated user.

@@ -25,7 +25,7 @@ class SessionStore(
     }
 
     /**
-     * Observes the current user, their account and the application status.
+     * Observes the current user, their account, whether their session expired and the application status.
      *
      * @return The [Job] representing this execution.
      */
@@ -37,6 +37,9 @@ class SessionStore(
             flow2 = authenticationUseCases.observeCurrentAccount()
         ) { user, account -> user to account }.observe(id = "current_session") { (user, account) ->
             updateState { it.copy(loaded = true, user = user, account = account) }
+        }
+        authenticationUseCases.observeSessionExpired().observe(id = "session_expired") { sessionExpired ->
+            updateState { it.copy(sessionExpired = sessionExpired) }
         }
 
         statusUseCases?.observeSynced()?.observe(id = "synced") { synced ->

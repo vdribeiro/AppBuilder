@@ -518,5 +518,20 @@
     "languageIso": "en",
     "key": "unable_to_open_file",
     "value": "Unable to open this file"
+  },
+  {
+    "languageIso": "en",
+    "key": "status_session_expired",
+    "value": "Your session expired. Log out and log in again to sync your changes."
+  },
+  {
+    "languageIso": "en",
+    "key": "status_not_synced",
+    "value": "Some changes are not synced yet."
+  },
+  {
+    "languageIso": "en",
+    "key": "status_clock_untrusted",
+    "value": "The device clock can't be trusted, so changes wait to sync."
   }
 ]

@@ -232,6 +232,22 @@ class JobSchedulerTest: TestCase() {
         assertEquals(expected = Job.State.FAILED, actual = jobStore.jobs.value.first { it.uuid == job.uuid }.state)
     }
 
+    /** Verifies an unauthorized job result keeps the job pending for later without spending an attempt, even one already at the max attempt count. */
+    @Test
+    fun unauthorizedResultKeepsJobPendingWithoutSpendingAnAttempt() = runUnitTest {
+        val jobStore = LocalJobStore()
+        val scheduler = JobScheduler(jobStore = jobStore, jobFactory = FakeJobFactory(result = JobResult.Unauthorized), clockService = FakeClockService())
+        val job = Job(userUuid = Uuid.NIL, entityType = EntityType.CLIENT_FLAG, type = Job.Type.GET, attempt = ClientConfigs.value.schedulerMaxAttempts)
+
+        scheduler.queue(job = job)
+        scheduler.start()
+        val saved = jobStore.jobs.first { jobs -> jobs.any { it.uuid == job.uuid && it.nextAttemptAt != null } }.first { it.uuid == job.uuid }
+        scheduler.stop()
+
+        assertEquals(expected = Job.State.PENDING, actual = saved.state)
+        assertEquals(expected = job.attempt, actual = saved.attempt)
+    }
+
     /** Verifies an error job result fails the job. */
     @Test
     fun errorResultFailsJob() = runUnitTest {

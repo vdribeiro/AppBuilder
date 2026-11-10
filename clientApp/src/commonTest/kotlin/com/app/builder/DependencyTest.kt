@@ -91,7 +91,8 @@ class DependencyTest: TestCase() {
                 salt = "salt",
                 verifier = "verifier",
                 accessToken = bearer.accessToken,
-                refreshToken = bearer.refreshToken
+                refreshToken = bearer.refreshToken,
+                expiredAt = null
             )
         )
 

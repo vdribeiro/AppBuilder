@@ -1,6 +1,7 @@
 package com.app.builder.ui.component.bar
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Login
@@ -12,6 +13,7 @@ import androidx.compose.material.icons.filled.Restore
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.SyncDisabled
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
@@ -23,6 +25,7 @@ import com.app.builder.ui.component.image.Avatar
 import com.app.builder.ui.core.button.Button
 import com.app.builder.ui.core.image.Icon
 import com.app.builder.ui.core.image.Image
+import com.app.builder.ui.core.overlay.Tooltip
 
 /**
  * Renders the current user's avatar for the [TopActionBar] leading slot.
@@ -45,23 +48,36 @@ fun AvatarButton(name: String? = null, image: Image? = null, onClick: (() -> Uni
 
 /**
  * Renders the application status icons for the [TopActionBar] leading slot, in the error color, showing only what is wrong.
+ * Each icon explains itself in a tooltip.
  *
- * @param synced Shows a sync disabled icon when `false`.
+ * @param synced Shows a sync disabled icon when `false`, unless the session expired, since nothing can sync until the user logs in again.
  * @param clockTrusted Shows a clock icon when `false`.
+ * @param sessionExpired Shows a warning icon when `true`, asking the user to log out and log in again.
  */
 @Composable
-fun StatusIcons(synced: Boolean = true, clockTrusted: Boolean = true) {
+fun StatusIcons(synced: Boolean = true, clockTrusted: Boolean = true, sessionExpired: Boolean = false) {
     val color = LocalColorScheme.current
-    if (!synced) Icon(
-        modifier = Modifier.testTag(tag = "status_not_synced"),
-        imageVector = Icons.Default.SyncDisabled,
-        tint = color.error
-    )
-    if (!clockTrusted) Icon(
-        modifier = Modifier.testTag(tag = "status_clock_untrusted"),
-        imageVector = Icons.Default.Schedule,
-        tint = color.error
-    )
+    if (sessionExpired) Tooltip(text = "status_session_expired") {
+        Icon(
+            modifier = Modifier.testTag(tag = "status_session_expired"),
+            imageVector = Icons.Default.Warning,
+            tint = color.error
+        )
+    }
+    if (!synced && !sessionExpired) Tooltip(text = "status_not_synced") {
+        Icon(
+            modifier = Modifier.testTag(tag = "status_not_synced"),
+            imageVector = Icons.Default.SyncDisabled,
+            tint = color.error
+        )
+    }
+    if (!clockTrusted) Tooltip(text = "status_clock_untrusted") {
+        Icon(
+            modifier = Modifier.testTag(tag = "status_clock_untrusted"),
+            imageVector = Icons.Default.Schedule,
+            tint = color.error
+        )
+    }
 }
 
 /**
@@ -137,7 +153,10 @@ private fun AvatarButtonPreview() = Preview {
 @PreviewLightDark
 @Composable
 private fun StatusIconsPreview() = Preview {
-    Row { StatusIcons(synced = false, clockTrusted = false) }
+    Column {
+        Row { StatusIcons(synced = false, clockTrusted = false) }
+        Row { StatusIcons(synced = false, clockTrusted = false, sessionExpired = true) }
+    }
 }
 
 @PreviewLightDark

@@ -78,7 +78,8 @@ class AuthenticationUseCasesTest: TestCase() {
                 salt = salt,
                 verifier = deriveKey(password = FakeData.adminCredentials.password, salt = salt)!!,
                 accessToken = encryptedBearer.accessToken,
-                refreshToken = encryptedBearer.refreshToken
+                refreshToken = encryptedBearer.refreshToken,
+                expiredAt = null
             )
         )
 

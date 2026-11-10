@@ -2,6 +2,7 @@ package com.app.builder.ui.component.session
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlinx.coroutines.Job
@@ -57,6 +58,20 @@ class SessionStoreTest: TestCase() {
         val state = store.stateFlow.first { it.loaded && it.user != null }
         assertEquals(expected = FakeData.adminUser.name, actual = state.user?.name)
         assertEquals(expected = FakeData.adminUser.uuid, actual = state.account?.userUuid)
+    }
+
+    /** Verifies that the session reports when the server refused the refresh token of the logged in user. */
+    @Test
+    fun sessionExpired() = runUnitTest {
+        val authenticationUseCases = authenticationUseCases()
+        authenticationUseCases.login(credentials = FakeData.adminCredentials)
+        val store = SessionStore(state = SessionState(), authenticationUseCases = authenticationUseCases)
+        subscribe(store = store)
+        assertFalse(actual = store.stateFlow.first { it.loaded && it.user != null }.sessionExpired)
+
+        dependency.get().userGraph.repositories.authenticationRepository.refreshBearerToken(userUuid = FakeData.adminUser.uuid, refreshToken = FakeData.expiredBearerToken.refreshToken)
+
+        store.stateFlow.first { it.sessionExpired }
     }
 
     /** Verifies that the session follows the application status, and assumes it is fine without status use cases. */

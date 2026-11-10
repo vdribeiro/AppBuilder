@@ -26,6 +26,13 @@ interface AuthenticationUseCases {
     fun observeCurrentAccount(): Flow<Account?>
 
     /**
+     * Observes whether the server refused the session of the active user.
+     *
+     * @return A [Flow] emitting `true` while the session is expired, and `false` otherwise or when no user is authenticated.
+     */
+    fun observeSessionExpired(): Flow<Boolean>
+
+    /**
      * Authenticates a user using their unique [credentials].
      *
      * @param credentials The user's login credentials.

@@ -1,3 +1,4 @@
+import kotlin.time.Instant;
 import kotlin.uuid.Uuid;
 
 CREATE TABLE IF NOT EXISTS Session (
@@ -6,7 +7,8 @@ CREATE TABLE IF NOT EXISTS Session (
     salt TEXT NOT NULL,
     verifier TEXT NOT NULL,
     accessToken TEXT NOT NULL,
-    refreshToken TEXT NOT NULL
+    refreshToken TEXT NOT NULL,
+    expiredAt TEXT AS Instant
 );
 
 CREATE INDEX IF NOT EXISTS session_username ON Session(username);
@@ -22,6 +24,11 @@ updateSessionTokens:
 UPDATE Session
 SET accessToken = :accessToken,
     refreshToken = :refreshToken
+WHERE userUuid = :userUuid;
+
+expireSession:
+UPDATE Session
+SET expiredAt = :expiredAt
 WHERE userUuid = :userUuid;
 
 getSession:

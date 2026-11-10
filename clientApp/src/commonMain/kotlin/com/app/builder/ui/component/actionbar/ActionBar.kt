@@ -85,7 +85,7 @@ fun ActionBar(
                 },
                 onClick = { router.navigate(screen = Screen.UserProfile) }
             )
-            StatusIcons(synced = session.synced, clockTrusted = session.clockTrusted)
+            StatusIcons(synced = session.synced, clockTrusted = session.clockTrusted, sessionExpired = session.sessionExpired)
         },
         actions = {
             EntityActions(

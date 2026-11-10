@@ -11,6 +11,7 @@ import com.app.builder.domain.User
  * @property account The current user's account, or `null` when no user is signed in.
  * @property synced Whether no background job is pending or running.
  * @property clockTrusted Whether the device clock can be trusted.
+ * @property sessionExpired Whether the server refused the session.
  */
 data class SessionState(
     val loaded: Boolean = false,
@@ -18,4 +19,5 @@ data class SessionState(
     val account: Account? = null,
     val synced: Boolean = true,
     val clockTrusted: Boolean = true,
+    val sessionExpired: Boolean = false,
 )

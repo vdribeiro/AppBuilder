@@ -49,6 +49,24 @@ class ActionBarTest: TestCase() {
         }
     }
 
+    /** Verifies that unsynced work shows the not synced icon while the session is valid. */
+    @Test
+    fun notSyncedIcon() = runUITest {
+        setUI { ActionBar(sessionStore = Store<SessionState, Unit>(initialState = SessionState(loaded = true, synced = false))) }
+
+        onNodeWithTag(testTag = "status_not_synced", useUnmergedTree = true).assertIsDisplayed()
+        onNodeWithTag(testTag = "status_session_expired", useUnmergedTree = true).assertDoesNotExist()
+    }
+
+    /** Verifies that an expired session shows the session warning in place of the not synced icon, since nothing syncs until the user logs in again. */
+    @Test
+    fun sessionExpiredWarning() = runUITest {
+        setUI { ActionBar(sessionStore = Store<SessionState, Unit>(initialState = SessionState(loaded = true, synced = false, sessionExpired = true))) }
+
+        onNodeWithTag(testTag = "status_session_expired", useUnmergedTree = true).assertIsDisplayed()
+        onNodeWithTag(testTag = "status_not_synced", useUnmergedTree = true).assertDoesNotExist()
+    }
+
     /** Verifies that a logged out user is offered the login button, which opens the login screen, and only the cancel button among the entity ones. */
     @Test
     fun loggedOut() = runUITest {

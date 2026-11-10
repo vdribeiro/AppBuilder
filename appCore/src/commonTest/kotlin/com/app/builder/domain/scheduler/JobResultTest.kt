@@ -8,6 +8,7 @@ import kotlinx.io.IOException
 import io.ktor.http.HttpStatusCode
 import com.app.builder.data.http.plugin.InternetDisabledException
 import com.app.builder.data.http.plugin.NetworkDisabledException
+import com.app.builder.data.http.plugin.UnauthorizedException
 import com.app.builder.data.http.plugin.UnsuccessfulStatusException
 import com.app.builder.domain.EntityType
 import com.app.builder.domain.scheduler.JobResult.NoOp.toJobResult
@@ -25,6 +26,12 @@ class JobResultTest: TestCase() {
     @Test
     fun ioFailuresAreRetryable() = runUnitTest {
         assertEquals(expected = JobResult.Retry, actual = IOException("timeout").toJobResult())
+    }
+
+    /** Verifies refused credentials map to an unauthorized job result, so the job waits for a new session. */
+    @Test
+    fun unauthorizedFailuresWaitForANewSession() = runUnitTest {
+        assertEquals(expected = JobResult.Unauthorized, actual = UnauthorizedException().toJobResult())
     }
 
     /** Verifies request timeout, rate limit and server error statuses map to a retryable job result. */
