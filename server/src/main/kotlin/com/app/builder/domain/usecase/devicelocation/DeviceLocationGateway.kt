@@ -21,7 +21,7 @@ import com.app.builder.data.database.safeTransaction
 import com.app.builder.data.database.table.DeviceLocationTable
 import com.app.builder.domain.DeviceLocation
 import com.app.builder.domain.usecase.Outcome
-import com.app.builder.domain.usecase.toWriteOutcome
+import com.app.builder.domain.usecase.toOutcome
 
 /**
  * Gateway implementation for device location use cases.
@@ -78,7 +78,7 @@ class DeviceLocationGateway(
             }.insertedCount > 0
         }.onFailure {
             Telemetry.error(tag = TAG, message = "Unable to record location for user $userUuid", throwable = it)
-        }.getOrDefault(defaultValue = false).toWriteOutcome()
+        }.getOrDefault(defaultValue = false).toOutcome()
     }
 
     /**

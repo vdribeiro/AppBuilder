@@ -31,7 +31,7 @@ import com.app.builder.domain.PushPayload
 import com.app.builder.domain.Task
 import com.app.builder.domain.usecase.Outcome
 import com.app.builder.domain.usecase.notification.NotificationsUseCases
-import com.app.builder.domain.usecase.toWriteOutcome
+import com.app.builder.domain.usecase.toOutcome
 import com.app.builder.toEnumOrNull
 
 /**
@@ -100,7 +100,7 @@ class TaskGateway(
             }.insertedCount > 0
         }.onFailure {
             Telemetry.error(tag = TAG, message = "Unable to upsert task ${task.uuid}", throwable = it)
-        }.getOrDefault(defaultValue = false).toWriteOutcome()
+        }.getOrDefault(defaultValue = false).toOutcome()
 
         saveNotification(task = task)
 

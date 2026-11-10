@@ -31,3 +31,19 @@ sealed interface Outcome<out T> {
     /** It failed on the server's side. */
     data object Error: Failure
 }
+
+/**
+ * Maps a boolean to [Outcome].
+ *
+ * @receiver boolean value.
+ * @return [Outcome.Success] when true, [Outcome.Error] otherwise.
+ */
+fun Boolean.toOutcome(): Outcome<Unit> = if (this) Outcome.Success(data = Unit) else Outcome.Error
+
+/**
+ * Unwraps a successful outcome, for callers that treat every failure alike.
+ *
+ * @receiver The outcome.
+ * @return The data of a successful outcome, or `null` for any failure.
+ */
+fun <T> Outcome<T>.getOrNull(): T? = (this as? Outcome.Success)?.data

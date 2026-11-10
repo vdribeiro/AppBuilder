@@ -17,7 +17,7 @@ import com.app.builder.data.database.table.ConfigTable
 import com.app.builder.data.serializer.decode
 import com.app.builder.data.serializer.encode
 import com.app.builder.domain.usecase.Outcome
-import com.app.builder.domain.usecase.toWriteOutcome
+import com.app.builder.domain.usecase.toOutcome
 
 /**
  * Gateway implementation for config use cases.
@@ -88,7 +88,7 @@ class ConfigGateway(
             }.insertedCount > 0
         }.onFailure {
             Telemetry.error(tag = TAG, message = "Unable to upsert $key", throwable = it)
-        }.getOrDefault(defaultValue = false).toWriteOutcome()
+        }.getOrDefault(defaultValue = false).toOutcome()
     }
 
     companion object {

@@ -22,7 +22,7 @@ import com.app.builder.data.database.safeTransaction
 import com.app.builder.data.database.table.UserTable
 import com.app.builder.domain.User
 import com.app.builder.domain.usecase.Outcome
-import com.app.builder.domain.usecase.toWriteOutcome
+import com.app.builder.domain.usecase.toOutcome
 
 /**
  * Gateway implementation for users use cases.
@@ -87,7 +87,7 @@ class UserGateway(
             }.insertedCount > 0
         }.onFailure {
             Telemetry.error(tag = TAG, message = "Unable to upsert user ${user.uuid}", throwable = it)
-        }.getOrDefault(defaultValue = false).toWriteOutcome()
+        }.getOrDefault(defaultValue = false).toOutcome()
     }
 
     /**

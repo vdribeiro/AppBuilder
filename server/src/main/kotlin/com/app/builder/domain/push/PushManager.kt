@@ -23,6 +23,7 @@ import com.app.builder.data.serializer.encode
 import com.app.builder.domain.PushPayload
 import com.app.builder.domain.usecase.connection.ConnectionUseCases
 import com.app.builder.domain.usecase.devicetoken.DeviceTokenUseCases
+import com.app.builder.domain.usecase.getOrNull
 import com.app.builder.domain.usecase.notification.NotificationsUseCases
 import com.app.builder.domain.usecase.ticket.TicketUseCases
 
@@ -89,10 +90,10 @@ class PushManager(
     }
 
     override suspend fun generateTicket(userUuid: Uuid): Uuid? =
-        ticketUseCases.createTicket(userUuid = userUuid)
+        ticketUseCases.createTicket(userUuid = userUuid).getOrNull()
 
     override suspend fun addConnection(ticketUuid: Uuid, deviceUuid: Uuid, session: DefaultWebSocketSession): Uuid? {
-        val userUuid = ticketUseCases.consumeTicket(ticketUuid = ticketUuid) ?: return null
+        val userUuid = ticketUseCases.consumeTicket(ticketUuid = ticketUuid).getOrNull() ?: return null
         if (!connectionUseCases.addConnection(userUuid = userUuid, deviceUuid = deviceUuid, instanceId = instanceId)) return null
 
         connections.getOrPut(key = userUuid) { ConcurrentHashMap() }[deviceUuid] = session
@@ -179,7 +180,8 @@ class PushManager(
     private fun sendToFcmTokens(userUuid: Uuid, pushPayload: PushPayload) {
         scope.launch(context = Dispatcher.IO) {
             val connectedDeviceUuids = connectionUseCases.getConnectedDeviceUuids(userUuid = userUuid)
-            val tokens = deviceTokenUseCases.getTokens(userUuid = userUuid).filterNot { it.deviceUuid in connectedDeviceUuids }.map { it.token }
+            val registered = deviceTokenUseCases.getTokens(userUuid = userUuid).getOrNull() ?: return@launch
+            val tokens = registered.filterNot { it.deviceUuid in connectedDeviceUuids }.map { it.token }
             if (tokens.isEmpty()) return@launch
 
             fcmService.sendToTokens(

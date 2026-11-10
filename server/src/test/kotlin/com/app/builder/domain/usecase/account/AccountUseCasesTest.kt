@@ -43,7 +43,7 @@ class AccountUseCasesTest: TestCase() {
         assertEquals(expected = Outcome.Success(data = Unit), actual = useCases.accountUseCases.upsertAccount(account = FakeData.account.copy(username = "renamed")))
         assertEquals(
             expected = FakeData.account.copy(username = "renamed"),
-            actual = (useCases.authenticationUseCases.login(credentials = UserCredentials(username = "renamed", password = FakeData.credentials.password)) as? Outcome.Success)?.data?.account
+            actual = useCases.authenticationUseCases.login(credentials = UserCredentials(username = "renamed", password = FakeData.credentials.password)).successData().account
         )
     }
 

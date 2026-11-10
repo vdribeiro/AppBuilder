@@ -22,7 +22,7 @@ import com.app.builder.data.database.safeTransaction
 import com.app.builder.data.database.table.RegistryTable
 import com.app.builder.domain.Registry
 import com.app.builder.domain.usecase.Outcome
-import com.app.builder.domain.usecase.toWriteOutcome
+import com.app.builder.domain.usecase.toOutcome
 import com.app.builder.toEnumOrNull
 
 /**
@@ -82,7 +82,7 @@ class RegistryGateway(
             }.insertedCount > 0
         }.onFailure {
             Telemetry.error(tag = TAG, message = "Unable to save registry ${registry.requestUuid}", throwable = it)
-        }.getOrDefault(defaultValue = false).toWriteOutcome()
+        }.getOrDefault(defaultValue = false).toOutcome()
     }
 
     /**

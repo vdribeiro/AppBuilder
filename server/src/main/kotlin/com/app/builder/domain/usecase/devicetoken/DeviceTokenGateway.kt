@@ -16,7 +16,7 @@ import com.app.builder.data.database.safeTransaction
 import com.app.builder.data.database.table.DeviceTokenTable
 import com.app.builder.domain.DeviceToken
 import com.app.builder.domain.usecase.Outcome
-import com.app.builder.domain.usecase.toWriteOutcome
+import com.app.builder.domain.usecase.toOutcome
 
 /**
  * Gateway implementation for device token use cases.
@@ -39,7 +39,7 @@ class DeviceTokenGateway(
             }.insertedCount > 0
         }.onFailure {
             Telemetry.error(tag = TAG, message = "Unable to register device token for user $userUuid", throwable = it)
-        }.getOrDefault(defaultValue = false).toWriteOutcome()
+        }.getOrDefault(defaultValue = false).toOutcome()
     }
 
     override suspend fun getTokens(userUuid: Uuid): Outcome<List<DeviceToken>> = withContext(context = Dispatcher.IO) {

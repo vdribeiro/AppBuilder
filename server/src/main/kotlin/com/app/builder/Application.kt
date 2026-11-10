@@ -41,6 +41,7 @@ import com.app.builder.domain.push.FcmManager
 import com.app.builder.domain.push.NoOpFcmService
 import com.app.builder.domain.route.installRouting
 import com.app.builder.domain.usecase.Outcome
+import com.app.builder.domain.usecase.getOrNull
 import com.app.builder.test.ExcludeFromTesting
 import com.google.auth.oauth2.GoogleCredentials
 import com.google.firebase.FirebaseApp
@@ -233,7 +234,7 @@ private suspend fun seed(dependency: Dependency) {
     }
 
     val accountUseCases = dependency.useCases.accountUseCases
-    val account = accountUseCases.getAccount(userUuid = uuid) ?: run {
+    val account = accountUseCases.getAccount(userUuid = uuid).getOrNull() ?: run {
         Telemetry.error(tag = TAG, message = "Su account not created")
         return
     }
