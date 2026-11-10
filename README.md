@@ -284,7 +284,7 @@ Per `(user, entityType)`, the engine is doing either one full sync or any number
 <summary>Why the active chains are also tracked in memory</summary>
 
 The dispatch loop is reactive: a new database emission can arrive while earlier jobs are still running.
-A mutex-guarded in-memory `activeChains` set stops the loop from dispatching the same chain twice.
+A mutex-guarded in-memory set stops the loop from dispatching the same chain twice.
 
 </details>
 
@@ -301,7 +301,7 @@ flowchart LR
 ```
 
 The scheduler combines four streams. When a gate is closed it substitutes an empty list instead of stopping, so the loop stays subscribed and resumes the moment any source emits again.
-A database read failure becomes an empty emission, so the scheduler stays up but dispatches nothing until the database is reset.
+A database access failure becomes an empty emission, so the scheduler stays up but dispatches nothing until the database recovers.
 
 ### Clock Trust
 
@@ -432,7 +432,6 @@ A bounded ring is enough because it only needs to span the gap between the same 
 
 It would mean computing the exclusion list up front, then coordinating concurrent per-device sends to re-send only the failed subset in one batched FCM call.
 The narrower gap is accepted instead, because the [client lifecycle](#client-connection-lifecycle) only keeps a socket open while the OS says the app is reachable, so failures are rare and short-lived.
-If you ever keep sockets alive longer in the background on some platform, revisit this trade-off.
 
 </details>
 
@@ -450,7 +449,7 @@ If you ever keep sockets alive longer in the background on some platform, revisi
 |-------------------|----------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | **Android / iOS** | Connections close; FCM is the only channel   | The OS suspends idle sockets soon after backgrounding anyway (Doze, iOS limits). FCM/APNs exist to wake a backgrounded or killed app, at far lower battery and data cost. |
 | **Web**           | Connections stay open while the tab is open  | An FCM service worker covers background delivery.                                                                                                                         |
-| **Desktop**       | Connections stay open for the app's lifetime | There is no FCM client SDK for JVM desktop apps, so Desktop never registers a token. Notifications still render through the AWT `SystemTray`.                             |
+| **Desktop**       | Connections stay open for the app's lifetime | There is no FCM client SDK for JVM desktop apps, so Desktop never registers a token. Notifications still render through the `SystemTray`.                                 |
 
 ## Multi-Instance Scaling
 
@@ -470,8 +469,8 @@ Signals are fire-and-forget. Anything that must survive a missed delivery, like 
 <details>
 <summary>Why Postgres <code>LISTEN</code>/<code>NOTIFY</code> is the default signal</summary>
 
-Postgres is the default database, so `LISTEN`/`NOTIFY` covers "wake whichever instance holds this socket" without another piece of infrastructure to run, monitor and pay for.
-If you outgrow it (very high fan-out, cross-region, durable ordered delivery), that is when a real broker earns its keep: implement `InstanceSignal` on top of it.
+Postgres is the default database, so `LISTEN`/`NOTIFY` covers "wake whichever instance holds this socket" without another piece of infrastructure to run or monitor.
+If it ever becomes necessary to have a very high fan-out, cross-region, durable ordered delivery, that is when a real broker earns its keep, and `InstanceSignal` should be implemented on top of it.
 
 </details>
 
@@ -480,11 +479,11 @@ If you outgrow it (very high fan-out, cross-region, durable ordered delivery), t
 Postgres can be swapped for another engine supported by Exposed's R2DBC driver. Three places need to change:
 
 1. **Connection factory**: replace `DatabaseFactory.getPostgresConnectionFactory()`.
-2. **Dialect**: add the engine to `DatabaseFactory.dialect()`, which only knows H2 and PostgreSQL and refuses to boot on anything else.
+2. **Dialect**: add the engine to `DatabaseFactory.dialect()`, which only knows H2 and PostgreSQL.
 3. **Signal**: add the engine to the `instanceSignal` selection in `Application.kt`, with an `InstanceSignal` implementation for it.
 
 > [!WARNING]
-> Step 3 fails **silently**. Any connection factory other than Postgres falls back to `LocalSignal`, so the server boots fine but loses cross-instance delivery as soon as it runs on more than one instance.
+> If not implemented, step 3 fails **silently**. Any connection factory other than Postgres falls back to `LocalSignal`, so the server boots fine but loses cross-instance delivery as soon as it runs on more than one instance.
 
 Not every engine has built-in pub/sub. Oracle has `DBMS_ALERT` and Advanced Queuing, and SQL Server has Service Broker, but MySQL and MariaDB have nothing equivalent.
 For those, poll a small signal table (at the cost of the poll interval in latency), or back `InstanceSignal` with an external broker such as Redis or NATS.
@@ -532,7 +531,7 @@ Each consumer gets the narrowest surface it needs, while one concrete gateway pe
 ### Sharing Models with the Server
 
 Domain models in `shared` are `@Serializable` and sent over the wire as-is, with no DTO layer.
-The only mapping is to each side's persistence schema, kept next to the feature: the gateway's `Mappers.kt` on the client, the `Exposed` table on the server.
+The only mapping is to each side's persistence schema, kept next to the feature: the gateway's mappers on the client, the `Exposed` table on the server.
 Adding a field is one change in `shared` plus the two mappers that persist it.
 
 ## Registries
@@ -552,7 +551,7 @@ Adding something is a compile-time change in one known place, and removing it br
 
 | Adding            | Register it in                                                                                                       |
 |-------------------|----------------------------------------------------------------------------------------------------------------------|
-| Entity type       | `shared/domain/EntityType` (required by the offline engine)                                                          |
+| Entity type       | `shared/domain/EntityType`                                                                                           |
 | Endpoint          | `shared/data/http/URL`                                                                                               |
 | HTTP header       | `shared/data/http/Header`                                                                                            |
 | Query parameter   | `shared/data/http/Query`                                                                                             |
@@ -634,8 +633,6 @@ The showcase is a section of the app rather than a separate target, so it runs o
 * The colors and shapes screens share `DesignScreenStore`, which persists the customized theme.
 * The screens show the design section of the app's navigation bar, whose `App` entry returns to the app's landing screen. Both directions use `NavOption.CLEAR`, like every navigation bar entry.
 
-The whole showcase is behind the `design` client flag.
-
 The theme is configurable at runtime. `ThemeCache` holds a `CustomTheme`: a `ThemeMode` (`SYSTEM`, `LIGHT` or `DARK`) plus per-role color overrides for each scheme and per-role corner radius overrides, applied on top of the defaults by `Colors.kt` and `Shapes.kt`.
 The colors and shapes showcases edit it in place, `DesignScreenStore` saves each change to the `AppFile.Theme` file, and `Application` loads it back on startup, so the whole app restyles live and keeps the result.
 
@@ -686,9 +683,9 @@ Adding a toggle is one field plus its default. No schema, no console, no third-p
 
 Call `grantPermission(permission)` on the `PermissionManager` from `LocalPermissionManager`. It:
 
-1. checks the feature flag that owns the permission, so a disabled feature never raises a system dialog,
-2. returns early if the permission is already held,
-3. otherwise requests it, deduplicating concurrent requests so two screens asking at once get one prompt.
+1. checks the feature flag that owns the permission, so a disabled feature never raises a system dialog
+2. returns early if the permission is already held
+3. otherwise requests it, deduplicating concurrent requests so two screens asking at once get one prompt
 
 In-flight requests live in the manager's own `SupervisorJob` scope, so a caller leaving the screen mid-prompt doesn't cancel it for the other waiters.
 
@@ -703,7 +700,7 @@ each calling its platform APIs directly (the JVM ecosystem, UIKit and Core Found
 
 The convention the codebase follows:
 
-> **An open base class or interface in common code holds the entire state machine, the platform supplies only the primitives it alone can provide, and every platform call is wrapped so a failure degrades instead of crashing.**
+> An open base class or interface in common code holds the entire state machine, the platform supplies only the primitives it alone can provide, and every platform call is wrapped so a failure degrades instead of crashing.
 > A missing capability yields a no-op instance, never an exception.
 
 See [Platform Implementations](#platform-implementations) for every declaration that resolves per source set.
@@ -754,6 +751,11 @@ Authorization is per `EntityType`: each account carries a `READ`/`WRITE` permiss
 It is easier to strip down auth than to build it. If you don't need accounts, remove the routes and screens, move what you keep into `UnauthenticatedNavigation`, or grant all permissions to the guest account in the `Dependency` graph.
 
 Offline login is covered in [Cryptography](#cryptography).
+
+### Tokens & Refresh
+
+Logging in returns a short-lived **access token** and a long-lived **refresh token** that `POST /api/refresh-tokens` trades for a new pair.
+Every refresh rotates the refresh token. If a rotation's response fails to arrive, the replaced token stays accepted for a brief grace period, so the client can have the opportunity to recover instead of losing its session.
 
 ### Account Deletion
 
