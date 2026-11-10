@@ -1,5 +1,6 @@
 package com.app.builder.test
 
+import kotlin.test.assertIs
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.delay
@@ -126,4 +127,12 @@ abstract class TestCase: SharedTestCase() {
     protected suspend fun awaitUntil(timeout: Duration = 5.seconds, condition: suspend () -> Boolean) {
         withTimeout(timeout = timeout) { while (!condition()) delay(timeMillis = 10) }
     }
+
+    /**
+     * Asserts that this outcome succeeded and unwraps it.
+     *
+     * @receiver The outcome of a use case.
+     * @return The data of the successful outcome.
+     */
+    protected fun <T> Outcome<T>.successData(): T = assertIs<Outcome.Success<T>>(value = this).data
 }

@@ -18,7 +18,6 @@ import com.app.builder.domain.usecase.Gateways
 import com.app.builder.domain.usecase.Outcome
 import com.app.builder.test.FakeData
 import com.app.builder.test.TestCase
-import com.app.builder.test.successData
 
 class PushServiceTest: TestCase() {
 

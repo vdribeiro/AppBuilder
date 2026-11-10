@@ -13,9 +13,9 @@ import com.app.builder.core.security.createVerifier
 import com.app.builder.core.security.hashRefreshToken
 import com.app.builder.core.security.uuid
 import com.app.builder.data.database.create
+import com.app.builder.data.database.reset
 import com.app.builder.data.database.safeTransaction
 import com.app.builder.data.database.table.UserSessionTable
-import com.app.builder.data.database.reset
 import com.app.builder.domain.Authentication
 import com.app.builder.domain.BearerToken
 import com.app.builder.domain.EntityType
@@ -26,7 +26,6 @@ import com.app.builder.domain.permission.getAccess
 import com.app.builder.domain.usecase.Outcome
 import com.app.builder.test.FakeData
 import com.app.builder.test.TestCase
-import com.app.builder.test.successData
 
 class AuthenticationUseCasesTest: TestCase() {
 
@@ -154,6 +153,7 @@ class AuthenticationUseCasesTest: TestCase() {
         val authenticationUseCases = dependency.get()
             .useCases
             .authenticationUseCases
+
         suspend fun storedRefreshToken(): String? = dependency.get().database.safeTransaction {
             UserSessionTable.selectAll()
                 .where { UserSessionTable.userUuid eq FakeData.user.uuid }

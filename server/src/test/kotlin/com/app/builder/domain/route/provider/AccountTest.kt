@@ -19,7 +19,6 @@ import com.app.builder.domain.EntityType
 import com.app.builder.domain.Permission
 import com.app.builder.test.FakeData
 import com.app.builder.test.TestCase
-import com.app.builder.test.successData
 import io.ktor.client.request.get as ktorGet
 
 class AccountTest: TestCase() {

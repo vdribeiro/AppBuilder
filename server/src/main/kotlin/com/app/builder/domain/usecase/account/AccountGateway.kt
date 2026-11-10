@@ -22,6 +22,7 @@ import com.app.builder.domain.Account
 import com.app.builder.domain.EntityType
 import com.app.builder.domain.Permission
 import com.app.builder.domain.usecase.Outcome
+import com.app.builder.domain.usecase.account.AccountGateway.Companion.accountColumns
 
 /**
  * Gateway implementation for accounts use cases. Password hashes are never read.
