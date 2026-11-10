@@ -15,6 +15,7 @@ import com.app.builder.data.serializer.encode
 import com.app.builder.domain.EntityType
 import com.app.builder.domain.Permission
 import com.app.builder.domain.permission.PermissionService
+import com.app.builder.domain.route.getOrRespond
 import com.app.builder.domain.route.receive
 import com.app.builder.domain.route.respondSafely
 import com.app.builder.domain.route.toRegistry
@@ -49,10 +50,7 @@ fun Route.configRoutes(
         post(path = URL.ClientFlags.path) {
             if (!call.validatePermission(permissionService = permissionService, entityType = EntityType.CLIENT_FLAG, permission = Permission.WRITE)) return@post
             val flags = call.receive<ClientFlags>() ?: return@post
-            if (!configUseCases.updateClientFeatureFlags(flags = flags)) {
-                call.respondSafely(status = HttpStatusCode.InternalServerError, message = "Unable to update client flags")
-                return@post
-            }
+            call.getOrRespond(outcome = configUseCases.updateClientFeatureFlags(flags = flags), error = "Unable to update client flags") ?: return@post
             call.respondSafely(status = HttpStatusCode.OK, message = ClientFlags.value)
             Telemetry.info(tag = TAG, message = "Updated client flags")
 
@@ -62,10 +60,7 @@ fun Route.configRoutes(
         post(path = URL.ClientConfigs.path) {
             if (!call.validatePermission(permissionService = permissionService, entityType = EntityType.CLIENT_CONFIG, permission = Permission.WRITE)) return@post
             val configs = call.receive<ClientConfigs>() ?: return@post
-            if (!configUseCases.updateClientConfigs(configs = configs)) {
-                call.respondSafely(status = HttpStatusCode.InternalServerError, message = "Unable to update client configs")
-                return@post
-            }
+            call.getOrRespond(outcome = configUseCases.updateClientConfigs(configs = configs), error = "Unable to update client configs") ?: return@post
             call.respondSafely(status = HttpStatusCode.OK, message = ClientConfigs.value)
             Telemetry.info(tag = TAG, message = "Updated client configs")
 
@@ -87,10 +82,7 @@ fun Route.configRoutes(
         post(path = URL.ServerFlags.path) {
             if (!call.validatePermission(permissionService = permissionService, entityType = EntityType.SERVER_FLAG, permission = Permission.WRITE)) return@post
             val flags = call.receive<ServerFlags>() ?: return@post
-            if (!configUseCases.updateServerFeatureFlags(flags = flags)) {
-                call.respondSafely(status = HttpStatusCode.InternalServerError, message = "Unable to update server flags")
-                return@post
-            }
+            call.getOrRespond(outcome = configUseCases.updateServerFeatureFlags(flags = flags), error = "Unable to update server flags") ?: return@post
             call.respondSafely(status = HttpStatusCode.OK, message = ServerFlags.value)
             Telemetry.info(tag = TAG, message = "Updated server flags")
 
@@ -100,10 +92,7 @@ fun Route.configRoutes(
         post(path = URL.ServerConfigs.path) {
             if (!call.validatePermission(permissionService = permissionService, entityType = EntityType.SERVER_CONFIG, permission = Permission.WRITE)) return@post
             val configs = call.receive<ServerConfigs>() ?: return@post
-            if (!configUseCases.updateServerConfigs(configs = configs)) {
-                call.respondSafely(status = HttpStatusCode.InternalServerError, message = "Unable to update server configs")
-                return@post
-            }
+            call.getOrRespond(outcome = configUseCases.updateServerConfigs(configs = configs), error = "Unable to update server configs") ?: return@post
             call.respondSafely(status = HttpStatusCode.OK, message = ServerConfigs.value)
             Telemetry.info(tag = TAG, message = "Updated server configs")
 

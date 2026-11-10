@@ -15,6 +15,7 @@ import com.app.builder.data.http.URL
 import com.app.builder.domain.EntityType
 import com.app.builder.domain.Permission
 import com.app.builder.domain.permission.PermissionService
+import com.app.builder.domain.route.getOrRespond
 import com.app.builder.domain.route.getQueryMap
 import com.app.builder.domain.route.getUserUuid
 import com.app.builder.domain.route.respondSafely
@@ -47,7 +48,10 @@ fun Route.registryRoutes(
                 val cursorUuid = queryMap[Query.CursorUuid.parameter]?.toUuid()
                 val pageSize = queryMap[Query.PageSize.parameter]?.toIntOrNull() ?: ServerConfigs.value.pageSize
 
-                val registries = registryUseCases.getRegistries(lastSyncUtc = lastSyncUtc, cursorUtc = cursorUtc, cursorUuid = cursorUuid, pageSize = pageSize)
+                val registries = call.getOrRespond(
+                    outcome = registryUseCases.getRegistries(lastSyncUtc = lastSyncUtc, cursorUtc = cursorUtc, cursorUuid = cursorUuid, pageSize = pageSize),
+                    error = "Error getting registries"
+                ) ?: return@get
                 call.respondSafely(status = HttpStatusCode.OK, message = registries)
                 Telemetry.info(tag = TAG, message = "Fetched ${registries.size} registries for user $userUuid")
             }

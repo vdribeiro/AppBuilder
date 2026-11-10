@@ -15,8 +15,10 @@ import com.app.builder.data.http.FakeWebSocketSession
 import com.app.builder.data.signal.LocalSignal
 import com.app.builder.domain.DeviceToken
 import com.app.builder.domain.usecase.Gateways
+import com.app.builder.domain.usecase.Outcome
 import com.app.builder.test.FakeData
 import com.app.builder.test.TestCase
+import com.app.builder.test.successData
 
 class PushServiceTest: TestCase() {
 
@@ -127,8 +129,8 @@ class PushServiceTest: TestCase() {
 
         val connectedDeviceUuid = uuid()
         val offlineDeviceUuid = uuid()
-        assertTrue(actual = useCases.deviceTokenUseCases.registerToken(userUuid = FakeData.adminUser.uuid, registration = DeviceToken(deviceUuid = connectedDeviceUuid, token = "connected-token")))
-        assertTrue(actual = useCases.deviceTokenUseCases.registerToken(userUuid = FakeData.adminUser.uuid, registration = DeviceToken(deviceUuid = offlineDeviceUuid, token = "offline-token")))
+        assertEquals(expected = Outcome.Success(data = Unit), actual = useCases.deviceTokenUseCases.registerToken(userUuid = FakeData.adminUser.uuid, registration = DeviceToken(deviceUuid = connectedDeviceUuid, token = "connected-token")))
+        assertEquals(expected = Outcome.Success(data = Unit), actual = useCases.deviceTokenUseCases.registerToken(userUuid = FakeData.adminUser.uuid, registration = DeviceToken(deviceUuid = offlineDeviceUuid, token = "offline-token")))
 
         val connectedSession = FakeWebSocketSession()
         val ticket = pushService.generateTicket(userUuid = FakeData.adminUser.uuid)
@@ -188,14 +190,14 @@ class PushServiceTest: TestCase() {
         val fakeFcmService = FakeFcmService(unregisteredTokens = setOf("stale-token"))
         val pushService = createOtherInstance(fcmService = fakeFcmService)
 
-        assertTrue(actual = useCases.deviceTokenUseCases.registerToken(userUuid = FakeData.adminUser.uuid, registration = DeviceToken(deviceUuid = uuid(), token = "stale-token")))
-        assertTrue(actual = useCases.deviceTokenUseCases.registerToken(userUuid = FakeData.adminUser.uuid, registration = DeviceToken(deviceUuid = uuid(), token = "live-token")))
+        assertEquals(expected = Outcome.Success(data = Unit), actual = useCases.deviceTokenUseCases.registerToken(userUuid = FakeData.adminUser.uuid, registration = DeviceToken(deviceUuid = uuid(), token = "stale-token")))
+        assertEquals(expected = Outcome.Success(data = Unit), actual = useCases.deviceTokenUseCases.registerToken(userUuid = FakeData.adminUser.uuid, registration = DeviceToken(deviceUuid = uuid(), token = "live-token")))
 
         pushService.sendNotification(pushPayload = FakeData.notification)
         assertEquals(expected = setOf("stale-token", "live-token"), actual = withTimeout(timeMillis = 5_000L) { fakeFcmService.multicasts.receive() }.toSet())
 
-        awaitUntil { useCases.deviceTokenUseCases.getTokens(userUuid = FakeData.adminUser.uuid).none { it.token == "stale-token" } }
-        assertEquals(expected = listOf("live-token"), actual = useCases.deviceTokenUseCases.getTokens(userUuid = FakeData.adminUser.uuid).map { it.token })
+        awaitUntil { useCases.deviceTokenUseCases.getTokens(userUuid = FakeData.adminUser.uuid).successData().none { it.token == "stale-token" } }
+        assertEquals(expected = listOf("live-token"), actual = useCases.deviceTokenUseCases.getTokens(userUuid = FakeData.adminUser.uuid).successData().map { it.token })
     }
 
     /** Verifies that a WebSocket session failing every delivery attempt is dropped, along with its connection presence. */

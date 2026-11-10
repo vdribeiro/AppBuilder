@@ -18,6 +18,7 @@ import com.app.builder.domain.EntityType
 import com.app.builder.domain.Permission
 import com.app.builder.domain.Task
 import com.app.builder.domain.permission.PermissionService
+import com.app.builder.domain.route.getOrRespond
 import com.app.builder.domain.route.getParameters
 import com.app.builder.domain.route.getQueryMap
 import com.app.builder.domain.route.getUserUuid
@@ -55,7 +56,10 @@ fun Route.taskRoutes(
                 val cursorUuid = queryMap[Query.CursorUuid.parameter]?.toUuid()
                 val pageSize = queryMap[Query.PageSize.parameter]?.toIntOrNull() ?: ServerConfigs.value.pageSize
 
-                val tasks = taskUseCases.getTasks(lastSyncUtc = lastSyncUtc, cursorUtc = cursorUtc, cursorUuid = cursorUuid, pageSize = pageSize)
+                val tasks = call.getOrRespond(
+                    outcome = taskUseCases.getTasks(lastSyncUtc = lastSyncUtc, cursorUtc = cursorUtc, cursorUuid = cursorUuid, pageSize = pageSize),
+                    error = "Error getting tasks"
+                ) ?: return@get
                 call.respondSafely(status = HttpStatusCode.OK, message = tasks)
                 Telemetry.info(tag = TAG, message = "Fetched ${tasks.size} tasks")
 
@@ -71,10 +75,11 @@ fun Route.taskRoutes(
                     return@get
                 }
 
-                val task = taskUseCases.getTask(uuid = uuid) ?: run {
-                    call.respondSafely(status = HttpStatusCode.NotFound, message = "Task not found")
-                    return@get
-                }
+                val task = call.getOrRespond(
+                    outcome = taskUseCases.getTask(uuid = uuid),
+                    notFound = "Task not found",
+                    error = "Error getting task"
+                ) ?: return@get
                 call.respondSafely(status = HttpStatusCode.OK, message = task)
                 Telemetry.info(tag = TAG, message = "Fetched task $uuid")
 
@@ -90,12 +95,7 @@ fun Route.taskRoutes(
                 if (!call.validatePermission(permissionService = permissionService, entityType = EntityType.TASK, permission = Permission.WRITE)) return@post
                 val task = call.receive<Task>() ?: return@post
 
-                val success = taskUseCases.upsertTask(task = task)
-                if (!success) {
-                    Telemetry.error(tag = TAG, message = "Error upserting task ${task.uuid}")
-                    call.respondSafely(status = HttpStatusCode.InternalServerError, message = "Error upserting task")
-                    return@post
-                }
+                call.getOrRespond(outcome = taskUseCases.upsertTask(task = task), error = "Error upserting task") ?: return@post
 
                 call.respondSafely(status = HttpStatusCode.OK, message = task)
                 Telemetry.info(tag = TAG, message = "Upserted task ${task.uuid} for user $userUuid")

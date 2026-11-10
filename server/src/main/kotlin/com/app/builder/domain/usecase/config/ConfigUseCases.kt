@@ -4,6 +4,7 @@ import com.app.builder.core.config.ClientConfigs
 import com.app.builder.core.config.ClientFlags
 import com.app.builder.core.config.ServerConfigs
 import com.app.builder.core.config.ServerFlags
+import com.app.builder.domain.usecase.Outcome
 
 /** Feature flags and configs use cases. */
 interface ConfigUseCases {
@@ -15,31 +16,31 @@ interface ConfigUseCases {
      * Updates the client feature flags.
      *
      * @param flags The new client feature flags.
-     * @return `true` if the new value was persisted successfully, `false` otherwise.
+     * @return [Outcome.Success] when persisted, or [Outcome.Error] when the operation failed.
      */
-    suspend fun updateClientFeatureFlags(flags: ClientFlags): Boolean
+    suspend fun updateClientFeatureFlags(flags: ClientFlags): Outcome<Unit>
 
     /**
      * Updates the client configs.
      *
      * @param configs The new client configs.
-     * @return `true` if the new value was persisted successfully, `false` otherwise.
+     * @return [Outcome.Success] when persisted, or [Outcome.Error] when the operation failed.
      */
-    suspend fun updateClientConfigs(configs: ClientConfigs): Boolean
+    suspend fun updateClientConfigs(configs: ClientConfigs): Outcome<Unit>
 
     /**
      * Updates the server feature flags.
      *
      * @param flags The new server feature flags.
-     * @return `true` if the new value was persisted successfully, `false` otherwise.
+     * @return [Outcome.Success] when persisted, or [Outcome.Error] when the operation failed.
      */
-    suspend fun updateServerFeatureFlags(flags: ServerFlags): Boolean
+    suspend fun updateServerFeatureFlags(flags: ServerFlags): Outcome<Unit>
 
     /**
      * Updates the server configs.
      *
      * @param configs The new server configs.
-     * @return `true` if the new value was persisted successfully, `false` otherwise.
+     * @return [Outcome.Success] when persisted, or [Outcome.Error] when the operation failed.
      */
-    suspend fun updateServerConfigs(configs: ServerConfigs): Boolean
+    suspend fun updateServerConfigs(configs: ServerConfigs): Outcome<Unit>
 }

@@ -47,10 +47,11 @@ fun Route.accountRoutes(
                     return@get
                 }
 
-                val account = accountUseCases.getAccount(userUuid = uuid) ?: run {
-                    call.respondSafely(status = HttpStatusCode.NotFound, message = "Account not found")
-                    return@get
-                }
+                val account = call.getOrRespond(
+                    outcome = accountUseCases.getAccount(userUuid = uuid),
+                    notFound = "Account not found",
+                    error = "Error getting account"
+                ) ?: return@get
                 call.respondSafely(status = HttpStatusCode.OK, message = account)
                 Telemetry.info(tag = TAG, message = "Fetched the account of user $uuid")
 

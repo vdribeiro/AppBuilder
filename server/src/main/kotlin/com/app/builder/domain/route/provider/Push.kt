@@ -21,6 +21,7 @@ import com.app.builder.domain.Permission
 import com.app.builder.domain.PushPayload
 import com.app.builder.domain.permission.PermissionService
 import com.app.builder.domain.push.PushService
+import com.app.builder.domain.route.getOrRespond
 import com.app.builder.domain.route.getQueryMap
 import com.app.builder.domain.route.getUserUuid
 import com.app.builder.domain.route.receive
@@ -56,14 +57,10 @@ fun Route.pushRoutes(
                 return@post
             }
 
-            val success = deviceTokenUseCases.registerToken(
-                userUuid = userUuid,
-                registration = registration,
-            )
-            if (!success) {
-                call.respondSafely(status = HttpStatusCode.InternalServerError, message = "Unable to register device token")
-                return@post
-            }
+            call.getOrRespond(
+                outcome = deviceTokenUseCases.registerToken(userUuid = userUuid, registration = registration),
+                error = "Unable to register device token"
+            ) ?: return@post
 
             call.respondSafely(status = HttpStatusCode.OK, message = "Device token registered")
             Telemetry.info(tag = TAG, message = "Registered device token for user $userUuid")

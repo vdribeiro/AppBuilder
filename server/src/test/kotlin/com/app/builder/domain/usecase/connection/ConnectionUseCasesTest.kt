@@ -16,6 +16,7 @@ import com.app.builder.core.locale.now
 import com.app.builder.core.security.uuid
 import com.app.builder.data.database.safeTransaction
 import com.app.builder.data.database.table.ConnectionTable
+import com.app.builder.domain.usecase.Outcome
 import com.app.builder.test.FakeData
 import com.app.builder.test.TestCase
 
@@ -63,7 +64,7 @@ class ConnectionUseCasesTest: TestCase() {
     @Test
     fun globalLimitIsEnforced() = runServerTest {
         val otherUser = FakeData.user.copy(uuid = uuid(), name = "Other")
-        assertTrue(actual = dependency.get().useCases.userUseCases.upsertUser(user = otherUser))
+        assertEquals(expected = Outcome.Success(data = Unit), actual = dependency.get().useCases.userUseCases.upsertUser(user = otherUser))
 
         ServerConfigs.set { it.copy(pushMaxConnections = 1) }
         val connectionUseCases = dependency.get()

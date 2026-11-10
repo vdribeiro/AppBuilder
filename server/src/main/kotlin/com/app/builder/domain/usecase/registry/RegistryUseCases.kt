@@ -4,6 +4,7 @@ import kotlin.time.Instant
 import kotlin.uuid.Uuid
 import com.app.builder.core.config.ServerConfigs
 import com.app.builder.domain.Registry
+import com.app.builder.domain.usecase.Outcome
 
 /** Defines the business workflows for managing the request registry. */
 interface RegistryUseCases {
@@ -15,15 +16,15 @@ interface RegistryUseCases {
      * @param cursorUtc The `requestUtc` of the last registry entry consumed in the previous page, for descending cursor continuation.
      * @param cursorUuid The `requestUuid` of the last registry entry consumed in the previous page, tie-breaking [cursorUtc].
      * @param pageSize The maximum number of entries to return, clamped to [ServerConfigs.maxPageSize].
-     * @return A list of registry entries.
+     * @return [Outcome.Success] with the registry entries, or [Outcome.Error] when the operation failed.
      */
-    suspend fun getRegistries(lastSyncUtc: Instant, cursorUtc: Instant?, cursorUuid: Uuid?, pageSize: Int): List<Registry>
+    suspend fun getRegistries(lastSyncUtc: Instant, cursorUtc: Instant?, cursorUuid: Uuid?, pageSize: Int): Outcome<List<Registry>>
 
     /**
      * Persists a registry entry to the database.
      *
      * @param registry The [Registry] entry to save.
-     * @return `true` if the registry entry was saved successfully, `false` otherwise or no rows were affected.
+     * @return [Outcome.Success] when saved, or [Outcome.Error] when the operation failed or no rows were affected.
      */
-    suspend fun upsertRegistry(registry: Registry): Boolean
+    suspend fun upsertRegistry(registry: Registry): Outcome<Unit>
 }

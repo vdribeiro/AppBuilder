@@ -9,8 +9,10 @@ import kotlin.time.Instant
 import com.app.builder.core.config.ServerConfigs
 import com.app.builder.core.locale.now
 import com.app.builder.core.security.uuid
+import com.app.builder.domain.usecase.Outcome
 import com.app.builder.test.FakeData
 import com.app.builder.test.TestCase
+import com.app.builder.test.successData
 
 class DeviceLocationUseCasesTest: TestCase() {
 
@@ -29,9 +31,9 @@ class DeviceLocationUseCasesTest: TestCase() {
                 cursorUtc = null,
                 cursorUuid = null,
                 pageSize = ServerConfigs.value.pageSize
-            ).isEmpty()
+            ).successData().isEmpty()
         )
-        assertTrue(actual = deviceLocationUseCases.upsertDeviceLocation(userUuid = FakeData.adminUser.uuid, deviceLocation = FakeData.deviceLocation))
+        assertEquals(expected = Outcome.Success(data = Unit), actual = deviceLocationUseCases.upsertDeviceLocation(userUuid = FakeData.adminUser.uuid, deviceLocation = FakeData.deviceLocation))
         assertEquals(
             expected = listOf(FakeData.deviceLocation),
             actual = deviceLocationUseCases.getDeviceLocations(
@@ -40,7 +42,7 @@ class DeviceLocationUseCasesTest: TestCase() {
                 cursorUtc = null,
                 cursorUuid = null,
                 pageSize = ServerConfigs.value.pageSize
-            )
+            ).successData()
         )
     }
 
@@ -55,15 +57,15 @@ class DeviceLocationUseCasesTest: TestCase() {
         val old = FakeData.deviceLocation.copy(uuid = uuid(), deviceTime = now - 10.minutes)
         val recent = FakeData.deviceLocation.copy(uuid = uuid(), deviceTime = now)
 
-        assertTrue(actual = deviceLocationUseCases.upsertDeviceLocation(userUuid = FakeData.adminUser.uuid, deviceLocation = old))
-        assertTrue(actual = deviceLocationUseCases.upsertDeviceLocation(userUuid = FakeData.adminUser.uuid, deviceLocation = recent))
+        assertEquals(expected = Outcome.Success(data = Unit), actual = deviceLocationUseCases.upsertDeviceLocation(userUuid = FakeData.adminUser.uuid, deviceLocation = old))
+        assertEquals(expected = Outcome.Success(data = Unit), actual = deviceLocationUseCases.upsertDeviceLocation(userUuid = FakeData.adminUser.uuid, deviceLocation = recent))
 
         assertEquals(
             expected = listOf(recent),
-            actual = deviceLocationUseCases.getDeviceLocations(userUuid = FakeData.adminUser.uuid, lastSyncUtc = now - 1.minutes, cursorUtc = null, cursorUuid = null, pageSize = ServerConfigs.value.pageSize)
+            actual = deviceLocationUseCases.getDeviceLocations(userUuid = FakeData.adminUser.uuid, lastSyncUtc = now - 1.minutes, cursorUtc = null, cursorUuid = null, pageSize = ServerConfigs.value.pageSize).successData()
         )
         assertTrue(
-            actual = deviceLocationUseCases.getDeviceLocations(userUuid = FakeData.adminUser.uuid, lastSyncUtc = now + 1.minutes, cursorUtc = null, cursorUuid = null, pageSize = ServerConfigs.value.pageSize).isEmpty()
+            actual = deviceLocationUseCases.getDeviceLocations(userUuid = FakeData.adminUser.uuid, lastSyncUtc = now + 1.minutes, cursorUtc = null, cursorUuid = null, pageSize = ServerConfigs.value.pageSize).successData().isEmpty()
         )
 
         val firstPage = deviceLocationUseCases.getDeviceLocations(
@@ -72,7 +74,7 @@ class DeviceLocationUseCasesTest: TestCase() {
             cursorUtc = null,
             cursorUuid = null,
             pageSize = 1
-        )
+        ).successData()
         assertEquals(expected = listOf(recent), actual = firstPage)
 
         val secondPage = deviceLocationUseCases.getDeviceLocations(
@@ -81,7 +83,7 @@ class DeviceLocationUseCasesTest: TestCase() {
             cursorUtc = firstPage.last().deviceTime,
             cursorUuid = firstPage.last().uuid,
             pageSize = 1
-        )
+        ).successData()
         assertEquals(expected = listOf(old), actual = secondPage)
     }
 
@@ -92,7 +94,7 @@ class DeviceLocationUseCasesTest: TestCase() {
             .useCases
             .deviceLocationUseCases
 
-        assertTrue(actual = deviceLocationUseCases.upsertDeviceLocation(userUuid = FakeData.adminUser.uuid, deviceLocation = FakeData.deviceLocation))
+        assertEquals(expected = Outcome.Success(data = Unit), actual = deviceLocationUseCases.upsertDeviceLocation(userUuid = FakeData.adminUser.uuid, deviceLocation = FakeData.deviceLocation))
         assertTrue(
             actual = deviceLocationUseCases.getDeviceLocations(
                 userUuid = FakeData.user.uuid,
@@ -100,7 +102,7 @@ class DeviceLocationUseCasesTest: TestCase() {
                 cursorUtc = null,
                 cursorUuid = null,
                 pageSize = ServerConfigs.value.pageSize
-            ).isEmpty()
+            ).successData().isEmpty()
         )
     }
 }

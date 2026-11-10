@@ -16,6 +16,8 @@ import com.app.builder.data.database.safeTransaction
 import com.app.builder.data.database.table.ConfigTable
 import com.app.builder.data.serializer.decode
 import com.app.builder.data.serializer.encode
+import com.app.builder.domain.usecase.Outcome
+import com.app.builder.domain.usecase.toWriteOutcome
 
 /**
  * Gateway implementation for config use cases.
@@ -34,19 +36,19 @@ class ConfigGateway(
         Unit
     }
 
-    override suspend fun updateClientFeatureFlags(flags: ClientFlags): Boolean = withContext(context = Dispatcher.IO) {
+    override suspend fun updateClientFeatureFlags(flags: ClientFlags): Outcome<Unit> = withContext(context = Dispatcher.IO) {
         update(key = ConfigTable.Key.CLIENT_FLAG, value = flags).also { ClientFlags.set { flags } }
     }
 
-    override suspend fun updateClientConfigs(configs: ClientConfigs): Boolean = withContext(context = Dispatcher.IO) {
+    override suspend fun updateClientConfigs(configs: ClientConfigs): Outcome<Unit> = withContext(context = Dispatcher.IO) {
         update(key = ConfigTable.Key.CLIENT_CONFIG, value = configs).also { ClientConfigs.set { configs } }
     }
 
-    override suspend fun updateServerFeatureFlags(flags: ServerFlags): Boolean = withContext(context = Dispatcher.IO) {
+    override suspend fun updateServerFeatureFlags(flags: ServerFlags): Outcome<Unit> = withContext(context = Dispatcher.IO) {
         update(key = ConfigTable.Key.SERVER_FLAG, value = flags).also { ServerFlags.set { flags } }
     }
 
-    override suspend fun updateServerConfigs(configs: ServerConfigs): Boolean = withContext(context = Dispatcher.IO) {
+    override suspend fun updateServerConfigs(configs: ServerConfigs): Outcome<Unit> = withContext(context = Dispatcher.IO) {
         update(key = ConfigTable.Key.SERVER_CONFIG, value = configs).also { ServerConfigs.set { configs } }
     }
 
@@ -72,12 +74,12 @@ class ConfigGateway(
      *
      * @param key The key of the configuration to update.
      * @param value The new value for the configuration.
-     * @return `true` if the update was successful, `false` otherwise.
+     * @return [Outcome.Success] when the update was persisted, or [Outcome.Error] otherwise.
      */
-    private suspend inline fun <reified C> update(key: ConfigTable.Key, value: C): Boolean {
+    private suspend inline fun <reified C> update(key: ConfigTable.Key, value: C): Outcome<Unit> {
         val value = encode(value = value) ?: run {
             Telemetry.error(tag = TAG, message = "Unable to encode $key")
-            return false
+            return Outcome.Error
         }
         return database.safeTransaction {
             ConfigTable.upsert {
@@ -86,7 +88,7 @@ class ConfigGateway(
             }.insertedCount > 0
         }.onFailure {
             Telemetry.error(tag = TAG, message = "Unable to upsert $key", throwable = it)
-        }.getOrDefault(defaultValue = false)
+        }.getOrDefault(defaultValue = false).toWriteOutcome()
     }
 
     companion object {

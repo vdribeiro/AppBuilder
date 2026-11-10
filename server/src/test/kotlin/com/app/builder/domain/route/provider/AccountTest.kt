@@ -19,6 +19,7 @@ import com.app.builder.domain.EntityType
 import com.app.builder.domain.Permission
 import com.app.builder.test.FakeData
 import com.app.builder.test.TestCase
+import com.app.builder.test.successData
 import io.ktor.client.request.get as ktorGet
 
 class AccountTest: TestCase() {
@@ -99,12 +100,12 @@ class AccountTest: TestCase() {
 
         val userClient = createClient(token = bearerToken.accessToken)
         assertEquals(expected = HttpStatusCode.OK, actual = userClient.post<DeviceToken>(request = HttpRequest(url = URL.DeviceTokens), body = DeviceToken(deviceUuid = uuid(), token = "fcmToken")).status)
-        assertEquals(expected = 1, actual = deviceTokenUseCases.getTokens(userUuid = FakeData.user.uuid).size)
+        assertEquals(expected = 1, actual = deviceTokenUseCases.getTokens(userUuid = FakeData.user.uuid).successData().size)
 
         val adminClient = createClient(token = adminBearerToken.accessToken)
         assertEquals(expected = HttpStatusCode.OK, actual = adminClient.post(request = HttpRequest(url = URL.Accounts), body = FakeData.account.copy(deletedAt = now())).status)
 
-        assertTrue(actual = deviceTokenUseCases.getTokens(userUuid = FakeData.user.uuid).isEmpty())
+        assertTrue(actual = deviceTokenUseCases.getTokens(userUuid = FakeData.user.uuid).successData().isEmpty())
         assertEquals(expected = HttpStatusCode.Forbidden, actual = userClient.get(request = HttpRequest(url = URL.Users)).status)
     }
 }

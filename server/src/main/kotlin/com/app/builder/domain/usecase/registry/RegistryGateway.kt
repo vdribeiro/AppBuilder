@@ -21,6 +21,8 @@ import com.app.builder.core.telemetry.Telemetry
 import com.app.builder.data.database.safeTransaction
 import com.app.builder.data.database.table.RegistryTable
 import com.app.builder.domain.Registry
+import com.app.builder.domain.usecase.Outcome
+import com.app.builder.domain.usecase.toWriteOutcome
 import com.app.builder.toEnumOrNull
 
 /**
@@ -37,7 +39,7 @@ class RegistryGateway(
         cursorUtc: Instant?,
         cursorUuid: Uuid?,
         pageSize: Int
-    ): List<Registry> = withContext(context = Dispatcher.IO) {
+    ): Outcome<List<Registry>> = withContext(context = Dispatcher.IO) {
         val effectivePageSize = pageSize.coerceIn(minimumValue = 1, maximumValue = ServerConfigs.value.maxPageSize)
         database.safeTransaction {
             RegistryTable
@@ -53,12 +55,14 @@ class RegistryGateway(
                 .limit(count = effectivePageSize)
                 .toList()
                 .map { it.toRegistry() }
-        }.onFailure {
+                .let { Outcome.Success(data = it) }
+        }.getOrElse {
             Telemetry.error(tag = TAG, message = "Unable to get registries since $lastSyncUtc", throwable = it)
-        }.getOrDefault(defaultValue = emptyList())
+            Outcome.Error
+        }
     }
 
-    override suspend fun upsertRegistry(registry: Registry): Boolean = withContext(context = Dispatcher.IO) {
+    override suspend fun upsertRegistry(registry: Registry): Outcome<Unit> = withContext(context = Dispatcher.IO) {
         database.safeTransaction {
             RegistryTable.upsert {
                 it[requestUuid] = registry.requestUuid
@@ -78,7 +82,7 @@ class RegistryGateway(
             }.insertedCount > 0
         }.onFailure {
             Telemetry.error(tag = TAG, message = "Unable to save registry ${registry.requestUuid}", throwable = it)
-        }.getOrDefault(defaultValue = false)
+        }.getOrDefault(defaultValue = false).toWriteOutcome()
     }
 
     /**

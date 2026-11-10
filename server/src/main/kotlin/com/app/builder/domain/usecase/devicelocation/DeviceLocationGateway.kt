@@ -20,6 +20,8 @@ import com.app.builder.core.telemetry.Telemetry
 import com.app.builder.data.database.safeTransaction
 import com.app.builder.data.database.table.DeviceLocationTable
 import com.app.builder.domain.DeviceLocation
+import com.app.builder.domain.usecase.Outcome
+import com.app.builder.domain.usecase.toWriteOutcome
 
 /**
  * Gateway implementation for device location use cases.
@@ -36,7 +38,7 @@ class DeviceLocationGateway(
         cursorUtc: Instant?,
         cursorUuid: Uuid?,
         pageSize: Int
-    ): List<DeviceLocation> = withContext(context = Dispatcher.IO) {
+    ): Outcome<List<DeviceLocation>> = withContext(context = Dispatcher.IO) {
         val effectivePageSize = pageSize.coerceIn(minimumValue = 1, maximumValue = ServerConfigs.value.maxPageSize)
         database.safeTransaction {
             DeviceLocationTable
@@ -52,12 +54,14 @@ class DeviceLocationGateway(
                 .limit(count = effectivePageSize)
                 .toList()
                 .map { it.toDeviceLocation() }
-        }.onFailure {
-            Telemetry.error(tag = TAG, message = "Unable to get registries since $lastSyncUtc", throwable = it)
-        }.getOrDefault(defaultValue = emptyList())
+                .let { Outcome.Success(data = it) }
+        }.getOrElse {
+            Telemetry.error(tag = TAG, message = "Unable to get device locations of user $userUuid since $lastSyncUtc", throwable = it)
+            Outcome.Error
+        }
     }
 
-    override suspend fun upsertDeviceLocation(userUuid: Uuid, deviceLocation: DeviceLocation): Boolean = withContext(context = Dispatcher.IO) {
+    override suspend fun upsertDeviceLocation(userUuid: Uuid, deviceLocation: DeviceLocation): Outcome<Unit> = withContext(context = Dispatcher.IO) {
         database.safeTransaction {
             DeviceLocationTable.upsert {
                 it[DeviceLocationTable.uuid] = deviceLocation.uuid
@@ -74,7 +78,7 @@ class DeviceLocationGateway(
             }.insertedCount > 0
         }.onFailure {
             Telemetry.error(tag = TAG, message = "Unable to record location for user $userUuid", throwable = it)
-        }.getOrDefault(defaultValue = false)
+        }.getOrDefault(defaultValue = false).toWriteOutcome()
     }
 
     /**

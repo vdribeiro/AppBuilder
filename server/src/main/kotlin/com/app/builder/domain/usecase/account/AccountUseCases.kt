@@ -11,9 +11,9 @@ interface AccountUseCases {
      * Gets the account of a single user.
      *
      * @param userUuid The unique identifier of the user the account belongs to.
-     * @return The [Account], or null if an error occurred or the user has no account.
+     * @return [Outcome.Success] with the [Account], [Outcome.NotFound] when the user has no account, or [Outcome.Error] when the operation failed.
      */
-    suspend fun getAccount(userUuid: Uuid): Account?
+    suspend fun getAccount(userUuid: Uuid): Outcome<Account>
 
     /**
      * Updates the username, permissions and deleted state of an existing account, leaving its password unchanged.

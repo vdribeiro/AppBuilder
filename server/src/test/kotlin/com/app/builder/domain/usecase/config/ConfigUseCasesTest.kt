@@ -2,11 +2,11 @@ package com.app.builder.domain.usecase.config
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 import com.app.builder.core.config.ClientConfigs
 import com.app.builder.core.config.ClientFlags
 import com.app.builder.core.config.ServerConfigs
 import com.app.builder.core.config.ServerFlags
+import com.app.builder.domain.usecase.Outcome
 import com.app.builder.test.FakeData
 import com.app.builder.test.TestCase
 
@@ -39,10 +39,10 @@ class ConfigUseCasesTest: TestCase() {
         val serverFlags = FakeData.serverFlags.copy(broadcast = !FakeData.serverFlags.broadcast)
         val serverConfigs = FakeData.serverConfigs.copy(accessTokenValidity = 4321L)
 
-        assertTrue(actual = configUseCases.updateClientFeatureFlags(flags = clientFlags))
-        assertTrue(actual = configUseCases.updateClientConfigs(configs = clientConfigs))
-        assertTrue(actual = configUseCases.updateServerFeatureFlags(flags = serverFlags))
-        assertTrue(actual = configUseCases.updateServerConfigs(configs = serverConfigs))
+        assertEquals(expected = Outcome.Success(data = Unit), actual = configUseCases.updateClientFeatureFlags(flags = clientFlags))
+        assertEquals(expected = Outcome.Success(data = Unit), actual = configUseCases.updateClientConfigs(configs = clientConfigs))
+        assertEquals(expected = Outcome.Success(data = Unit), actual = configUseCases.updateServerFeatureFlags(flags = serverFlags))
+        assertEquals(expected = Outcome.Success(data = Unit), actual = configUseCases.updateServerConfigs(configs = serverConfigs))
 
         ClientFlags.reset()
         ClientConfigs.reset()

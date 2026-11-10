@@ -15,6 +15,8 @@ import com.app.builder.core.telemetry.Telemetry
 import com.app.builder.data.database.safeTransaction
 import com.app.builder.data.database.table.DeviceTokenTable
 import com.app.builder.domain.DeviceToken
+import com.app.builder.domain.usecase.Outcome
+import com.app.builder.domain.usecase.toWriteOutcome
 
 /**
  * Gateway implementation for device token use cases.
@@ -25,7 +27,7 @@ class DeviceTokenGateway(
     private val database: R2dbcDatabase
 ): DeviceTokenUseCases {
 
-    override suspend fun registerToken(userUuid: Uuid, registration: DeviceToken): Boolean = withContext(context = Dispatcher.IO) {
+    override suspend fun registerToken(userUuid: Uuid, registration: DeviceToken): Outcome<Unit> = withContext(context = Dispatcher.IO) {
         database.safeTransaction {
             DeviceTokenTable.deleteWhere {
                 (DeviceTokenTable.token eq registration.token) and (DeviceTokenTable.userUuid neq userUuid)
@@ -37,27 +39,30 @@ class DeviceTokenGateway(
             }.insertedCount > 0
         }.onFailure {
             Telemetry.error(tag = TAG, message = "Unable to register device token for user $userUuid", throwable = it)
-        }.getOrDefault(defaultValue = false)
+        }.getOrDefault(defaultValue = false).toWriteOutcome()
     }
 
-    override suspend fun getTokens(userUuid: Uuid): List<DeviceToken> = withContext(context = Dispatcher.IO) {
+    override suspend fun getTokens(userUuid: Uuid): Outcome<List<DeviceToken>> = withContext(context = Dispatcher.IO) {
         database.safeTransaction {
             DeviceTokenTable
                 .selectAll()
                 .where { DeviceTokenTable.userUuid eq userUuid }
                 .toList()
                 .map { DeviceToken(deviceUuid = it[DeviceTokenTable.deviceUuid], token = it[DeviceTokenTable.token]) }
-        }.onFailure {
+                .let { Outcome.Success(data = it) }
+        }.getOrElse {
             Telemetry.error(tag = TAG, message = "Unable to get device tokens for user $userUuid", throwable = it)
-        }.getOrDefault(defaultValue = emptyList())
+            Outcome.Error
+        }
     }
 
-    override suspend fun removeToken(token: String): Boolean = withContext(context = Dispatcher.IO) {
+    override suspend fun removeToken(token: String): Outcome<Unit> = withContext(context = Dispatcher.IO) {
         database.safeTransaction {
-            DeviceTokenTable.deleteWhere { DeviceTokenTable.token eq token } > 0
-        }.onFailure {
+            if (DeviceTokenTable.deleteWhere { DeviceTokenTable.token eq token } > 0) Outcome.Success(data = Unit) else Outcome.NotFound
+        }.getOrElse {
             Telemetry.error(tag = TAG, message = "Unable to remove device token", throwable = it)
-        }.getOrDefault(defaultValue = false)
+            Outcome.Error
+        }
     }
 
     companion object {

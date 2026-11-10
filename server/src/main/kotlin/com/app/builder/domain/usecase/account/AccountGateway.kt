@@ -32,16 +32,19 @@ class AccountGateway(
     private val database: R2dbcDatabase,
 ): AccountUseCases {
 
-    override suspend fun getAccount(userUuid: Uuid): Account? = withContext(context = Dispatcher.IO) {
+    override suspend fun getAccount(userUuid: Uuid): Outcome<Account> = withContext(context = Dispatcher.IO) {
         database.safeTransaction {
             UserAccountTable
                 .select(columns = accountColumns)
                 .where { UserAccountTable.userUuid eq userUuid }
                 .firstOrNull()
                 ?.toAccount()
-        }.onFailure {
+                ?.let { Outcome.Success(data = it) }
+                ?: Outcome.NotFound
+        }.getOrElse {
             Telemetry.error(tag = TAG, message = "Unable to get the account of user $userUuid", throwable = it)
-        }.getOrNull()
+            Outcome.Error
+        }
     }
 
     override suspend fun upsertAccount(account: Account): Outcome<Unit> = withContext(context = Dispatcher.IO) {

@@ -11,6 +11,7 @@ import com.app.builder.domain.DeviceLocation
 import com.app.builder.domain.EntityType
 import com.app.builder.domain.Permission
 import com.app.builder.domain.permission.PermissionService
+import com.app.builder.domain.route.getOrRespond
 import com.app.builder.domain.route.getUserUuid
 import com.app.builder.domain.route.receive
 import com.app.builder.domain.route.respondSafely
@@ -44,12 +45,10 @@ fun Route.deviceLocationRoutes(
                 return@post
             }
 
-            val success = deviceLocationUseCases.upsertDeviceLocation(userUuid = userUuid, deviceLocation = deviceLocation)
-            if (!success) {
-                Telemetry.error(tag = TAG, message = "User $userUuid is not authorized to upsert device location ${deviceLocation.uuid}")
-                call.respondSafely(status = HttpStatusCode.Forbidden, message = "Not authorized to modify this task")
-                return@post
-            }
+            call.getOrRespond(
+                outcome = deviceLocationUseCases.upsertDeviceLocation(userUuid = userUuid, deviceLocation = deviceLocation),
+                error = "Error upserting device location"
+            ) ?: return@post
 
             call.respondSafely(status = HttpStatusCode.OK, message = "Device location upserted")
             Telemetry.info(tag = TAG, message = "Upserted device location ${deviceLocation.uuid} for user $userUuid")

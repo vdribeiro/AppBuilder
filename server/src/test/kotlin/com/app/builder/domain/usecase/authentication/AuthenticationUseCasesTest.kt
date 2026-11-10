@@ -4,8 +4,6 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
 import kotlin.test.assertNotEquals
-import kotlin.test.assertNull
-import kotlin.test.assertTrue
 import kotlinx.coroutines.flow.firstOrNull
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.r2dbc.selectAll
@@ -28,6 +26,7 @@ import com.app.builder.domain.permission.getAccess
 import com.app.builder.domain.usecase.Outcome
 import com.app.builder.test.FakeData
 import com.app.builder.test.TestCase
+import com.app.builder.test.successData
 
 class AuthenticationUseCasesTest: TestCase() {
 
@@ -65,7 +64,7 @@ class AuthenticationUseCasesTest: TestCase() {
         val form = registrationForm(username = FakeData.account.username, permissions = emptyMap())
         assertEquals(expected = Outcome.Conflict, actual = authenticationUseCases.register(registrationForm = form))
         assertEquals(expected = Outcome.Invalid, actual = authenticationUseCases.register(registrationForm = form.copy(account = form.account.copy(userUuid = uuid(), username = "new_username"))))
-        assertNull(actual = dependency.get().useCases.userUseCases.getUser(uuid = form.user.uuid))
+        assertEquals(expected = Outcome.NotFound, actual = dependency.get().useCases.userUseCases.getUser(uuid = form.user.uuid))
     }
 
     /** Verifies that registering an account for an existing user stores the account but leaves the user unchanged. */
@@ -73,10 +72,10 @@ class AuthenticationUseCasesTest: TestCase() {
     fun registerKeepsExistingUser() = runServerTest {
         val useCases = dependency.get().useCases
         val form = registrationForm(username = "existing_user", permissions = emptyMap())
-        assertTrue(actual = useCases.userUseCases.upsertUser(user = form.user))
+        assertEquals(expected = Outcome.Success(data = Unit), actual = useCases.userUseCases.upsertUser(user = form.user))
 
         assertEquals(expected = Outcome.Success(data = Unit), actual = useCases.authenticationUseCases.register(registrationForm = form.copy(user = form.user.copy(name = "Overwritten"))))
-        assertEquals(expected = form.user, actual = useCases.userUseCases.getUser(uuid = form.user.uuid))
+        assertEquals(expected = form.user, actual = useCases.userUseCases.getUser(uuid = form.user.uuid).successData())
     }
 
     /** Verifies that logging out with a valid refresh token succeeds and an invalid one is rejected. */
