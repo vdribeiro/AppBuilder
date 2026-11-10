@@ -21,7 +21,7 @@ import com.app.builder.data.serializer.encode
 import com.app.builder.domain.Account
 import com.app.builder.domain.EntityType
 import com.app.builder.domain.Permission
-import com.app.builder.domain.usecase.WriteResult
+import com.app.builder.domain.usecase.Outcome
 
 /**
  * Gateway implementation for accounts use cases. Password hashes are never read.
@@ -44,16 +44,16 @@ class AccountGateway(
         }.getOrNull()
     }
 
-    override suspend fun upsertAccount(account: Account): WriteResult = withContext(context = Dispatcher.IO) {
+    override suspend fun upsertAccount(account: Account): Outcome<Unit> = withContext(context = Dispatcher.IO) {
         database.safeTransaction {
             val owners = UserAccountTable.select(UserAccountTable.userUuid)
                 .where { (UserAccountTable.userUuid eq account.userUuid) or (UserAccountTable.username eq account.username) }
                 .toList()
                 .map { it[UserAccountTable.userUuid] }
-            if (account.userUuid !in owners) return@safeTransaction WriteResult.NOT_FOUND
+            if (account.userUuid !in owners) return@safeTransaction Outcome.NotFound
             if (owners.any { it != account.userUuid }) {
                 Telemetry.error(tag = TAG, message = "Rejected the account of user ${account.userUuid}, the username is taken")
-                return@safeTransaction WriteResult.CONFLICT
+                return@safeTransaction Outcome.Conflict
             }
 
             UserAccountTable.update(where = { UserAccountTable.userUuid eq account.userUuid }) {
@@ -63,10 +63,10 @@ class AccountGateway(
                 it[UserAccountTable.permissions] = encode(value = account.permissions).orEmpty()
             }
             if (account.deletedAt != null) DeviceTokenTable.deleteWhere { DeviceTokenTable.userUuid eq account.userUuid }
-            WriteResult.SUCCESS
+            Outcome.Success(data = Unit)
         }.onFailure {
             Telemetry.error(tag = TAG, message = "Unable to upsert the account of user ${account.userUuid}", throwable = it)
-        }.getOrDefault(defaultValue = WriteResult.ERROR)
+        }.getOrDefault(defaultValue = Outcome.Error)
     }
 
     /**

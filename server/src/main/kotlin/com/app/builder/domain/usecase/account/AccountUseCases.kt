@@ -2,7 +2,7 @@ package com.app.builder.domain.usecase.account
 
 import kotlin.uuid.Uuid
 import com.app.builder.domain.Account
-import com.app.builder.domain.usecase.WriteResult
+import com.app.builder.domain.usecase.Outcome
 
 /** Defines the business workflows for managing accounts. */
 interface AccountUseCases {
@@ -20,7 +20,7 @@ interface AccountUseCases {
      * When the account is deleted, the device tokens of its user are removed too.
      *
      * @param account The [account] to update.
-     * @return [WriteResult.SUCCESS] when updated, [WriteResult.NOT_FOUND] when the user has no account, [WriteResult.CONFLICT] when another account has the username, or [WriteResult.ERROR] when the operation failed.
+     * @return [Outcome.Success] when updated, [Outcome.NotFound] when the user has no account, [Outcome.Conflict] when another account has the username, or [Outcome.Error] when the operation failed.
      */
-    suspend fun upsertAccount(account: Account): WriteResult
+    suspend fun upsertAccount(account: Account): Outcome<Unit>
 }
