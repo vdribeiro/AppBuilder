@@ -10,13 +10,13 @@ import com.app.builder.domain.deeplink.DeepLink
 import com.app.builder.domain.gateway.UseCases
 import com.app.builder.ui.lifecycle.HostViewModelStoreOwner
 import com.app.builder.ui.navigation.audio.audioProvider
+import com.app.builder.ui.navigation.building.buildingProvider
 import com.app.builder.ui.navigation.camera.cameraProvider
 import com.app.builder.ui.navigation.configs.configsProvider
 import com.app.builder.ui.navigation.design.designProvider
 import com.app.builder.ui.navigation.devicefiles.deviceFilesProvider
 import com.app.builder.ui.navigation.devicelocation.deviceLocationProvider
 import com.app.builder.ui.navigation.equipment.equipmentProvider
-import com.app.builder.ui.navigation.building.buildingProvider
 import com.app.builder.ui.navigation.error.errorProvider
 import com.app.builder.ui.navigation.home.homeProvider
 import com.app.builder.ui.navigation.login.authenticationProvider

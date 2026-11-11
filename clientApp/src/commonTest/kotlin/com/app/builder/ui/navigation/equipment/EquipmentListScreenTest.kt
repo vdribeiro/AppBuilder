@@ -49,7 +49,8 @@ class EquipmentListScreenTest: TestCase() {
         val filtersStore = FiltersStore(
             state = FiltersState(visibleProperties = properties, searchableProperties = properties),
             storageFile = AppFile.EquipmentPreferences,
-            defaults = defaults)
+            defaults = defaults
+        )
         val equipmentListScreenStore = EquipmentListScreenStore(state = EquipmentListScreenState(), router = router, equipmentUseCases = authenticatedUseCases.equipmentUseCases)
 
         setUI {
@@ -100,7 +101,8 @@ class EquipmentListScreenTest: TestCase() {
         val filtersStore = FiltersStore(
             state = FiltersState(visibleProperties = properties, searchableProperties = properties),
             storageFile = AppFile.EquipmentPreferences,
-            defaults = defaults)
+            defaults = defaults
+        )
         val equipmentListScreenStore = EquipmentListScreenStore(state = EquipmentListScreenState(), router = router, equipmentUseCases = authenticatedUseCases.equipmentUseCases)
 
         setUI {
@@ -149,7 +151,8 @@ class EquipmentListScreenTest: TestCase() {
         val filtersStore = FiltersStore(
             state = FiltersState(visibleProperties = properties, searchableProperties = properties),
             storageFile = AppFile.EquipmentPreferences,
-            defaults = defaults)
+            defaults = defaults
+        )
         val equipmentListScreenStore = EquipmentListScreenStore(state = EquipmentListScreenState(), router = router, equipmentUseCases = authenticatedUseCases.equipmentUseCases)
 
         setUI {

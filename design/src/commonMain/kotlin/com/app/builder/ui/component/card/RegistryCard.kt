@@ -1,6 +1,5 @@
 package com.app.builder.ui.component.card
 
-import kotlinx.collections.immutable.persistentListOf
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -12,7 +11,6 @@ import androidx.compose.ui.unit.dp
 import com.app.builder.ui.InjectTranslations
 import com.app.builder.ui.Preview
 import com.app.builder.ui.component.field.FieldValue
-import com.app.builder.ui.component.field.MetadataSection
 import com.app.builder.ui.core.card.Card
 import com.app.builder.ui.core.divider.Divider
 

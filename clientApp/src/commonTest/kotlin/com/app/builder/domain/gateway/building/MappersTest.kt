@@ -3,7 +3,6 @@ package com.app.builder.domain.gateway.building
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import com.app.builder.core.locale.now
-import com.app.builder.domain.Building
 import com.app.builder.test.FakeData
 import com.app.builder.test.TestCase
 

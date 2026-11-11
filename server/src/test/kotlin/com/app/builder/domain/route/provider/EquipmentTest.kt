@@ -15,8 +15,8 @@ import com.app.builder.data.http.URL
 import com.app.builder.data.http.get
 import com.app.builder.data.http.post
 import com.app.builder.domain.EntityType
-import com.app.builder.domain.Permission
 import com.app.builder.domain.Equipment
+import com.app.builder.domain.Permission
 import com.app.builder.test.FakeData
 import com.app.builder.test.TestCase
 import io.ktor.client.request.get as ktorGet

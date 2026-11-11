@@ -49,7 +49,6 @@ import com.app.builder.ui.core.button.DropdownItem
 import com.app.builder.ui.core.card.Card
 import com.app.builder.ui.core.divider.Divider
 import com.app.builder.ui.core.image.Icon
-import com.app.builder.ui.core.list.LazyColumn as ListLazyColumn
 import com.app.builder.ui.core.overlay.Snackbar
 import com.app.builder.ui.core.progress.ProgressIndicator
 import com.app.builder.ui.core.text.Input
@@ -60,6 +59,7 @@ import com.app.builder.ui.navigation.Screen
 import com.app.builder.ui.screen.Screen
 import com.app.builder.ui.store.Store
 import com.app.builder.ui.store.previewStore
+import com.app.builder.ui.core.list.LazyColumn as ListLazyColumn
 
 /**
  * The Nfc Screen.

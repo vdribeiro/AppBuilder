@@ -6,6 +6,8 @@ import com.app.builder.domain.usecase.account.AccountGateway
 import com.app.builder.domain.usecase.account.AccountUseCases
 import com.app.builder.domain.usecase.authentication.AuthenticationGateway
 import com.app.builder.domain.usecase.authentication.AuthenticationUseCases
+import com.app.builder.domain.usecase.building.BuildingGateway
+import com.app.builder.domain.usecase.building.BuildingUseCases
 import com.app.builder.domain.usecase.config.ConfigGateway
 import com.app.builder.domain.usecase.config.ConfigUseCases
 import com.app.builder.domain.usecase.connection.ConnectionGateway
@@ -15,9 +17,7 @@ import com.app.builder.domain.usecase.devicelocation.DeviceLocationUseCases
 import com.app.builder.domain.usecase.devicetoken.DeviceTokenGateway
 import com.app.builder.domain.usecase.devicetoken.DeviceTokenUseCases
 import com.app.builder.domain.usecase.equipment.EquipmentGateway
-import com.app.builder.domain.usecase.building.BuildingGateway
 import com.app.builder.domain.usecase.equipment.EquipmentUseCases
-import com.app.builder.domain.usecase.building.BuildingUseCases
 import com.app.builder.domain.usecase.notification.NotificationsGateway
 import com.app.builder.domain.usecase.notification.NotificationsUseCases
 import com.app.builder.domain.usecase.registry.RegistryGateway

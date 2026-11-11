@@ -10,10 +10,10 @@ import com.app.builder.core.config.ServerFlags
 import com.app.builder.domain.route.provider.accountRoutes
 import com.app.builder.domain.route.provider.authenticationRoutes
 import com.app.builder.domain.route.provider.broadcastRoutes
+import com.app.builder.domain.route.provider.buildingRoutes
 import com.app.builder.domain.route.provider.configRoutes
 import com.app.builder.domain.route.provider.deviceLocationRoutes
 import com.app.builder.domain.route.provider.equipmentRoutes
-import com.app.builder.domain.route.provider.buildingRoutes
 import com.app.builder.domain.route.provider.probeRoutes
 import com.app.builder.domain.route.provider.pushRoutes
 import com.app.builder.domain.route.provider.registryRoutes

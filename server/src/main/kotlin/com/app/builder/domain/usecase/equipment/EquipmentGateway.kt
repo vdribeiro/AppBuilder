@@ -26,9 +26,9 @@ import com.app.builder.data.database.table.EquipmentTable
 import com.app.builder.data.database.table.UserAccountTable
 import com.app.builder.data.serializer.decode
 import com.app.builder.domain.EntityType
+import com.app.builder.domain.Equipment
 import com.app.builder.domain.Permission
 import com.app.builder.domain.PushPayload
-import com.app.builder.domain.Equipment
 import com.app.builder.domain.usecase.Outcome
 import com.app.builder.domain.usecase.notification.NotificationsUseCases
 import com.app.builder.domain.usecase.toOutcome
