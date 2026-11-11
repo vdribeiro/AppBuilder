@@ -3,6 +3,8 @@ package com.app.builder.domain
 import kotlin.time.Instant
 import kotlin.uuid.Uuid
 import kotlinx.serialization.Serializable
+import com.app.builder.core.locale.now
+import com.app.builder.core.security.uuid
 
 /**
  * A person, who may or may not hold an [Account] to log in with.
@@ -15,11 +17,11 @@ import kotlinx.serialization.Serializable
  */
 @Serializable
 data class User(
-    val uuid: Uuid,
-    val modifiedAt: Instant,
-    val deletedAt: Instant?,
-    val name: String,
-    val avatar: String?,
+    val uuid: Uuid = uuid(),
+    val modifiedAt: Instant = now(),
+    val deletedAt: Instant? = null,
+    val name: String = "",
+    val avatar: String? = null,
 ) {
     /**
      * Enumerates the [User] fields that map to a localized display label.
