@@ -19,7 +19,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
-import com.app.builder.ui.LocalColorScheme
 import com.app.builder.ui.Preview
 import com.app.builder.ui.component.image.Avatar
 import com.app.builder.ui.core.button.Button
@@ -47,7 +46,7 @@ fun AvatarButton(name: String? = null, image: Image? = null, onClick: (() -> Uni
 }
 
 /**
- * Renders the application status icons for the [TopActionBar] leading slot, in the error color, showing only what is wrong.
+ * Renders the application status icons for the [TopActionBar] leading slot, showing only what is wrong.
  * Each icon explains itself in a tooltip.
  *
  * @param synced Shows a sync disabled icon when `false`, unless the session expired, since nothing can sync until the user logs in again.
@@ -56,26 +55,22 @@ fun AvatarButton(name: String? = null, image: Image? = null, onClick: (() -> Uni
  */
 @Composable
 fun StatusIcons(synced: Boolean = true, clockTrusted: Boolean = true, sessionExpired: Boolean = false) {
-    val color = LocalColorScheme.current
     if (sessionExpired) Tooltip(text = "status_session_expired") {
         Icon(
             modifier = Modifier.testTag(tag = "status_session_expired"),
-            imageVector = Icons.Default.Warning,
-            tint = color.error
+            imageVector = Icons.Default.Warning
         )
     }
     if (!synced && !sessionExpired) Tooltip(text = "status_not_synced") {
         Icon(
             modifier = Modifier.testTag(tag = "status_not_synced"),
-            imageVector = Icons.Default.SyncDisabled,
-            tint = color.error
+            imageVector = Icons.Default.SyncDisabled
         )
     }
     if (!clockTrusted) Tooltip(text = "status_clock_untrusted") {
         Icon(
             modifier = Modifier.testTag(tag = "status_clock_untrusted"),
-            imageVector = Icons.Default.Schedule,
-            tint = color.error
+            imageVector = Icons.Default.Schedule
         )
     }
 }
