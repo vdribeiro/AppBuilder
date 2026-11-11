@@ -12,6 +12,9 @@ import com.app.builder.domain.gateway.authentication.AuthenticationUseCases
 import com.app.builder.domain.gateway.building.BuildingGateway
 import com.app.builder.domain.gateway.building.BuildingRepository
 import com.app.builder.domain.gateway.building.BuildingUseCases
+import com.app.builder.domain.gateway.buildingequipment.BuildingEquipmentGateway
+import com.app.builder.domain.gateway.buildingequipment.BuildingEquipmentRepository
+import com.app.builder.domain.gateway.buildingequipment.BuildingEquipmentUseCases
 import com.app.builder.domain.gateway.config.ConfigGateway
 import com.app.builder.domain.gateway.config.ConfigRepository
 import com.app.builder.domain.gateway.config.ConfigUseCases
@@ -154,4 +157,13 @@ class Gateways(
     )
     override val buildingUseCases: BuildingUseCases = buildingGateway
     override val buildingRepository: BuildingRepository = buildingGateway
+
+    private val buildingEquipmentGateway: BuildingEquipmentGateway = BuildingEquipmentGateway(
+        account = account,
+        database = database,
+        httpClient = httpClient,
+        scheduler = scheduler
+    )
+    override val buildingEquipmentUseCases: BuildingEquipmentUseCases = buildingEquipmentGateway
+    override val buildingEquipmentRepository: BuildingEquipmentRepository = buildingEquipmentGateway
 }

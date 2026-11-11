@@ -15,6 +15,7 @@ import com.app.builder.domain.DeviceLocation
 import com.app.builder.domain.EntityType
 import com.app.builder.domain.Equipment
 import com.app.builder.domain.Building
+import com.app.builder.domain.BuildingEquipment
 import com.app.builder.domain.Permission
 import com.app.builder.domain.PushPayload
 import com.app.builder.domain.RegistrationForm
@@ -74,7 +75,7 @@ object FakeData {
     val adminAccount: Account = Account(
         userUuid = adminUser.uuid,
         username = "admin",
-        permissions = EntityType.entries.associateWith { Permission.WRITE }
+        permissions = EntityType.assignable.associateWith { Permission.WRITE }
     )
 
     val account: Account = Account(
@@ -96,6 +97,7 @@ object FakeData {
                 EntityType.TASK -> Permission.READ
                 EntityType.EQUIPMENT -> Permission.READ
                 EntityType.BUILDING -> Permission.READ
+                EntityType.BUILDING_EQUIPMENT -> null
             }?.let { type to it }
         }.toMap()
     )
@@ -195,6 +197,11 @@ object FakeData {
         address = "Building Address",
         latitude = 41.1579,
         longitude = -8.6291
+    )
+
+    val buildingEquipment: BuildingEquipment = BuildingEquipment(
+        buildingUuid = building.uuid,
+        equipmentUuid = equipment.uuid
     )
 
     val deviceLocation: DeviceLocation = DeviceLocation(

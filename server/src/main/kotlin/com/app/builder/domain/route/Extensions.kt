@@ -20,6 +20,7 @@ import com.app.builder.core.telemetry.Telemetry
 import com.app.builder.data.http.Header
 import com.app.builder.domain.EntityType
 import com.app.builder.domain.Permission
+import com.app.builder.domain.grants
 import com.app.builder.domain.Registry
 import com.app.builder.domain.permission.PermissionService
 import com.app.builder.domain.permission.UserAccess
@@ -209,11 +210,7 @@ suspend fun ApplicationCall.validatePermission(
 ): Boolean = runCatching {
     val access = getAccess(permissionService = permissionService)!!
     val deletedAt = access.deletedAt
-    val granted = when (access.permissions[entityType]) {
-        Permission.WRITE -> true
-        Permission.READ -> permission == Permission.READ
-        else -> false
-    }
+    val granted = access.permissions.grants(entityType = entityType, permission = permission)
     when {
         !granted -> false
         deletedAt == null -> true

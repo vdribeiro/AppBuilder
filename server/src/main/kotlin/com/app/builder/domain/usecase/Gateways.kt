@@ -7,6 +7,8 @@ import com.app.builder.domain.usecase.account.AccountUseCases
 import com.app.builder.domain.usecase.authentication.AuthenticationGateway
 import com.app.builder.domain.usecase.authentication.AuthenticationUseCases
 import com.app.builder.domain.usecase.building.BuildingGateway
+import com.app.builder.domain.usecase.buildingequipment.BuildingEquipmentGateway
+import com.app.builder.domain.usecase.buildingequipment.BuildingEquipmentUseCases
 import com.app.builder.domain.usecase.building.BuildingUseCases
 import com.app.builder.domain.usecase.config.ConfigGateway
 import com.app.builder.domain.usecase.config.ConfigUseCases
@@ -52,4 +54,5 @@ class Gateways(
     override val taskUseCases: TaskUseCases = TaskGateway(database = database, notificationsUseCases = notificationsUseCases)
     override val equipmentUseCases: EquipmentUseCases = EquipmentGateway(database = database, notificationsUseCases = notificationsUseCases)
     override val buildingUseCases: BuildingUseCases = BuildingGateway(database = database, notificationsUseCases = notificationsUseCases)
+    override val buildingEquipmentUseCases: BuildingEquipmentUseCases = BuildingEquipmentGateway(database = database, notificationsUseCases = notificationsUseCases)
 }
