@@ -324,11 +324,14 @@ Each execution returns a `JobResult`:
 |--------------------|-----------------------------------------------------------------------------------------------|
 | `Success` / `NoOp` | `COMPLETE`                                                                                    |
 | `Retry`            | Back to `PENDING` with a backoff deadline, or `FAILED` once `schedulerMaxAttempts` is reached |
+| `Unauthorized`     | Back to `PENDING` after `schedulerMaxRetryDelay`, without spending an attempt                 |
 | `Error`            | `FAILED`                                                                                      |
 
 `Throwable.toJobResult()` decides which failures are retryable. A failure is **transient** if the same job can succeed unchanged later:
 `InternetDisabledException`, any `IOException` (timeouts, dropped connections), and `408`, `429` or `5xx` responses.
 Validation, permission and serialization failures would fail identically every time, so they are terminal. Retrying a request that may already have reached the server is safe because upserts are idempotent.
+
+A refused credential maps to `Unauthorized`, so the job waits for its user to log in again however long that takes. A job whose user's session is [expired](#tokens--refresh) or missing returns it without making a request. Jobs of the guest and logouts always run.
 
 **Backoff** starts at `schedulerRetryDelay` and doubles each attempt up to `schedulerMaxRetryDelay`. The loop skips jobs that aren't due yet and arms a single timer for the earliest one.
 
@@ -450,6 +453,8 @@ The narrower gap is accepted instead, because the [client lifecycle](#client-con
 | **Android / iOS** | Connections close; FCM is the only channel   | The OS suspends idle sockets soon after backgrounding anyway (Doze, iOS limits). FCM/APNs exist to wake a backgrounded or killed app, at far lower battery and data cost. |
 | **Web**           | Connections stay open while the tab is open  | An FCM service worker covers background delivery.                                                                                                                         |
 | **Desktop**       | Connections stay open for the app's lifetime | There is no FCM client SDK for JVM desktop apps, so Desktop never registers a token. Notifications still render through the `SystemTray`.                                 |
+
+On every platform, the push connection and the FCM token registration also wait while the user's session is [expired](#tokens--refresh).
 
 ## Multi-Instance Scaling
 
@@ -758,6 +763,9 @@ Offline login is covered in [Cryptography](#cryptography).
 Logging in returns a short-lived **access token** and a long-lived **refresh token** that `POST /api/refresh-tokens` trades for a new pair.
 Every refresh rotates the refresh token. If a rotation's response fails to arrive, the replaced token stays accepted for a brief grace period, so the client can have the opportunity to recover instead of losing its session.
 
+If the server refuses the refresh token, the session is marked **expired** rather than deleted, so no queued work is lost. A warning joins the status icons in the top bar, asking the user to log out and log in again.
+Until then, nothing that needs the session reaches the server: no refresh is attempted, the user's jobs wait without a request, and the push connection stays closed. Logging in again clears it and everything resumes.
+
 ### Account Deletion
 
 Disabling an account is a soft delete: the account's `deletedAt` is set and the row stays, so other devices see the change the next time they fetch that account. A disabled account:
@@ -927,7 +935,7 @@ The entire push stack, reconnection loops included, is tested with no server and
 
 ## Hardware Controllers
 
-Audio, camera, NFC and location share one shape. Each is an `open class` holding its state machine in common code, exposed as a `StateFlow`.
+**Audio**, **Camera**, **NFC** and **Location** share one shape. Each is an `open class` holding its state machine in common code, exposed as a `StateFlow`.
 Every entry point checks a feature flag and an `available` hardware flag (plus a runtime permission where relevant), and wraps the platform call so a failure is reported to `Telemetry` instead of thrown.
 Construction falls back to the inert base class if the platform factory throws, and a single composable creates the instance and registers its foreground/background lifecycle.
 
