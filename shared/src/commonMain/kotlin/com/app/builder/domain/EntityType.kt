@@ -19,4 +19,10 @@ enum class EntityType {
     TASK,
     EQUIPMENT,
     BUILDING,
+    BUILDING_EQUIPMENT;
+
+    companion object {
+        /** The entity types whose permission is granted to accounts, leaving out those derived from other entity types. */
+        val assignable: List<EntityType> = entries - BUILDING_EQUIPMENT
+    }
 }

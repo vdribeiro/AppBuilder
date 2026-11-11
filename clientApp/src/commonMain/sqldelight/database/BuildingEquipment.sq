@@ -1,0 +1,39 @@
+import kotlin.time.Instant;
+import kotlin.uuid.Uuid;
+
+CREATE TABLE IF NOT EXISTS BuildingEquipment (
+    uuid TEXT AS Uuid NOT NULL PRIMARY KEY,
+    modifiedAt TEXT AS Instant NOT NULL,
+    deletedAt TEXT AS Instant,
+    buildingUuid TEXT AS Uuid NOT NULL,
+    equipmentUuid TEXT AS Uuid NOT NULL
+);
+
+upsertBuildingEquipment:
+INSERT OR REPLACE INTO BuildingEquipment VALUES ?;
+
+getBuildingEquipmentsByUuids:
+SELECT *
+FROM BuildingEquipment
+WHERE uuid IN :buildingEquipmentUuids;
+
+getBuildingEquipment:
+SELECT *
+FROM BuildingEquipment
+WHERE uuid = :buildingEquipmentUuid;
+
+getEquipmentsInBuilding:
+SELECT Equipment.*
+FROM Equipment
+JOIN BuildingEquipment ON BuildingEquipment.equipmentUuid = Equipment.uuid
+WHERE BuildingEquipment.buildingUuid = :buildingUuid
+    AND BuildingEquipment.deletedAt IS NULL
+    AND Equipment.deletedAt IS NULL;
+
+getBuildingsOfEquipment:
+SELECT Building.*
+FROM Building
+JOIN BuildingEquipment ON BuildingEquipment.buildingUuid = Building.uuid
+WHERE BuildingEquipment.equipmentUuid = :equipmentUuid
+    AND BuildingEquipment.deletedAt IS NULL
+    AND Building.deletedAt IS NULL;

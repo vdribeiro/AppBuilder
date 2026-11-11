@@ -96,6 +96,7 @@ class PayloadManager(
             EntityType.TASK -> appGraph.getRepositories(payload = payload).taskRepository.syncTask(uuid = entityUuid)
             EntityType.EQUIPMENT -> appGraph.getRepositories(payload = payload).equipmentRepository.syncEquipment(uuid = entityUuid)
             EntityType.BUILDING -> appGraph.getRepositories(payload = payload).buildingRepository.syncBuilding(uuid = entityUuid)
+            EntityType.BUILDING_EQUIPMENT -> appGraph.getRepositories(payload = payload).buildingEquipmentRepository.syncBuildingEquipment(uuid = entityUuid)
 
             else -> Unit
         }

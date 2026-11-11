@@ -26,7 +26,7 @@ data class ServerFlags(
     val tasks: Boolean,
     /** Toggles equipment CRUD routes. When false, they return 404. */
     val equipments: Boolean,
-    /** Toggles building CRUD routes. When false, they return 404. */
+    /** Toggles building CRUD routes, including the links placing equipments in buildings. When false, they return 404. */
     val buildings: Boolean
 ) {
     /** Holds the server feature flags. */
