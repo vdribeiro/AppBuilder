@@ -101,21 +101,14 @@ class TagManager(
             EntityType.USER -> useCases.userUseCases.upsertUser(
                 user = User(
                     uuid = record.entityUuid ?: uuid(),
-                    modifiedAt = now(),
-                    deletedAt = null,
                     name = now().toString(),
-                    avatar = null
                 )
             )
 
             EntityType.TASK -> useCases.taskUseCases.upsertTask(
                 task = Task(
                     uuid = record.entityUuid ?: uuid(),
-                    modifiedAt = now(),
-                    deletedAt = null,
                     title = now().toString(),
-                    description = "",
-                    state = Task.State.TODO
                 )
             )
 
@@ -130,6 +123,7 @@ class TagManager(
             EntityType.DEVICE_LOCATION,
             EntityType.NFC,
             EntityType.EQUIPMENT -> Unit
+            EntityType.BUILDING -> Unit
         }
     }
 
