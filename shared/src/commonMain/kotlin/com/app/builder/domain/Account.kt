@@ -3,6 +3,8 @@ package com.app.builder.domain
 import kotlin.time.Instant
 import kotlin.uuid.Uuid
 import kotlinx.serialization.Serializable
+import com.app.builder.core.locale.now
+import com.app.builder.core.security.uuid
 
 /**
  * The login account of a [User], holding what the user is allowed to do.
@@ -15,11 +17,11 @@ import kotlinx.serialization.Serializable
  */
 @Serializable
 data class Account(
-    val userUuid: Uuid,
-    val modifiedAt: Instant,
-    val deletedAt: Instant?,
+    val userUuid: Uuid = uuid(),
+    val modifiedAt: Instant = now(),
+    val deletedAt: Instant? = null,
     val username: String,
-    val permissions: Map<EntityType, Permission>,
+    val permissions: Map<EntityType, Permission> = emptyMap(),
 ) {
     /**
      * Checks if the account has a given [permission] for a given [entityType].
