@@ -143,6 +143,7 @@ object Dependency {
         val pushService: PushService = PushManager(
             userUuid = account.userUuid,
             httpClient = httpClient,
+            sessionActive = repositories.authenticationRepository.observeSessionActive(userUuid = account.userUuid),
         )
     }
 

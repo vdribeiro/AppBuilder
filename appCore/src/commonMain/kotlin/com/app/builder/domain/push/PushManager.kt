@@ -6,8 +6,12 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
@@ -38,10 +42,12 @@ import com.app.builder.domain.PushPayload
  *
  * @property userUuid The unique identifier of the current user.
  * @property httpClient The HTTP client used for network operations.
+ * @property sessionActive Whether the user's session can authenticate with the server. While it can't, no ticket is requested and no token is registered, since the server would refuse them.
  */
 class PushManager(
     private val userUuid: Uuid,
     private val httpClient: HttpClient,
+    private val sessionActive: Flow<Boolean> = flowOf(value = true),
 ): PushService {
 
     /** An isolated scope for the manager's coroutine operations. */
@@ -83,9 +89,13 @@ class PushManager(
     private fun startTokenJob() {
         if (tokenJob?.isActive != true) tokenJob = scope.launch(context = Dispatcher.Default) {
             Telemetry.info(tag = TAG, message = "Registering token for push notifications")
-            PushProvider.token.filterNotNull().collectLatest {
-                registerDeviceToken(token = it)
-            }
+            combine(
+                flow = PushProvider.token.filterNotNull(),
+                flow2 = sessionActive
+            ) { token, active -> token.takeIf { active } }
+                .filterNotNull()
+                .distinctUntilChanged()
+                .collectLatest { registerDeviceToken(token = it) }
         }
     }
 
@@ -96,30 +106,35 @@ class PushManager(
     private fun startListenJob() {
         if (listenJob?.isActive != true) listenJob = scope.launch(context = Dispatcher.IO) {
             Telemetry.info(tag = TAG, message = "Listen to push notifications")
-            getInternetAvailabilityFlow().collectLatest { online ->
-                if (!online) return@collectLatest
+            combine(
+                flow = getInternetAvailabilityFlow(),
+                flow2 = sessionActive
+            ) { online, active -> online && active }
+                .distinctUntilChanged()
+                .collectLatest { connectable ->
+                    if (!connectable) return@collectLatest
 
-                var retryDelay = ClientConfigs.value.pushRetryDelay
-                while (this@launch.isActive) {
-                    val ticketUuid = requestTicket()
-                    if (ticketUuid != null) {
-                        listen(
-                            ticketUuid = ticketUuid,
-                            onConnected = { retryDelay = ClientConfigs.value.pushRetryDelay }
-                        ) { userUuid, pushPayload ->
-                            Telemetry.info(tag = TAG, message = "Received push payload: ${pushPayload.uuid}")
-                            if (pushPayload.userUuid != userUuid) {
-                                Telemetry.error(tag = TAG, message = "Push payload is for a different user ${pushPayload.userUuid}")
-                                return@listen null
+                    var retryDelay = ClientConfigs.value.pushRetryDelay
+                    while (this@launch.isActive) {
+                        val ticketUuid = requestTicket()
+                        if (ticketUuid != null) {
+                            listen(
+                                ticketUuid = ticketUuid,
+                                onConnected = { retryDelay = ClientConfigs.value.pushRetryDelay }
+                            ) { userUuid, pushPayload ->
+                                Telemetry.info(tag = TAG, message = "Received push payload: ${pushPayload.uuid}")
+                                if (pushPayload.userUuid != userUuid) {
+                                    Telemetry.error(tag = TAG, message = "Push payload is for a different user ${pushPayload.userUuid}")
+                                    return@listen null
+                                }
+                                PushProvider.handlePushPayload(pushPayload = pushPayload)
+                                pushPayload.uuid.toString()
                             }
-                            PushProvider.handlePushPayload(pushPayload = pushPayload)
-                            pushPayload.uuid.toString()
                         }
+                        delay(timeMillis = retryDelay)
+                        retryDelay = (retryDelay * 2).coerceAtMost(maximumValue = ClientConfigs.value.pushMaxRetryDelay)
                     }
-                    delay(timeMillis = retryDelay)
-                    retryDelay = (retryDelay * 2).coerceAtMost(maximumValue = ClientConfigs.value.pushMaxRetryDelay)
                 }
-            }
         }
     }
 

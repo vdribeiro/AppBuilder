@@ -4,12 +4,17 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import kotlin.uuid.Uuid
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.withContext
 import io.ktor.client.engine.mock.toByteArray
 import io.ktor.http.HttpStatusCode
 import com.app.builder.core.config.ClientFlags
+import com.app.builder.core.flow.Dispatcher
 import com.app.builder.data.device.getDeviceUuid
 import com.app.builder.data.http.HttpClientFactory
 import com.app.builder.data.http.Query
@@ -50,10 +55,12 @@ class PushServiceTest: TestCase() {
      *
      * @param user The user the service listens for.
      * @param ticketStatus The status the ticket endpoint answers with.
+     * @param sessionActive Whether the user's session can authenticate with the server.
      * @return The fixture [PushService] instance.
      */
-    private fun pushService(user: User, ticketStatus: HttpStatusCode = HttpStatusCode.OK): PushService = PushManager(
+    private fun pushService(user: User, ticketStatus: HttpStatusCode = HttpStatusCode.OK, sessionActive: Flow<Boolean> = flowOf(value = true)): PushService = PushManager(
         userUuid = user.uuid,
+        sessionActive = sessionActive,
         httpClient = HttpClientFactory(engine = TestEngine { request ->
             when (request.url.encodedPath) {
                 URL.Tickets.path -> {
@@ -127,6 +134,21 @@ class PushServiceTest: TestCase() {
         pushService.stop()
 
         assertEquals(expected = 0, actual = pushConnections.value)
+    }
+
+    /** Verifies that no ticket is requested while the user's session is inactive, and that the stream connects once it becomes active. */
+    @Test
+    fun waitsForAnActiveSession() = runUnitTest {
+        val sessionActive = MutableStateFlow(value = false)
+        val pushService = pushService(user = FakeData.adminUser, sessionActive = sessionActive)
+
+        pushService.start()
+        withContext(context = Dispatcher.IO) { delay(timeMillis = 500) }
+        assertEquals(expected = 0, actual = ticketRequests.value)
+
+        sessionActive.value = true
+        pushConnections.first { it > 0 }
+        pushService.stop()
     }
 
     /** Verifies that a push token set on [PushProvider] is registered with the server alongside this device's uuid. */
