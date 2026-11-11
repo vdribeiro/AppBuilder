@@ -4,6 +4,7 @@ import kotlin.uuid.Uuid
 import com.app.builder.domain.BearerToken
 import com.app.builder.domain.scheduler.Job
 import com.app.builder.domain.scheduler.JobResult
+import kotlinx.coroutines.flow.Flow
 
 /** Defines the contract for session login and logout. */
 interface AuthenticationRepository {
@@ -25,12 +26,12 @@ interface AuthenticationRepository {
     suspend fun executeLogout(job: Job): JobResult
 
     /**
-     * Checks whether a user has a session the server may still accept.
+     * Observes whether a user has a session the server may still accept.
      *
      * @param userUuid The unique identifier of the user.
-     * @return `true` if the user's session exists and is not expired, `false` otherwise.
+     * @return A [Flow] emitting `true` while the user's session exists and is not expired, and `false` otherwise.
      */
-    suspend fun hasActiveSession(userUuid: Uuid): Boolean
+    fun observeSessionActive(userUuid: Uuid): Flow<Boolean>
 
     /**
      * Retrieves the cryptographic bearer token pair for a specific authenticated user context.

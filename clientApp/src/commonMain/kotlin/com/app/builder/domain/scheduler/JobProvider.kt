@@ -1,5 +1,6 @@
 package com.app.builder.domain.scheduler
 
+import kotlinx.coroutines.flow.first
 import com.app.builder.Dependency
 import com.app.builder.Dependency.getUserGraph
 import com.app.builder.domain.EntityType
@@ -40,7 +41,7 @@ class JobProvider(
         if (job.userUuid == Dependency.guestAccount.userUuid) return true
         if (job.type == Job.Type.DELETE && job.entityType == EntityType.ACCOUNT) return true
         val repositories = getRepositories(job = job) ?: return true
-        return repositories.authenticationRepository.hasActiveSession(userUuid = job.userUuid)
+        return repositories.authenticationRepository.observeSessionActive(userUuid = job.userUuid).first()
     }
 
     /**

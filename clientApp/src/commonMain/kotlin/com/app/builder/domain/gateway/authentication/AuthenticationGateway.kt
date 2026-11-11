@@ -5,6 +5,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
@@ -248,16 +249,19 @@ class AuthenticationGateway(
         }.getOrNull()?.decrypt()
     }
 
-    override suspend fun hasActiveSession(userUuid: Uuid): Boolean = withContext(context = Dispatcher.IO) {
-        database.safeTransaction {
-            sessionDao.getSession(userUuid = userUuid).awaitAsOneOrNull()
-        }.onFailure {
-            Telemetry.error(tag = TAG, message = "Unable to get the session of user $userUuid", throwable = it)
-        }.getOrNull()?.let { it.expiredAt == null } ?: false
-    }
+    override fun observeSessionActive(userUuid: Uuid): Flow<Boolean> =
+        sessionDao.getSession(userUuid = userUuid)
+            .asFlow { it.expiredAt == null }
+            .map { it.firstOrNull() ?: false }
+            .distinctUntilChanged()
+            .flowOn(context = Dispatcher.IO)
+            .catch {
+                Telemetry.error(tag = TAG, message = "Unable to observe the session of user $userUuid", throwable = it)
+                emit(value = false)
+            }
 
     override suspend fun refreshBearerToken(userUuid: Uuid, refreshToken: String): BearerToken? = withContext(context = Dispatcher.IO) {
-        if (!hasActiveSession(userUuid = userUuid)) {
+        if (!observeSessionActive(userUuid = userUuid).first()) {
             Telemetry.info(tag = TAG, message = "Not refreshing the session of user $userUuid, which is expired or missing")
             return@withContext null
         }

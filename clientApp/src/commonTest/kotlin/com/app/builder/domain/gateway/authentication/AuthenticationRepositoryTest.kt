@@ -244,12 +244,12 @@ class AuthenticationRepositoryTest: TestCase() {
         val userGraph = dependency.get().userGraph
         val authenticationRepository = userGraph.repositories.authenticationRepository
 
-        assertFalse(actual = authenticationRepository.hasActiveSession(userUuid = FakeData.adminUser.uuid))
+        assertFalse(actual = authenticationRepository.observeSessionActive(userUuid = FakeData.adminUser.uuid).first())
         assertNotNull(actual = userGraph.useCases.authenticationUseCases.login(credentials = FakeData.adminCredentials))
-        assertTrue(actual = authenticationRepository.hasActiveSession(userUuid = FakeData.adminUser.uuid))
+        assertTrue(actual = authenticationRepository.observeSessionActive(userUuid = FakeData.adminUser.uuid).first())
 
         assertNull(actual = authenticationRepository.refreshBearerToken(userUuid = FakeData.adminUser.uuid, refreshToken = FakeData.expiredBearerToken.refreshToken))
-        assertFalse(actual = authenticationRepository.hasActiveSession(userUuid = FakeData.adminUser.uuid))
+        assertFalse(actual = authenticationRepository.observeSessionActive(userUuid = FakeData.adminUser.uuid).first())
         assertNull(actual = authenticationRepository.refreshBearerToken(userUuid = FakeData.adminUser.uuid, refreshToken = FakeData.adminBearerToken.refreshToken))
     }
 
