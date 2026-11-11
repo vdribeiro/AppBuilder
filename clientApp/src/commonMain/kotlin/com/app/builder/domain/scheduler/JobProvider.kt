@@ -21,12 +21,26 @@ class JobProvider(
      * @return A function that, when invoked, executes the mapped use case and returns the updated [Job] state.
      */
     override fun resolve(job: Job): suspend () -> JobResult = {
-        when (job.type) {
+        if (!appGraph.canAuthenticate(job = job)) JobResult.Unauthorized else when (job.type) {
             Job.Type.GET if job.entityUuid == null -> handleSync(job = job)
             Job.Type.GET -> handleGet(job = job)
             Job.Type.POST -> handlePost(job = job)
             Job.Type.DELETE -> handleDelete(job = job)
         }
+    }
+
+    /**
+     * Checks whether a job can authenticate with the server, so a job whose user's session is expired or missing waits without making a request.
+     * Jobs of the guest and logouts always run: the guest has no session, and a logout ends a session whatever its state.
+     *
+     * @param job The job about to run.
+     * @return `true` if the job can run now, `false` if it should wait for its user to log in again.
+     */
+    private suspend fun Dependency.AppGraph.canAuthenticate(job: Job): Boolean {
+        if (job.userUuid == Dependency.guestAccount.userUuid) return true
+        if (job.type == Job.Type.DELETE && job.entityType == EntityType.ACCOUNT) return true
+        val repositories = getRepositories(job = job) ?: return true
+        return repositories.authenticationRepository.hasActiveSession(userUuid = job.userUuid)
     }
 
     /**
