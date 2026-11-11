@@ -36,6 +36,7 @@ enum class Position {
 
 /**
  * Wraps an anchor composable with a short descriptive label that appears on long-press or hover.
+ * The label stays while the pointer hovers the anchor, or until the user taps elsewhere after a long-press.
  *
  * @param modifier The [Modifier] to be applied to the tooltip bubble's layout.
  * @param text The short descriptive message to display when the tooltip is shown.
@@ -64,7 +65,7 @@ fun Tooltip(
                 Text(text = text.orEmpty())
             }
         },
-        state = rememberTooltipState(),
+        state = rememberTooltipState(isPersistent = true),
         enableUserInput = true,
         content = content
     )
