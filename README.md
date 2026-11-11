@@ -1216,16 +1216,26 @@ Declarations that resolve to a distinct implementation per source set:
 <details>
 <summary>Shared Test</summary>
 
-* **core/locale** `MockClock`: A `Clock` driven by the test scheduler's virtual time.
-* **core/telemetry** `MockLogger`: A mock `TelemetryEngine`.
-* **data/http** `MockHttp`: `TestEngine`, a Ktor `MockEngine`, plus response helpers.
-* **ui/lifecycle** `OverridableLifecycleOwner`: A `LifecycleOwner` that can be set to any state.
-* **test**
-    * `FakeData`: Fake data for tests.
-    * `SharedTestCase`: The hermetic harness for unit, UI and server tests.
-    * `PlatformTestCase`: Extends `SharedTestCase` with platform-specific setup.
-    * `FakeAndroidKeyStore` / `FakeKeychain`: In-memory Android KeyStore and Apple Keychain fakes.
-    * `Extensions`: Test helper extensions.
+**core**
+
+* **locale** `MockClock`: A `Clock` driven by the test scheduler's virtual time.
+* **telemetry** `MockLogger`: A mock `TelemetryEngine`.
+
+**data**
+
+* **http** `MockHttp`: `TestEngine`, a Ktor `MockEngine`, plus response helpers.
+
+**ui**
+
+* **lifecycle** `OverridableLifecycleOwner`: A `LifecycleOwner` that can be set to any state.
+
+**test**
+
+* `FakeData`: Fake data for tests.
+* `SharedTestCase`: The hermetic harness for unit, UI and server tests.
+* `PlatformTestCase`: Extends `SharedTestCase` with platform-specific setup.
+* `FakeAndroidKeyStore` / `FakeKeychain`: In-memory Android KeyStore and Apple Keychain fakes.
+* `Extensions`: Test helper extensions.
 
 </details>
 
