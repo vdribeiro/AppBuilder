@@ -46,6 +46,8 @@ data class ClientFlags(
     val registries: Boolean,
     /** Toggles the task screens and whether task entities are queued for background sync. When false, task screens fall back to the error screen and task data is excluded from sync even if the user has permission to read it. */
     val tasks: Boolean,
+    /** Toggles the equipment screens and whether equipment entities are queued for background sync. When false, equipment screens fall back to the error screen and equipment data is excluded from sync even if the user has permission to read it. */
+    val equipments: Boolean,
 ) {
     /** Holds the client feature flags. */
     companion object: StateHolder<ClientFlags>(
@@ -70,6 +72,7 @@ data class ClientFlags(
             users = true,
             registries = true,
             tasks = true,
+            equipments = true,
         )
     )
 }

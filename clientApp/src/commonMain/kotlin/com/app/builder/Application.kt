@@ -190,12 +190,7 @@ object Application {
             val customTheme = AppFile.Theme.load() ?: CustomTheme()
             ThemeCache.set { customTheme }
             Telemetry.info(tag = TAG, message = "Loading list filters")
-            listOf(
-                AppFile.TranslationPreferences,
-                AppFile.RegistryPreferences,
-                AppFile.UserPreferences,
-                AppFile.TaskPreferences
-            ).forEach { it.cache() }
+            AppFile.preferences.forEach { it.cache() }
 
             Telemetry.info(tag = TAG, message = "Initializing dependencies")
             val dependency = appGraph.get().apply { start(); observeCurrentAccount(scope = this@launch) }
@@ -295,6 +290,7 @@ object Application {
         repositories.userRepository.syncUsers()
         if (ClientFlags.value.registries) repositories.registryRepository.syncRegistries()
         if (ClientFlags.value.tasks) repositories.taskRepository.syncTasks()
+        if (ClientFlags.value.equipments) repositories.equipmentRepository.syncEquipments()
     }
 
     /** Register lifecycles of services. */

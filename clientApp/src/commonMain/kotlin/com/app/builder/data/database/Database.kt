@@ -7,6 +7,7 @@ import com.app.builder.core.telemetry.Telemetry
 import database.Account
 import database.AppDatabase
 import database.DeviceLocation
+import database.Equipment
 import database.Job
 import database.Registry
 import database.Session
@@ -23,6 +24,7 @@ typealias AccountSchema = Account
 typealias UserSchema = User
 typealias DeviceLocationSchema = DeviceLocation
 typealias TaskSchema = Task
+typealias EquipmentSchema = Equipment
 
 /**
  * Drops every table in the database and creates them again from [AppDatabase.Schema], so a database left with an older schema is rebuilt too.

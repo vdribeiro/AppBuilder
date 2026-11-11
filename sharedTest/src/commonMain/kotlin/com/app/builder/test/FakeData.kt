@@ -13,6 +13,7 @@ import com.app.builder.domain.Authentication
 import com.app.builder.domain.BearerToken
 import com.app.builder.domain.DeviceLocation
 import com.app.builder.domain.EntityType
+import com.app.builder.domain.Equipment
 import com.app.builder.domain.Permission
 import com.app.builder.domain.PushPayload
 import com.app.builder.domain.RegistrationForm
@@ -103,6 +104,7 @@ object FakeData {
                 EntityType.DEVICE_LOCATION -> Permission.WRITE
                 EntityType.NFC -> Permission.READ
                 EntityType.TASK -> Permission.READ
+                EntityType.EQUIPMENT -> Permission.READ
             }?.let { type to it }
         }.toMap()
     )
@@ -195,6 +197,15 @@ object FakeData {
         title = "Task Title",
         description = "Task Description",
         state = Task.State.TODO
+    )
+
+    val equipment: Equipment = Equipment(
+        uuid = uuid(),
+        modifiedAt = now(),
+        deletedAt = null,
+        name = "Equipment Name",
+        description = "Equipment Description",
+        status = Equipment.Status.WORKING
     )
 
     val deviceLocation: DeviceLocation = DeviceLocation(
