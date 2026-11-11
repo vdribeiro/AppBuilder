@@ -2,9 +2,9 @@ package com.app.builder.domain.gateway
 
 import com.app.builder.domain.gateway.account.AccountUseCases
 import com.app.builder.domain.gateway.authentication.AuthenticationUseCases
+import com.app.builder.domain.gateway.building.BuildingUseCases
 import com.app.builder.domain.gateway.config.ConfigUseCases
 import com.app.builder.domain.gateway.equipment.EquipmentUseCases
-import com.app.builder.domain.gateway.building.BuildingUseCases
 import com.app.builder.domain.gateway.push.PushUseCases
 import com.app.builder.domain.gateway.registry.RegistryUseCases
 import com.app.builder.domain.gateway.status.StatusUseCases

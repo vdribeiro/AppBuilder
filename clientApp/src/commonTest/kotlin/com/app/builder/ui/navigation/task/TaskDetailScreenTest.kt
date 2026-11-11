@@ -64,11 +64,12 @@ class TaskDetailScreenTest: TestCase() {
     private fun ComposeUiTest.setTaskDetailScreen(useCases: UseCases, taskUuid: Uuid = FakeData.task.uuid, new: Boolean = false): Pair<TaskDetailScreenStore, SessionStore> {
         val store = TaskDetailScreenStore(state = TaskDetailScreenState(), router = router, taskUseCases = useCases.taskUseCases, taskUuid = taskUuid.toString(), new = new)
         val sessionStore = SessionStore(state = SessionState(), authenticationUseCases = useCases.authenticationUseCases)
+        val filtersStore = FiltersStore(state = FiltersState())
 
         setUI {
             TaskDetailScreen(
                 sessionStore = sessionStore,
-                filtersStore = FiltersStore(state = FiltersState()),
+                filtersStore = filtersStore,
                 store = store,
             )
         }
@@ -83,11 +84,12 @@ class TaskDetailScreenTest: TestCase() {
 
         val store = TaskDetailScreenStore(state = TaskDetailScreenState(), router = router, taskUseCases = useCases.taskUseCases, taskUuid = FakeData.task.uuid.toString())
         val sessionStore = SessionStore(state = SessionState(), authenticationUseCases = useCases.authenticationUseCases)
+        val filtersStore = FiltersStore(state = FiltersState())
 
         setUI {
             TaskDetailScreen(
                 sessionStore = sessionStore,
-                filtersStore = FiltersStore(state = FiltersState()),
+                filtersStore = filtersStore,
                 store = store,
             )
         }

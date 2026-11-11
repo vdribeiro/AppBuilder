@@ -78,11 +78,12 @@ class UserDetailScreenTest: TestCase() {
             new = new
         )
         val sessionStore = SessionStore(state = SessionState(), authenticationUseCases = useCases.authenticationUseCases)
+        val filtersStore = FiltersStore(state = FiltersState())
 
         setUI {
             UserDetailScreen(
                 sessionStore = sessionStore,
-                filtersStore = FiltersStore(state = FiltersState()),
+                filtersStore = filtersStore,
                 store = store
             )
         }

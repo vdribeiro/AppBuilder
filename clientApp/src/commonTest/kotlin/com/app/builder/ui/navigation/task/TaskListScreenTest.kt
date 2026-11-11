@@ -49,7 +49,8 @@ class TaskListScreenTest: TestCase() {
         val filtersStore = FiltersStore(
             state = FiltersState(visibleProperties = properties, searchableProperties = properties),
             storageFile = AppFile.TaskPreferences,
-            defaults = defaults)
+            defaults = defaults
+        )
         val taskListScreenStore = TaskListScreenStore(state = TaskListScreenState(), router = router, taskUseCases = authenticatedUseCases.taskUseCases)
 
         setUI {
@@ -100,7 +101,8 @@ class TaskListScreenTest: TestCase() {
         val filtersStore = FiltersStore(
             state = FiltersState(visibleProperties = properties, searchableProperties = properties),
             storageFile = AppFile.TaskPreferences,
-            defaults = defaults)
+            defaults = defaults
+        )
         val taskListScreenStore = TaskListScreenStore(state = TaskListScreenState(), router = router, taskUseCases = authenticatedUseCases.taskUseCases)
 
         setUI {
@@ -149,7 +151,8 @@ class TaskListScreenTest: TestCase() {
         val filtersStore = FiltersStore(
             state = FiltersState(visibleProperties = properties, searchableProperties = properties),
             storageFile = AppFile.TaskPreferences,
-            defaults = defaults)
+            defaults = defaults
+        )
         val taskListScreenStore = TaskListScreenStore(state = TaskListScreenState(), router = router, taskUseCases = authenticatedUseCases.taskUseCases)
 
         setUI {

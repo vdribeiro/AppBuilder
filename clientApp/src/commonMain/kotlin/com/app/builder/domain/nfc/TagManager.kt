@@ -122,7 +122,7 @@ class TagManager(
             EntityType.ACCOUNT,
             EntityType.DEVICE_LOCATION,
             EntityType.NFC,
-            EntityType.EQUIPMENT -> Unit
+            EntityType.EQUIPMENT,
             EntityType.BUILDING -> Unit
         }
     }
