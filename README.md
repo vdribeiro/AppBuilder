@@ -754,9 +754,12 @@ Authorization is per `EntityType`: each account carries a `READ`/`WRITE` permiss
 * User edit can be done with either `USER` or `ACCOUNT` `WRITE`, but each unlocks only the fields that permission covers. 
 * Adding a user still needs `USER` `WRITE`, and deleting one also needs `ACCOUNT` `READ`, so the app can tell its account isn't active.
 
-It is easier to strip down auth than to build it. If you don't need accounts, remove the routes and screens, move what you keep into `UnauthenticatedNavigation`, or grant all permissions to the guest account in the `Dependency` graph.
-
 Offline login is covered in [Cryptography](#cryptography).
+
+### No Auth
+
+It is easier to strip down authentication than to build it. 
+If you don't need accounts, move the routes and screens into `UnauthenticatedNavigation`, or grant all permissions to the guest account in the `Dependency` graph.
 
 ### Tokens & Refresh
 
@@ -984,7 +987,7 @@ The update loop exists only to keep the platform's location cache warm: `getLast
 
 ## Cryptography
 
-It is backed by real platform keystores, never a bundled key. Strings in and out: Base64 for ciphertext, hex for hashes.
+Backed by real platform keystores, never a bundled key. Strings in and out: Base64 for ciphertext, hex for hashes.
 
 | Platform | Backing                                                     |
 |----------|-------------------------------------------------------------|
@@ -1008,9 +1011,9 @@ The same row keeps the session's access and refresh tokens, encrypted with `encr
 
 A `StorageFile<T>` declares a file as a typed object: path, serializer, `encrypted`, and `cache`. `save` and `load` serialize, encrypt and touch the file system in one step.
 
-* With `encrypted = true`, the default, the payload is encrypted with [`encrypt`](#cryptography) before it is written and decrypted when read, so the file is unreadable without this device's key. A payload that fails to decrypt reads as absent. Use `encrypted = false` only for files that hold nothing sensitive, such as the theme.
+* With `encrypted = true`, the default, the payload is encrypted with [`encrypt`](#cryptography) before it is written and decrypted when read, so the file is unreadable without this device's key. A payload that fails to decrypt reads as absent. Use `encrypted = false` only for files that hold nothing sensitive.
 * With `cache = true`, it lazily hydrates a mutex-guarded `StateFlow` and rolls the cached value back if a disk write fails, so the cache never holds a payload the file system rejected. Use `cache = false` for files that are read rarely or written from outside the app.
-* **Saving `null` deletes the file**, so absence has one representation on disk and `reset()` and "save null" converge.
+* **Saving `null` deletes the file** so absence has one representation on disk and `reset()` and "save null" converge.
 
 ## HTTP Stack
 
@@ -1409,7 +1412,7 @@ Set `server.host` in `local.properties`, and list the same host in the server's 
 
 ### Do I need user and session management?
 
-Not necessarily, but it is easier to strip auth out than to build it. Remove the routes and screens, or grant every permission to the guest account. See [Accounts & Sessions](#accounts--sessions).
+Not necessarily. It is easier to strip down authentication than to build it. Move the routes and screens, or grant every permission to the guest account. See [Accounts & Sessions](#accounts--sessions).
 
 ## Building Features
 
@@ -1431,11 +1434,11 @@ Add `languageIso`/`key`/`value` entries to the server's `translations.json` and 
 
 ### How do I turn a feature off?
 
-Flip its flag server-side; clients hot-reload it. See [Feature Flags & Remote Configs](#feature-flags--remote-configs).
+Flip its flag. See [Feature Flags & Remote Configs](#feature-flags--remote-configs).
 
 ### Can I drop down to native platform code if KMP lacks a feature?
 
-Yes. Declare it with `expect` in `commonMain` and implement it per source set. Keep the state machine in common code and let platforms supply only the primitives. See [Platform-Specific Code](#platform-specific-code).
+Yes. Declare it with `expect` in `commonMain` and implement it per source set. See [Platform-Specific Code](#platform-specific-code).
 
 ### Why does the build fail on coverage?
 
@@ -1463,9 +1466,9 @@ It still syncs. See [Account Deletion](#account-deletion).
 
 ### Why do Android and iOS close their WebSocket/SSE connections in the background?
 
-The OS suspends idle sockets soon after backgrounding anyway, and FCM/APNs already wake a backgrounded or killed app far more efficiently. See [Client Connection Lifecycle](#client-connection-lifecycle).
+The OS suspends idle sockets soon after backgrounding, and FCM/APNs wake a backgrounded or killed app far more efficiently. See [Client Connection Lifecycle](#client-connection-lifecycle).
 
-### Why does Desktop never use FCM?
+### Why doesn't Desktop use FCM?
 
 There is no FCM client SDK for JVM desktop apps. See [Client Connection Lifecycle](#client-connection-lifecycle).
 
@@ -1502,7 +1505,7 @@ Tests are where AI works most autonomously. They are still reviewed, just less s
 The architecture, the trade-offs and the decisions documented here are mine. AI helped me get there faster, and sometimes it pointed out something I had missed. It never chose the direction.
 
 I keep a clear boundary between what is foundational and what is repeatable. AI does well on isolated, pattern-following work like UI components or feature boilerplate, as long as the patterns already exist and a human reviews the result.
-The foundational layer is where I think human ownership matters most, because that's where architectural drift starts.
+The foundational layer is where I think human ownership matters most, because that's where the architectural drift starts.
 
 ## License
 
