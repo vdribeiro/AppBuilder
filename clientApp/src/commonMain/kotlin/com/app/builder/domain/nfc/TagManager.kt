@@ -128,7 +128,8 @@ class TagManager(
             EntityType.TRANSLATION,
             EntityType.ACCOUNT,
             EntityType.DEVICE_LOCATION,
-            EntityType.NFC -> Unit
+            EntityType.NFC,
+            EntityType.EQUIPMENT -> Unit
         }
     }
 

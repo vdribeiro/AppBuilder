@@ -12,6 +12,7 @@ import com.app.builder.domain.route.provider.authenticationRoutes
 import com.app.builder.domain.route.provider.broadcastRoutes
 import com.app.builder.domain.route.provider.configRoutes
 import com.app.builder.domain.route.provider.deviceLocationRoutes
+import com.app.builder.domain.route.provider.equipmentRoutes
 import com.app.builder.domain.route.provider.probeRoutes
 import com.app.builder.domain.route.provider.pushRoutes
 import com.app.builder.domain.route.provider.registryRoutes
@@ -39,5 +40,6 @@ fun Application.installRouting(dependency: Dependency) {
         if (ServerFlags.value.users) accountRoutes(permissionService = permissionService, accountUseCases = useCases.accountUseCases, registryUseCases = useCases.registryUseCases)
         if (ServerFlags.value.deviceLocation) deviceLocationRoutes(permissionService = permissionService, deviceLocationUseCases = useCases.deviceLocationUseCases, registryUseCases = useCases.registryUseCases)
         if (ServerFlags.value.tasks) taskRoutes(permissionService = permissionService, taskUseCases = useCases.taskUseCases, registryUseCases = useCases.registryUseCases)
+        if (ServerFlags.value.equipments) equipmentRoutes(permissionService = permissionService, equipmentUseCases = useCases.equipmentUseCases, registryUseCases = useCases.registryUseCases)
     }
 }

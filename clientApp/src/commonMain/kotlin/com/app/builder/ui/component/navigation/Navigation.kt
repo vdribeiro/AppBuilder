@@ -6,6 +6,7 @@ import kotlinx.collections.immutable.toPersistentList
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.AppRegistration
 import androidx.compose.material.icons.filled.Apps
 import androidx.compose.material.icons.filled.Camera
@@ -139,6 +140,7 @@ private val NavigationRoute.text: String
     get() = when (this) {
         NavigationRoute.HOME -> "home"
         NavigationRoute.TASK -> "task"
+        NavigationRoute.EQUIPMENT -> "equipment"
         NavigationRoute.USER -> "user"
         NavigationRoute.REGISTRY -> "registry"
         NavigationRoute.DEVICE_LOCATION -> "device_location"
@@ -160,6 +162,7 @@ private val NavigationRoute.icon: ImageVector
     get() = when (this) {
         NavigationRoute.HOME -> Icons.Filled.Home
         NavigationRoute.TASK -> Icons.Filled.Task
+        NavigationRoute.EQUIPMENT -> Icons.Filled.Build
         NavigationRoute.USER -> Icons.Filled.AccountCircle
         NavigationRoute.REGISTRY -> Icons.Filled.AppRegistration
         NavigationRoute.DEVICE_LOCATION -> Icons.Filled.GpsFixed
@@ -181,6 +184,7 @@ private val NavigationRoute.screen: Screen
     get() = when (this) {
         NavigationRoute.HOME -> Screen.Home
         NavigationRoute.TASK -> Screen.TaskList
+        NavigationRoute.EQUIPMENT -> Screen.EquipmentList
         NavigationRoute.USER -> Screen.UserList
         NavigationRoute.REGISTRY -> Screen.RegistryList
         NavigationRoute.DEVICE_LOCATION -> Screen.DeviceLocation

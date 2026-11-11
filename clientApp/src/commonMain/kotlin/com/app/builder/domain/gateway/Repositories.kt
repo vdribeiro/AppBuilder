@@ -4,6 +4,7 @@ import com.app.builder.domain.gateway.account.AccountRepository
 import com.app.builder.domain.gateway.authentication.AuthenticationRepository
 import com.app.builder.domain.gateway.config.ConfigRepository
 import com.app.builder.domain.gateway.devicelocation.DeviceLocationRepository
+import com.app.builder.domain.gateway.equipment.EquipmentRepository
 import com.app.builder.domain.gateway.registry.RegistryRepository
 import com.app.builder.domain.gateway.task.TaskRepository
 import com.app.builder.domain.gateway.translation.TranslationRepository
@@ -27,4 +28,6 @@ interface Repositories {
     val accountRepository: AccountRepository
     /**The repository for managing tasks. */
     val taskRepository: TaskRepository
+    /**The repository for managing equipments. */
+    val equipmentRepository: EquipmentRepository
 }

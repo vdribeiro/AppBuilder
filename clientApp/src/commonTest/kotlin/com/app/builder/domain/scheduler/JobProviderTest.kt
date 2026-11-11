@@ -40,11 +40,14 @@ class JobProviderTest: TestCase() {
             guestJob(type = Job.Type.GET, entityType = EntityType.TRANSLATION),
             guestJob(type = Job.Type.GET, entityType = EntityType.USER),
             guestJob(type = Job.Type.GET, entityType = EntityType.TASK),
+            guestJob(type = Job.Type.GET, entityType = EntityType.EQUIPMENT),
             guestJob(type = Job.Type.GET, entityType = EntityType.USER, entityUuid = Uuid.random()),
             guestJob(type = Job.Type.GET, entityType = EntityType.TASK, entityUuid = Uuid.random()),
+            guestJob(type = Job.Type.GET, entityType = EntityType.EQUIPMENT, entityUuid = Uuid.random()),
             guestJob(type = Job.Type.POST, entityType = EntityType.ACCOUNT),
             guestJob(type = Job.Type.POST, entityType = EntityType.USER),
             guestJob(type = Job.Type.POST, entityType = EntityType.TASK),
+            guestJob(type = Job.Type.POST, entityType = EntityType.EQUIPMENT),
             guestJob(type = Job.Type.DELETE, entityType = EntityType.ACCOUNT),
         )
 

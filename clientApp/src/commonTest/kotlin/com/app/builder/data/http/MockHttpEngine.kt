@@ -45,6 +45,8 @@ fun createMockHttpEngine(): HttpClientEngine = TestEngine { request ->
                 path.startsWith(prefix = URL.Users.path) -> respondMock(content = encode(value = listOf(FakeData.adminUser, FakeData.user)))
                 path.startsWith(prefix = "${URL.Tasks.path}/") -> respondMock(content = encode(value = FakeData.task))
                 path.startsWith(prefix = URL.Tasks.path) -> respondMock(content = encode(value = listOf(FakeData.task)))
+                path.startsWith(prefix = "${URL.Equipments.path}/") -> respondMock(content = encode(value = FakeData.equipment))
+                path.startsWith(prefix = URL.Equipments.path) -> respondMock(content = encode(value = listOf(FakeData.equipment)))
                 else -> notFound(request = request)
             }
 
@@ -86,6 +88,7 @@ fun createMockHttpEngine(): HttpClientEngine = TestEngine { request ->
                 path.startsWith(prefix = URL.Push.path) -> respondMock(content = encode(value = "sent"))
                 path.startsWith(prefix = URL.Broadcast.path) -> respondMock(content = encode(value = "sent"))
                 path.startsWith(prefix = URL.Tasks.path) -> respondMock(content = encode(value = FakeData.task))
+                path.startsWith(prefix = URL.Equipments.path) -> respondMock(content = encode(value = FakeData.equipment))
                 path.startsWith(prefix = URL.Users.path) -> respondMock(content = encode(value = FakeData.adminUser))
                 else -> notFound(request = request)
             }

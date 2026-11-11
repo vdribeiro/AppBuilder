@@ -14,6 +14,9 @@ import com.app.builder.domain.gateway.config.ConfigRepository
 import com.app.builder.domain.gateway.config.ConfigUseCases
 import com.app.builder.domain.gateway.devicelocation.DeviceLocationGateway
 import com.app.builder.domain.gateway.devicelocation.DeviceLocationRepository
+import com.app.builder.domain.gateway.equipment.EquipmentGateway
+import com.app.builder.domain.gateway.equipment.EquipmentRepository
+import com.app.builder.domain.gateway.equipment.EquipmentUseCases
 import com.app.builder.domain.gateway.push.PushGateway
 import com.app.builder.domain.gateway.push.PushUseCases
 import com.app.builder.domain.gateway.registry.RegistryGateway
@@ -130,4 +133,13 @@ class Gateways(
     )
     override val taskUseCases: TaskUseCases = taskGateway
     override val taskRepository: TaskRepository = taskGateway
+
+    private val equipmentGateway: EquipmentGateway = EquipmentGateway(
+        account = account,
+        database = database,
+        httpClient = httpClient,
+        scheduler = scheduler
+    )
+    override val equipmentUseCases: EquipmentUseCases = equipmentGateway
+    override val equipmentRepository: EquipmentRepository = equipmentGateway
 }

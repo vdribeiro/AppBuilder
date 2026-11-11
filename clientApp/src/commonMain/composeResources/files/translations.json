@@ -533,5 +533,55 @@
     "languageIso": "en",
     "key": "status_clock_untrusted",
     "value": "The device clock can't be trusted, so changes wait to sync."
+  },
+  {
+    "languageIso": "en",
+    "key": "equipment",
+    "value": "Equipment"
+  },
+  {
+    "languageIso": "en",
+    "key": "equipment_list",
+    "value": "Equipment List"
+  },
+  {
+    "languageIso": "en",
+    "key": "equipment_name",
+    "value": "Name"
+  },
+  {
+    "languageIso": "en",
+    "key": "equipment_description",
+    "value": "Description"
+  },
+  {
+    "languageIso": "en",
+    "key": "equipment_modified_at",
+    "value": "Modified At"
+  },
+  {
+    "languageIso": "en",
+    "key": "equipment_deleted_at",
+    "value": "Deleted At"
+  },
+  {
+    "languageIso": "en",
+    "key": "equipment_status",
+    "value": "Status"
+  },
+  {
+    "languageIso": "en",
+    "key": "equipment_status_working",
+    "value": "Working"
+  },
+  {
+    "languageIso": "en",
+    "key": "equipment_status_malfunctioning",
+    "value": "Malfunctioning"
+  },
+  {
+    "languageIso": "en",
+    "key": "equipment_uuid",
+    "value": "UUID"
   }
 ]

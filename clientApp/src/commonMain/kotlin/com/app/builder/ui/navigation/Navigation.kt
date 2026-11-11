@@ -15,6 +15,7 @@ import com.app.builder.ui.navigation.configs.configsProvider
 import com.app.builder.ui.navigation.design.designProvider
 import com.app.builder.ui.navigation.devicefiles.deviceFilesProvider
 import com.app.builder.ui.navigation.devicelocation.deviceLocationProvider
+import com.app.builder.ui.navigation.equipment.equipmentProvider
 import com.app.builder.ui.navigation.error.errorProvider
 import com.app.builder.ui.navigation.home.homeProvider
 import com.app.builder.ui.navigation.login.authenticationProvider
@@ -122,6 +123,7 @@ fun AuthenticatedNavigation(
                 if (ClientFlags.value.notifications) pushProvider(useCases = useCases)
                 if (ClientFlags.value.registries) registryProvider(useCases = useCases)
                 if (ClientFlags.value.tasks) taskProvider(useCases = useCases)
+                if (ClientFlags.value.equipments) equipmentProvider(useCases = useCases)
                 translationsProvider(useCases = useCases)
             }
         )
@@ -172,6 +174,7 @@ private fun setBackStack(
         EntityType.DEVICE_LOCATION -> listOf(Screen.DeviceLocation)
         EntityType.NFC -> listOf(Screen.NFC)
         EntityType.TASK -> buildList<Screen> { add(Screen.TaskList); entityUuid?.let { add(Screen.TaskDetail(uuid = it.toString())) } }
+        EntityType.EQUIPMENT -> buildList<Screen> { add(Screen.EquipmentList); entityUuid?.let { add(Screen.EquipmentDetail(uuid = it.toString())) } }
     }
     if (backStack.isNotEmpty()) router.backStack.apply {
         clear()

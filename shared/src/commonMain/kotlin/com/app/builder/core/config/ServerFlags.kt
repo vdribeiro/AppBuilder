@@ -23,7 +23,9 @@ data class ServerFlags(
     /** Toggles the device location ingestion route. When false, it returns 404. */
     val deviceLocation: Boolean,
     /** Toggles task CRUD routes. When false, they return 404. */
-    val tasks: Boolean
+    val tasks: Boolean,
+    /** Toggles equipment CRUD routes. When false, they return 404. */
+    val equipments: Boolean
 ) {
     /** Holds the server feature flags. */
     companion object: StateHolder<ServerFlags>(
@@ -36,7 +38,8 @@ data class ServerFlags(
             firebase = true,
             users = true,
             deviceLocation = true,
-            tasks = true
+            tasks = true,
+            equipments = true
         )
     )
 }
