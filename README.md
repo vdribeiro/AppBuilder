@@ -984,7 +984,7 @@ The update loop exists only to keep the platform's location cache warm: `getLast
 
 ## Cryptography
 
-`encrypt`, `decrypt` and `hash` backed by real platform keystores, never a bundled key. Strings in and out: Base64 for ciphertext, hex for hashes.
+It is backed by real platform keystores, never a bundled key. Strings in and out: Base64 for ciphertext, hex for hashes.
 
 | Platform | Backing                                                     |
 |----------|-------------------------------------------------------------|
@@ -1002,6 +1002,7 @@ This is the layer [`StorageFile`](#persisted-storage) builds on to make encrypti
 **Offline login** uses `deriveKey`, a PBKDF2-HMAC-SHA256 derivation. The local `Session` table stores a `username`, a random per-session `salt` and a `verifier = deriveKey(password, salt)`.
 The username ties a match to one user, so two accounts with the same password can't log each other in; the per-session salt means identical passwords look different on disk and no precomputed table breaks every install.
 The verifier only authenticates the offline login and is never used as a key.
+The same row keeps the session's access and refresh tokens, encrypted with `encrypt`, and `expiredAt`, set once the server refuses the session (see [Tokens & Refresh](#tokens--refresh)).
 
 ## Persisted Storage
 
