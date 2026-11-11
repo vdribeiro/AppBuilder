@@ -3,6 +3,7 @@ package com.app.builder.domain.gateway
 import com.app.builder.domain.gateway.account.AccountUseCases
 import com.app.builder.domain.gateway.authentication.AuthenticationUseCases
 import com.app.builder.domain.gateway.building.BuildingUseCases
+import com.app.builder.domain.gateway.buildingequipment.BuildingEquipmentUseCases
 import com.app.builder.domain.gateway.config.ConfigUseCases
 import com.app.builder.domain.gateway.equipment.EquipmentUseCases
 import com.app.builder.domain.gateway.push.PushUseCases
@@ -34,6 +35,8 @@ interface UseCases {
     val equipmentUseCases: EquipmentUseCases
     /** The use cases for managing buildings. */
     val buildingUseCases: BuildingUseCases
+    /** The use cases for the links placing equipments in buildings. */
+    val buildingEquipmentUseCases: BuildingEquipmentUseCases
     /** The use cases for browsing translations. */
     val translationUseCases: TranslationUseCases
 }

@@ -24,17 +24,12 @@ data class Account(
     val permissions: Map<EntityType, Permission> = emptyMap(),
 ) {
     /**
-     * Checks if the account has a given [permission] for a given [entityType].
-     * A [Permission.WRITE] permission also means that an account can [Permission.READ].
+     * Checks if the account has a given [permission] for a given [entityType], as [grants] decides it.
      *
      * @param entityType to check.
      * @param permission to check.
      * @return true if the account has permission, false otherwise.
      */
     fun hasPermission(entityType: EntityType, permission: Permission): Boolean =
-        when (permissions[entityType]) {
-            Permission.WRITE -> true
-            Permission.READ -> permission == Permission.READ
-            else -> false
-        }
+        permissions.grants(entityType = entityType, permission = permission)
 }

@@ -3,6 +3,7 @@ package com.app.builder.domain.usecase
 import com.app.builder.domain.usecase.account.AccountUseCases
 import com.app.builder.domain.usecase.authentication.AuthenticationUseCases
 import com.app.builder.domain.usecase.building.BuildingUseCases
+import com.app.builder.domain.usecase.buildingequipment.BuildingEquipmentUseCases
 import com.app.builder.domain.usecase.config.ConfigUseCases
 import com.app.builder.domain.usecase.connection.ConnectionUseCases
 import com.app.builder.domain.usecase.devicelocation.DeviceLocationUseCases
@@ -42,4 +43,6 @@ interface UseCases {
     val equipmentUseCases: EquipmentUseCases
     /** The building use cases. */
     val buildingUseCases: BuildingUseCases
+    /** The use cases of the links placing equipments in buildings. */
+    val buildingEquipmentUseCases: BuildingEquipmentUseCases
 }

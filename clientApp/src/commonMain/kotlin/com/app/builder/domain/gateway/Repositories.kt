@@ -3,6 +3,7 @@ package com.app.builder.domain.gateway
 import com.app.builder.domain.gateway.account.AccountRepository
 import com.app.builder.domain.gateway.authentication.AuthenticationRepository
 import com.app.builder.domain.gateway.building.BuildingRepository
+import com.app.builder.domain.gateway.buildingequipment.BuildingEquipmentRepository
 import com.app.builder.domain.gateway.config.ConfigRepository
 import com.app.builder.domain.gateway.devicelocation.DeviceLocationRepository
 import com.app.builder.domain.gateway.equipment.EquipmentRepository
@@ -33,4 +34,6 @@ interface Repositories {
     val equipmentRepository: EquipmentRepository
     /**The repository for managing buildings. */
     val buildingRepository: BuildingRepository
+    /** The repository for the links placing equipments in buildings. */
+    val buildingEquipmentRepository: BuildingEquipmentRepository
 }

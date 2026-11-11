@@ -224,7 +224,7 @@ private suspend fun seed(dependency: Dependency) {
         modifiedAt = now,
         deletedAt = null,
         username = username,
-        permissions = EntityType.entries.associateWith { Permission.WRITE }
+        permissions = EntityType.assignable.associateWith { Permission.WRITE }
     )
 
     val result = dependency.useCases.authenticationUseCases.register(registrationForm = RegistrationForm(user = superUser, account = superAccount, password = password))

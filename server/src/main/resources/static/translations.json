@@ -638,5 +638,20 @@
     "languageIso": "en",
     "key": "building_uuid",
     "value": "UUID"
+  },
+  {
+    "languageIso": "en",
+    "key": "building_equipments",
+    "value": "Equipment"
+  },
+  {
+    "languageIso": "en",
+    "key": "building_add_equipment",
+    "value": "Add equipment"
+  },
+  {
+    "languageIso": "en",
+    "key": "equipment_buildings",
+    "value": "Buildings"
   }
 ]
