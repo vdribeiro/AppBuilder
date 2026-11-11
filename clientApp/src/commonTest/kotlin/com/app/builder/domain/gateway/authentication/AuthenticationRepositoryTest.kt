@@ -2,6 +2,7 @@ package com.app.builder.domain.gateway.authentication
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
@@ -235,6 +236,21 @@ class AuthenticationRepositoryTest: TestCase() {
 
         assertNotNull(actual = authenticationUseCases.login(credentials = FakeData.adminCredentials))
         assertEquals(expected = false, actual = authenticationUseCases.observeSessionExpired().first())
+    }
+
+    /** Verifies that a session counts as active only while it exists and the server has not refused it, and that an expired one is not refreshed again. */
+    @Test
+    fun expiredSessionIsNotRefreshed() = runUnitTest {
+        val userGraph = dependency.get().userGraph
+        val authenticationRepository = userGraph.repositories.authenticationRepository
+
+        assertFalse(actual = authenticationRepository.hasActiveSession(userUuid = FakeData.adminUser.uuid))
+        assertNotNull(actual = userGraph.useCases.authenticationUseCases.login(credentials = FakeData.adminCredentials))
+        assertTrue(actual = authenticationRepository.hasActiveSession(userUuid = FakeData.adminUser.uuid))
+
+        assertNull(actual = authenticationRepository.refreshBearerToken(userUuid = FakeData.adminUser.uuid, refreshToken = FakeData.expiredBearerToken.refreshToken))
+        assertFalse(actual = authenticationRepository.hasActiveSession(userUuid = FakeData.adminUser.uuid))
+        assertNull(actual = authenticationRepository.refreshBearerToken(userUuid = FakeData.adminUser.uuid, refreshToken = FakeData.adminBearerToken.refreshToken))
     }
 
     /** Verifies that logging out of a session the server already refused completes and removes the local session. */

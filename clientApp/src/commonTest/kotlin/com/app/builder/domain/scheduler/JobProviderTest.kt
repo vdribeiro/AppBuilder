@@ -3,8 +3,10 @@ package com.app.builder.domain.scheduler
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
+import kotlin.test.assertNotNull
 import kotlin.uuid.Uuid
 import com.app.builder.domain.EntityType
+import com.app.builder.test.FakeData
 import com.app.builder.test.TestCase
 
 class JobProviderTest: TestCase() {
@@ -49,6 +51,23 @@ class JobProviderTest: TestCase() {
         jobs.forEach { job ->
             assertNotEquals(illegal = JobResult.NoOp, actual = run(job = job), message = "$job was not dispatched")
         }
+    }
+
+    /** Verifies that a user's jobs wait without a request while their session is expired or missing, while their logout still runs. */
+    @Test
+    fun jobsWaitForAnActiveSession() = runUnitTest {
+        val userGraph = dependency.get().userGraph
+        assertNotNull(actual = userGraph.useCases.authenticationUseCases.login(credentials = FakeData.adminCredentials))
+        val sync = Job(userUuid = FakeData.adminUser.uuid, entityType = EntityType.TASK, type = Job.Type.GET)
+        val logout = Job(userUuid = FakeData.adminUser.uuid, entityType = EntityType.ACCOUNT, type = Job.Type.DELETE, payload = FakeData.adminUser.uuid.toString())
+
+        assertNotEquals(illegal = JobResult.Unauthorized, actual = run(job = sync))
+
+        userGraph.repositories.authenticationRepository.refreshBearerToken(userUuid = FakeData.adminUser.uuid, refreshToken = FakeData.expiredBearerToken.refreshToken)
+        assertEquals(expected = JobResult.Unauthorized, actual = run(job = sync))
+
+        assertEquals(expected = JobResult.Success, actual = run(job = logout))
+        assertEquals(expected = JobResult.Unauthorized, actual = run(job = sync))
     }
 
     /** Verifies that jobs for entity types without a handler resolve to a no-op. */

@@ -142,11 +142,6 @@ class AuthenticationGateway(
         }.getOrNull().also { swapUser(userUuid = result.user.uuid.toString()) }
     }
 
-    override suspend fun login(userUuid: Uuid): User? = withContext(context = Dispatcher.IO) {
-        // TODO - Not yet implemented
-        return@withContext null
-    }
-
     override suspend fun logout(userUuid: Uuid) = withContext(context = Dispatcher.IO) {
         val job = Job(
             userUuid = userUuid,
@@ -253,7 +248,19 @@ class AuthenticationGateway(
         }.getOrNull()?.decrypt()
     }
 
+    override suspend fun hasActiveSession(userUuid: Uuid): Boolean = withContext(context = Dispatcher.IO) {
+        database.safeTransaction {
+            sessionDao.getSession(userUuid = userUuid).awaitAsOneOrNull()
+        }.onFailure {
+            Telemetry.error(tag = TAG, message = "Unable to get the session of user $userUuid", throwable = it)
+        }.getOrNull()?.let { it.expiredAt == null } ?: false
+    }
+
     override suspend fun refreshBearerToken(userUuid: Uuid, refreshToken: String): BearerToken? = withContext(context = Dispatcher.IO) {
+        if (!hasActiveSession(userUuid = userUuid)) {
+            Telemetry.info(tag = TAG, message = "Not refreshing the session of user $userUuid, which is expired or missing")
+            return@withContext null
+        }
         val bearer = when (val result = httpClient.post<String, BearerToken>(
             request = HttpRequest(url = URL.RefreshTokens),
             body = refreshToken

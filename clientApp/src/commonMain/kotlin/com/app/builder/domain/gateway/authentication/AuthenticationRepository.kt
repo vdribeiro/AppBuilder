@@ -25,6 +25,14 @@ interface AuthenticationRepository {
     suspend fun executeLogout(job: Job): JobResult
 
     /**
+     * Checks whether a user has a session the server may still accept.
+     *
+     * @param userUuid The unique identifier of the user.
+     * @return `true` if the user's session exists and is not expired, `false` otherwise.
+     */
+    suspend fun hasActiveSession(userUuid: Uuid): Boolean
+
+    /**
      * Retrieves the cryptographic bearer token pair for a specific authenticated user context.
      *
      * @param userUuid The unique tracking identifier of the target user session.
