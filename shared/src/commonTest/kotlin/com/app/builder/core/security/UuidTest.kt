@@ -67,4 +67,18 @@ class UuidTest: TestCase() {
     fun toUuidReturnsNullForInvalidString() = runUnitTest {
         assertNull(actual = "not-a-uuid".toUuid())
     }
+
+    /** Verifies pairUuid matches the MurmurHash3 x64 128 reference for a known pair, depends on the pair's order, and is a well-formed v8 UUID. */
+    @Test
+    fun pairUuidIsDeterministic() = runUnitTest {
+        val first = Uuid.parse(uuidString = "01890a5d-ac96-774b-bcce-b302099a8057")
+        val second = Uuid.parse(uuidString = "01890a5d-ac96-7c3d-8b5e-0f4b2a9e1d70")
+
+        val pair = testUuid(uuid = pairUuid(first = first, second = second))
+        assertEquals(expected = Uuid.parse(uuidString = "232d1bae-0e90-8f0c-b15c-13b66d9b3d36"), actual = pair)
+        assertEquals(expected = pair, actual = pairUuid(first = first, second = second))
+        assertEquals(expected = Uuid.parse(uuidString = "26ac0b44-1694-8cff-897e-648ad81d643b"), actual = pairUuid(first = second, second = first))
+        assertEquals(expected = '8', actual = pair.toString()[14])
+        assertTrue(actual = pair.toString()[19] in "89ab")
+    }
 }

@@ -59,6 +59,26 @@ fun unsecureUuid(): Uuid {
 }
 
 /**
+ * Derives a deterministic UUID v8 from an ordered pair of UUIDs, so the same pair always maps to the same UUID on every platform.
+ * The pair is hashed with MurmurHash3 x64 128, which is not cryptographic: the result identifies the pair, it does not protect it.
+ *
+ * @param first The first UUID of the pair.
+ * @param second The second UUID of the pair.
+ * @return The [Uuid] of the pair.
+ */
+fun pairUuid(first: Uuid, second: Uuid): Uuid {
+    val (high, low) = murmur3(blocks = first.toLongs { msb, lsb -> longArrayOf(msb, lsb) } + second.toLongs { msb, lsb -> longArrayOf(msb, lsb) })
+    // 4 bits to add the v8 identifier
+    val version8 = 0x8000L
+    // uuid identifier: sets top bit to 1, leaving 2nd bit as 0
+    val variant10 = Long.MIN_VALUE
+    return Uuid.fromLongs(
+        mostSignificantBits = (high and -0xF001L) or version8,
+        leastSignificantBits = (low and 0x3FFFFFFFFFFFFFFFL) or variant10
+    )
+}
+
+/**
  * Parses a string in the standard hex-and-dash or hexadecimal formats.
  * This function is case-insensitive.
  *
