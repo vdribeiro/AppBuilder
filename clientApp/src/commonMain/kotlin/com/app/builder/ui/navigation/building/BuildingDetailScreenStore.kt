@@ -130,6 +130,18 @@ class BuildingDetailScreenStore(
     }
 
     /**
+     * Shows [building], with its coordinates as text.
+     *
+     * @param building The building to show.
+     * @return This state showing [building].
+     */
+    private fun BuildingDetailScreenState.showing(building: Building?): BuildingDetailScreenState = copy(
+        building = building,
+        latitude = building?.latitude?.toString().orEmpty(),
+        longitude = building?.longitude?.toString().orEmpty()
+    )
+
+    /**
      * Rounds this coordinate to six decimal places, about 10 cm.
      *
      * @return The rounded coordinate.

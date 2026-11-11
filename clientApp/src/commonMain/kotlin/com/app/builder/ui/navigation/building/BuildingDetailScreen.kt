@@ -136,7 +136,11 @@ private fun BuildingDetailScreenPreview() = Preview {
         sessionStore = previewStore(initialState = SessionState()),
         filtersStore = previewStore(initialState = FiltersState()),
         store = previewStore(
-            initialState = BuildingDetailScreenState().showing(building = building)
+            initialState = BuildingDetailScreenState(
+                building = building,
+                latitude = building.latitude.toString(),
+                longitude = building.longitude.toString()
+            )
         )
     )
 }

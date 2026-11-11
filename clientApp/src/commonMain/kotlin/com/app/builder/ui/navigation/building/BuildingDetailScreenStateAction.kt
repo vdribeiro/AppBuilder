@@ -76,18 +76,6 @@ data class BuildingDetailScreenState(
     /** Whether [longitude] is not a number within ±180, or is missing while [latitude] is set. */
     val longitudeError: Boolean
         get() = !longitude.isCoordinate(limit = 180.0) || (longitude.isBlank() && latitude.isNotBlank())
-
-    /**
-     * Shows [building], with its coordinates as text.
-     *
-     * @param building The building to show.
-     * @return This state showing [building].
-     */
-    fun showing(building: Building?): BuildingDetailScreenState = copy(
-        building = building,
-        latitude = building?.latitude?.toString().orEmpty(),
-        longitude = building?.longitude?.toString().orEmpty()
-    )
 }
 
 /**
