@@ -41,15 +41,6 @@ interface AuthenticationUseCases {
     suspend fun login(credentials: UserCredentials): User?
 
     /**
-     * Authenticates a user using their unique [userUuid].
-     * The user must have previously authenticated with [UserCredentials].
-     *
-     * @param userUuid The user unique identifier.
-     * @return The authenticated [User], or null if authentication fails.
-     */
-    suspend fun login(userUuid: Uuid): User?
-
-    /**
      * Executes the session termination workflow.
      *
      * @param userUuid The unique identifier of the user to log out.
