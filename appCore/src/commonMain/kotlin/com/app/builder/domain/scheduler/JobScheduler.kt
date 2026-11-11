@@ -236,6 +236,11 @@ class JobScheduler(
                     is JobResult.NoOp -> runningJob.copy(state = Job.State.COMPLETE)
 
                     is JobResult.Retry -> applyRetry(job = runningJob)
+                    // Unauthorized errors queue the job again without spending an attempt, so it survives however long the user takes to log in again
+                    is JobResult.Unauthorized -> runningJob.copy(
+                        state = Job.State.PENDING,
+                        nextAttemptAt = now() + ClientConfigs.value.schedulerMaxRetryDelay.milliseconds
+                    )
 
                     is JobResult.Error -> {
                         Telemetry.error(tag = TAG, message = "Job failed: $runningJob", throwable = result.error)

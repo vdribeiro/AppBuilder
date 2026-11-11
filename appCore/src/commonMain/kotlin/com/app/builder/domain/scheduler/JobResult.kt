@@ -3,6 +3,7 @@ package com.app.builder.domain.scheduler
 import kotlinx.io.IOException
 import io.ktor.http.HttpStatusCode
 import com.app.builder.data.http.plugin.InternetDisabledException
+import com.app.builder.data.http.plugin.UnauthorizedException
 import com.app.builder.data.http.plugin.UnsuccessfulStatusException
 
 /** Represents the final outcome of a persistent background execution unit handled by the scheduling subsystem. */
@@ -13,6 +14,8 @@ sealed interface JobResult {
     data object Success: JobResult
     /** Indicates that the job failed to complete but is eligible to be queued again by the scheduler. */
     data object Retry: JobResult
+    /** Indicates that the job cannot authenticate.*/
+    data object Unauthorized: JobResult
     /**
      * Indicates that the job encountered a terminal failure and should not be retried.
      *
@@ -22,15 +25,16 @@ sealed interface JobResult {
 
     /**
      * Converts a [Throwable] into an appropriate [JobResult].
-     * Transient failures are mapped to [Retry] so the scheduler can retry the job again.
+     * Transient failures are mapped to [Retry] so the scheduler can retry the job again, and refused credentials to [Unauthorized].
      * All other exceptions are considered terminal.
      *
-     * @return [Retry] if the exception is transient, otherwise an [Error].
+     * @return [Retry] if the exception is transient, [Unauthorized] if the credentials were refused, otherwise an [Error].
      */
     fun Throwable.toJobResult(): JobResult = when (this) {
         is InternetDisabledException,
         is IOException -> Retry
 
+        is UnauthorizedException -> Unauthorized
         is UnsuccessfulStatusException if status.isRetryable -> Retry
         else -> Error(error = this)
     }
