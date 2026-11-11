@@ -12,7 +12,6 @@ import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.launch
 import com.app.builder.core.locale.getLocalDateTime
-import com.app.builder.core.locale.now
 import com.app.builder.core.security.uuid
 import com.app.builder.domain.EntityType
 import com.app.builder.domain.Building
@@ -127,9 +126,6 @@ private fun BuildingDetailScreenPreview() = Preview {
         )
     )
     val building = Building(
-        uuid = uuid(),
-        modifiedAt = now(),
-        deletedAt = null,
         name = "Big Compressor",
         description = "A description lalala",
         address = "Avenida dos Aliados, Porto",

@@ -10,7 +10,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.app.builder.core.locale.getLocalDateTime
-import com.app.builder.core.locale.now
 import com.app.builder.core.security.uuid
 import com.app.builder.domain.EntityType
 import com.app.builder.domain.Equipment
@@ -105,12 +104,8 @@ private fun EquipmentDetailScreenPreview() = Preview {
         )
     )
     val equipment = Equipment(
-        uuid = uuid(),
-        modifiedAt = now(),
-        deletedAt = null,
         name = "Big Compressor",
-        description = "A description lalala",
-        status = Equipment.Status.WORKING
+        description = "A description lalala"
     )
     EquipmentDetailScreen(
         sessionStore = previewStore(initialState = SessionState()),

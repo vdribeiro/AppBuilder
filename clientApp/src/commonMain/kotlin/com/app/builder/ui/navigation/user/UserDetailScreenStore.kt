@@ -55,7 +55,7 @@ class UserDetailScreenStore(
         }
 
         if (new) {
-            val user = User(uuid = uuid, modifiedAt = now(), deletedAt = null, name = "", avatar = null)
+            val user = User(uuid = uuid)
             updateState { it.copy(user = user, editing = true, new = true) }
         }
 
@@ -176,7 +176,7 @@ class UserDetailScreenStore(
     private fun UserDetailScreenState.withDraftAccount(): UserDetailScreenState {
         val user = user ?: return this
         if (!editing || account != null || savedAccount != null || !accountWritable) return this
-        return copy(account = Account(userUuid = user.uuid, modifiedAt = now(), deletedAt = null, username = "", permissions = emptyMap()))
+        return copy(account = Account(userUuid = user.uuid))
     }
 
     /**

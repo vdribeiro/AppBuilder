@@ -34,8 +34,6 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.app.builder.core.locale.now
-import com.app.builder.core.security.uuid
 import com.app.builder.domain.Account
 import com.app.builder.domain.EntityType
 import com.app.builder.domain.Permission
@@ -209,9 +207,6 @@ private val NavigationRoute.screen: Screen
 @Composable
 private fun NavigationPreview() = Preview {
     val account = Account(
-        userUuid = uuid(),
-        modifiedAt = now(),
-        deletedAt = null,
         username = "preview",
         permissions = EntityType.entries.associateWith { Permission.WRITE },
     )

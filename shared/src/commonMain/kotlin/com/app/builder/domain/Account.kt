@@ -20,7 +20,7 @@ data class Account(
     val userUuid: Uuid = uuid(),
     val modifiedAt: Instant = now(),
     val deletedAt: Instant? = null,
-    val username: String,
+    val username: String = "",
     val permissions: Map<EntityType, Permission> = emptyMap(),
 ) {
     /**

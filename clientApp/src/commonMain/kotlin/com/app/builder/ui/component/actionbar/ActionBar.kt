@@ -9,8 +9,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.app.builder.core.locale.now
-import com.app.builder.core.security.uuid
 import com.app.builder.data.resource.ImageResource
 import com.app.builder.domain.Account
 import com.app.builder.domain.EntityType
@@ -181,14 +179,12 @@ private fun ActionBarEditPreview() = Preview {
  * @return The preview session.
  */
 private fun previewSession(synced: Boolean = true): SessionState {
-    val user = User(uuid = uuid(), modifiedAt = now(), deletedAt = null, name = "V R", avatar = null)
+    val user = User(name = "V R")
     return SessionState(
         loaded = true,
         user = user,
         account = Account(
             userUuid = user.uuid,
-            modifiedAt = now(),
-            deletedAt = null,
             username = "preview",
             permissions = EntityType.entries.associateWith { Permission.WRITE },
         ),

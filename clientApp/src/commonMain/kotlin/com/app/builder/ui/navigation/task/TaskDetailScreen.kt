@@ -10,7 +10,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.app.builder.core.locale.getLocalDateTime
-import com.app.builder.core.locale.now
 import com.app.builder.core.security.uuid
 import com.app.builder.domain.EntityType
 import com.app.builder.domain.Task
@@ -105,12 +104,8 @@ private fun TaskDetailScreenPreview() = Preview {
         )
     )
     val task = Task(
-        uuid = uuid(),
-        modifiedAt = now(),
-        deletedAt = null,
         title = "Big Title",
-        description = "A description lalala",
-        state = Task.State.TODO
+        description = "A description lalala"
     )
     TaskDetailScreen(
         sessionStore = previewStore(initialState = SessionState()),

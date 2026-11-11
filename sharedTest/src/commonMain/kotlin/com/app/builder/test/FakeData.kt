@@ -63,33 +63,22 @@ object FakeData {
     )
 
     val adminUser: User = User(
-        uuid = uuid(),
-        modifiedAt = now(),
-        deletedAt = null,
         name = "Admin",
         avatar = "The Last Airbender"
     )
 
     val user: User = User(
-        uuid = uuid(),
-        modifiedAt = now(),
-        deletedAt = null,
-        name = "User",
-        avatar = null
+        name = "User"
     )
 
     val adminAccount: Account = Account(
         userUuid = adminUser.uuid,
-        modifiedAt = now(),
-        deletedAt = null,
         username = "admin",
         permissions = EntityType.entries.associateWith { Permission.WRITE }
     )
 
     val account: Account = Account(
         userUuid = user.uuid,
-        modifiedAt = now(),
-        deletedAt = null,
         username = "user",
         permissions = EntityType.entries.mapNotNull { type ->
             when (type) {
@@ -161,14 +150,12 @@ object FakeData {
     )
 
     val notification: PushPayload.Notification = PushPayload.Notification(
-        uuid = uuid(),
         userUuid = adminUser.uuid,
         title = "Notification Title",
         description = "Notification Description",
     )
 
     val entityNotification: PushPayload.EntityNotification = PushPayload.EntityNotification(
-        uuid = uuid(),
         userUuid = adminUser.uuid,
         title = "Entity Notification Title",
         description = "Entity Notification Description",
@@ -193,27 +180,16 @@ object FakeData {
     )
 
     val task: Task = Task(
-        uuid = uuid(),
-        modifiedAt = now(),
-        deletedAt = null,
         title = "Task Title",
-        description = "Task Description",
-        state = Task.State.TODO
+        description = "Task Description"
     )
 
     val equipment: Equipment = Equipment(
-        uuid = uuid(),
-        modifiedAt = now(),
-        deletedAt = null,
         name = "Equipment Name",
-        description = "Equipment Description",
-        status = Equipment.Status.WORKING
+        description = "Equipment Description"
     )
 
     val building: Building = Building(
-        uuid = uuid(),
-        modifiedAt = now(),
-        deletedAt = null,
         name = "Building Name",
         description = "Building Description",
         address = "Building Address",

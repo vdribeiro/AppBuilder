@@ -13,7 +13,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.app.builder.core.locale.getLocalDateTime
-import com.app.builder.core.locale.now
 import com.app.builder.core.security.uuid
 import com.app.builder.domain.Account
 import com.app.builder.domain.EntityType
@@ -135,13 +134,7 @@ private fun UserDetailScreenPreview() = Preview {
             "user_name" to "Name"
         )
     )
-    val user = User(
-        uuid = uuid(),
-        modifiedAt = now(),
-        deletedAt = null,
-        name = "Vitor Ribeiro",
-        avatar = null
-    )
+    val user = User(name = "Vitor Ribeiro")
     UserDetailScreen(
         sessionStore = previewStore(initialState = SessionState()),
         filtersStore = previewStore(initialState = FiltersState()),
