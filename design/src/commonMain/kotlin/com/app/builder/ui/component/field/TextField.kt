@@ -28,7 +28,7 @@ import com.app.builder.ui.core.text.Input
  * @param onValueChange Callback for when the value changes.
  * @param keyboardType The type of software keyboard requested while editing, such as text, number, email or password.
  * @param maxLines The maximum number of lines shown while editing before the input scrolls. With `1`, the input is single line. When not editing, the value is always shown in full.
- * @param isError Whether the value is invalid, shown while editing.
+ * @param isError Whether the value is invalid.
  */
 @Composable
 fun TextField(
