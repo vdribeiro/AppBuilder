@@ -746,7 +746,8 @@ Authorization is per `EntityType`: each account carries a `READ`/`WRITE` permiss
 * `ACCOUNT` covers logins. `WRITE` creates an account for a user, changes its username and permissions, and disables or re-enables it; `READ` lets you view them.
 * Creating an account sends a password, so it is an online call that opens no session.
 * A user can't be deleted while its account is active: disable the account first.
-* In the user detail screen, either `WRITE` opens edit mode, which unlocks only the fields that permission covers. Adding a user still needs `USER` `WRITE`, and deleting one also needs `ACCOUNT` `READ`, so the app can tell its account isn't active.
+* User edit can be done with either `USER` or `ACCOUNT` `WRITE`, but each unlocks only the fields that permission covers. 
+* Adding a user still needs `USER` `WRITE`, and deleting one also needs `ACCOUNT` `READ`, so the app can tell its account isn't active.
 
 It is easier to strip down auth than to build it. If you don't need accounts, remove the routes and screens, move what you keep into `UnauthenticatedNavigation`, or grant all permissions to the guest account in the `Dependency` graph.
 
@@ -766,7 +767,8 @@ Disabling an account is a soft delete: the account's `deletedAt` is set and the 
 * **may only write work created before the deletion**, judged by the request header's UTC. This covers every non-`GET` call, including updating its own user under `USER` `READ`;
 * **cannot read anything** its permissions used to reach, register a device or open a push stream. Its device tokens are deleted.
 
-Why not revoke the session? A device that was offline at the moment of deletion would lose the field work it is holding. A deadline only moves the question to how long a device might stay offline.
+#### Why not revoke the session? 
+A device that was offline at the moment of deletion would lose the field work it is holding. A deadline only moves the question to how long a device might stay offline.
 Keeping the session alive and judging each write by when it was created preserves that work. Request headers carry both when a job was created and when it was sent.
 
 <details>
@@ -832,7 +834,7 @@ The switch is `Env.developmentMode`, from the `DEVELOPMENT` variable.
 |-----------------------|---------------------------------------|----------------------------------------------------|
 | Database              | In-memory H2, reset on restart        | Postgres                                           |
 | Signal                | `LocalSignal` (in-process)            | `PostgresSignal` (`LISTEN`/`NOTIFY`)               |
-| FCM                   | `NoOpFcmService`                      | `FcmManager`, when fully configured (see below)    |
+| FCM                   | `NoOpFcmService`                      | `FcmManager`, when fully configured                |
 | JWT                   | HMAC512 with the injected secret      | HMAC512 with the real `JWT_SECRET`                 |
 | Telemetry             | Console `ServerLogger`                | Console, plus Sentry if `SENTRY_DSN` is set        |
 | CORS                  | `localhost:8080` and `localhost:8010` | HTTPS only, from `CORS_HOSTS`                      |
@@ -907,7 +909,7 @@ They follow the [platform convention](#platform-specific-code), which is why the
 | [HTTP stack](#http-stack)                         | `appCore/.../data/http/` · `shared/.../data/http/`                  | A Ktor client whose interceptor ordering is load-bearing.                      |
 | [Telemetry hub](#telemetry-hub)                   | `shared/.../core/telemetry/`                                        | One logging API over pluggable engines.                                        |
 
-`...` stands for `src/commonMain/kotlin/com/app/builder` (or `src/main/kotlin/com/app/builder` on the server).
+`...` stands for `src/commonMain/kotlin/com/app/builder` or `src/main/kotlin/com/app/builder` on the server.
 
 ## LazyData
 
