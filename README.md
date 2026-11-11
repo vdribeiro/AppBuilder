@@ -1008,6 +1008,7 @@ The same row keeps the session's access and refresh tokens, encrypted with `encr
 
 A `StorageFile<T>` declares a file as a typed object: path, serializer, `encrypted`, and `cache`. `save` and `load` serialize, encrypt and touch the file system in one step.
 
+* With `encrypted = true`, the default, the payload is encrypted with [`encrypt`](#cryptography) before it is written and decrypted when read, so the file is unreadable without this device's key. A payload that fails to decrypt reads as absent. Use `encrypted = false` only for files that hold nothing sensitive, such as the theme.
 * With `cache = true`, it lazily hydrates a mutex-guarded `StateFlow` and rolls the cached value back if a disk write fails, so the cache never holds a payload the file system rejected. Use `cache = false` for files that are read rarely or written from outside the app.
 * **Saving `null` deletes the file**, so absence has one representation on disk and `reset()` and "save null" converge.
 
