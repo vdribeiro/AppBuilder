@@ -25,10 +25,10 @@ import com.app.builder.data.database.safeTransaction
 import com.app.builder.data.database.table.BuildingTable
 import com.app.builder.data.database.table.UserAccountTable
 import com.app.builder.data.serializer.decode
+import com.app.builder.domain.Building
 import com.app.builder.domain.EntityType
 import com.app.builder.domain.Permission
 import com.app.builder.domain.PushPayload
-import com.app.builder.domain.Building
 import com.app.builder.domain.usecase.Outcome
 import com.app.builder.domain.usecase.notification.NotificationsUseCases
 import com.app.builder.domain.usecase.toOutcome

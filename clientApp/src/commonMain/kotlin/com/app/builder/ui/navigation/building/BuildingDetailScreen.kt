@@ -1,5 +1,6 @@
 package com.app.builder.ui.navigation.building
 
+import kotlinx.coroutines.launch
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.rememberScrollState
@@ -10,11 +11,10 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import kotlinx.coroutines.launch
 import com.app.builder.core.locale.getLocalDateTime
 import com.app.builder.core.security.uuid
-import com.app.builder.domain.EntityType
 import com.app.builder.domain.Building
+import com.app.builder.domain.EntityType
 import com.app.builder.ui.InjectTranslations
 import com.app.builder.ui.LocalSplitScreen
 import com.app.builder.ui.Preview

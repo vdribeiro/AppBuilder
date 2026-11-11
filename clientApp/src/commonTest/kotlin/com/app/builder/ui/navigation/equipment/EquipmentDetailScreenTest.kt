@@ -64,11 +64,12 @@ class EquipmentDetailScreenTest: TestCase() {
     private fun ComposeUiTest.setEquipmentDetailScreen(useCases: UseCases, equipmentUuid: Uuid = FakeData.equipment.uuid, new: Boolean = false): Pair<EquipmentDetailScreenStore, SessionStore> {
         val store = EquipmentDetailScreenStore(state = EquipmentDetailScreenState(), router = router, equipmentUseCases = useCases.equipmentUseCases, equipmentUuid = equipmentUuid.toString(), new = new)
         val sessionStore = SessionStore(state = SessionState(), authenticationUseCases = useCases.authenticationUseCases)
+        val filtersStore = FiltersStore(state = FiltersState())
 
         setUI {
             EquipmentDetailScreen(
                 sessionStore = sessionStore,
-                filtersStore = FiltersStore(state = FiltersState()),
+                filtersStore = filtersStore,
                 store = store,
             )
         }
@@ -83,11 +84,12 @@ class EquipmentDetailScreenTest: TestCase() {
 
         val store = EquipmentDetailScreenStore(state = EquipmentDetailScreenState(), router = router, equipmentUseCases = useCases.equipmentUseCases, equipmentUuid = FakeData.equipment.uuid.toString())
         val sessionStore = SessionStore(state = SessionState(), authenticationUseCases = useCases.authenticationUseCases)
+        val filtersStore = FiltersStore(state = FiltersState())
 
         setUI {
             EquipmentDetailScreen(
                 sessionStore = sessionStore,
-                filtersStore = FiltersStore(state = FiltersState()),
+                filtersStore = filtersStore,
                 store = store,
             )
         }

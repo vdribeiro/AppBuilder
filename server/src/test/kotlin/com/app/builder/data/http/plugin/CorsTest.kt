@@ -3,6 +3,7 @@ package com.app.builder.data.http.plugin
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.request.options
@@ -14,6 +15,7 @@ import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import io.ktor.server.routing.routing
 import io.ktor.server.testing.ApplicationTestBuilder
+import com.app.builder.data.http.Header
 import com.app.builder.data.http.URL
 import com.app.builder.test.TestCase
 
@@ -65,6 +67,19 @@ class CorsTest: TestCase() {
             header(HttpHeaders.AccessControlRequestMethod, HttpMethod.Delete.value)
         }
         assertEquals(expected = HttpStatusCode.Forbidden, actual = refused.status)
+    }
+
+    /** Verifies that responses to an allowed origin expose the server timestamp headers, so browsers let web clients read them. */
+    @Test
+    fun exposesServerTimestampHeaders() = runServerTest {
+        installTestRoutes()
+        val client = createClient(token = null)
+
+        val response = client.get(urlString = "/test") { header(HttpHeaders.Origin, "http://localhost:8010") }
+        val exposed = response.headers[HttpHeaders.AccessControlExposeHeaders].orEmpty().split(",").map { it.trim().lowercase() }
+        listOf(Header.ServerArriveUtc, Header.ServerSentUtc).forEach {
+            assertTrue(actual = it.header.lowercase() in exposed, message = it.header)
+        }
     }
 
     /** Installs the CORS plugin and a test route answering GET and POST. */

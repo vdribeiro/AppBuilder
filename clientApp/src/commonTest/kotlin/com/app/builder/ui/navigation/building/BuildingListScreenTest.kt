@@ -49,7 +49,8 @@ class BuildingListScreenTest: TestCase() {
         val filtersStore = FiltersStore(
             state = FiltersState(visibleProperties = properties, searchableProperties = properties),
             storageFile = AppFile.BuildingPreferences,
-            defaults = defaults)
+            defaults = defaults
+        )
         val buildingListScreenStore = BuildingListScreenStore(state = BuildingListScreenState(), router = router, buildingUseCases = authenticatedUseCases.buildingUseCases)
 
         setUI {
@@ -100,7 +101,8 @@ class BuildingListScreenTest: TestCase() {
         val filtersStore = FiltersStore(
             state = FiltersState(visibleProperties = properties, searchableProperties = properties),
             storageFile = AppFile.BuildingPreferences,
-            defaults = defaults)
+            defaults = defaults
+        )
         val buildingListScreenStore = BuildingListScreenStore(state = BuildingListScreenState(), router = router, buildingUseCases = authenticatedUseCases.buildingUseCases)
 
         setUI {
@@ -149,7 +151,8 @@ class BuildingListScreenTest: TestCase() {
         val filtersStore = FiltersStore(
             state = FiltersState(visibleProperties = properties, searchableProperties = properties),
             storageFile = AppFile.BuildingPreferences,
-            defaults = defaults)
+            defaults = defaults
+        )
         val buildingListScreenStore = BuildingListScreenStore(state = BuildingListScreenState(), router = router, buildingUseCases = authenticatedUseCases.buildingUseCases)
 
         setUI {

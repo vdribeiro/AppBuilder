@@ -15,8 +15,8 @@ import com.app.builder.data.http.Query
 import com.app.builder.data.http.URL
 import com.app.builder.data.serializer.encode
 import com.app.builder.domain.EntityType
-import com.app.builder.domain.Permission
 import com.app.builder.domain.Equipment
+import com.app.builder.domain.Permission
 import com.app.builder.domain.permission.PermissionService
 import com.app.builder.domain.route.getOrRespond
 import com.app.builder.domain.route.getParameters
@@ -27,8 +27,8 @@ import com.app.builder.domain.route.respondSafely
 import com.app.builder.domain.route.toRegistry
 import com.app.builder.domain.route.validatePermission
 import com.app.builder.domain.route.validateTime
-import com.app.builder.domain.usecase.registry.RegistryUseCases
 import com.app.builder.domain.usecase.equipment.EquipmentUseCases
+import com.app.builder.domain.usecase.registry.RegistryUseCases
 
 /**
  * Configures the equipment routing endpoints for the server.

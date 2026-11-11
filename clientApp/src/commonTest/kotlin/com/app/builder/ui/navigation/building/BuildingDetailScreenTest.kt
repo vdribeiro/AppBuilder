@@ -23,7 +23,6 @@ import androidx.compose.ui.test.performTextReplacement
 import com.app.builder.Dependency.getUserDependency
 import com.app.builder.core.locale.now
 import com.app.builder.core.security.uuid
-import com.app.builder.domain.Building
 import com.app.builder.domain.UserCredentials
 import com.app.builder.domain.gateway.UseCases
 import com.app.builder.test.FakeData
@@ -64,11 +63,12 @@ class BuildingDetailScreenTest: TestCase() {
     private fun ComposeUiTest.setBuildingDetailScreen(useCases: UseCases, buildingUuid: Uuid = FakeData.building.uuid, new: Boolean = false): Pair<BuildingDetailScreenStore, SessionStore> {
         val store = BuildingDetailScreenStore(state = BuildingDetailScreenState(), router = router, buildingUseCases = useCases.buildingUseCases, buildingUuid = buildingUuid.toString(), new = new)
         val sessionStore = SessionStore(state = SessionState(), authenticationUseCases = useCases.authenticationUseCases)
+        val filtersStore = FiltersStore(state = FiltersState())
 
         setUI {
             BuildingDetailScreen(
                 sessionStore = sessionStore,
-                filtersStore = FiltersStore(state = FiltersState()),
+                filtersStore = filtersStore,
                 store = store,
             )
         }
@@ -83,11 +83,12 @@ class BuildingDetailScreenTest: TestCase() {
 
         val store = BuildingDetailScreenStore(state = BuildingDetailScreenState(), router = router, buildingUseCases = useCases.buildingUseCases, buildingUuid = FakeData.building.uuid.toString())
         val sessionStore = SessionStore(state = SessionState(), authenticationUseCases = useCases.authenticationUseCases)
+        val filtersStore = FiltersStore(state = FiltersState())
 
         setUI {
             BuildingDetailScreen(
                 sessionStore = sessionStore,
-                filtersStore = FiltersStore(state = FiltersState()),
+                filtersStore = filtersStore,
                 store = store,
             )
         }
@@ -366,7 +367,7 @@ class BuildingDetailScreenTest: TestCase() {
         ).forEach { (coordinates, errors) ->
             store.send(action = BuildingDetailScreenAction.ChangeLatitude(latitude = coordinates.first))
             store.send(action = BuildingDetailScreenAction.ChangeLongitude(longitude = coordinates.second))
-                        assertEquals(expected = errors, actual = store.state.latitudeError to store.state.longitudeError, message = "$coordinates")
+            assertEquals(expected = errors, actual = store.state.latitudeError to store.state.longitudeError, message = "$coordinates")
 
             store.send(action = BuildingDetailScreenAction.Save)
             assertTrue(actual = store.state.editing, message = "$coordinates")

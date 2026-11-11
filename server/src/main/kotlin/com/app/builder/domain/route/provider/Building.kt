@@ -14,9 +14,9 @@ import com.app.builder.core.telemetry.Telemetry
 import com.app.builder.data.http.Query
 import com.app.builder.data.http.URL
 import com.app.builder.data.serializer.encode
+import com.app.builder.domain.Building
 import com.app.builder.domain.EntityType
 import com.app.builder.domain.Permission
-import com.app.builder.domain.Building
 import com.app.builder.domain.permission.PermissionService
 import com.app.builder.domain.route.getOrRespond
 import com.app.builder.domain.route.getParameters
@@ -27,8 +27,8 @@ import com.app.builder.domain.route.respondSafely
 import com.app.builder.domain.route.toRegistry
 import com.app.builder.domain.route.validatePermission
 import com.app.builder.domain.route.validateTime
-import com.app.builder.domain.usecase.registry.RegistryUseCases
 import com.app.builder.domain.usecase.building.BuildingUseCases
+import com.app.builder.domain.usecase.registry.RegistryUseCases
 
 /**
  * Configures the building routing endpoints for the server.

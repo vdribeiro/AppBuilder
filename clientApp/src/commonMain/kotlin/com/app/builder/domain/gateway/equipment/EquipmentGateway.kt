@@ -31,8 +31,8 @@ import com.app.builder.data.serializer.encode
 import com.app.builder.data.storage.AppFile
 import com.app.builder.domain.Account
 import com.app.builder.domain.EntityType
-import com.app.builder.domain.Permission
 import com.app.builder.domain.Equipment
+import com.app.builder.domain.Permission
 import com.app.builder.domain.scheduler.Job
 import com.app.builder.domain.scheduler.JobResult
 import com.app.builder.domain.scheduler.JobResult.NoOp.toJobResult

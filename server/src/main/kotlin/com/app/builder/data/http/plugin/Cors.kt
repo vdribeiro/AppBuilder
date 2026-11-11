@@ -5,6 +5,7 @@ import io.ktor.server.application.Application
 import io.ktor.server.application.install
 import io.ktor.server.plugins.cors.routing.CORS
 import com.app.builder.core.platform.Env
+import com.app.builder.data.http.Header
 import com.app.builder.data.http.URL.Companion.DEV_HOST
 
 /** Configures Cross-Origin Resource Sharing (CORS) for the Ktor server. */
@@ -20,6 +21,8 @@ fun Application.installCors() {
         }
 
         allowHeaders { true }
+        exposeHeader(header = Header.ServerArriveUtc.header)
+        exposeHeader(header = Header.ServerSentUtc.header)
 
         listOf(
             HttpMethod.Options,

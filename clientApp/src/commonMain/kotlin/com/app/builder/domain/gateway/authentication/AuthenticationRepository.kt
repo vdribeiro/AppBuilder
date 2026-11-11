@@ -1,10 +1,10 @@
 package com.app.builder.domain.gateway.authentication
 
 import kotlin.uuid.Uuid
+import kotlinx.coroutines.flow.Flow
 import com.app.builder.domain.BearerToken
 import com.app.builder.domain.scheduler.Job
 import com.app.builder.domain.scheduler.JobResult
-import kotlinx.coroutines.flow.Flow
 
 /** Defines the contract for session login and logout. */
 interface AuthenticationRepository {

@@ -61,9 +61,7 @@ class BuildingDetailScreenStore(
             is BuildingDetailScreenAction.ChangeAddress -> updateState { it.copy(building = it.building?.copy(address = action.address)) }
             is BuildingDetailScreenAction.ChangeLatitude -> updateState { it.copy(latitude = action.latitude) }
             is BuildingDetailScreenAction.ChangeLongitude -> updateState { it.copy(longitude = action.longitude) }
-            is BuildingDetailScreenAction.ChangeCoordinates -> updateState {
-                it.copy(latitude = action.latitude.rounded().toString(), longitude = action.longitude.rounded().toString())
-            }
+            is BuildingDetailScreenAction.ChangeCoordinates -> updateState { it.copy(latitude = action.latitude.rounded().toString(), longitude = action.longitude.rounded().toString()) }
             BuildingDetailScreenAction.Edit -> updateState { it.copy(editing = true) }
             BuildingDetailScreenAction.Save -> save(state = state)
             BuildingDetailScreenAction.Cancel -> cancel(state = state)

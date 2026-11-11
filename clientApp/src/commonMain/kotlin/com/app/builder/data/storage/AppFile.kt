@@ -127,7 +127,7 @@ object AppFile {
     }
 
     /** Every screen preferences files in this module. */
-    val preferences : List<StorageFile<*>> = listOf(
+    val preferences: List<StorageFile<*>> = listOf(
         TranslationPreferences,
         RegistryPreferences,
         UserPreferences,
