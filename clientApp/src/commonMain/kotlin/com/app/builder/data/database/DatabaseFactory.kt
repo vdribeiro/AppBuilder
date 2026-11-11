@@ -7,6 +7,7 @@ import com.app.builder.data.database.adapter.InstantColumnAdapter
 import com.app.builder.data.database.adapter.UuidColumnAdapter
 import database.Account
 import database.AppDatabase
+import database.Building
 import database.DeviceLocation
 import database.Equipment
 import database.Job
@@ -72,6 +73,11 @@ class DatabaseFactory(driver: SqlDriver) {
             modifiedAtAdapter = InstantColumnAdapter,
             deletedAtAdapter = InstantColumnAdapter,
             statusAdapter = EnumColumnAdapter()
+        ),
+        BuildingAdapter = Building.Adapter(
+            uuidAdapter = UuidColumnAdapter,
+            modifiedAtAdapter = InstantColumnAdapter,
+            deletedAtAdapter = InstantColumnAdapter,
         ),
         UserAdapter = User.Adapter(
             uuidAdapter = UuidColumnAdapter,

@@ -25,7 +25,9 @@ data class ServerFlags(
     /** Toggles task CRUD routes. When false, they return 404. */
     val tasks: Boolean,
     /** Toggles equipment CRUD routes. When false, they return 404. */
-    val equipments: Boolean
+    val equipments: Boolean,
+    /** Toggles building CRUD routes. When false, they return 404. */
+    val buildings: Boolean
 ) {
     /** Holds the server feature flags. */
     companion object: StateHolder<ServerFlags>(
@@ -39,7 +41,8 @@ data class ServerFlags(
             users = true,
             deviceLocation = true,
             tasks = true,
-            equipments = true
+            equipments = true,
+            buildings = true
         )
     )
 }

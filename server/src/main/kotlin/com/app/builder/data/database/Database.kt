@@ -10,6 +10,7 @@ import com.app.builder.data.database.table.ConnectionTable
 import com.app.builder.data.database.table.DeviceLocationTable
 import com.app.builder.data.database.table.DeviceTokenTable
 import com.app.builder.data.database.table.EquipmentTable
+import com.app.builder.data.database.table.BuildingTable
 import com.app.builder.data.database.table.NotificationTable
 import com.app.builder.data.database.table.RegistryTable
 import com.app.builder.data.database.table.TaskTable
@@ -33,6 +34,7 @@ private val tables = listOf(
     NotificationTable,
     TaskTable,
     EquipmentTable,
+    BuildingTable,
 ).toTypedArray()
 
 /** Creates all the tables in the database. */

@@ -32,6 +32,8 @@ fun createMockHttpEngine(): HttpClientEngine = TestEngine { request ->
         URLProtocol.HTTP,
         URLProtocol.HTTPS -> when (request.method) {
             HttpMethod.Get -> when {
+                path == "${URL.Accounts.path}/${FakeData.adminAccount.userUuid}" -> respondMock(content = encode(value = FakeData.adminAccount))
+                path == "${URL.Accounts.path}/${FakeData.account.userUuid}" -> respondMock(content = encode(value = FakeData.account))
                 path.startsWith(prefix = URL.Broadcast.path) -> respondSse(pushPayload = FakeData.notification)
                 path.startsWith(prefix = URL.ClientFlags.path) -> respondMock(content = encode(value = FakeData.clientFlags))
                 path.startsWith(prefix = URL.ClientConfigs.path) -> respondMock(content = encode(value = FakeData.clientConfigs))
@@ -39,14 +41,14 @@ fun createMockHttpEngine(): HttpClientEngine = TestEngine { request ->
                 path.startsWith(prefix = URL.ServerConfigs.path) -> respondMock(content = encode(value = FakeData.serverConfigs))
                 path.startsWith(prefix = URL.Translations.path) -> respondMock(content = encode(value = FakeData.translations))
                 path.startsWith(prefix = URL.Registries.path) -> respondMock(content = encode(value = listOf(FakeData.registry)))
-                path == "${URL.Accounts.path}/${FakeData.adminAccount.userUuid}" -> respondMock(content = encode(value = FakeData.adminAccount))
-                path == "${URL.Accounts.path}/${FakeData.account.userUuid}" -> respondMock(content = encode(value = FakeData.account))
                 path.startsWith(prefix = "${URL.Users.path}/") -> respondMock(content = encode(value = FakeData.adminUser))
                 path.startsWith(prefix = URL.Users.path) -> respondMock(content = encode(value = listOf(FakeData.adminUser, FakeData.user)))
                 path.startsWith(prefix = "${URL.Tasks.path}/") -> respondMock(content = encode(value = FakeData.task))
                 path.startsWith(prefix = URL.Tasks.path) -> respondMock(content = encode(value = listOf(FakeData.task)))
                 path.startsWith(prefix = "${URL.Equipments.path}/") -> respondMock(content = encode(value = FakeData.equipment))
                 path.startsWith(prefix = URL.Equipments.path) -> respondMock(content = encode(value = listOf(FakeData.equipment)))
+                path.startsWith(prefix = "${URL.Buildings.path}/") -> respondMock(content = encode(value = FakeData.building))
+                path.startsWith(prefix = URL.Buildings.path) -> respondMock(content = encode(value = listOf(FakeData.building)))
                 else -> notFound(request = request)
             }
 
@@ -89,6 +91,7 @@ fun createMockHttpEngine(): HttpClientEngine = TestEngine { request ->
                 path.startsWith(prefix = URL.Broadcast.path) -> respondMock(content = encode(value = "sent"))
                 path.startsWith(prefix = URL.Tasks.path) -> respondMock(content = encode(value = FakeData.task))
                 path.startsWith(prefix = URL.Equipments.path) -> respondMock(content = encode(value = FakeData.equipment))
+                path.startsWith(prefix = URL.Buildings.path) -> respondMock(content = encode(value = FakeData.building))
                 path.startsWith(prefix = URL.Users.path) -> respondMock(content = encode(value = FakeData.adminUser))
                 else -> notFound(request = request)
             }

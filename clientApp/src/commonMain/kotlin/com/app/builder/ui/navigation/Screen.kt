@@ -134,4 +134,17 @@ sealed interface Screen: NavKey {
     @Serializable
     @SerialName(value = "screen_equipment_detail")
     data class EquipmentDetail(val uuid: String, val new: Boolean = false): Screen
+    /** The screen listing all buildings. */
+    @Serializable
+    @SerialName(value = "screen_building_list")
+    data object BuildingList: Screen
+    /**
+     * The screen showing the details of a single building.
+     *
+     * @property uuid The unique identifier of the building to display.
+     * @property new Whether the building is new and not stored yet, opening it in edit mode.
+     */
+    @Serializable
+    @SerialName(value = "screen_building_detail")
+    data class BuildingDetail(val uuid: String, val new: Boolean = false): Screen
 }

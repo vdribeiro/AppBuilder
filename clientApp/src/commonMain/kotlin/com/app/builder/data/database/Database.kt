@@ -6,6 +6,7 @@ import com.app.builder.core.flow.Dispatcher
 import com.app.builder.core.telemetry.Telemetry
 import database.Account
 import database.AppDatabase
+import database.Building
 import database.DeviceLocation
 import database.Equipment
 import database.Job
@@ -25,6 +26,7 @@ typealias UserSchema = User
 typealias DeviceLocationSchema = DeviceLocation
 typealias TaskSchema = Task
 typealias EquipmentSchema = Equipment
+typealias BuildingSchema = Building
 
 /**
  * Drops every table in the database and creates them again from [AppDatabase.Schema], so a database left with an older schema is rebuilt too.

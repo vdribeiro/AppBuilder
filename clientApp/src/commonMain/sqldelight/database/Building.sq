@@ -1,0 +1,36 @@
+import kotlin.time.Instant;
+import kotlin.uuid.Uuid;
+
+CREATE TABLE IF NOT EXISTS Building (
+    uuid TEXT AS Uuid NOT NULL PRIMARY KEY,
+    modifiedAt TEXT AS Instant NOT NULL,
+    deletedAt TEXT AS Instant,
+    name TEXT NOT NULL,
+    description TEXT NOT NULL,
+    address TEXT NOT NULL,
+    latitude REAL,
+    longitude REAL
+);
+
+deleteBuilding:
+UPDATE Building
+SET modifiedAt = :utc,
+    deletedAt = :utc
+WHERE uuid = :buildingUuid;
+
+upsertBuilding:
+INSERT OR REPLACE INTO Building VALUES ?;
+
+getBuildings:
+SELECT *
+FROM Building;
+
+getBuildingsByUuids:
+SELECT *
+FROM Building
+WHERE uuid IN :buildingUuids;
+
+getBuilding:
+SELECT *
+FROM Building
+WHERE uuid = :buildingUuid;

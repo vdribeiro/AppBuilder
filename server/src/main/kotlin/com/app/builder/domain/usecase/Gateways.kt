@@ -15,7 +15,9 @@ import com.app.builder.domain.usecase.devicelocation.DeviceLocationUseCases
 import com.app.builder.domain.usecase.devicetoken.DeviceTokenGateway
 import com.app.builder.domain.usecase.devicetoken.DeviceTokenUseCases
 import com.app.builder.domain.usecase.equipment.EquipmentGateway
+import com.app.builder.domain.usecase.building.BuildingGateway
 import com.app.builder.domain.usecase.equipment.EquipmentUseCases
+import com.app.builder.domain.usecase.building.BuildingUseCases
 import com.app.builder.domain.usecase.notification.NotificationsGateway
 import com.app.builder.domain.usecase.notification.NotificationsUseCases
 import com.app.builder.domain.usecase.registry.RegistryGateway
@@ -49,4 +51,5 @@ class Gateways(
     override val deviceLocationUseCases: DeviceLocationUseCases = DeviceLocationGateway(database = database)
     override val taskUseCases: TaskUseCases = TaskGateway(database = database, notificationsUseCases = notificationsUseCases)
     override val equipmentUseCases: EquipmentUseCases = EquipmentGateway(database = database, notificationsUseCases = notificationsUseCases)
+    override val buildingUseCases: BuildingUseCases = BuildingGateway(database = database, notificationsUseCases = notificationsUseCases)
 }

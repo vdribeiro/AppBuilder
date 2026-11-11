@@ -7,6 +7,7 @@ import com.app.builder.domain.usecase.connection.ConnectionUseCases
 import com.app.builder.domain.usecase.devicelocation.DeviceLocationUseCases
 import com.app.builder.domain.usecase.devicetoken.DeviceTokenUseCases
 import com.app.builder.domain.usecase.equipment.EquipmentUseCases
+import com.app.builder.domain.usecase.building.BuildingUseCases
 import com.app.builder.domain.usecase.notification.NotificationsUseCases
 import com.app.builder.domain.usecase.registry.RegistryUseCases
 import com.app.builder.domain.usecase.task.TaskUseCases
@@ -39,4 +40,6 @@ interface UseCases {
     val taskUseCases: TaskUseCases
     /** The equipment use cases. */
     val equipmentUseCases: EquipmentUseCases
+    /** The building use cases. */
+    val buildingUseCases: BuildingUseCases
 }

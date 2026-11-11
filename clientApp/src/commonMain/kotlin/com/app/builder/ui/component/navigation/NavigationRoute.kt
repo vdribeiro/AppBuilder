@@ -26,6 +26,7 @@ enum class NavigationRoute(val section: NavigationSection) {
     HOME(section = NavigationSection.MAIN),
     TASK(section = NavigationSection.MAIN),
     EQUIPMENT(section = NavigationSection.MAIN),
+    BUILDING(section = NavigationSection.MAIN),
     USER(section = NavigationSection.MAIN),
     REGISTRY(section = NavigationSection.MAIN),
     DEVICE_LOCATION(section = NavigationSection.SYSTEM),
@@ -53,6 +54,7 @@ fun permittedRoutes(account: Account?): ImmutableList<NavigationRoute> {
     return buildList {
         if (ClientFlags.value.tasks && permissions[EntityType.TASK] != null) add(NavigationRoute.TASK)
         if (ClientFlags.value.equipments && permissions[EntityType.EQUIPMENT] != null) add(NavigationRoute.EQUIPMENT)
+        if (ClientFlags.value.buildings && permissions[EntityType.BUILDING] != null) add(NavigationRoute.BUILDING)
         if (ClientFlags.value.users && permissions[EntityType.USER] != null) add(NavigationRoute.USER)
         if (ClientFlags.value.registries && permissions[EntityType.REGISTRY] != null) add(NavigationRoute.REGISTRY)
         if (ClientFlags.value.home) add(NavigationRoute.HOME)

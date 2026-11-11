@@ -18,4 +18,5 @@ enum class EntityType {
     NFC,
     TASK,
     EQUIPMENT,
+    BUILDING,
 }

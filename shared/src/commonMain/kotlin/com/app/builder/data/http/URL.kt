@@ -56,4 +56,6 @@ sealed class URL(val path: String) {
     data object Tasks: URL(path = "/api/tasks")
     /** Endpoint for equipments. */
     data object Equipments: URL(path = "/api/equipments")
+    /** Endpoint for buildings. */
+    data object Buildings: URL(path = "/api/buildings")
 }

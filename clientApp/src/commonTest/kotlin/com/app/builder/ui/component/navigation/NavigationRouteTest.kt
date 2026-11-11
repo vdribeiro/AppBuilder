@@ -21,7 +21,7 @@ class NavigationRouteTest: TestCase() {
     fun everyPermission() = runUnitTest {
         val routes = permittedRoutes(account = FakeData.adminAccount)
 
-        assertEquals(expected = listOf(NavigationRoute.TASK, NavigationRoute.EQUIPMENT, NavigationRoute.USER, NavigationRoute.REGISTRY, NavigationRoute.HOME), actual = routes.filter { it.section == NavigationSection.MAIN })
+        assertEquals(expected = listOf(NavigationRoute.TASK, NavigationRoute.EQUIPMENT, NavigationRoute.BUILDING, NavigationRoute.USER, NavigationRoute.REGISTRY, NavigationRoute.HOME), actual = routes.filter { it.section == NavigationSection.MAIN })
         assertTrue(actual = NavigationRoute.CONFIG in routes)
         assertTrue(actual = NavigationRoute.TRANSLATION in routes)
     }
@@ -29,12 +29,13 @@ class NavigationRouteTest: TestCase() {
     /** Verifies that a route whose client feature flag is off is left out, even with the permission. */
     @Test
     fun featureFlagOff() = runUnitTest {
-        ClientFlags.set { it.copy(tasks = false, equipments = false, design = false) }
+        ClientFlags.set { it.copy(tasks = false, equipments = false, buildings = false, design = false) }
 
         val routes = permittedRoutes(account = FakeData.adminAccount)
 
         assertFalse(actual = NavigationRoute.TASK in routes)
         assertFalse(actual = NavigationRoute.EQUIPMENT in routes)
+        assertFalse(actual = NavigationRoute.BUILDING in routes)
         assertTrue(actual = routes.none { it.section == NavigationSection.DESIGN })
     }
 }

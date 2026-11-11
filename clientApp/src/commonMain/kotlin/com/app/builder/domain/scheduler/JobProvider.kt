@@ -69,6 +69,7 @@ class JobProvider(
             EntityType.USER -> userRepository.executeSyncUsers(job = job)
             EntityType.TASK -> taskRepository.executeSyncTasks(job = job)
             EntityType.EQUIPMENT -> equipmentRepository.executeSyncEquipments(job = job)
+            EntityType.BUILDING -> buildingRepository.executeSyncBuildings(job = job)
             else -> null
         }
     } ?: JobResult.NoOp
@@ -85,6 +86,7 @@ class JobProvider(
             EntityType.ACCOUNT -> accountRepository.executeSyncAccount(job = job)
             EntityType.TASK -> taskRepository.executeSyncTask(job = job)
             EntityType.EQUIPMENT -> equipmentRepository.executeSyncEquipment(job = job)
+            EntityType.BUILDING -> buildingRepository.executeSyncBuilding(job = job)
             else -> null
         }
     } ?: JobResult.NoOp
@@ -101,6 +103,7 @@ class JobProvider(
             EntityType.USER -> userRepository.executeUpsertUser(job = job)
             EntityType.TASK -> taskRepository.executeUpsertTask(job = job)
             EntityType.EQUIPMENT -> equipmentRepository.executeUpsertEquipment(job = job)
+            EntityType.BUILDING -> buildingRepository.executeUpsertBuilding(job = job)
             else -> null
         }
     } ?: JobResult.NoOp
