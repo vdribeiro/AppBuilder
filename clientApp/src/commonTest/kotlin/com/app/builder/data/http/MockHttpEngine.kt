@@ -7,7 +7,6 @@ import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.URLProtocol
 import io.ktor.http.content.TextContent
-import com.app.builder.core.locale.now
 import com.app.builder.data.serializer.decode
 import com.app.builder.data.serializer.encode
 import com.app.builder.domain.Account
@@ -98,14 +97,6 @@ fun createMockHttpEngine(): HttpClientEngine = TestEngine { request ->
                 URL.Buildings.path -> respondMock(content = encode(value = FakeData.building))
                 URL.Users.path -> respondMock(content = encode(value = FakeData.adminUser))
                 else -> notFound(request = request)
-            }
-
-            HttpMethod.Delete -> {
-                val now = now()
-                when {
-                    path.isItemOf(url = URL.Tasks) -> respondMock(content = encode(value = FakeData.task.copy(modifiedAt = now, deletedAt = now)))
-                    else -> notFound(request = request)
-                }
             }
 
             else -> badRequest(request = request)
