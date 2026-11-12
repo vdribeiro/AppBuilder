@@ -27,14 +27,10 @@ class CryptographyTest: TestCase() {
         assertEquals(expected = "", actual = decrypt(content = encrypt(content = "").orEmpty()).orEmpty())
     }
 
-    /**
-     * Verifies that [decrypt] fails gracefully on malformed, non-encrypted input instead of throwing.
-     * In this development build, the failure path falls back to echoing the original content back unchanged; only in a release build does it resolve to null.
-     */
+    /** Verifies that [decrypt] returns null on malformed, non-encrypted input instead of throwing. */
     @Test
     fun decryptMalformedContentFailsGracefully() = runUnitTest {
-        val malformed = "not-a-valid-encrypted-payload"
-        assertEquals(expected = malformed, actual = decrypt(content = malformed))
+        assertNull(actual = decrypt(content = "not-a-valid-encrypted-payload"))
     }
 
     /** Verifies that [hash] produces a non-null result for the given content. */
