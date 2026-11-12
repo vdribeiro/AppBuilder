@@ -646,12 +646,17 @@
   },
   {
     "languageIso": "en",
-    "key": "building_add_equipment",
-    "value": "Add equipment"
+    "key": "building_link_equipments",
+    "value": "Link equipments"
   },
   {
     "languageIso": "en",
     "key": "equipment_buildings",
     "value": "Buildings"
+  },
+  {
+    "languageIso": "en",
+    "key": "equipment_link_buildings",
+    "value": "Link buildings"
   }
 ]
