@@ -5,6 +5,7 @@ import org.jetbrains.exposed.v1.r2dbc.R2dbcTransaction
 import org.jetbrains.exposed.v1.r2dbc.SchemaUtils
 import org.jetbrains.exposed.v1.r2dbc.transactions.suspendTransaction
 import org.jetbrains.exposed.v1.r2dbc.transactions.transactionManager
+import com.app.builder.data.database.table.BuildingEquipmentTable
 import com.app.builder.data.database.table.BuildingTable
 import com.app.builder.data.database.table.ConfigTable
 import com.app.builder.data.database.table.ConnectionTable
@@ -35,6 +36,7 @@ private val tables = listOf(
     TaskTable,
     EquipmentTable,
     BuildingTable,
+    BuildingEquipmentTable,
 ).toTypedArray()
 
 /** Creates all the tables in the database. */

@@ -9,12 +9,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import com.app.builder.ui.Preview
+import com.app.builder.ui.core.button.Checkbox
 import com.app.builder.ui.core.image.Icon
 import com.app.builder.ui.core.list.ListItem
 
 /**
  * A compact list row with a leading visual, its headline and supporting text and optional bookkeeping in a small line above the headline.
- * A selected row is tinted, and a deleted row is faded with a trash icon at its end.
+ * A selected row is tinted, a deleted row is faded with a trash icon at its end, and a checkable row shows a checkbox at its end in place of the trash icon.
  *
  * @param modifier The [Modifier] to be applied to the row's layout.
  * @param selected Whether the row is selected.
@@ -23,6 +24,7 @@ import com.app.builder.ui.core.list.ListItem
  * @param supporting The secondary text, shown as given.
  * @param metadata Bookkeeping texts joined into the line above the headline, which is hidden when all are `null`.
  * @param leadingContent An optional composable slot rendered at the start of the row, typically an icon or avatar.
+ * @param checked Whether the row's checkbox is ticked, or `null` for a row without a checkbox.
  */
 @Composable
 fun EntityRow(
@@ -33,6 +35,7 @@ fun EntityRow(
     supporting: String? = null,
     metadata: List<String?> = emptyList(),
     leadingContent: (@Composable () -> Unit)? = null,
+    checked: Boolean? = null,
 ) {
     ListItem(
         modifier = modifier.alpha(alpha = if (deleted) DELETED_ALPHA else 1f),
@@ -42,9 +45,15 @@ fun EntityRow(
         headlineText = headline,
         supportingText = supporting?.takeIf { it.isNotBlank() },
         leadingContent = leadingContent,
-        trailingContent = if (deleted) {
-            { Icon(imageVector = Icons.Outlined.Delete, contentDescription = "deleted") }
-        } else null
+        trailingContent = when {
+            checked != null -> {
+                { Checkbox(checked = checked) }
+            }
+            deleted -> {
+                { Icon(imageVector = Icons.Outlined.Delete, contentDescription = "deleted") }
+            }
+            else -> null
+        }
     )
 }
 
