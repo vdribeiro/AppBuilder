@@ -12,6 +12,7 @@ import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
+import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.isSelected
@@ -23,6 +24,8 @@ import androidx.compose.ui.test.performTextReplacement
 import com.app.builder.Dependency.getUserDependency
 import com.app.builder.core.locale.now
 import com.app.builder.core.security.uuid
+import com.app.builder.data.storage.AppFile
+import com.app.builder.ui.navigation.equipment.equipmentFilterDefaults
 import com.app.builder.domain.UserCredentials
 import com.app.builder.domain.gateway.UseCases
 import com.app.builder.test.FakeData
@@ -61,7 +64,7 @@ class BuildingDetailScreenTest: TestCase() {
      * @return The [BuildingDetailScreenStore] and the [SessionStore] rendered.
      */
     private fun ComposeUiTest.setBuildingDetailScreen(useCases: UseCases, buildingUuid: Uuid = FakeData.building.uuid, new: Boolean = false): Pair<BuildingDetailScreenStore, SessionStore> {
-        val store = BuildingDetailScreenStore(state = BuildingDetailScreenState(), router = router, buildingUseCases = useCases.buildingUseCases, buildingUuid = buildingUuid.toString(), new = new)
+        val store = BuildingDetailScreenStore(state = BuildingDetailScreenState(), router = router, buildingUseCases = useCases.buildingUseCases, buildingEquipmentUseCases = useCases.buildingEquipmentUseCases, equipmentUseCases = useCases.equipmentUseCases, buildingUuid = buildingUuid.toString(), new = new)
         val sessionStore = SessionStore(state = SessionState(), authenticationUseCases = useCases.authenticationUseCases)
         val filtersStore = FiltersStore(state = FiltersState())
 
@@ -69,6 +72,7 @@ class BuildingDetailScreenTest: TestCase() {
             BuildingDetailScreen(
                 sessionStore = sessionStore,
                 filtersStore = filtersStore,
+                equipmentFiltersStore = FiltersStore(state = FiltersState()),
                 store = store,
             )
         }
@@ -81,7 +85,7 @@ class BuildingDetailScreenTest: TestCase() {
     fun buildingDetailScreen() = runUITest {
         val useCases = storedBuildingUseCases()
 
-        val store = BuildingDetailScreenStore(state = BuildingDetailScreenState(), router = router, buildingUseCases = useCases.buildingUseCases, buildingUuid = FakeData.building.uuid.toString())
+        val store = BuildingDetailScreenStore(state = BuildingDetailScreenState(), router = router, buildingUseCases = useCases.buildingUseCases, buildingEquipmentUseCases = useCases.buildingEquipmentUseCases, equipmentUseCases = useCases.equipmentUseCases, buildingUuid = FakeData.building.uuid.toString())
         val sessionStore = SessionStore(state = SessionState(), authenticationUseCases = useCases.authenticationUseCases)
         val filtersStore = FiltersStore(state = FiltersState())
 
@@ -89,6 +93,7 @@ class BuildingDetailScreenTest: TestCase() {
             BuildingDetailScreen(
                 sessionStore = sessionStore,
                 filtersStore = filtersStore,
+                equipmentFiltersStore = FiltersStore(state = FiltersState()),
                 store = store,
             )
         }
@@ -354,7 +359,7 @@ class BuildingDetailScreenTest: TestCase() {
     @Test
     fun invalidCoordinatesAreNotSaved() = runUnitTest {
         val useCases = storedBuildingUseCases()
-        val store = BuildingDetailScreenStore(state = BuildingDetailScreenState(), router = router, buildingUseCases = useCases.buildingUseCases, buildingUuid = FakeData.building.uuid.toString())
+        val store = BuildingDetailScreenStore(state = BuildingDetailScreenState(), router = router, buildingUseCases = useCases.buildingUseCases, buildingEquipmentUseCases = useCases.buildingEquipmentUseCases, equipmentUseCases = useCases.equipmentUseCases, buildingUuid = FakeData.building.uuid.toString())
         store.stateFlow.first { it.building != null }
         store.send(action = BuildingDetailScreenAction.Edit)
 
@@ -379,7 +384,7 @@ class BuildingDetailScreenTest: TestCase() {
     @Test
     fun clearedCoordinatesAreSavedAsMissing() = runUnitTest {
         val useCases = storedBuildingUseCases()
-        val store = BuildingDetailScreenStore(state = BuildingDetailScreenState(), router = router, buildingUseCases = useCases.buildingUseCases, buildingUuid = FakeData.building.uuid.toString())
+        val store = BuildingDetailScreenStore(state = BuildingDetailScreenState(), router = router, buildingUseCases = useCases.buildingUseCases, buildingEquipmentUseCases = useCases.buildingEquipmentUseCases, equipmentUseCases = useCases.equipmentUseCases, buildingUuid = FakeData.building.uuid.toString())
         store.stateFlow.first { it.building != null }
         store.send(action = BuildingDetailScreenAction.Edit)
         store.send(action = BuildingDetailScreenAction.ChangeLatitude(latitude = ""))
@@ -395,7 +400,7 @@ class BuildingDetailScreenTest: TestCase() {
     @Test
     fun filledCoordinatesAreRounded() = runUnitTest {
         val useCases = storedBuildingUseCases()
-        val store = BuildingDetailScreenStore(state = BuildingDetailScreenState(), router = router, buildingUseCases = useCases.buildingUseCases, buildingUuid = FakeData.building.uuid.toString())
+        val store = BuildingDetailScreenStore(state = BuildingDetailScreenState(), router = router, buildingUseCases = useCases.buildingUseCases, buildingEquipmentUseCases = useCases.buildingEquipmentUseCases, equipmentUseCases = useCases.equipmentUseCases, buildingUuid = FakeData.building.uuid.toString())
         store.stateFlow.first { it.building != null }
         store.send(action = BuildingDetailScreenAction.Edit)
         store.send(action = BuildingDetailScreenAction.ChangeCoordinates(latitude = 41.123456789, longitude = -8.987654321))
@@ -414,5 +419,162 @@ class BuildingDetailScreenTest: TestCase() {
         waitUntil { store.state.editing }
         onNodeWithTag(testTag = "building_latitude", useUnmergedTree = true).assertIsDisplayed()
         onNodeWithTag(testTag = "building_use_location").assertDoesNotExist()
+    }
+
+    /**
+     * Builds the building detail store of [FakeData.building] with [useCases].
+     *
+     * @param useCases The use cases backing the store.
+     * @return The [BuildingDetailScreenStore].
+     */
+    private fun buildingStore(useCases: UseCases): BuildingDetailScreenStore = BuildingDetailScreenStore(
+        state = BuildingDetailScreenState(),
+        router = router,
+        buildingUseCases = useCases.buildingUseCases,
+        buildingEquipmentUseCases = useCases.buildingEquipmentUseCases,
+        equipmentUseCases = useCases.equipmentUseCases,
+        buildingUuid = FakeData.building.uuid.toString()
+    )
+
+    /** Verifies that an equipment ticked in the picker and confirmed is listed, and linked to the building once saved. */
+    @Test
+    fun addEquipment() = runUITest {
+        val useCases = storedBuildingUseCases()
+        useCases.equipmentUseCases.upsertEquipment(equipment = FakeData.equipment)
+        val (store, sessionStore) = setBuildingDetailScreen(useCases = useCases)
+
+        waitUntil { store.state.building != null && store.state.allEquipments.isNotEmpty() && sessionStore.state.account != null }
+        onNodeWithTag(testTag = "building_equipments").assertIsDisplayed()
+        onNodeWithTag(testTag = "building_equipments_add").assertDoesNotExist()
+
+        onNodeWithTag(testTag = "action_edit").performClick()
+        waitUntil { store.state.editing }
+        onNodeWithTag(testTag = "building_equipments_add").performClick()
+        waitUntil { store.state.equipmentPickerOpen }
+        onNodeWithTag(testTag = "equipment_picker_confirm").assertIsNotEnabled()
+        onNodeWithTag(testTag = "equipment_row_0").performClick()
+        waitUntil { store.state.pickedEquipments.isNotEmpty() }
+        onNodeWithTag(testTag = "equipment_picker_confirm").assertIsEnabled().performClick()
+        waitUntil { !store.state.equipmentPickerOpen && store.state.equipments.isNotEmpty() }
+        onNodeWithTag(testTag = "action_save").performClick()
+        waitUntil { !store.state.editing }
+
+        val linked = useCases.buildingEquipmentUseCases.observeEquipmentsInBuilding(buildingUuid = FakeData.building.uuid).first { it.isNotEmpty() }
+        assertEquals(expected = listOf(element = FakeData.equipment), actual = linked)
+        onNodeWithText(text = FakeData.equipment.name).assertIsDisplayed()
+    }
+
+    /** Verifies that unlinking an equipment and canceling keeps it linked to the building. */
+    @Test
+    fun removeEquipmentThenCancel() = runUnitTest {
+        val useCases = storedBuildingUseCases()
+        useCases.equipmentUseCases.upsertEquipment(equipment = FakeData.equipment)
+        useCases.buildingEquipmentUseCases.upsertBuildingEquipment(buildingEquipment = FakeData.buildingEquipment)
+        val store = buildingStore(useCases = useCases)
+
+        store.stateFlow.first { it.building != null && it.equipments.isNotEmpty() }
+        store.send(action = BuildingDetailScreenAction.Edit)
+        store.send(action = BuildingDetailScreenAction.RemoveEquipment(equipmentUuid = FakeData.equipment.uuid))
+        assertTrue(actual = store.state.equipments.isEmpty())
+        store.send(action = BuildingDetailScreenAction.Cancel)
+
+        assertEquals(expected = listOf(element = FakeData.equipment), actual = store.stateFlow.first { !it.editing }.equipments)
+        assertEquals(expected = listOf(element = FakeData.equipment), actual = useCases.buildingEquipmentUseCases.observeEquipmentsInBuilding(buildingUuid = FakeData.building.uuid).first())
+    }
+
+    /** Verifies that unlinking an equipment and saving deletes its building equipment. */
+    @Test
+    fun removeEquipmentThenSave() = runUnitTest {
+        val useCases = storedBuildingUseCases()
+        useCases.equipmentUseCases.upsertEquipment(equipment = FakeData.equipment)
+        useCases.buildingEquipmentUseCases.upsertBuildingEquipment(buildingEquipment = FakeData.buildingEquipment)
+        val store = buildingStore(useCases = useCases)
+
+        store.stateFlow.first { it.building != null && it.equipments.isNotEmpty() }
+        store.send(action = BuildingDetailScreenAction.Edit)
+        store.send(action = BuildingDetailScreenAction.RemoveEquipment(equipmentUuid = FakeData.equipment.uuid))
+        store.send(action = BuildingDetailScreenAction.Save)
+        store.stateFlow.first { !it.editing }
+
+        assertTrue(actual = useCases.buildingEquipmentUseCases.observeEquipmentsInBuilding(buildingUuid = FakeData.building.uuid).first { it.isEmpty() }.isEmpty())
+        assertTrue(actual = store.stateFlow.first { it.storedEquipments.isEmpty() }.equipmentPickerItems.single().enabled)
+    }
+
+    /** Verifies that a user without building and building equipment write permission sees the linked equipments, without being able to change them. */
+    @Test
+    fun readOnlyEquipments() = runUITest {
+        val useCases = storedBuildingUseCases(credentials = FakeData.credentials)
+        useCases.equipmentUseCases.upsertEquipment(equipment = FakeData.equipment)
+        useCases.buildingEquipmentUseCases.upsertBuildingEquipment(buildingEquipment = FakeData.buildingEquipment)
+        val (store, sessionStore) = setBuildingDetailScreen(useCases = useCases)
+
+        waitUntil { store.state.equipments.isNotEmpty() && sessionStore.state.user?.name == FakeData.user.name }
+        onNodeWithText(text = FakeData.equipment.name).assertIsDisplayed()
+        onNodeWithTag(testTag = "building_equipments_remove_${FakeData.equipment.uuid}").assertDoesNotExist()
+        onNodeWithTag(testTag = "action_edit").assertDoesNotExist()
+    }
+
+    /** Verifies that saving after only linking an equipment saves the building equipment and leaves the unchanged building as stored. */
+    @Test
+    fun equipmentOnlyEditLeavesBuildingUnchanged() = runUnitTest {
+        val useCases = storedBuildingUseCases()
+        useCases.equipmentUseCases.upsertEquipment(equipment = FakeData.equipment)
+        val store = buildingStore(useCases = useCases)
+
+        store.stateFlow.first { it.storedBuilding != null && it.allEquipments.isNotEmpty() }
+        store.send(action = BuildingDetailScreenAction.Edit)
+        store.send(action = BuildingDetailScreenAction.OpenEquipmentPicker)
+        store.send(action = BuildingDetailScreenAction.ToggleEquipmentPick(equipmentUuid = FakeData.equipment.uuid))
+        store.send(action = BuildingDetailScreenAction.ConfirmEquipmentPick)
+        store.send(action = BuildingDetailScreenAction.Save)
+        store.stateFlow.first { !it.editing }
+
+        assertEquals(expected = listOf(element = FakeData.equipment), actual = useCases.buildingEquipmentUseCases.observeEquipmentsInBuilding(buildingUuid = FakeData.building.uuid).first { it.isNotEmpty() })
+        assertEquals(expected = FakeData.building, actual = useCases.buildingUseCases.observeBuilding(uuid = FakeData.building.uuid).first())
+    }
+
+    /** Verifies that the picker ticks and disables the linked equipments, ticks and unticks the others, and clears the ticks when closed. */
+    @Test
+    fun pickerTicksLinkedEquipments() = runUnitTest {
+        val useCases = storedBuildingUseCases()
+        val other = FakeData.equipment.copy(uuid = uuid(), name = "Other")
+        useCases.equipmentUseCases.upsertEquipment(equipment = FakeData.equipment)
+        useCases.equipmentUseCases.upsertEquipment(equipment = other)
+        useCases.buildingEquipmentUseCases.upsertBuildingEquipment(buildingEquipment = FakeData.buildingEquipment)
+        val store = buildingStore(useCases = useCases)
+
+        store.stateFlow.first { it.equipments.isNotEmpty() && it.allEquipments.size == 2 }
+        store.send(action = BuildingDetailScreenAction.Edit)
+        store.send(action = BuildingDetailScreenAction.OpenEquipmentPicker)
+        store.send(action = BuildingDetailScreenAction.ToggleEquipmentPick(equipmentUuid = FakeData.equipment.uuid))
+        store.send(action = BuildingDetailScreenAction.ToggleEquipmentPick(equipmentUuid = other.uuid))
+
+        val items = store.state.equipmentPickerItems.associateBy { it.uuid }
+        assertEquals(expected = true to false, actual = items.getValue(FakeData.equipment.uuid.toString()).let { it.checked to it.enabled })
+        assertEquals(expected = true to true, actual = items.getValue(other.uuid.toString()).let { it.checked to it.enabled })
+        assertEquals(expected = setOf(other.uuid), actual = store.state.pickedEquipments.toSet())
+
+        store.send(action = BuildingDetailScreenAction.ToggleEquipmentPick(equipmentUuid = other.uuid))
+        assertTrue(actual = store.state.pickedEquipments.isEmpty())
+        store.send(action = BuildingDetailScreenAction.ToggleEquipmentPick(equipmentUuid = other.uuid))
+        store.send(action = BuildingDetailScreenAction.CloseEquipmentPicker)
+        assertFalse(actual = store.state.equipmentPickerOpen)
+        assertTrue(actual = store.state.pickedEquipments.isEmpty())
+        assertEquals(expected = listOf(element = FakeData.equipment), actual = store.state.equipments)
+    }
+
+    /** Verifies that the picker applies the equipment list filters, searching and leaving out the deleted equipments. */
+    @Test
+    fun pickerAppliesEquipmentFilters() = runUnitTest {
+        val useCases = storedBuildingUseCases()
+        val other = FakeData.equipment.copy(uuid = uuid(), name = "Pump")
+        useCases.equipmentUseCases.upsertEquipment(equipment = FakeData.equipment)
+        useCases.equipmentUseCases.upsertEquipment(equipment = other)
+        useCases.equipmentUseCases.upsertEquipment(equipment = FakeData.equipment.copy(uuid = uuid(), name = "Pump gone", deletedAt = now()))
+        AppFile.EquipmentPreferences.save { equipmentFilterDefaults.copy(search = "pump", showDeleted = true) }
+        val store = buildingStore(useCases = useCases)
+
+        val state = store.stateFlow.first { it.allEquipments.size == 2 && it.equipmentFilters.search == "pump" }
+        assertEquals(expected = listOf(other.uuid.toString()), actual = state.equipmentPickerItems.map { it.uuid })
     }
 }
