@@ -49,9 +49,11 @@ fun EntityRow(
             checked != null -> {
                 { Checkbox(checked = checked) }
             }
+
             deleted -> {
                 { Icon(imageVector = Icons.Outlined.Delete, contentDescription = "deleted") }
             }
+
             else -> null
         }
     )

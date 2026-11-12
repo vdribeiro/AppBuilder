@@ -1,10 +1,14 @@
 package com.app.builder.ui.core.overlay
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.AlertDialog
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.PreviewLightDark
+import androidx.compose.ui.window.DialogProperties
+import androidx.compose.ui.window.Dialog as WindowDialog
 import com.app.builder.ui.InjectTranslations
 import com.app.builder.ui.LocalTypography
 import com.app.builder.ui.Preview
@@ -67,6 +71,27 @@ fun Dialog(
     )
 }
 
+/**
+ * A modal dialog taking up the whole screen.
+ *
+ * @param modifier The [Modifier] to be applied to the dialog's content container.
+ * @param onDismissRequest Callback invoked when the user attempts to close the dialog by pressing back.
+ * @param content The content of the dialog.
+ */
+@Composable
+fun FullScreenDialog(
+    modifier: Modifier = Modifier,
+    onDismissRequest: () -> Unit = {},
+    content: @Composable () -> Unit = {},
+) {
+    WindowDialog(
+        onDismissRequest = onDismissRequest,
+        properties = DialogProperties(usePlatformDefaultWidth = false),
+    ) {
+        Box(modifier = modifier.fillMaxSize()) { content() }
+    }
+}
+
 @PreviewLightDark
 @Composable
 private fun DialogPreview() = Preview {
@@ -80,4 +105,12 @@ private fun DialogPreview() = Preview {
         title = "Title",
         text = "Text"
     )
+}
+
+@PreviewLightDark
+@Composable
+private fun FullScreenDialogPreview() = Preview {
+    FullScreenDialog {
+        Text(text = "Content", translate = false)
+    }
 }
