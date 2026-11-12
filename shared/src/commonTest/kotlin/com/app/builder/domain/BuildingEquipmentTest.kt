@@ -5,7 +5,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotEquals
 import kotlin.test.assertNotNull
-import com.app.builder.core.security.pairUuid
+import com.app.builder.core.security.uuidOf
 import com.app.builder.core.security.uuid
 import com.app.builder.data.serializer.decode
 import com.app.builder.data.serializer.encode
@@ -18,7 +18,7 @@ class BuildingEquipmentTest: TestCase() {
     @Test
     fun uuidIsDerivedFromThePair() = runUnitTest {
         val link = FakeData.buildingEquipment
-        assertEquals(expected = pairUuid(first = link.buildingUuid, second = link.equipmentUuid), actual = link.uuid)
+        assertEquals(expected = uuidOf(link.buildingUuid, link.equipmentUuid), actual = link.uuid)
         assertEquals(expected = link.uuid, actual = link.copy(deletedAt = link.modifiedAt).uuid)
         assertNotEquals(illegal = link.uuid, actual = link.copy(equipmentUuid = uuid()).uuid)
     }

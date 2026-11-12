@@ -12,8 +12,9 @@ import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
-import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.hasAnyAncestor
 import androidx.compose.ui.test.hasSetTextAction
+import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.isSelected
 import androidx.compose.ui.test.onFirst
@@ -22,6 +23,7 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextReplacement
 import com.app.builder.Dependency.getUserDependency
+import com.app.builder.core.config.ClientFlags
 import com.app.builder.core.locale.now
 import com.app.builder.core.security.uuid
 import com.app.builder.data.storage.AppFile
@@ -445,16 +447,15 @@ class BuildingDetailScreenTest: TestCase() {
 
         waitUntil { store.state.building != null && store.state.allEquipments.isNotEmpty() && sessionStore.state.account != null }
         onNodeWithTag(testTag = "building_equipments").assertIsDisplayed()
-        onNodeWithTag(testTag = "building_equipments_add").assertDoesNotExist()
+        onNodeWithTag(testTag = "building_equipments_link").assertDoesNotExist()
 
         onNodeWithTag(testTag = "action_edit").performClick()
         waitUntil { store.state.editing }
-        onNodeWithTag(testTag = "building_equipments_add").performClick()
+        onNodeWithTag(testTag = "building_equipments_link").performClick()
         waitUntil { store.state.equipmentPickerOpen }
-        onNodeWithTag(testTag = "equipment_picker_confirm").assertIsNotEnabled()
         onNodeWithTag(testTag = "equipment_row_0").performClick()
         waitUntil { store.state.pickedEquipments.isNotEmpty() }
-        onNodeWithTag(testTag = "equipment_picker_confirm").assertIsEnabled().performClick()
+        onNode(matcher = hasTestTag(testTag = "action_save") and hasAnyAncestor(matcher = hasTestTag(testTag = "equipment_picker"))).performClick()
         waitUntil { !store.state.equipmentPickerOpen && store.state.equipments.isNotEmpty() }
         onNodeWithTag(testTag = "action_save").performClick()
         waitUntil { !store.state.editing }
@@ -497,7 +498,7 @@ class BuildingDetailScreenTest: TestCase() {
         store.stateFlow.first { !it.editing }
 
         assertTrue(actual = useCases.buildingEquipmentUseCases.observeEquipmentsInBuilding(buildingUuid = FakeData.building.uuid).first { it.isEmpty() }.isEmpty())
-        assertTrue(actual = store.stateFlow.first { it.storedEquipments.isEmpty() }.equipmentPickerItems.single().enabled)
+        assertTrue(actual = store.stateFlow.first { it.storedEquipments.isEmpty() }.equipments.isEmpty())
     }
 
     /** Verifies that a user without building and building equipment write permission sees the linked equipments, without being able to change them. */
@@ -525,7 +526,7 @@ class BuildingDetailScreenTest: TestCase() {
         store.send(action = BuildingDetailScreenAction.Edit)
         store.send(action = BuildingDetailScreenAction.OpenEquipmentPicker)
         store.send(action = BuildingDetailScreenAction.ToggleEquipmentPick(equipmentUuid = FakeData.equipment.uuid))
-        store.send(action = BuildingDetailScreenAction.ConfirmEquipmentPick)
+        store.send(action = BuildingDetailScreenAction.SaveEquipmentPick)
         store.send(action = BuildingDetailScreenAction.Save)
         store.stateFlow.first { !it.editing }
 
@@ -533,9 +534,9 @@ class BuildingDetailScreenTest: TestCase() {
         assertEquals(expected = FakeData.building, actual = useCases.buildingUseCases.observeBuilding(uuid = FakeData.building.uuid).first())
     }
 
-    /** Verifies that the picker ticks and disables the linked equipments, ticks and unticks the others, and clears the ticks when closed. */
+    /** Verifies that the picker opens with the linked equipments ticked, ticks and unticks any equipment, sets the linked equipments to the ticked ones when saved, and clears the ticks when closed. */
     @Test
-    fun pickerTicksLinkedEquipments() = runUnitTest {
+    fun pickerEditsLinkedEquipments() = runUnitTest {
         val useCases = storedBuildingUseCases()
         val other = FakeData.equipment.copy(uuid = uuid(), name = "Other")
         useCases.equipmentUseCases.upsertEquipment(equipment = FakeData.equipment)
@@ -546,21 +547,35 @@ class BuildingDetailScreenTest: TestCase() {
         store.stateFlow.first { it.equipments.isNotEmpty() && it.allEquipments.size == 2 }
         store.send(action = BuildingDetailScreenAction.Edit)
         store.send(action = BuildingDetailScreenAction.OpenEquipmentPicker)
-        store.send(action = BuildingDetailScreenAction.ToggleEquipmentPick(equipmentUuid = FakeData.equipment.uuid))
-        store.send(action = BuildingDetailScreenAction.ToggleEquipmentPick(equipmentUuid = other.uuid))
+        assertEquals(expected = setOf(FakeData.equipment.uuid), actual = store.state.pickedEquipments.toSet())
+        assertEquals(expected = setOf(FakeData.equipment.uuid.toString()), actual = store.state.equipmentPickerItems.filter { it.checked == true }.map { it.uuid }.toSet())
 
-        val items = store.state.equipmentPickerItems.associateBy { it.uuid }
-        assertEquals(expected = true to false, actual = items.getValue(FakeData.equipment.uuid.toString()).let { it.checked to it.enabled })
-        assertEquals(expected = true to true, actual = items.getValue(other.uuid.toString()).let { it.checked to it.enabled })
-        assertEquals(expected = setOf(other.uuid), actual = store.state.pickedEquipments.toSet())
-
-        store.send(action = BuildingDetailScreenAction.ToggleEquipmentPick(equipmentUuid = other.uuid))
-        assertTrue(actual = store.state.pickedEquipments.isEmpty())
         store.send(action = BuildingDetailScreenAction.ToggleEquipmentPick(equipmentUuid = other.uuid))
         store.send(action = BuildingDetailScreenAction.CloseEquipmentPicker)
         assertFalse(actual = store.state.equipmentPickerOpen)
-        assertTrue(actual = store.state.pickedEquipments.isEmpty())
         assertEquals(expected = listOf(element = FakeData.equipment), actual = store.state.equipments)
+
+        store.send(action = BuildingDetailScreenAction.OpenEquipmentPicker)
+        store.send(action = BuildingDetailScreenAction.ToggleEquipmentPick(equipmentUuid = FakeData.equipment.uuid))
+        store.send(action = BuildingDetailScreenAction.ToggleEquipmentPick(equipmentUuid = other.uuid))
+        store.send(action = BuildingDetailScreenAction.SaveEquipmentPick)
+        assertFalse(actual = store.state.equipmentPickerOpen)
+        assertEquals(expected = listOf(element = other), actual = store.state.equipments)
+
+        store.send(action = BuildingDetailScreenAction.Save)
+        store.stateFlow.first { !it.editing }
+        assertEquals(expected = listOf(element = other), actual = useCases.buildingEquipmentUseCases.observeEquipmentsInBuilding(buildingUuid = FakeData.building.uuid).first { it == listOf(other) })
+    }
+
+    /** Verifies that the equipment section is hidden when the building equipments flag is disabled. */
+    @Test
+    fun equipmentSectionHiddenWhenFlagDisabled() = runUITest {
+        ClientFlags.set { it.copy(buildingEquipments = false) }
+        val useCases = storedBuildingUseCases()
+        val (store, sessionStore) = setBuildingDetailScreen(useCases = useCases)
+
+        waitUntil { store.state.building != null && sessionStore.state.account != null }
+        onNodeWithTag(testTag = "building_equipments").assertDoesNotExist()
     }
 
     /** Verifies that the picker applies the equipment list filters, searching and leaving out the deleted equipments. */
