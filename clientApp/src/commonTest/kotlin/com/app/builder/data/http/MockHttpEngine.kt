@@ -41,15 +41,15 @@ fun createMockHttpEngine(): HttpClientEngine = TestEngine { request ->
                 path == URL.ServerConfigs.path -> respondMock(content = encode(value = FakeData.serverConfigs))
                 path == URL.Translations.path -> respondMock(content = encode(value = FakeData.translations))
                 path == URL.Registries.path -> respondMock(content = encode(value = listOf(FakeData.registry)))
-                path.startsWith(prefix = "${URL.Users.path}/") -> respondMock(content = encode(value = FakeData.adminUser))
+                path.substringBeforeLast(delimiter = '/') == URL.Users.path -> respondMock(content = encode(value = FakeData.adminUser))
                 path == URL.Users.path -> respondMock(content = encode(value = listOf(FakeData.adminUser, FakeData.user)))
-                path.startsWith(prefix = "${URL.Tasks.path}/") -> respondMock(content = encode(value = FakeData.task))
+                path.substringBeforeLast(delimiter = '/') == URL.Tasks.path -> respondMock(content = encode(value = FakeData.task))
                 path == URL.Tasks.path -> respondMock(content = encode(value = listOf(FakeData.task)))
-                path.startsWith(prefix = "${URL.Buildings.path}/") -> respondMock(content = encode(value = FakeData.building))
+                path.substringBeforeLast(delimiter = '/') == URL.Buildings.path -> respondMock(content = encode(value = FakeData.building))
                 path == URL.Buildings.path -> respondMock(content = encode(value = listOf(FakeData.building)))
-                path.startsWith(prefix = "${URL.Equipments.path}/") -> respondMock(content = encode(value = FakeData.equipment))
+                path.substringBeforeLast(delimiter = '/') == URL.Equipments.path -> respondMock(content = encode(value = FakeData.equipment))
                 path == URL.Equipments.path -> respondMock(content = encode(value = listOf(FakeData.equipment)))
-                path.startsWith(prefix = "${URL.BuildingEquipments.path}/") -> respondMock(content = encode(value = FakeData.buildingEquipment))
+                path.substringBeforeLast(delimiter = '/') == URL.BuildingEquipments.path -> respondMock(content = encode(value = FakeData.buildingEquipment))
                 path == URL.BuildingEquipments.path -> respondMock(content = encode(value = listOf(FakeData.buildingEquipment)))
                 else -> notFound(request = request)
             }
@@ -103,7 +103,7 @@ fun createMockHttpEngine(): HttpClientEngine = TestEngine { request ->
             HttpMethod.Delete -> {
                 val now = now()
                 when {
-                    path.startsWith(prefix = "${URL.Tasks.path}/") -> respondMock(content = encode(value = FakeData.task.copy(modifiedAt = now, deletedAt = now)))
+                    path.substringBeforeLast(delimiter = '/') == URL.Tasks.path -> respondMock(content = encode(value = FakeData.task.copy(modifiedAt = now, deletedAt = now)))
                     else -> notFound(request = request)
                 }
             }
