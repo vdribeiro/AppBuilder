@@ -65,6 +65,15 @@ tasks.named<Task>(name = "copyNonXmlValueResourcesForCommonMain") {
 }
 //endregion
 
+//region Android
+tasks.register<AdbReverseTask>(name = "adbReverse") {
+    group = "android"
+    description = "Forwards the development server port of every connected Android device to this machine."
+    taskAdb.set(androidComponents.sdkComponents.adb)
+    taskPort.set(devServerPort)
+}
+//endregion
+
 //region JavaFX
 val javafx: Configuration by configurations.creating
 val javafxModulePath: String by lazy { javafx.asPath }

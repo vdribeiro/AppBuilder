@@ -1,6 +1,8 @@
 @file:Suppress("MayBeConstant")
 
+import java.io.ByteArrayOutputStream
 import java.util.Properties
+import javax.inject.Inject
 import kotlin.experimental.xor
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
@@ -18,13 +20,16 @@ import org.gradle.api.artifacts.dsl.DependencyHandler
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.Directory
 import org.gradle.api.file.DirectoryProperty
+import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFiles
+import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.TaskAction
 import org.gradle.internal.os.OperatingSystem
+import org.gradle.process.ExecOperations
 import org.gradle.kotlin.dsl.add
 import org.gradle.kotlin.dsl.assign
 
@@ -40,6 +45,7 @@ val appDesktopId = "580991aa-c884-4661-9876-5f36272fd26b"
 
 val appServerName: String = "App Builder Server"
 val appServerVersion: String = "1.0.0"
+val devServerPort: Int = 8080
 
 val copyrightUrl = "https://github.com/vdribeiro"
 val privacyPolicyUrl = "https://github.com/vdribeiro"
@@ -460,9 +466,7 @@ $maps
     }
 }
 
-/**
- * Generates a WebPushConfig.kt file with the values used for Web Push (FCM): the VAPID key used for token requests, and the Firebase Web config JSON (apiKey, projectId, etc.) used to initialize Firebase.
- */
+/** Generates a WebPushConfig.kt file with the values used for Web Push (FCM): the VAPID key used for token requests, and the Firebase Web config JSON (apiKey, projectId, etc.) used to initialize Firebase. */
 abstract class GenerateWebPushValuesTask: DefaultTask() {
     @get:Input
     abstract val taskAppId: Property<String>
@@ -494,5 +498,37 @@ abstract class GenerateWebPushValuesTask: DefaultTask() {
                 }
             """.trimIndent()
         )
+    }
+}
+
+/** Forwards [taskPort] of every connected Android device to the same port on this machine, with `adb reverse`. */
+abstract class AdbReverseTask: DefaultTask() {
+    @get:Internal
+    abstract val taskAdb: RegularFileProperty
+    @get:Input
+    abstract val taskPort: Property<Int>
+    @get:Inject
+    abstract val execOperations: ExecOperations
+
+    @TaskAction
+    fun reverse() {
+        val adb = taskAdb.get().asFile.absolutePath
+        val port = taskPort.get()
+        val devices = ByteArrayOutputStream()
+        execOperations.exec {
+            commandLine(adb, "devices")
+            standardOutput = devices
+        }
+        val serials = devices.toString()
+            .lines()
+            .drop(n = 1)
+            .map { it.split('\t') }
+            .filter { it.size == 2 && it[1] == "device" }
+            .map { it[0] }
+        if (serials.isEmpty()) logger.warn("No connected Android device to forward port $port")
+        serials.forEach { serial ->
+            execOperations.exec { commandLine(adb, "-s", serial, "reverse", "tcp:$port", "tcp:$port") }
+            logger.lifecycle("Forwarded port $port of $serial")
+        }
     }
 }

@@ -63,7 +63,7 @@
     <option name="SKIP_ACTIVITY_VALIDATION" value="false" />
     <method v="2">
       <option name="Android.Gradle.BeforeRunTask" enabled="true" />
-      <option name="ToolBeforeRunTask" enabled="true" actionId="Tool_External Tools_ADB Reverse Port" />
+      <option name="Gradle.BeforeRunTask" enabled="true" tasks="adbReverse" externalProjectPath="$PROJECT_DIR$/clientApp" vmOptions="" scriptParameters="" />
     </method>
   </configuration>
 </component>
