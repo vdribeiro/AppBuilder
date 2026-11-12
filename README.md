@@ -1001,7 +1001,6 @@ Backed by real platform keystores, never a bundled key. Strings in and out: Base
 **Desktop** has no keystore of its own, so rather than ship a hardcoded password for `security.p12`, it unlocks it with a random secret held by the OS for the current user: DPAPI on Windows, the login keychain on macOS, the Secret Service via `secret-tool` on Linux.
 Without a secret store it falls back to the machine identity (`machine-id`, `MachineGuid` or `IOPlatformUUID`), and a keystore opened that way is re-locked under the stored secret once one exists.
 
-In development, a failure returns the input instead of `null`, so a machine without a usable keystore can't brick the app.
 This is the layer [`StorageFile`](#persisted-storage) builds on to make encryption at rest a per-file boolean.
 
 **Offline login** uses `deriveKey`, a PBKDF2-HMAC-SHA256 derivation. The local `Session` table stores a `username`, a random per-session `salt` and a `verifier = deriveKey(password, salt)`.
