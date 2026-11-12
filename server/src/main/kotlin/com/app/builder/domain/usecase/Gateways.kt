@@ -7,9 +7,9 @@ import com.app.builder.domain.usecase.account.AccountUseCases
 import com.app.builder.domain.usecase.authentication.AuthenticationGateway
 import com.app.builder.domain.usecase.authentication.AuthenticationUseCases
 import com.app.builder.domain.usecase.building.BuildingGateway
+import com.app.builder.domain.usecase.building.BuildingUseCases
 import com.app.builder.domain.usecase.buildingequipment.BuildingEquipmentGateway
 import com.app.builder.domain.usecase.buildingequipment.BuildingEquipmentUseCases
-import com.app.builder.domain.usecase.building.BuildingUseCases
 import com.app.builder.domain.usecase.config.ConfigGateway
 import com.app.builder.domain.usecase.config.ConfigUseCases
 import com.app.builder.domain.usecase.connection.ConnectionGateway

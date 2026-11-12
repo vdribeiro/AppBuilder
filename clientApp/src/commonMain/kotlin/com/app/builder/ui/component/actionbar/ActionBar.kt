@@ -17,13 +17,13 @@ import com.app.builder.domain.User
 import com.app.builder.ui.Preview
 import com.app.builder.ui.component.bar.AvatarButton
 import com.app.builder.ui.component.bar.EntityActions
-import com.app.builder.ui.component.bar.Filters
-import com.app.builder.ui.component.bar.FiltersButton
 import com.app.builder.ui.component.bar.LoginButton
 import com.app.builder.ui.component.bar.StatusIcons
 import com.app.builder.ui.component.bar.TopActionBar
 import com.app.builder.ui.component.filters.FiltersAction
 import com.app.builder.ui.component.filters.FiltersState
+import com.app.builder.ui.component.filters.StoreFilters
+import com.app.builder.ui.component.filters.StoreFiltersButton
 import com.app.builder.ui.component.image.toImage
 import com.app.builder.ui.component.session.SessionState
 import com.app.builder.ui.core.image.Image
@@ -94,33 +94,12 @@ fun ActionBar(
                 deleted = deleted,
                 onDeleteClick = onDeleteClick?.takeIf { writable },
             )
-            if (filtersStore != null) FiltersButton(
-                expanded = filters.filtersExpanded,
-                onClick = { filtersStore.send(action = FiltersAction.ExpandFilters(expanded = it)) }
-            )
+            if (filtersStore != null) StoreFiltersButton(filtersStore = filtersStore)
             if (session.loaded && user == null) LoginButton(onClick = { router.navigate(screen = Screen.Login) })
         },
         secondaryActions = if (filtersStore != null && filters.filtersExpanded) {
             {
-                Filters(
-                    properties = filters.properties,
-                    search = filters.search,
-                    searchExpanded = filters.searchExpanded,
-                    onSearchExpandClick = { filtersStore.send(action = FiltersAction.ExpandSearch(expanded = it)) },
-                    onSearch = { filtersStore.send(action = FiltersAction.Search(search = it)) },
-                    searchableProperties = filters.searchableProperties,
-                    onSearchablePropertiesChange = { filtersStore.send(action = FiltersAction.ToggleSearchableProperty(property = it)) },
-                    sortAscending = filters.sortAscending,
-                    onSortAscendingClick = { filtersStore.send(action = FiltersAction.SelectSortOrder(ascending = it)) },
-                    sortProperty = filters.sortProperty,
-                    onSelectSortProperty = { filtersStore.send(action = FiltersAction.SelectSortProperty(property = it)) },
-                    visibleProperties = filters.visibleProperties,
-                    onVisiblePropertiesChange = { filtersStore.send(action = FiltersAction.ToggleVisibleProperty(property = it)) },
-                    showDeleted = filters.showDeleted,
-                    onShowDeletedClick = if (filters.showDeletedToggle) {
-                        { filtersStore.send(action = FiltersAction.ShowDeleted(showDeleted = it)) }
-                    } else null,
-                )
+                StoreFilters(filtersStore = filtersStore)
             }
         } else null,
     )
