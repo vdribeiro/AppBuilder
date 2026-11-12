@@ -30,6 +30,11 @@ fun createMockHttpEngine(): HttpClientEngine = TestEngine { request ->
 
         URLProtocol.HTTP,
         URLProtocol.HTTPS -> when (request.method) {
+            HttpMethod.Head -> when (path) {
+                URL.Probe.path -> respondMock()
+                else -> notFound(request = request)
+            }
+
             HttpMethod.Get -> when {
                 path == "${URL.Accounts.path}/${FakeData.adminAccount.userUuid}" -> respondMock(content = encode(value = FakeData.adminAccount))
                 path == "${URL.Accounts.path}/${FakeData.account.userUuid}" -> respondMock(content = encode(value = FakeData.account))
