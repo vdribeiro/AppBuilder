@@ -4,7 +4,6 @@ import kotlin.js.Promise
 import kotlinx.coroutines.await
 import kotlinx.coroutines.withContext
 import com.app.builder.core.flow.Dispatcher
-import com.app.builder.core.platform.developmentMode
 import com.app.builder.core.telemetry.Telemetry
 
 actual suspend fun encrypt(content: String): String? = withContext(context = Dispatcher.Default) {
@@ -12,7 +11,7 @@ actual suspend fun encrypt(content: String): String? = withContext(context = Dis
         encryptJs(content = content).await().toString()
     }.onFailure {
         Telemetry.error(tag = TAG, message = "Unable to encrypt", throwable = it)
-    }.getOrNull() ?: if (developmentMode) return@withContext content else null
+    }.getOrNull()
 }
 
 actual suspend fun decrypt(content: String): String? = withContext(context = Dispatcher.Default) {
@@ -20,7 +19,7 @@ actual suspend fun decrypt(content: String): String? = withContext(context = Dis
         decryptJs(contentBase64 = content).await().toString()
     }.onFailure {
         Telemetry.error(tag = TAG, message = "Unable to decrypt", throwable = it)
-    }.getOrNull() ?: if (developmentMode) return@withContext content else null
+    }.getOrNull()
 }
 
 /**
@@ -139,12 +138,11 @@ private external fun encryptJs(content: String): Promise<JsString>
 private external fun decryptJs(contentBase64: String): Promise<JsString>
 
 actual suspend fun hash(content: String): String? = withContext(context = Dispatcher.Default) {
-    if (developmentMode) return@withContext content
     runCatching {
         hashJs(content = content).await().toString()
     }.onFailure {
         Telemetry.error(tag = TAG, message = "Unable to hash", throwable = it)
-    }.getOrNull() ?: if (developmentMode) return@withContext content else null
+    }.getOrNull()
 }
 
 /**

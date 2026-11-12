@@ -26,7 +26,6 @@ import platform.posix.arc4random_buf
 import platform.posix.size_tVar
 import com.app.builder.App
 import com.app.builder.core.flow.Dispatcher
-import com.app.builder.core.platform.developmentMode
 import com.app.builder.core.telemetry.Telemetry
 
 actual suspend fun encrypt(content: String): String? = withContext(context = Dispatcher.Default) {
@@ -72,7 +71,7 @@ actual suspend fun encrypt(content: String): String? = withContext(context = Dis
         }
     }.onFailure {
         Telemetry.error(tag = TAG, message = "Unable to encrypt", throwable = it)
-    }.getOrNull() ?: if (developmentMode) return@withContext content else null
+    }.getOrNull()
 }
 
 actual suspend fun decrypt(content: String): String? = withContext(context = Dispatcher.Default) {
@@ -123,7 +122,7 @@ actual suspend fun decrypt(content: String): String? = withContext(context = Dis
         }
     }.onFailure {
         Telemetry.error(tag = TAG, message = "Unable to decrypt", throwable = it)
-    }.getOrNull() ?: if (developmentMode) return@withContext content else null
+    }.getOrNull()
 }
 
 /**
@@ -163,7 +162,7 @@ actual suspend fun hash(content: String): String? = withContext(context = Dispat
         }
     }.onFailure {
         Telemetry.error(tag = TAG, message = "Unable to hash", throwable = it)
-    }.getOrNull() ?: if (developmentMode) return@withContext content else null
+    }.getOrNull()
 }
 
 actual suspend fun deriveKey(password: String, salt: String): String? = withContext(context = Dispatcher.Default) {

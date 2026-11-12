@@ -14,7 +14,6 @@ import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
 import com.app.builder.App
 import com.app.builder.core.flow.Dispatcher
-import com.app.builder.core.platform.developmentMode
 import com.app.builder.core.telemetry.Telemetry
 
 actual suspend fun encrypt(content: String): String? = withContext(context = Dispatcher.Default) {
@@ -26,7 +25,7 @@ actual suspend fun encrypt(content: String): String? = withContext(context = Dis
         Base64.encode(source = cipher.iv + encryptedBytes)
     }.onFailure {
         Telemetry.error(tag = TAG, message = "Unable to encrypt", throwable = it)
-    }.getOrNull() ?: if (developmentMode) return@withContext content else null
+    }.getOrNull()
 }
 
 actual suspend fun decrypt(content: String): String? = withContext(context = Dispatcher.Default) {
@@ -41,7 +40,7 @@ actual suspend fun decrypt(content: String): String? = withContext(context = Dis
         cipher.doFinal(encryptedBytes).decodeToString()
     }.onFailure {
         Telemetry.error(tag = TAG, message = "Unable to decrypt", throwable = it)
-    }.getOrNull() ?: if (developmentMode) return@withContext content else null
+    }.getOrNull()
 }
 
 /**
@@ -75,7 +74,7 @@ actual suspend fun hash(content: String): String? = withContext(context = Dispat
         hashBytes.joinToString(separator = "") { it.toUByte().toString(radix = 16).padStart(length = 2, padChar = '0') }
     }.onFailure {
         Telemetry.error(tag = TAG, message = "Unable to hash", throwable = it)
-    }.getOrNull() ?: if (developmentMode) return@withContext content else null
+    }.getOrNull()
 }
 
 actual suspend fun deriveKey(password: String, salt: String): String? = withContext(context = Dispatcher.Default) {
