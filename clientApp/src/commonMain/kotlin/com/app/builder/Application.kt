@@ -290,9 +290,9 @@ object Application {
         repositories.userRepository.syncUsers()
         if (ClientFlags.value.registries) repositories.registryRepository.syncRegistries()
         if (ClientFlags.value.tasks) repositories.taskRepository.syncTasks()
-        if (ClientFlags.value.equipments) repositories.equipmentRepository.syncEquipments()
         if (ClientFlags.value.buildings) repositories.buildingRepository.syncBuildings()
-        if (ClientFlags.value.buildings) repositories.buildingEquipmentRepository.syncBuildingEquipments()
+        if (ClientFlags.value.equipments) repositories.equipmentRepository.syncEquipments()
+        if (ClientFlags.value.buildingEquipments) repositories.buildingEquipmentRepository.syncBuildingEquipments()
     }
 
     /** Register lifecycles of services. */

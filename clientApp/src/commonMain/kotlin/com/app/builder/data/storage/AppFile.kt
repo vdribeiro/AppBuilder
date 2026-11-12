@@ -42,11 +42,11 @@ object AppFile {
             USERS_LAST_SYNC_UTC,
             /** The UTC instant when tasks were last synchronized. */
             TASKS_LAST_SYNC_UTC,
-            /** The UTC instant when equipments were last synchronized. */
-            EQUIPMENTS_LAST_SYNC_UTC,
             /** The UTC instant when buildings were last synchronized. */
             BUILDINGS_LAST_SYNC_UTC,
-            /** The UTC instant when the links placing equipments in buildings were last synchronized. */
+            /** The UTC instant when equipments were last synchronized. */
+            EQUIPMENTS_LAST_SYNC_UTC,
+            /** The UTC instant when building equipments were last synchronized. */
             BUILDING_EQUIPMENTS_LAST_SYNC_UTC
         }
 
@@ -118,13 +118,13 @@ object AppFile {
         override val serializer: KSerializer<ActionBarData> = ActionBarData.serializer()
     }
 
-    /** Equipment preferences. */
-    data object EquipmentPreferences: StorageFile<ActionBarData>(path = "equipment_preferences", encrypted = false) {
+    /** Building preferences. */
+    data object BuildingPreferences: StorageFile<ActionBarData>(path = "building_preferences", encrypted = false) {
         override val serializer: KSerializer<ActionBarData> = ActionBarData.serializer()
     }
 
-    /** Building preferences. */
-    data object BuildingPreferences: StorageFile<ActionBarData>(path = "building_preferences", encrypted = false) {
+    /** Equipment preferences. */
+    data object EquipmentPreferences: StorageFile<ActionBarData>(path = "equipment_preferences", encrypted = false) {
         override val serializer: KSerializer<ActionBarData> = ActionBarData.serializer()
     }
 
@@ -134,8 +134,8 @@ object AppFile {
         RegistryPreferences,
         UserPreferences,
         TaskPreferences,
+        BuildingPreferences,
         EquipmentPreferences,
-        BuildingPreferences
     )
 
     /** Every file in this module. */

@@ -48,8 +48,10 @@ data class ClientFlags(
     val tasks: Boolean,
     /** Toggles the equipment screens and whether equipment entities are queued for background sync. When false, equipment screens fall back to the error screen and equipment data is excluded from sync even if the user has permission to read it. */
     val equipments: Boolean,
-    /** Toggles the building screens and whether building entities, including the links placing equipments in buildings, are queued for background sync. When false, building screens fall back to the error screen and building data is excluded from sync even if the user has permission to read it. */
+    /** Toggles the building screens and whether building entities are queued for background sync. When false, building screens fall back to the error screen and building data is excluded from sync even if the user has permission to read it. */
     val buildings: Boolean,
+    /** Toggles the building equipment sections of the building and equipment screens and whether building equipment entities are queued for background sync. When false, the sections are hidden and building equipment data is excluded from sync even if the user has permission to read it. */
+    val buildingEquipments: Boolean,
 ) {
     /** Holds the client feature flags. */
     companion object: StateHolder<ClientFlags>(
@@ -76,6 +78,7 @@ data class ClientFlags(
             tasks = true,
             equipments = true,
             buildings = true,
+            buildingEquipments = true,
         )
     )
 }
