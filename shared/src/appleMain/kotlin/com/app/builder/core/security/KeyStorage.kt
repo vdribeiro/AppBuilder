@@ -19,6 +19,8 @@ import platform.Security.SecItemAdd
 import platform.Security.SecItemCopyMatching
 import platform.Security.errSecItemNotFound
 import platform.Security.errSecSuccess
+import platform.Security.kSecAttrAccessible
+import platform.Security.kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly
 import platform.Security.kSecAttrAccount
 import platform.Security.kSecClass
 import platform.Security.kSecClassGenericPassword
@@ -56,7 +58,7 @@ interface KeyStorage {
 /** The key storage the app encrypts and decrypts with. */
 var keyStorage: KeyStorage = KeychainKeyStorage
 
-/** The iOS Keychain, holding the key as a generic password item. */
+/** The iOS Keychain, holding the key as a generic password item that is readable after the first unlock and stays on this device. */
 @ExcludeFromTesting
 internal object KeychainKeyStorage: KeyStorage {
 
@@ -89,9 +91,10 @@ internal object KeychainKeyStorage: KeyStorage {
         val data = key.usePinned { CFDataCreate(allocator = null, bytes = it.addressOf(index = 0).reinterpret(), length = key.size.toLong()) }
         data.use {
             account.toCFString().use { cfAccount ->
-                CFDictionaryCreateMutable(allocator = null, capacity = 3, keyCallBacks = null, valueCallBacks = null).use { query ->
+                CFDictionaryCreateMutable(allocator = null, capacity = 4, keyCallBacks = null, valueCallBacks = null).use { query ->
                     CFDictionaryAddValue(theDict = query, key = kSecClass, value = kSecClassGenericPassword)
                     CFDictionaryAddValue(theDict = query, key = kSecAttrAccount, value = cfAccount)
+                    CFDictionaryAddValue(theDict = query, key = kSecAttrAccessible, value = kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly)
                     CFDictionaryAddValue(theDict = query, key = kSecValueData, value = data)
                     val status = SecItemAdd(attributes = query, result = null)
                     if (status != errSecSuccess) error(message = "Unable to persist secret key: $status")

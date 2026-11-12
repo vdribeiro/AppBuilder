@@ -58,6 +58,6 @@ private suspend fun <T> runCryptography(operation: String, block: suspend () -> 
 private const val TAG = "Cryptography"
 
 /** The number of PBKDF2 rounds. */
-private const val DERIVATION_ROUNDS = 210_000
+private const val DERIVATION_ROUNDS = 600_000
 /** The size, in bits, of the derived key. */
 private const val DERIVED_KEY_SIZE = 256
