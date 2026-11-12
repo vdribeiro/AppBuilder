@@ -25,7 +25,7 @@ fun createMockHttpEngine(): HttpClientEngine = TestEngine { request ->
     when (request.url.protocol) {
         URLProtocol.WS,
         URLProtocol.WSS -> when {
-            path.startsWith(prefix = URL.Push.path) -> respondWebSocket(pushPayload = FakeData.notification)
+            path == URL.Push.path -> respondWebSocket(pushPayload = FakeData.notification)
             else -> notFound(request = request)
         }
 
@@ -34,39 +34,39 @@ fun createMockHttpEngine(): HttpClientEngine = TestEngine { request ->
             HttpMethod.Get -> when {
                 path == "${URL.Accounts.path}/${FakeData.adminAccount.userUuid}" -> respondMock(content = encode(value = FakeData.adminAccount))
                 path == "${URL.Accounts.path}/${FakeData.account.userUuid}" -> respondMock(content = encode(value = FakeData.account))
-                path.startsWith(prefix = URL.Broadcast.path) -> respondSse(pushPayload = FakeData.notification)
-                path.startsWith(prefix = URL.ClientFlags.path) -> respondMock(content = encode(value = FakeData.clientFlags))
-                path.startsWith(prefix = URL.ClientConfigs.path) -> respondMock(content = encode(value = FakeData.clientConfigs))
-                path.startsWith(prefix = URL.ServerFlags.path) -> respondMock(content = encode(value = FakeData.serverFlags))
-                path.startsWith(prefix = URL.ServerConfigs.path) -> respondMock(content = encode(value = FakeData.serverConfigs))
-                path.startsWith(prefix = URL.Translations.path) -> respondMock(content = encode(value = FakeData.translations))
-                path.startsWith(prefix = URL.Registries.path) -> respondMock(content = encode(value = listOf(FakeData.registry)))
+                path == URL.Broadcast.path -> respondSse(pushPayload = FakeData.notification)
+                path == URL.ClientFlags.path -> respondMock(content = encode(value = FakeData.clientFlags))
+                path == URL.ClientConfigs.path -> respondMock(content = encode(value = FakeData.clientConfigs))
+                path == URL.ServerFlags.path -> respondMock(content = encode(value = FakeData.serverFlags))
+                path == URL.ServerConfigs.path -> respondMock(content = encode(value = FakeData.serverConfigs))
+                path == URL.Translations.path -> respondMock(content = encode(value = FakeData.translations))
+                path == URL.Registries.path -> respondMock(content = encode(value = listOf(FakeData.registry)))
                 path.startsWith(prefix = "${URL.Users.path}/") -> respondMock(content = encode(value = FakeData.adminUser))
-                path.startsWith(prefix = URL.Users.path) -> respondMock(content = encode(value = listOf(FakeData.adminUser, FakeData.user)))
+                path == URL.Users.path -> respondMock(content = encode(value = listOf(FakeData.adminUser, FakeData.user)))
                 path.startsWith(prefix = "${URL.Tasks.path}/") -> respondMock(content = encode(value = FakeData.task))
-                path.startsWith(prefix = URL.Tasks.path) -> respondMock(content = encode(value = listOf(FakeData.task)))
+                path == URL.Tasks.path -> respondMock(content = encode(value = listOf(FakeData.task)))
                 path.startsWith(prefix = "${URL.Buildings.path}/") -> respondMock(content = encode(value = FakeData.building))
-                path.startsWith(prefix = URL.Buildings.path) -> respondMock(content = encode(value = listOf(FakeData.building)))
+                path == URL.Buildings.path -> respondMock(content = encode(value = listOf(FakeData.building)))
                 path.startsWith(prefix = "${URL.Equipments.path}/") -> respondMock(content = encode(value = FakeData.equipment))
-                path.startsWith(prefix = URL.Equipments.path) -> respondMock(content = encode(value = listOf(FakeData.equipment)))
+                path == URL.Equipments.path -> respondMock(content = encode(value = listOf(FakeData.equipment)))
                 path.startsWith(prefix = "${URL.BuildingEquipments.path}/") -> respondMock(content = encode(value = FakeData.buildingEquipment))
-                path.startsWith(prefix = URL.BuildingEquipments.path) -> respondMock(content = encode(value = listOf(FakeData.buildingEquipment)))
+                path == URL.BuildingEquipments.path -> respondMock(content = encode(value = listOf(FakeData.buildingEquipment)))
                 else -> notFound(request = request)
             }
 
             HttpMethod.Post -> when {
-                path.startsWith(prefix = URL.Tickets.path) -> respondMock(content = Uuid.NIL.toString())
-                path.startsWith(prefix = URL.Register.path) -> {
+                path == URL.Tickets.path -> respondMock(content = Uuid.NIL.toString())
+                path == URL.Register.path -> {
                     val registrationForm = request.decodeBody<RegistrationForm>() ?: return@TestEngine badRequest(request = request)
                     respondMock(content = encode(value = registrationForm.account))
                 }
 
-                path.startsWith(prefix = URL.Accounts.path) -> {
+                path == URL.Accounts.path -> {
                     val account = request.decodeBody<Account>() ?: return@TestEngine badRequest(request = request)
                     respondMock(content = encode(value = account))
                 }
 
-                path.startsWith(prefix = URL.Login.path) -> {
+                path == URL.Login.path -> {
                     val credentials = request.decodeBody<UserCredentials>() ?: return@TestEngine badRequest(request = request)
                     when (credentials) {
                         FakeData.adminCredentials -> respondMock(content = encode(value = FakeData.adminAuthentication))
@@ -75,8 +75,8 @@ fun createMockHttpEngine(): HttpClientEngine = TestEngine { request ->
                     }
                 }
 
-                path.startsWith(prefix = URL.Logout.path) -> respondMock(content = encode(value = "Successful logged out"))
-                path.startsWith(prefix = URL.RefreshTokens.path) -> {
+                path == URL.Logout.path -> respondMock(content = encode(value = "Successful logged out"))
+                path == URL.RefreshTokens.path -> {
                     val refreshToken = request.decodeBody<String>() ?: return@TestEngine badRequest(request = request)
                     when (refreshToken) {
                         FakeData.adminBearerToken.refreshToken -> respondMock(content = encode(value = FakeData.adminBearerToken))
@@ -85,24 +85,25 @@ fun createMockHttpEngine(): HttpClientEngine = TestEngine { request ->
                     }
                 }
 
-                path.startsWith(prefix = URL.ClientFlags.path) -> respondMock(content = encode(value = FakeData.clientFlags))
-                path.startsWith(prefix = URL.ClientConfigs.path) -> respondMock(content = encode(value = FakeData.clientConfigs))
-                path.startsWith(prefix = URL.ServerFlags.path) -> respondMock(content = encode(value = FakeData.serverFlags))
-                path.startsWith(prefix = URL.ServerConfigs.path) -> respondMock(content = encode(value = FakeData.serverConfigs))
-                path.startsWith(prefix = URL.Push.path) -> respondMock(content = encode(value = "sent"))
-                path.startsWith(prefix = URL.Broadcast.path) -> respondMock(content = encode(value = "sent"))
-                path.startsWith(prefix = URL.Tasks.path) -> respondMock(content = encode(value = FakeData.task))
-                path.startsWith(prefix = URL.Equipments.path) -> respondMock(content = encode(value = FakeData.equipment))
-                path.startsWith(prefix = URL.BuildingEquipments.path) -> respondMock(content = encode(value = FakeData.buildingEquipment))
-                path.startsWith(prefix = URL.Buildings.path) -> respondMock(content = encode(value = FakeData.building))
-                path.startsWith(prefix = URL.Users.path) -> respondMock(content = encode(value = FakeData.adminUser))
+                path == URL.ClientFlags.path -> respondMock(content = encode(value = FakeData.clientFlags))
+                path == URL.ClientConfigs.path -> respondMock(content = encode(value = FakeData.clientConfigs))
+                path == URL.ServerFlags.path -> respondMock(content = encode(value = FakeData.serverFlags))
+                path == URL.ServerConfigs.path -> respondMock(content = encode(value = FakeData.serverConfigs))
+                path == URL.Push.path -> respondMock(content = encode(value = "sent"))
+                path == URL.Broadcast.path -> respondMock(content = encode(value = "sent"))
+                path == URL.BroadcastSubscribe.path -> respondMock(content = encode(value = "sent"))
+                path == URL.Tasks.path -> respondMock(content = encode(value = FakeData.task))
+                path == URL.Equipments.path -> respondMock(content = encode(value = FakeData.equipment))
+                path == URL.BuildingEquipments.path -> respondMock(content = encode(value = FakeData.buildingEquipment))
+                path == URL.Buildings.path -> respondMock(content = encode(value = FakeData.building))
+                path == URL.Users.path -> respondMock(content = encode(value = FakeData.adminUser))
                 else -> notFound(request = request)
             }
 
             HttpMethod.Delete -> {
                 val now = now()
                 when {
-                    path.startsWith(prefix = URL.Tasks.path) -> respondMock(content = encode(value = FakeData.task.copy(modifiedAt = now, deletedAt = now)))
+                    path.startsWith(prefix = "${URL.Tasks.path}/") -> respondMock(content = encode(value = FakeData.task.copy(modifiedAt = now, deletedAt = now)))
                     else -> notFound(request = request)
                 }
             }
