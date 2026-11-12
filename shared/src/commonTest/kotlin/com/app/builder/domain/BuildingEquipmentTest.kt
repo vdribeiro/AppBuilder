@@ -5,8 +5,8 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotEquals
 import kotlin.test.assertNotNull
-import com.app.builder.core.security.uuidOf
 import com.app.builder.core.security.uuid
+import com.app.builder.core.security.uuidOf
 import com.app.builder.data.serializer.decode
 import com.app.builder.data.serializer.encode
 import com.app.builder.test.FakeData

@@ -25,8 +25,8 @@ import com.app.builder.data.database.safeTransaction
 import com.app.builder.data.database.table.BuildingEquipmentTable
 import com.app.builder.data.database.table.UserAccountTable
 import com.app.builder.data.serializer.decode
-import com.app.builder.domain.EntityType
 import com.app.builder.domain.BuildingEquipment
+import com.app.builder.domain.EntityType
 import com.app.builder.domain.Permission
 import com.app.builder.domain.PushPayload
 import com.app.builder.domain.grants

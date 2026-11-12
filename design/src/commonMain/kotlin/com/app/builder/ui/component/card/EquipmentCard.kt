@@ -14,6 +14,7 @@ import androidx.compose.ui.unit.dp
 import com.app.builder.ui.InjectTranslations
 import com.app.builder.ui.Preview
 import com.app.builder.ui.component.field.ChoiceField
+import com.app.builder.ui.component.field.LinkSection
 import com.app.builder.ui.component.field.MetadataSection
 import com.app.builder.ui.component.field.TextField
 import com.app.builder.ui.core.card.Card
@@ -33,6 +34,7 @@ import com.app.builder.ui.core.card.Card
  * @param status The equipment's status, shown as selected among [statuses].
  * @param statuses Every status the equipment can be in.
  * @param onStatusChange Callback for when a status is selected.
+ * @param links A slot rendered above the metadata, typically a [LinkSection].
  */
 @Composable
 fun EquipmentCard(
@@ -48,6 +50,7 @@ fun EquipmentCard(
     status: String? = null,
     statuses: ImmutableList<String> = persistentListOf(),
     onStatusChange: (String) -> Unit = {},
+    links: @Composable () -> Unit = {},
 ) {
     Card(
         modifier = modifier
@@ -86,6 +89,7 @@ fun EquipmentCard(
                     onSelect = onStatusChange
                 )
             }
+            links()
             MetadataSection(
                 entries = persistentListOf(
                     "equipment_uuid" to uuid,

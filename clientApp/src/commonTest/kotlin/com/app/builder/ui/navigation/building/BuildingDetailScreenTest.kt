@@ -27,7 +27,6 @@ import com.app.builder.core.config.ClientFlags
 import com.app.builder.core.locale.now
 import com.app.builder.core.security.uuid
 import com.app.builder.data.storage.AppFile
-import com.app.builder.ui.navigation.equipment.equipmentFilterDefaults
 import com.app.builder.domain.UserCredentials
 import com.app.builder.domain.gateway.UseCases
 import com.app.builder.test.FakeData
@@ -38,6 +37,7 @@ import com.app.builder.ui.component.session.SessionState
 import com.app.builder.ui.component.session.SessionStore
 import com.app.builder.ui.navigation.Router
 import com.app.builder.ui.navigation.Screen
+import com.app.builder.ui.navigation.equipment.equipmentFilterDefaults
 
 class BuildingDetailScreenTest: TestCase() {
 
@@ -66,15 +66,24 @@ class BuildingDetailScreenTest: TestCase() {
      * @return The [BuildingDetailScreenStore] and the [SessionStore] rendered.
      */
     private fun ComposeUiTest.setBuildingDetailScreen(useCases: UseCases, buildingUuid: Uuid = FakeData.building.uuid, new: Boolean = false): Pair<BuildingDetailScreenStore, SessionStore> {
-        val store = BuildingDetailScreenStore(state = BuildingDetailScreenState(), router = router, buildingUseCases = useCases.buildingUseCases, buildingEquipmentUseCases = useCases.buildingEquipmentUseCases, equipmentUseCases = useCases.equipmentUseCases, buildingUuid = buildingUuid.toString(), new = new)
+        val store = BuildingDetailScreenStore(
+            state = BuildingDetailScreenState(),
+            router = router,
+            buildingUseCases = useCases.buildingUseCases,
+            buildingEquipmentUseCases = useCases.buildingEquipmentUseCases,
+            equipmentUseCases = useCases.equipmentUseCases,
+            buildingUuid = buildingUuid.toString(),
+            new = new
+        )
         val sessionStore = SessionStore(state = SessionState(), authenticationUseCases = useCases.authenticationUseCases)
         val filtersStore = FiltersStore(state = FiltersState())
+        val equipmentFiltersStore = FiltersStore(state = FiltersState())
 
         setUI {
             BuildingDetailScreen(
                 sessionStore = sessionStore,
                 filtersStore = filtersStore,
-                equipmentFiltersStore = FiltersStore(state = FiltersState()),
+                equipmentFiltersStore = equipmentFiltersStore,
                 store = store,
             )
         }
@@ -87,15 +96,23 @@ class BuildingDetailScreenTest: TestCase() {
     fun buildingDetailScreen() = runUITest {
         val useCases = storedBuildingUseCases()
 
-        val store = BuildingDetailScreenStore(state = BuildingDetailScreenState(), router = router, buildingUseCases = useCases.buildingUseCases, buildingEquipmentUseCases = useCases.buildingEquipmentUseCases, equipmentUseCases = useCases.equipmentUseCases, buildingUuid = FakeData.building.uuid.toString())
+        val store = BuildingDetailScreenStore(
+            state = BuildingDetailScreenState(),
+            router = router,
+            buildingUseCases = useCases.buildingUseCases,
+            buildingEquipmentUseCases = useCases.buildingEquipmentUseCases,
+            equipmentUseCases = useCases.equipmentUseCases,
+            buildingUuid = FakeData.building.uuid.toString()
+        )
         val sessionStore = SessionStore(state = SessionState(), authenticationUseCases = useCases.authenticationUseCases)
         val filtersStore = FiltersStore(state = FiltersState())
+        val equipmentFiltersStore = FiltersStore(state = FiltersState())
 
         setUI {
             BuildingDetailScreen(
                 sessionStore = sessionStore,
                 filtersStore = filtersStore,
-                equipmentFiltersStore = FiltersStore(state = FiltersState()),
+                equipmentFiltersStore = equipmentFiltersStore,
                 store = store,
             )
         }
@@ -361,7 +378,14 @@ class BuildingDetailScreenTest: TestCase() {
     @Test
     fun invalidCoordinatesAreNotSaved() = runUnitTest {
         val useCases = storedBuildingUseCases()
-        val store = BuildingDetailScreenStore(state = BuildingDetailScreenState(), router = router, buildingUseCases = useCases.buildingUseCases, buildingEquipmentUseCases = useCases.buildingEquipmentUseCases, equipmentUseCases = useCases.equipmentUseCases, buildingUuid = FakeData.building.uuid.toString())
+        val store = BuildingDetailScreenStore(
+            state = BuildingDetailScreenState(),
+            router = router,
+            buildingUseCases = useCases.buildingUseCases,
+            buildingEquipmentUseCases = useCases.buildingEquipmentUseCases,
+            equipmentUseCases = useCases.equipmentUseCases,
+            buildingUuid = FakeData.building.uuid.toString()
+        )
         store.stateFlow.first { it.building != null }
         store.send(action = BuildingDetailScreenAction.Edit)
 
@@ -386,7 +410,14 @@ class BuildingDetailScreenTest: TestCase() {
     @Test
     fun clearedCoordinatesAreSavedAsMissing() = runUnitTest {
         val useCases = storedBuildingUseCases()
-        val store = BuildingDetailScreenStore(state = BuildingDetailScreenState(), router = router, buildingUseCases = useCases.buildingUseCases, buildingEquipmentUseCases = useCases.buildingEquipmentUseCases, equipmentUseCases = useCases.equipmentUseCases, buildingUuid = FakeData.building.uuid.toString())
+        val store = BuildingDetailScreenStore(
+            state = BuildingDetailScreenState(),
+            router = router,
+            buildingUseCases = useCases.buildingUseCases,
+            buildingEquipmentUseCases = useCases.buildingEquipmentUseCases,
+            equipmentUseCases = useCases.equipmentUseCases,
+            buildingUuid = FakeData.building.uuid.toString()
+        )
         store.stateFlow.first { it.building != null }
         store.send(action = BuildingDetailScreenAction.Edit)
         store.send(action = BuildingDetailScreenAction.ChangeLatitude(latitude = ""))
@@ -402,7 +433,14 @@ class BuildingDetailScreenTest: TestCase() {
     @Test
     fun filledCoordinatesAreRounded() = runUnitTest {
         val useCases = storedBuildingUseCases()
-        val store = BuildingDetailScreenStore(state = BuildingDetailScreenState(), router = router, buildingUseCases = useCases.buildingUseCases, buildingEquipmentUseCases = useCases.buildingEquipmentUseCases, equipmentUseCases = useCases.equipmentUseCases, buildingUuid = FakeData.building.uuid.toString())
+        val store = BuildingDetailScreenStore(
+            state = BuildingDetailScreenState(),
+            router = router,
+            buildingUseCases = useCases.buildingUseCases,
+            buildingEquipmentUseCases = useCases.buildingEquipmentUseCases,
+            equipmentUseCases = useCases.equipmentUseCases,
+            buildingUuid = FakeData.building.uuid.toString()
+        )
         store.stateFlow.first { it.building != null }
         store.send(action = BuildingDetailScreenAction.Edit)
         store.send(action = BuildingDetailScreenAction.ChangeCoordinates(latitude = 41.123456789, longitude = -8.987654321))

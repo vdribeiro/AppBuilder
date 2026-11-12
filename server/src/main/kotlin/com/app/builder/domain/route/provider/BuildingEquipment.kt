@@ -14,8 +14,8 @@ import com.app.builder.core.telemetry.Telemetry
 import com.app.builder.data.http.Query
 import com.app.builder.data.http.URL
 import com.app.builder.data.serializer.encode
-import com.app.builder.domain.EntityType
 import com.app.builder.domain.BuildingEquipment
+import com.app.builder.domain.EntityType
 import com.app.builder.domain.Permission
 import com.app.builder.domain.permission.PermissionService
 import com.app.builder.domain.route.getOrRespond

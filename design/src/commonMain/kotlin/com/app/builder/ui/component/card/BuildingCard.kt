@@ -15,6 +15,7 @@ import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import com.app.builder.ui.InjectTranslations
 import com.app.builder.ui.Preview
+import com.app.builder.ui.component.field.LinkSection
 import com.app.builder.ui.component.field.MetadataSection
 import com.app.builder.ui.component.field.TextField
 import com.app.builder.ui.core.button.Button
@@ -42,6 +43,7 @@ import com.app.builder.ui.core.image.Icon
  * @param onLongitudeChange Callback for when the longitude changes.
  * @param longitudeError Whether the longitude is invalid.
  * @param onUseLocationClick Callback for filling the coordinates, or `null` to hide it.
+ * @param links A slot rendered above the metadata, typically a [LinkSection].
  */
 @Composable
 fun BuildingCard(
@@ -63,6 +65,7 @@ fun BuildingCard(
     onLongitudeChange: (String) -> Unit = {},
     longitudeError: Boolean = false,
     onUseLocationClick: (() -> Unit)? = null,
+    links: @Composable () -> Unit = {},
 ) {
     Card(
         modifier = modifier
@@ -130,6 +133,7 @@ fun BuildingCard(
                 content = { Icon(imageVector = Icons.Filled.MyLocation) },
                 onClick = { onUseLocationClick() }
             )
+            links()
             MetadataSection(
                 entries = persistentListOf(
                     "building_uuid" to uuid,

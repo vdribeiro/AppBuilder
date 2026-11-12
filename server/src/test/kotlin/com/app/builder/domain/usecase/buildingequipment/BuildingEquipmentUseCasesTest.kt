@@ -31,7 +31,10 @@ class BuildingEquipmentUseCasesTest: TestCase() {
         assertTrue(actual = notificationsUseCases.observeNotifications(userUuid = FakeData.adminUser.uuid).firstOrNull().orEmpty().isEmpty())
         assertTrue(actual = buildingEquipmentUseCases.getBuildingEquipments(lastSyncUtc = lastSyncUtc, cursorUtc = null, cursorUuid = null, pageSize = ServerConfigs.value.pageSize).successData().isEmpty())
         assertEquals(expected = Outcome.Success(data = Unit), actual = buildingEquipmentUseCases.upsertBuildingEquipment(buildingEquipment = FakeData.buildingEquipment))
-        assertEquals(expected = listOf(element = FakeData.buildingEquipment), actual = buildingEquipmentUseCases.getBuildingEquipments(lastSyncUtc = lastSyncUtc, cursorUtc = null, cursorUuid = null, pageSize = ServerConfigs.value.pageSize).successData())
+        assertEquals(
+            expected = listOf(element = FakeData.buildingEquipment),
+            actual = buildingEquipmentUseCases.getBuildingEquipments(lastSyncUtc = lastSyncUtc, cursorUtc = null, cursorUuid = null, pageSize = ServerConfigs.value.pageSize).successData()
+        )
         assertTrue(actual = notificationsUseCases.observeNotifications(userUuid = FakeData.adminUser.uuid).firstOrNull().orEmpty().isNotEmpty())
     }
 

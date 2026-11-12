@@ -5,7 +5,7 @@ import kotlin.uuid.Uuid
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import com.app.builder.core.locale.now
-import com.app.builder.core.security.pairUuid
+import com.app.builder.core.security.uuidOf
 
 /**
  * Building equipment entity, linking a building and an equipment in a many-to-many relation.
@@ -23,7 +23,7 @@ data class BuildingEquipment(
     val buildingUuid: Uuid,
     val equipmentUuid: Uuid
 ) {
-    /** The unique identifier of this building equipment, derived from [buildingUuid] and [equipmentUuid] by [pairUuid]. */
+    /** The unique identifier of this building equipment, derived from [buildingUuid] and [equipmentUuid] by [uuidOf]. */
     @Transient
-    val uuid: Uuid = pairUuid(first = buildingUuid, second = equipmentUuid)
+    val uuid: Uuid = uuidOf(buildingUuid, equipmentUuid)
 }

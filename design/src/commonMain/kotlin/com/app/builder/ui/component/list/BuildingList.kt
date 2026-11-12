@@ -41,6 +41,7 @@ fun BuildingList(
                     .clickable { onClick(item) },
                 selected = item.selected,
                 deleted = item.deleted,
+                checked = item.checked,
                 headline = item.name,
                 supporting = listOfNotNull(item.address, item.description).filter { it.isNotBlank() }.joinToString(separator = " · "),
                 metadata = listOf(item.uuid.takeIf { item.uuidVisible }, item.modifiedAt, item.deletedAt)
@@ -55,6 +56,7 @@ fun BuildingList(
  * @property uuid A unique identifier of the building. Defaults to a random UUID.
  * @property selected Whether the building is the one currently open.
  * @property deleted Whether the building is deleted.
+ * @property checked Whether the building is ticked in a picker, or `null` outside a picker.
  * @property uuidVisible Whether the UUID is shown on the row.
  * @property modifiedAt The timestamp indicating when this building was last updated.
  * @property deletedAt The timestamp indicating when this building was last deleted.
@@ -67,6 +69,7 @@ data class BuildingItem(
     val uuid: String = uuid().toString(),
     val selected: Boolean = false,
     val deleted: Boolean = false,
+    val checked: Boolean? = null,
     val uuidVisible: Boolean = false,
     val modifiedAt: String? = null,
     val deletedAt: String? = null,

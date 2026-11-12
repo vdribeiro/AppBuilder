@@ -12,12 +12,12 @@ import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
+import androidx.compose.ui.test.hasAnyAncestor
 import androidx.compose.ui.test.hasSetTextAction
+import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.isSelected
 import androidx.compose.ui.test.onFirst
-import androidx.compose.ui.test.hasAnyAncestor
-import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -64,15 +64,24 @@ class EquipmentDetailScreenTest: TestCase() {
      * @return The [EquipmentDetailScreenStore] and the [SessionStore] rendered.
      */
     private fun ComposeUiTest.setEquipmentDetailScreen(useCases: UseCases, equipmentUuid: Uuid = FakeData.equipment.uuid, new: Boolean = false): Pair<EquipmentDetailScreenStore, SessionStore> {
-        val store = EquipmentDetailScreenStore(state = EquipmentDetailScreenState(), router = router, equipmentUseCases = useCases.equipmentUseCases, buildingEquipmentUseCases = useCases.buildingEquipmentUseCases, buildingUseCases = useCases.buildingUseCases, equipmentUuid = equipmentUuid.toString(), new = new)
+        val store = EquipmentDetailScreenStore(
+            state = EquipmentDetailScreenState(),
+            router = router,
+            equipmentUseCases = useCases.equipmentUseCases,
+            buildingEquipmentUseCases = useCases.buildingEquipmentUseCases,
+            buildingUseCases = useCases.buildingUseCases,
+            equipmentUuid = equipmentUuid.toString(),
+            new = new
+        )
         val sessionStore = SessionStore(state = SessionState(), authenticationUseCases = useCases.authenticationUseCases)
         val filtersStore = FiltersStore(state = FiltersState())
+        val buildingFiltersStore = FiltersStore(state = FiltersState())
 
         setUI {
             EquipmentDetailScreen(
                 sessionStore = sessionStore,
                 filtersStore = filtersStore,
-                buildingFiltersStore = FiltersStore(state = FiltersState()),
+                buildingFiltersStore = buildingFiltersStore,
                 store = store,
             )
         }
@@ -85,15 +94,23 @@ class EquipmentDetailScreenTest: TestCase() {
     fun equipmentDetailScreen() = runUITest {
         val useCases = storedEquipmentUseCases()
 
-        val store = EquipmentDetailScreenStore(state = EquipmentDetailScreenState(), router = router, equipmentUseCases = useCases.equipmentUseCases, buildingEquipmentUseCases = useCases.buildingEquipmentUseCases, buildingUseCases = useCases.buildingUseCases, equipmentUuid = FakeData.equipment.uuid.toString())
+        val store = EquipmentDetailScreenStore(
+            state = EquipmentDetailScreenState(),
+            router = router,
+            equipmentUseCases = useCases.equipmentUseCases,
+            buildingEquipmentUseCases = useCases.buildingEquipmentUseCases,
+            buildingUseCases = useCases.buildingUseCases,
+            equipmentUuid = FakeData.equipment.uuid.toString()
+        )
         val sessionStore = SessionStore(state = SessionState(), authenticationUseCases = useCases.authenticationUseCases)
         val filtersStore = FiltersStore(state = FiltersState())
+        val buildingFiltersStore = FiltersStore(state = FiltersState())
 
         setUI {
             EquipmentDetailScreen(
                 sessionStore = sessionStore,
                 filtersStore = filtersStore,
-                buildingFiltersStore = FiltersStore(state = FiltersState()),
+                buildingFiltersStore = buildingFiltersStore,
                 store = store,
             )
         }

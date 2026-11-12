@@ -45,6 +45,7 @@ fun EquipmentList(
                     .clickable { onClick(item) },
                 selected = item.selected,
                 deleted = item.deleted,
+                checked = item.checked,
                 headline = item.name,
                 supporting = item.description,
                 metadata = listOf(item.uuid.takeIf { item.uuidVisible }, item.modifiedAt, item.deletedAt),
@@ -60,6 +61,7 @@ fun EquipmentList(
  * @property uuid A unique identifier of the equipment. Defaults to a random UUID.
  * @property selected Whether the equipment is the one currently open.
  * @property deleted Whether the equipment is deleted.
+ * @property checked Whether the equipment is ticked in a picker, or `null` outside a picker.
  * @property uuidVisible Whether the UUID is shown on the row.
  * @property modifiedAt The timestamp indicating when this equipment was last updated.
  * @property deletedAt The timestamp indicating when this equipment was last deleted.
@@ -72,6 +74,7 @@ data class EquipmentItem(
     val uuid: String = uuid().toString(),
     val selected: Boolean = false,
     val deleted: Boolean = false,
+    val checked: Boolean? = null,
     val uuidVisible: Boolean = false,
     val modifiedAt: String? = null,
     val deletedAt: String? = null,

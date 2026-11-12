@@ -45,10 +45,12 @@ fun createMockHttpEngine(): HttpClientEngine = TestEngine { request ->
                 path.startsWith(prefix = URL.Users.path) -> respondMock(content = encode(value = listOf(FakeData.adminUser, FakeData.user)))
                 path.startsWith(prefix = "${URL.Tasks.path}/") -> respondMock(content = encode(value = FakeData.task))
                 path.startsWith(prefix = URL.Tasks.path) -> respondMock(content = encode(value = listOf(FakeData.task)))
-                path.startsWith(prefix = "${URL.Equipments.path}/") -> respondMock(content = encode(value = FakeData.equipment))
-                path.startsWith(prefix = URL.Equipments.path) -> respondMock(content = encode(value = listOf(FakeData.equipment)))
                 path.startsWith(prefix = "${URL.Buildings.path}/") -> respondMock(content = encode(value = FakeData.building))
                 path.startsWith(prefix = URL.Buildings.path) -> respondMock(content = encode(value = listOf(FakeData.building)))
+                path.startsWith(prefix = "${URL.Equipments.path}/") -> respondMock(content = encode(value = FakeData.equipment))
+                path.startsWith(prefix = URL.Equipments.path) -> respondMock(content = encode(value = listOf(FakeData.equipment)))
+                path.startsWith(prefix = "${URL.BuildingEquipments.path}/") -> respondMock(content = encode(value = FakeData.buildingEquipment))
+                path.startsWith(prefix = URL.BuildingEquipments.path) -> respondMock(content = encode(value = listOf(FakeData.buildingEquipment)))
                 else -> notFound(request = request)
             }
 
@@ -91,6 +93,7 @@ fun createMockHttpEngine(): HttpClientEngine = TestEngine { request ->
                 path.startsWith(prefix = URL.Broadcast.path) -> respondMock(content = encode(value = "sent"))
                 path.startsWith(prefix = URL.Tasks.path) -> respondMock(content = encode(value = FakeData.task))
                 path.startsWith(prefix = URL.Equipments.path) -> respondMock(content = encode(value = FakeData.equipment))
+                path.startsWith(prefix = URL.BuildingEquipments.path) -> respondMock(content = encode(value = FakeData.buildingEquipment))
                 path.startsWith(prefix = URL.Buildings.path) -> respondMock(content = encode(value = FakeData.building))
                 path.startsWith(prefix = URL.Users.path) -> respondMock(content = encode(value = FakeData.adminUser))
                 else -> notFound(request = request)
