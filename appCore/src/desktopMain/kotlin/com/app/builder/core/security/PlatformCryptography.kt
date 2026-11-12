@@ -22,33 +22,25 @@ import com.app.builder.core.telemetry.Telemetry
 import com.app.builder.data.storage.withFileLock
 import com.app.builder.data.storage.writeAtomically
 
-actual suspend fun encrypt(content: String): String? = withContext(context = Dispatcher.Default) {
-    runCatching {
-        val iv = ByteArray(size = IV_LENGTH_BYTE).apply { SecureRandom().nextBytes(this) }
-        val cipher = Cipher.getInstance(SPEC)
-        val parameterSpec = GCMParameterSpec(TAG_LENGTH_BIT, iv)
-        cipher.init(Cipher.ENCRYPT_MODE, getSecretKey(), parameterSpec)
+internal actual suspend fun encryptContent(content: String): String {
+    val iv = ByteArray(size = IV_LENGTH_BYTE).apply { SecureRandom().nextBytes(this) }
+    val cipher = Cipher.getInstance(SPEC)
+    val parameterSpec = GCMParameterSpec(TAG_LENGTH_BIT, iv)
+    cipher.init(Cipher.ENCRYPT_MODE, getSecretKey(), parameterSpec)
 
-        val encryptedBytes = cipher.doFinal(content.encodeToByteArray())
-        Base64.encode(source = iv + encryptedBytes)
-    }.onFailure {
-        Telemetry.error(tag = TAG, message = "Unable to encrypt", throwable = it)
-    }.getOrNull()
+    val encryptedBytes = cipher.doFinal(content.encodeToByteArray())
+    return Base64.encode(source = iv + encryptedBytes)
 }
 
-actual suspend fun decrypt(content: String): String? = withContext(context = Dispatcher.Default) {
-    runCatching {
-        val combined = Base64.decode(source = content)
-        val encryptedBytes = combined.copyOfRange(fromIndex = IV_LENGTH_BYTE, toIndex = combined.size)
+internal actual suspend fun decryptContent(content: String): String {
+    val combined = Base64.decode(source = content)
+    val encryptedBytes = combined.copyOfRange(fromIndex = IV_LENGTH_BYTE, toIndex = combined.size)
 
-        val iv = combined.copyOfRange(fromIndex = 0, toIndex = IV_LENGTH_BYTE)
-        val cipher = Cipher.getInstance(SPEC)
-        val parameterSpec = GCMParameterSpec(TAG_LENGTH_BIT, iv)
-        cipher.init(Cipher.DECRYPT_MODE, getSecretKey(), parameterSpec)
-        cipher.doFinal(encryptedBytes).decodeToString()
-    }.onFailure {
-        Telemetry.error(tag = TAG, message = "Unable to decrypt", throwable = it)
-    }.getOrNull()
+    val iv = combined.copyOfRange(fromIndex = 0, toIndex = IV_LENGTH_BYTE)
+    val cipher = Cipher.getInstance(SPEC)
+    val parameterSpec = GCMParameterSpec(TAG_LENGTH_BIT, iv)
+    cipher.init(Cipher.DECRYPT_MODE, getSecretKey(), parameterSpec)
+    return cipher.doFinal(encryptedBytes).decodeToString()
 }
 
 /** The secret key and the alias it was loaded under, kept once loaded so the keystore is only opened again after a failure or an alias change. */
@@ -128,27 +120,11 @@ private suspend fun loadSecretKey(alias: String): SecretKeySpec = withContext(co
     }.getOrThrow()
 }
 
-actual suspend fun hash(content: String): String? = withContext(context = Dispatcher.Default) {
-    runCatching {
-        val digest = MessageDigest.getInstance(HASH_ALGORITHM)
-        val hashBytes = digest.digest(content.encodeToByteArray())
-        hashBytes.joinToString(separator = "") { it.toUByte().toString(radix = 16).padStart(length = 2, padChar = '0') }
-    }.onFailure {
-        Telemetry.error(tag = TAG, message = "Unable to hash", throwable = it)
-    }.getOrNull()
-}
+internal actual suspend fun sha256(content: String): ByteArray = MessageDigest.getInstance(HASH_ALGORITHM).digest(content.encodeToByteArray())
 
-actual suspend fun deriveKey(password: String, salt: String): String? = withContext(context = Dispatcher.Default) {
-    runCatching {
-        require(value = salt.isNotEmpty()) { "Salt must not be empty" }
-        val spec = PBEKeySpec(password.toCharArray(), salt.encodeToByteArray(), DERIVATION_ROUNDS, DERIVED_KEY_SIZE)
-        SecretKeyFactory.getInstance(DERIVATION_ALGORITHM)
-            .generateSecret(spec)
-            .encoded
-            .joinToString(separator = "") { it.toUByte().toString(radix = 16).padStart(length = 2, padChar = '0') }
-    }.onFailure {
-        Telemetry.error(tag = TAG, message = "Unable to derive key", throwable = it)
-    }.getOrNull()
+internal actual suspend fun pbkdf2(password: String, salt: String, rounds: Int, size: Int): ByteArray {
+    val spec = PBEKeySpec(password.toCharArray(), salt.encodeToByteArray(), rounds, size)
+    return SecretKeyFactory.getInstance(DERIVATION_ALGORITHM).generateSecret(spec).encoded
 }
 
 private const val TAG = "Cryptography"
@@ -169,7 +145,3 @@ private const val SPEC = "$ALGORITHM/GCM/NoPadding"
 private const val HASH_ALGORITHM = "SHA-256"
 /** The key derivation function used to turn a password into a verifier. */
 private const val DERIVATION_ALGORITHM = "PBKDF2WithHmacSHA256"
-/** The number of PBKDF2 rounds. */
-private const val DERIVATION_ROUNDS = 210_000
-/** The size, in bits, of the derived key. */
-private const val DERIVED_KEY_SIZE = 256

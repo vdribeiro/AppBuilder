@@ -2,25 +2,10 @@ package com.app.builder.core.security
 
 import kotlin.js.Promise
 import kotlinx.coroutines.await
-import kotlinx.coroutines.withContext
-import com.app.builder.core.flow.Dispatcher
-import com.app.builder.core.telemetry.Telemetry
 
-actual suspend fun encrypt(content: String): String? = withContext(context = Dispatcher.Default) {
-    runCatching {
-        encryptJs(content = content).await().toString()
-    }.onFailure {
-        Telemetry.error(tag = TAG, message = "Unable to encrypt", throwable = it)
-    }.getOrNull()
-}
+internal actual suspend fun encryptContent(content: String): String = encryptJs(content = content).await().toString()
 
-actual suspend fun decrypt(content: String): String? = withContext(context = Dispatcher.Default) {
-    runCatching {
-        decryptJs(contentBase64 = content).await().toString()
-    }.onFailure {
-        Telemetry.error(tag = TAG, message = "Unable to decrypt", throwable = it)
-    }.getOrNull()
-}
+internal actual suspend fun decryptContent(content: String): String = decryptJs(contentBase64 = content).await().toString()
 
 /**
  * Encrypts [content] with AES-GCM using a non-extractable key stored in IndexedDB, generating the key on first use.
@@ -137,48 +122,27 @@ private external fun encryptJs(content: String): Promise<JsString>
 )
 private external fun decryptJs(contentBase64: String): Promise<JsString>
 
-actual suspend fun hash(content: String): String? = withContext(context = Dispatcher.Default) {
-    runCatching {
-        hashJs(content = content).await().toString()
-    }.onFailure {
-        Telemetry.error(tag = TAG, message = "Unable to hash", throwable = it)
-    }.getOrNull()
-}
+internal actual suspend fun sha256(content: String): ByteArray = sha256Js(content = content).await<JsAny>().toByteArray()
 
 /**
  * Computes the SHA-256 hash of [content] using the Web Crypto API.
  *
  * @param content The data to hash.
- * @return A [Promise] resolving to the lowercase hexadecimal hash string.
+ * @return A [Promise] resolving to a `Uint8Array` with the digest bytes.
  */
 @JsFun(
     code = """
         async (content) => {
             const encoder = new TextEncoder();
             const data = encoder.encode(content);
-            const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-            const hashArray = Array.from(new Uint8Array(hashBuffer));
-            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+            return new Uint8Array(await crypto.subtle.digest('SHA-256', data));
         }
         """
 )
-private external fun hashJs(content: String): Promise<JsString>
+private external fun sha256Js(content: String): Promise<JsAny>
 
-private const val TAG = "Cryptography"
-
-/** The number of PBKDF2 rounds. */
-private const val DERIVATION_ROUNDS = 210_000
-/** The size, in bits, of the derived key. */
-private const val DERIVED_KEY_SIZE = 256
-
-actual suspend fun deriveKey(password: String, salt: String): String? = withContext(context = Dispatcher.Default) {
-    runCatching {
-        require(value = salt.isNotEmpty()) { "Salt must not be empty" }
-        deriveKeyJs(password = password, salt = salt, rounds = DERIVATION_ROUNDS, size = DERIVED_KEY_SIZE).await().toString()
-    }.onFailure {
-        Telemetry.error(tag = TAG, message = "Unable to derive key", throwable = it)
-    }.getOrNull()
-}
+internal actual suspend fun pbkdf2(password: String, salt: String, rounds: Int, size: Int): ByteArray =
+    pbkdf2Js(password = password, salt = salt, rounds = rounds, size = size).await<JsAny>().toByteArray()
 
 /**
  * Derives a key from [password] with PBKDF2-HMAC-SHA256 using the Web Crypto API.
@@ -187,7 +151,7 @@ actual suspend fun deriveKey(password: String, salt: String): String? = withCont
  * @param salt The per-entry salt.
  * @param rounds The number of PBKDF2 rounds.
  * @param size The size, in bits, of the derived key.
- * @return A [Promise] resolving to the lowercase hexadecimal derived key.
+ * @return A [Promise] resolving to a `Uint8Array` with the derived key bytes.
  */
 @JsFun(
     code = """
@@ -199,8 +163,34 @@ actual suspend fun deriveKey(password: String, salt: String): String? = withCont
                 key,
                 size
             );
-            return Array.from(new Uint8Array(bits)).map(b => b.toString(16).padStart(2, '0')).join('');
+            return new Uint8Array(bits);
         }
         """
 )
-private external fun deriveKeyJs(password: String, salt: String, rounds: Int, size: Int): Promise<JsString>
+private external fun pbkdf2Js(password: String, salt: String, rounds: Int, size: Int): Promise<JsAny>
+
+/**
+ * Copies this `Uint8Array` into a [ByteArray].
+ *
+ * @return The bytes of this `Uint8Array`.
+ */
+private fun JsAny.toByteArray(): ByteArray = ByteArray(size = byteCount(bytes = this)) { byteAt(bytes = this, index = it).toByte() }
+
+/**
+ * Reads the length of a `Uint8Array`.
+ *
+ * @param bytes The `Uint8Array` to measure.
+ * @return The number of bytes in [bytes].
+ */
+@JsFun(code = "(bytes) => bytes.length")
+private external fun byteCount(bytes: JsAny): Int
+
+/**
+ * Reads one byte of a `Uint8Array`.
+ *
+ * @param bytes The `Uint8Array` to read from.
+ * @param index The position of the byte.
+ * @return The unsigned value of the byte at [index].
+ */
+@JsFun(code = "(bytes, index) => bytes[index]")
+private external fun byteAt(bytes: JsAny, index: Int): Int
