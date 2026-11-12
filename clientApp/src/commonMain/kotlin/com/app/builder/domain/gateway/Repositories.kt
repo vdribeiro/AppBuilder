@@ -34,6 +34,6 @@ interface Repositories {
     val equipmentRepository: EquipmentRepository
     /**The repository for managing buildings. */
     val buildingRepository: BuildingRepository
-    /** The repository for the links placing equipments in buildings. */
+    /** The repository for managing building equipments. */
     val buildingEquipmentRepository: BuildingEquipmentRepository
 }

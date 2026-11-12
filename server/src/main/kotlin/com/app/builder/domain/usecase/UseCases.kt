@@ -43,6 +43,6 @@ interface UseCases {
     val equipmentUseCases: EquipmentUseCases
     /** The building use cases. */
     val buildingUseCases: BuildingUseCases
-    /** The use cases of the links placing equipments in buildings. */
+    /** The building equipment use cases. */
     val buildingEquipmentUseCases: BuildingEquipmentUseCases
 }

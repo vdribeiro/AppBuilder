@@ -4,7 +4,7 @@ import com.app.builder.data.database.BuildingEquipmentSchema
 import com.app.builder.domain.BuildingEquipment
 
 /**
- * Maps a [BuildingEquipmentSchema] entity to a [BuildingEquipment] domain model, which derives its uuid from its building and equipment.
+ * Maps a [BuildingEquipmentSchema] entity to a [BuildingEquipment] domain model.
  *
  * @return The corresponding [BuildingEquipment] instance.
  */

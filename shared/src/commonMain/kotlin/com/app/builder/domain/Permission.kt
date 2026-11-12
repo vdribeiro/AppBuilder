@@ -18,14 +18,8 @@ enum class Permission {
  * @param permission The permission to check.
  * @return `true` if the permission is granted, `false` otherwise.
  */
-fun Map<EntityType, Permission>.grants(entityType: EntityType, permission: Permission): Boolean = when (entityType) {
-    EntityType.BUILDING_EQUIPMENT -> when (permission) {
-        Permission.READ -> grants(entityType = EntityType.BUILDING, permission = Permission.READ)
-        Permission.WRITE -> grants(entityType = EntityType.BUILDING, permission = Permission.WRITE) && grants(entityType = EntityType.EQUIPMENT, permission = Permission.READ)
-    }
-    else -> when (this[entityType]) {
-        Permission.WRITE -> true
-        Permission.READ -> permission == Permission.READ
-        else -> false
-    }
+fun Map<EntityType, Permission>.grants(entityType: EntityType, permission: Permission): Boolean = when (this[entityType]) {
+    Permission.WRITE -> true
+    Permission.READ -> permission == Permission.READ
+    else -> false
 }

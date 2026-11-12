@@ -2,7 +2,7 @@ package com.app.builder.core.security
 
 /**
  * Hashes [blocks] with MurmurHash3 x64 128 and a zero seed, reading each pair of longs as one 16-byte block.
- * MurmurHash3 is fast and spreads its input evenly, but it is not cryptographic: it identifies data, it does not protect it.
+ * MurmurHash3 is not a cryptographic hash.
  *
  * @param blocks The longs to hash, an even number of them.
  * @return The two halves of the 128-bit hash.

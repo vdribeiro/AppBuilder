@@ -75,7 +75,7 @@ object FakeData {
     val adminAccount: Account = Account(
         userUuid = adminUser.uuid,
         username = "admin",
-        permissions = EntityType.assignable.associateWith { Permission.WRITE }
+        permissions = EntityType.entries.associateWith { Permission.WRITE }
     )
 
     val account: Account = Account(
@@ -97,7 +97,7 @@ object FakeData {
                 EntityType.TASK -> Permission.READ
                 EntityType.EQUIPMENT -> Permission.READ
                 EntityType.BUILDING -> Permission.READ
-                EntityType.BUILDING_EQUIPMENT -> null
+                EntityType.BUILDING_EQUIPMENT -> Permission.READ
             }?.let { type to it }
         }.toMap()
     )
