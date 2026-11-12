@@ -1,16 +1,13 @@
 package com.app.builder.core.security
 
-import java.security.KeyStore
 import java.security.MessageDigest
 import javax.crypto.Cipher
-import javax.crypto.KeyGenerator
 import javax.crypto.SecretKey
 import javax.crypto.SecretKeyFactory
 import javax.crypto.spec.GCMParameterSpec
 import javax.crypto.spec.PBEKeySpec
 import kotlin.io.encoding.Base64
 import kotlinx.coroutines.withContext
-import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
 import com.app.builder.App
 import com.app.builder.core.flow.Dispatcher
@@ -36,24 +33,14 @@ internal actual suspend fun decryptContent(content: String): String {
 }
 
 /**
- * Get the [SecretKey] from [KeyStore] or generate one if it does not exist.
+ * Get the [SecretKey] from [keyStorage], or generate one when none is stored.
  *
- * @return the secret key spec or throw on error.
+ * @return the secret key or throw on error.
  */
 private suspend fun getSecretKey(): SecretKey = withContext(context = Dispatcher.IO) {
     runCatching {
-        val keyStore = KeyStore.getInstance(PROVIDER).apply { load(null) }
-        val key = keyStore.getKey(ALIAS, null) as? SecretKey
-        key ?: run {
-            val keyGenerator = KeyGenerator.getInstance(ALGORITHM, PROVIDER)
-            val spec = KeyGenParameterSpec.Builder(ALIAS, KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT)
-                .setBlockModes(BLOCK_MODE)
-                .setEncryptionPaddings(PADDING)
-                .setKeySize(KEY_SIZE)
-                .build()
-            keyGenerator.init(spec)
-            keyGenerator.generateKey()
-        }
+        val alias = ALIAS
+        keyStorage.read(alias = alias) ?: keyStorage.generate(alias = alias)
     }.onFailure {
         Telemetry.error(tag = TAG, message = "Unable to get secret key", throwable = it)
     }.getOrThrow()
@@ -72,11 +59,7 @@ private const val TAG = "Cryptography"
 private const val TAG_LENGTH_BIT = 128
 /** The length, in bytes, of the initialization vector used for AES-GCM encryption. */
 private const val IV_LENGTH_BYTE = 12
-/** The size, in bits, of the AES secret key. */
-private const val KEY_SIZE = 256
-/** The [KeyStore] provider used to store the secret key in the Android Keystore system. */
-private const val PROVIDER = "AndroidKeyStore"
-/** The alias under which the secret key is stored in the [KeyStore]. */
+/** The alias under which the secret key is stored in [keyStorage]. */
 private val ALIAS: String get() = "${App.id}.master_key"
 /** The symmetric cipher algorithm used to encrypt and decrypt content. */
 private const val ALGORITHM = KeyProperties.KEY_ALGORITHM_AES

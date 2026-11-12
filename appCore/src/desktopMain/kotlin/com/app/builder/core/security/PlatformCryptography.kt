@@ -51,14 +51,16 @@ private var cachedSecretKey: Pair<String, SecretKeySpec>? = null
 private val secretKeyMutex = Mutex()
 
 /**
- * Returns the [SecretKeySpec], loading it from the [KeyStore] on first use.
- * A successful load is cached for the lifetime of the process, while a failed one is retried on the next call.
+ * Returns the [SecretKeySpec], loading it from [keyStorage] when one is set and from the [KeyStore] otherwise.
+ * A key from [keyStorage] is loaded on every call.
+ * A successful load from the [KeyStore] is cached for the lifetime of the process, while a failed one is retried on the next call.
  * The cache only serves the alias it was loaded under, so a change of [App.id] loads the key again.
  *
  * @return the secret key spec or throw on error.
  */
 private suspend fun getSecretKey(): SecretKeySpec {
     val alias = ALIAS
+    keyStorage?.let { return it.load(alias = alias) }
     cachedSecretKey?.takeIf { it.first == alias }?.let { return it.second }
     return secretKeyMutex.withLock {
         cachedSecretKey?.takeIf { it.first == alias }?.second ?: loadSecretKey(alias = alias).also { cachedSecretKey = alias to it }
