@@ -117,7 +117,7 @@ Everything below works with zero configuration: no Firebase project, no Postgres
    |---------|--------------------------------------------------------------------------|
    | Desktop | `./gradlew :clientApp:run`                                               |
    | Web     | `./gradlew :clientApp:wasmJsBrowserDevelopmentRun`                       |
-   | Android | `./gradlew :clientApp:installDebug`                                      |
+   | Android | `./gradlew :clientApp:installDebug :clientApp:adbReverse`                |
    | iOS     | `./gradlew :clientApp:podInstall`, then open `iosApp/iosApp.xcworkspace` |
 
 3. **Log in** with `admin`/`admin`. The account is seeded with all permissions, so it can create further users and accounts from inside the app.
@@ -129,6 +129,8 @@ Everything below works with zero configuration: no Firebase project, no Postgres
 
 * The server port falls back to the same `URL.DEV_PORT` constant the client's `URL.DEV_HOST` is built from, so both sides agree on `8080` by construction.
 * The web dev server's `8010` is in the server's development CORS allowlist. Change the port and browser API calls start failing CORS.
+* `adbReverse` forwards port `8080` of every connected Android device to your machine, so the app's `localhost:8080` reaches the dev server.
+The `androidApp` run configuration runs it before each launch. Its port is `devServerPort` in `build-logic`, which has to match `URL.DEV_PORT`.
 * `podInstall` regenerates `clientApp.podspec` and then runs `pod install` in `iosApp/`. Both CocoaPods podspecs are committed, so a plain `cd iosApp && pod install` also resolves on a fresh clone without Gradle.
 Either way it pulls the `Firebase` pods, so the first run needs a network connection.
 
