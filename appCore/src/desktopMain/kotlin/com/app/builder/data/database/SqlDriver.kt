@@ -33,16 +33,6 @@ actual suspend fun createSqlDriver(
         }.onFailure {
             Telemetry.error(tag = TAG, message = "Unable to enable WAL mode", throwable = it)
         }
-        runCatching {
-            execute(
-                identifier = null,
-                sql = "PRAGMA busy_timeout=5000;",
-                parameters = 0,
-                binders = null
-            ).await()
-        }.onFailure {
-            Telemetry.error(tag = TAG, message = "Unable to set busy timeout", throwable = it)
-        }
     }
 }
 
