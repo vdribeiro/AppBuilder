@@ -11,6 +11,7 @@ import io.ktor.server.request.httpMethod
 import io.ktor.server.request.receive
 import io.ktor.server.response.respond
 import com.app.builder.core.config.ServerConfigs
+import com.app.builder.core.flow.runSuspendCatching
 import com.app.builder.core.locale.now
 import com.app.builder.core.locale.toInstant
 import com.app.builder.core.platform.Env
@@ -35,7 +36,7 @@ import com.auth0.jwt.interfaces.Payload
  * @param status The HTTP status code to respond with.
  * @param message The response body to serialize.
  */
-suspend inline fun <reified T: Any> ApplicationCall.respondSafely(status: HttpStatusCode, message: T) = runCatching {
+suspend inline fun <reified T: Any> ApplicationCall.respondSafely(status: HttpStatusCode, message: T) = runSuspendCatching {
     respond(status = status, message = message)
 }.onFailure {
     Telemetry.error(tag = "Route", message = "Unable to respond", throwable = it)
@@ -82,7 +83,7 @@ suspend fun <T: Any> ApplicationCall.getOrRespond(
  * @param T The expected type to deserialize the request body into.
  * @return [T] The deserialized object, or null if deserialization fails.
  */
-suspend inline fun <reified T: Any> ApplicationCall.receive(): T? = runCatching {
+suspend inline fun <reified T: Any> ApplicationCall.receive(): T? = runSuspendCatching {
     receive<T>()
 }.onFailure {
     Telemetry.error(tag = "Route", message = "Unable to process call", throwable = it)
@@ -184,7 +185,7 @@ suspend fun ApplicationCall.getUserUuid(): Uuid? = runCatching {
  * @param permissionService The permission service.
  * @return The [UserAccess], or null if it fails.
  */
-suspend fun ApplicationCall.getAccess(permissionService: PermissionService): UserAccess? = runCatching {
+suspend fun ApplicationCall.getAccess(permissionService: PermissionService): UserAccess? = runSuspendCatching {
     val userUuid = getUserUuid() ?: return null
     permissionService.get(userUuid = userUuid) ?: getJwtPayload()!!.getAccess()!!
 }.onFailure {
@@ -207,7 +208,7 @@ suspend fun ApplicationCall.validatePermission(
     permissionService: PermissionService,
     entityType: EntityType,
     permission: Permission
-): Boolean = runCatching {
+): Boolean = runSuspendCatching {
     val access = getAccess(permissionService = permissionService)!!
     val deletedAt = access.deletedAt
     val granted = access.permissions.grants(entityType = entityType, permission = permission)
@@ -231,7 +232,7 @@ suspend fun ApplicationCall.validatePermission(
  * @param permissionService The permission service.
  * @return `true` if the account is still active, `false` otherwise.
  */
-suspend fun ApplicationCall.validateActive(permissionService: PermissionService): Boolean = runCatching {
+suspend fun ApplicationCall.validateActive(permissionService: PermissionService): Boolean = runSuspendCatching {
     (getAccess(permissionService = permissionService)!!.deletedAt == null).also {
         if (!it) respondSafely(status = HttpStatusCode.Forbidden, message = "Account is deleted")
     }

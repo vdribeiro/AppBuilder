@@ -14,7 +14,6 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
-import kotlinx.coroutines.withTimeoutOrNull
 import com.app.builder.Application.createDependency
 import com.app.builder.Dependency.getUserDependency
 import com.app.builder.data.database.NoOpSqlDriver
@@ -135,9 +134,14 @@ class ApplicationTest: TestCase() {
 
             coroutineScope { launch(start = CoroutineStart.UNDISPATCHED) { Application.reset() }.cancel() }
 
-            withContext(context = Dispatchers.Default) { withTimeout(timeout = 10.seconds) { Application.userDependency.first { it == null } } }
-            withTimeoutOrNull(timeout = 5.seconds) { Application.dependency.first { it == null } }
-            assertSame(expected = dependency.get(), actual = Application.dependency.filterNotNull().first())
+            withContext(context = Dispatchers.Default) {
+                withTimeout(timeout = 10.seconds) {
+                    dependency.get().userGraph.useCases.authenticationUseCases.observeCurrentAccount().first { it == null }
+                    Application.dependency.filterNotNull().first()
+                }
+            }
+            assertSame(expected = dependency.get(), actual = Application.dependency.value)
+            assertNull(actual = Application.userDependency.value)
         }
     }
 }

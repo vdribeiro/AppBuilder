@@ -5,6 +5,7 @@ import org.jetbrains.exposed.v1.r2dbc.R2dbcTransaction
 import org.jetbrains.exposed.v1.r2dbc.SchemaUtils
 import org.jetbrains.exposed.v1.r2dbc.transactions.suspendTransaction
 import org.jetbrains.exposed.v1.r2dbc.transactions.transactionManager
+import com.app.builder.core.flow.runSuspendCatching
 import com.app.builder.data.database.table.BuildingEquipmentTable
 import com.app.builder.data.database.table.BuildingTable
 import com.app.builder.data.database.table.ConfigTable
@@ -66,7 +67,7 @@ suspend fun <T> R2dbcDatabase.safeTransaction(
     transactionIsolation: IsolationLevel? = transactionManager.defaultIsolationLevel,
     readOnly: Boolean? = transactionManager.defaultReadOnly,
     statement: suspend R2dbcTransaction.() -> T
-): Result<T> = runCatching {
+): Result<T> = runSuspendCatching {
     suspendTransaction(
         db = this@safeTransaction,
         transactionIsolation = transactionIsolation,

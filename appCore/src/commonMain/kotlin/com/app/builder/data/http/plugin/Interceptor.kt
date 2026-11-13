@@ -12,6 +12,7 @@ import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import com.app.builder.App
 import com.app.builder.core.config.ClientFlags
+import com.app.builder.core.flow.runSuspendCatching
 import com.app.builder.core.locale.now
 import com.app.builder.core.locale.toInstant
 import com.app.builder.core.platform.platform
@@ -21,7 +22,6 @@ import com.app.builder.data.device.getDeviceUuid
 import com.app.builder.data.http.Header
 import com.app.builder.data.http.isInternetAvailable
 import com.app.builder.data.storage.CoreFile
-import kotlin.coroutines.cancellation.CancellationException
 
 /**
  * Configures a plugin to inject headers and validate outgoing and incoming network requests.
@@ -83,7 +83,7 @@ private fun HttpRequestBuilder.headerIfAbsent(key: Header, value: String?) {
  *
  * @return `true` if the clock was successfully synchronized, `false` otherwise.
  */
-private suspend fun HttpResponse.handleTimeSynchronization(): Boolean = runCatching {
+private suspend fun HttpResponse.handleTimeSynchronization(): Boolean = runSuspendCatching {
     val serverArriveUtc = headers[Header.ServerArriveUtc.header]?.toInstant() ?: return false
     val serverSentUtc = headers[Header.ServerSentUtc.header]?.toInstant() ?: return false
     val clientSentUtc = call.request.headers[Header.RequestSentUtc.header]?.toInstant() ?: return false
@@ -92,7 +92,6 @@ private suspend fun HttpResponse.handleTimeSynchronization(): Boolean = runCatch
     val offset = ((serverArriveUtc - clientSentUtc) + (serverSentUtc - now)) / 2
     return CoreFile.Device.save { it.orEmpty().plus(pair = (CoreFile.Device.Key.CLOCK_OFFSET to offset.toString())) }
 }.onFailure {
-    if (it is CancellationException) throw it
     Telemetry.error(tag = TAG, message = "Failed to synchronize clock", throwable = it)
 }.getOrDefault(defaultValue = false)
 

@@ -22,6 +22,7 @@ import kotlinx.coroutines.withContext
 import com.app.builder.core.config.ClientConfigs
 import com.app.builder.core.config.ClientFlags
 import com.app.builder.core.flow.Dispatcher
+import com.app.builder.core.flow.runSuspendCatching
 import com.app.builder.core.locale.now
 import com.app.builder.core.telemetry.Telemetry
 import com.app.builder.data.http.getInternetAvailabilityFlow
@@ -129,7 +130,7 @@ class JobScheduler(
             return@withContext
         }
 
-        runCatching {
+        runSuspendCatching {
             when (job.conflictPolicy) {
                 Job.ConflictPolicy.REPLACE -> {
                     cancelPendingJobs(job = job)
@@ -344,7 +345,7 @@ class JobScheduler(
      * @param job The [Job] domain model containing the details to save.
      * @return `true` if the job was successfully upserted; `false` if an error occurred or no rows were affected.
      */
-    private suspend fun upsertJob(job: Job): Boolean = runCatching {
+    private suspend fun upsertJob(job: Job): Boolean = runSuspendCatching {
         jobStore.upsertJob(job = job)
     }.onFailure {
         Telemetry.error(tag = TAG, message = "Unable to upsert job", throwable = it)
@@ -356,7 +357,7 @@ class JobScheduler(
      * @param job The job configuration blueprint.
      * @return `true` if successful, `false` if an error occurred or no rows were affected.
      */
-    private suspend fun cancelPendingJobs(job: Job): Boolean = runCatching {
+    private suspend fun cancelPendingJobs(job: Job): Boolean = runSuspendCatching {
         jobStore.cancelPendingJobs(job = job)
     }.onFailure {
         Telemetry.error(tag = TAG, message = "Unable to cancel pending jobs", throwable = it)
@@ -368,7 +369,7 @@ class JobScheduler(
      * @param job The job configuration blueprint.
      * @return The count of duplicate jobs.
      */
-    private suspend fun getDuplicateJobsCount(job: Job): Long = runCatching {
+    private suspend fun getDuplicateJobsCount(job: Job): Long = runSuspendCatching {
         jobStore.getDuplicateJobsCount(job = job)
     }.onFailure {
         Telemetry.error(tag = TAG, message = "Unable to get job count", throwable = it)
@@ -379,7 +380,7 @@ class JobScheduler(
      *
      * @return The number of rows updated.
      */
-    private suspend fun resetZombieJobs() = runCatching {
+    private suspend fun resetZombieJobs() = runSuspendCatching {
         jobStore.resetZombieJobs()
     }.onFailure {
         Telemetry.error(tag = TAG, message = "Unable to reset zombie jobs", throwable = it)
@@ -391,7 +392,7 @@ class JobScheduler(
      * @param job The job to update.
      * @return `true` if the job was successfully updated; `false` if an error occurred or no rows were affected.
      */
-    private suspend fun updateJobStateAndAttempt(job: Job): Boolean = runCatching {
+    private suspend fun updateJobStateAndAttempt(job: Job): Boolean = runSuspendCatching {
         jobStore.updateJobStateAndAttempt(job = job)
     }.onFailure {
         Telemetry.error(tag = TAG, message = "Unable to update job", throwable = it)

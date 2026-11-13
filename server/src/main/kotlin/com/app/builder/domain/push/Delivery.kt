@@ -1,6 +1,7 @@
 package com.app.builder.domain.push
 
 import kotlinx.coroutines.delay
+import com.app.builder.core.flow.runSuspendCatching
 
 /**
  * Attempts [send] up to [maxAttempts] times, doubling the wait between failed attempts starting from [retryDelay].
@@ -13,7 +14,7 @@ import kotlinx.coroutines.delay
 suspend fun sendWithRetry(maxAttempts: Int, retryDelay: Long, send: suspend () -> Unit): Boolean {
     var delayMillis = retryDelay
     repeat(times = maxAttempts) { attempt ->
-        runCatching {
+        runSuspendCatching {
             send()
             return true
         }.onFailure {

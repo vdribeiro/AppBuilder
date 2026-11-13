@@ -1,5 +1,6 @@
 package com.app.builder.domain.push
 
+import kotlin.coroutines.cancellation.CancellationException
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -41,6 +42,20 @@ class DeliveryTest: TestCase() {
         val delivered = sendWithRetry(maxAttempts = 3, retryDelay = 1L) {
             attempts++
             error(message = "permanent failure")
+        }
+
+        assertFalse(actual = delivered)
+        assertEquals(expected = 3, actual = attempts)
+    }
+
+    /** Verifies that an attempt failing with a cancellation while the caller is active counts as a failed attempt. */
+    @Test
+    fun cancellationThrownByAnAttemptCountsAsAFailure() = runServerTest {
+        var attempts = 0
+
+        val delivered = sendWithRetry(maxAttempts = 3, retryDelay = 1L) {
+            attempts++
+            throw CancellationException("session closed")
         }
 
         assertFalse(actual = delivered)

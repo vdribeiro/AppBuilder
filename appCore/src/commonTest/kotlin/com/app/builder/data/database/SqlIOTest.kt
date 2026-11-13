@@ -2,8 +2,13 @@ package com.app.builder.data.database
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import app.cash.sqldelight.Query
 import app.cash.sqldelight.SuspendingTransacterImpl
 import app.cash.sqldelight.db.QueryResult
@@ -57,5 +62,23 @@ class SqlIOTest: TestCase() {
 
         assertTrue(actual = result.isFailure)
         assertEquals(expected = "boom", actual = result.exceptionOrNull()?.message)
+    }
+
+    /** Verifies that [safeTransaction] rethrows a cancellation instead of returning it as a failure. */
+    @Test
+    fun safeTransactionRethrowsCancellation() = runUnitTest {
+        var result: Result<Int>? = null
+
+        val job = launch {
+            result = transacter.safeTransaction {
+                currentCoroutineContext().cancel()
+                currentCoroutineContext().ensureActive()
+                1
+            }
+        }
+        job.join()
+
+        assertTrue(actual = job.isCancelled)
+        assertNull(actual = result)
     }
 }

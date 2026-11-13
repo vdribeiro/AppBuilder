@@ -1,8 +1,8 @@
 package com.app.builder.core.security
 
-import kotlin.coroutines.cancellation.CancellationException
 import kotlinx.coroutines.withContext
 import com.app.builder.core.flow.Dispatcher
+import com.app.builder.core.flow.runSuspendCatching
 import com.app.builder.core.telemetry.Telemetry
 
 /**
@@ -49,10 +49,9 @@ suspend fun deriveKey(password: String, salt: String): String? = runCryptography
  * @return The result of [block], or null if it throws; a cancellation is rethrown and not reported.
  */
 private suspend fun <T> runCryptography(operation: String, block: suspend () -> T): T? = withContext(context = Dispatcher.Default) {
-    runCatching {
+    runSuspendCatching {
         block()
     }.onFailure {
-        if (it is CancellationException) throw it
         Telemetry.error(tag = TAG, message = "Unable to $operation", throwable = it)
     }.getOrNull()
 }

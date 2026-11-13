@@ -14,6 +14,7 @@ import app.cash.sqldelight.db.QueryResult
 import app.cash.sqldelight.db.SqlCursor
 import app.cash.sqldelight.db.SqlDriver
 import com.app.builder.core.flow.Dispatcher
+import com.app.builder.core.flow.runSuspendCatching
 
 /**
  * Safely executes a SQLDelight transaction, catching any exceptions and returning a [Result].
@@ -26,7 +27,7 @@ import com.app.builder.core.flow.Dispatcher
  */
 suspend fun <R> SuspendingTransacter.safeTransaction(
     body: suspend SuspendingTransactionWithReturn<R>.() -> R
-): Result<R> = runCatching {
+): Result<R> = runSuspendCatching {
     transactionWithResult(bodyWithReturn = body)
 }
 
