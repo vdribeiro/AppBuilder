@@ -6,8 +6,13 @@ import kotlin.test.assertFailsWith
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.launch
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.mock.respond
+import io.ktor.client.plugins.api.Send
+import io.ktor.client.plugins.api.createClientPlugin
 import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.http.ContentType
@@ -170,5 +175,46 @@ class InterceptorTest: TestCase() {
         client.get(urlString = baseUrl)
 
         assertTrue(actual = messages.isNotEmpty())
+    }
+
+    /** Verifies a cancellation during clock synchronization cancels the request without reporting a failure through telemetry. */
+    @Test
+    fun propagatesCancellationDuringClockSynchronization() = runUnitTest {
+        val messages = mutableListOf<String>()
+        Telemetry.engines += object: TelemetryEngine {
+            override fun info(tag: String, message: String) {}
+            override fun error(tag: String, message: String, throwable: Throwable?) {
+                if (tag == "Interceptor") messages.add(message)
+            }
+
+            override fun feedback(message: String) {}
+        }
+
+        val client = HttpClient(engine = TestEngine { request ->
+            val sentUtc = request.headers[Header.RequestSentUtc.header].orEmpty()
+            respond(
+                content = "",
+                status = HttpStatusCode.OK,
+                headers = headersOf(
+                    HttpHeaders.ContentType to listOf(ContentType.Application.Json.toString()),
+                    Header.ServerArriveUtc.header to listOf(sentUtc),
+                    Header.ServerSentUtc.header to listOf(sentUtc),
+                )
+            )
+        }) {
+            installInterceptor()
+            install(plugin = createClientPlugin(name = "Cancel") {
+                on(hook = Send) { request ->
+                    proceed(requestBuilder = request).also { currentCoroutineContext().cancel() }
+                }
+            })
+        }
+
+        val job = launch { client.get(urlString = baseUrl) }
+        job.join()
+
+        assertTrue(actual = job.isCancelled)
+        assertTrue(actual = messages.isEmpty())
+        assertNull(actual = CoreFile.Device.cache().value.orEmpty()[CoreFile.Device.Key.CLOCK_OFFSET])
     }
 }

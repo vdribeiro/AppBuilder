@@ -21,6 +21,7 @@ import com.app.builder.data.device.getDeviceUuid
 import com.app.builder.data.http.Header
 import com.app.builder.data.http.isInternetAvailable
 import com.app.builder.data.storage.CoreFile
+import kotlin.coroutines.cancellation.CancellationException
 
 /**
  * Configures a plugin to inject headers and validate outgoing and incoming network requests.
@@ -91,6 +92,7 @@ private suspend fun HttpResponse.handleTimeSynchronization(): Boolean = runCatch
     val offset = ((serverArriveUtc - clientSentUtc) + (serverSentUtc - now)) / 2
     return CoreFile.Device.save { it.orEmpty().plus(pair = (CoreFile.Device.Key.CLOCK_OFFSET to offset.toString())) }
 }.onFailure {
+    if (it is CancellationException) throw it
     Telemetry.error(tag = TAG, message = "Failed to synchronize clock", throwable = it)
 }.getOrDefault(defaultValue = false)
 
