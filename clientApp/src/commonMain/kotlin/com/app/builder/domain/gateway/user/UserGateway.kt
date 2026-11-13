@@ -95,11 +95,7 @@ class UserGateway(
     }
 
     override suspend fun upsertUser(user: User) = withContext(context = Dispatcher.IO) {
-        if (!canUpsert(user = user)) {
-            val throwable = Throwable(message = "User does not have permission to upsert user ${user.uuid}")
-            Telemetry.error(tag = TAG, message = "Invalid permissions", throwable = throwable)
-            return@withContext
-        }
+        account.validatePermission(tag = TAG, entityType = EntityType.USER, permission = upsertPermission(user = user))?.let { return@withContext }
 
         database.safeTransaction {
             upsertUserInDatabase(user = user)
@@ -213,11 +209,7 @@ class UserGateway(
             return@withContext throwable.toJobResult()
         }
 
-        if (!canUpsert(user = user)) {
-            val throwable = Throwable(message = "User does not have permission to upsert user ${user.uuid}")
-            Telemetry.error(tag = TAG, message = "Invalid permissions", throwable = throwable)
-            return@withContext throwable.toJobResult()
-        }
+        account.validatePermission(tag = TAG, entityType = EntityType.USER, permission = upsertPermission(user = user))?.let { return@withContext it.toJobResult() }
 
         when (val result = httpClient.post<User, User>(
             request = HttpRequest(
@@ -245,15 +237,14 @@ class UserGateway(
     }
 
     /**
-     * Checks whether the current user can upsert the given [user].
-     * A [Permission.WRITE] permission allows upserting any user, while a [Permission.READ] permission only allows upserting the current user.
+     * Resolves the permission the current user needs to upsert the given [user].
+     * Upserting the current user requires [Permission.READ], while upserting any other user requires [Permission.WRITE].
      *
      * @param user The user to upsert.
-     * @return true if the current user can upsert [user], false otherwise.
+     * @return The permission required to upsert [user].
      */
-    private fun canUpsert(user: User): Boolean =
-        account.hasPermission(entityType = EntityType.USER, permission = Permission.WRITE) ||
-                (user.uuid == account.userUuid && account.hasPermission(entityType = EntityType.USER, permission = Permission.READ))
+    private fun upsertPermission(user: User): Permission =
+        if (user.uuid == account.userUuid) Permission.READ else Permission.WRITE
 
     /**
      * Synchronizes a single remote user with the local database.
