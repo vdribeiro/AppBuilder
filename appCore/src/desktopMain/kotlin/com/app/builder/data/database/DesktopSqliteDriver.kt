@@ -17,6 +17,10 @@ import app.cash.sqldelight.driver.jdbc.JdbcDriver
  * A SQLite JDBC driver that opens one connection per thread and begins every transaction as `IMMEDIATE`.
  * A transaction acquires the database write lock when it begins, waiting for any other writer to finish first.
  *
+ * Adapted from `JdbcSqliteDriver` in SQLDelight 2.4.1 (Apache License 2.0), which begins transactions as deferred.
+ *
+ * > **NOTE:** Compare against the source when upgrading SQL libraries.
+ *
  * @property url The database connection URL in the form of `jdbc:sqlite:path`.
  * @property properties The properties applied to every connection the driver opens.
  */
