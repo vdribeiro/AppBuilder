@@ -64,6 +64,7 @@ internal object KeychainKeyStorage: KeyStorage {
 
     override fun read(account: String): ByteArray? = memScoped {
         account.toCFString().use { cfAccount ->
+            if (cfAccount == null) error(message = "Unable to read secret key: no account string")
             CFDictionaryCreateMutable(allocator = null, capacity = 4, keyCallBacks = null, valueCallBacks = null).use { query ->
                 CFDictionaryAddValue(theDict = query, key = kSecClass, value = kSecClassGenericPassword)
                 CFDictionaryAddValue(theDict = query, key = kSecAttrAccount, value = cfAccount)
@@ -91,6 +92,7 @@ internal object KeychainKeyStorage: KeyStorage {
         val data = key.usePinned { CFDataCreate(allocator = null, bytes = it.addressOf(index = 0).reinterpret(), length = key.size.toLong()) }
         data.use {
             account.toCFString().use { cfAccount ->
+                if (cfAccount == null) error(message = "Unable to persist secret key: no account string")
                 CFDictionaryCreateMutable(allocator = null, capacity = 4, keyCallBacks = null, valueCallBacks = null).use { query ->
                     CFDictionaryAddValue(theDict = query, key = kSecClass, value = kSecClassGenericPassword)
                     CFDictionaryAddValue(theDict = query, key = kSecAttrAccount, value = cfAccount)

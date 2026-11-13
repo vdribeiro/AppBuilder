@@ -6,6 +6,8 @@ import kotlinx.cinterop.memScoped
 import kotlinx.cinterop.ptr
 import kotlinx.cinterop.refTo
 import kotlinx.cinterop.value
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import platform.CoreCrypto.CCCrypt
 import platform.CoreCrypto.CCHmac
@@ -94,9 +96,8 @@ internal actual suspend fun decryptContent(content: String): String {
             dataLength = macData.size.toULong(),
             macOut = computedHmac.refTo(index = 0)
         )
-        var diff = 0
-        for (i in computedHmac.indices) diff = diff or (computedHmac[i].toInt() xor storedHmac[i].toInt())
-        if (computedHmac.size != storedHmac.size || diff != 0) error(message = "HMAC verification failed")
+        val diff = computedHmac.indices.fold(initial = 0) { acc, i -> acc or (computedHmac[i].toInt() xor storedHmac[i].toInt()) }
+        if (diff != 0) error(message = "HMAC verification failed")
 
         val bufferSize = encryptedBytes.size + BLOCK_SIZE.toInt()
         val buffer = ByteArray(size = bufferSize)
@@ -121,9 +122,13 @@ internal actual suspend fun decryptContent(content: String): String {
     }
 }
 
+/** Serializes the key lookup and generation within this process. */
+private val secretKeyMutex = Mutex()
+
 /**
  * Get the Secret Key from [keyStorage], or generate and store one when none is stored.
  * The key is the AES key followed by the HMAC key.
+ * The lookup and the generation run under [secretKeyMutex], so concurrent callers get the same key.
  * A key is only generated when the storage reports that none exists; any other read failure throws, so an existing key is never replaced by a new one that cannot decrypt what was encrypted before.
  * A freshly generated key that the storage refuses to keep is rejected rather than returned, so callers never encrypt with a key that cannot be recovered to decrypt again.
  *
@@ -133,14 +138,16 @@ private suspend fun getSecretKey(): ByteArray = withContext(context = Dispatcher
     runCatching {
         val account = "${App.id}.masterkey"
         val size = KEY_SIZE.toInt() + HMAC_KEY_SIZE
-        val stored = keyStorage.read(account = account)
-        if (stored != null) {
-            if (stored.size != size) error(message = "Stored secret key has an invalid length: ${stored.size}")
-            return@runCatching stored
+        secretKeyMutex.withLock {
+            val stored = keyStorage.read(account = account)
+            if (stored != null) {
+                if (stored.size != size) error(message = "Stored secret key has an invalid length: ${stored.size}")
+                return@withLock stored
+            }
+            ByteArray(size = size)
+                .apply { arc4random_buf(__buf = refTo(index = 0), __nbytes = size.toULong()) }
+                .also { keyStorage.add(account = account, key = it) }
         }
-        ByteArray(size = size)
-            .apply { arc4random_buf(__buf = refTo(index = 0), __nbytes = size.toULong()) }
-            .also { keyStorage.add(account = account, key = it) }
     }.onFailure {
         Telemetry.error(tag = TAG, message = "Unable to get secret key", throwable = it)
     }.getOrThrow()
