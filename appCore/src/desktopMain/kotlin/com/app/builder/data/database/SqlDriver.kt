@@ -7,7 +7,6 @@ import app.cash.sqldelight.async.coroutines.synchronous
 import app.cash.sqldelight.db.QueryResult
 import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.db.SqlSchema
-import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
 import com.app.builder.core.flow.Dispatcher
 import com.app.builder.core.platform.appDataPath
 import com.app.builder.core.telemetry.Telemetry
@@ -18,7 +17,7 @@ actual suspend fun createSqlDriver(
     name: String,
     schema: SqlSchema<QueryResult.AsyncValue<Unit>>
 ): SqlDriver = withContext(context = Dispatcher.IO) {
-    JdbcSqliteDriver(
+    DesktopSqliteDriver(
         url = "jdbc:sqlite:${File(appDataPath, name).absolutePath}",
         properties = Properties(),
         schema = schema.synchronous(),
