@@ -25,6 +25,7 @@ import com.app.builder.domain.Account
 import com.app.builder.domain.EntityType
 import com.app.builder.domain.Permission
 import com.app.builder.domain.Registry
+import com.app.builder.domain.gateway.account.validatePermission
 import com.app.builder.domain.scheduler.Job
 import com.app.builder.domain.scheduler.JobResult
 import com.app.builder.domain.scheduler.JobResult.NoOp.toJobResult
@@ -51,11 +52,7 @@ class RegistryGateway(
     private val registryDao = database.registryQueries
 
     override fun observeRegistries(): Flow<List<Registry>> {
-        if (!account.hasPermission(entityType = EntityType.REGISTRY, permission = Permission.READ)) {
-            val throwable = Throwable(message = "User does not have ${Permission.READ} permission for ${EntityType.REGISTRY}")
-            Telemetry.error(tag = TAG, message = "Invalid permissions", throwable = throwable)
-            return emptyFlow()
-        }
+        account.validatePermission(tag = TAG, entityType = EntityType.REGISTRY, permission = Permission.READ)?.let { return emptyFlow() }
 
         return registryDao.getRegistries()
             .asFlow { it.toRegistry() }
@@ -75,11 +72,7 @@ class RegistryGateway(
     }
 
     override fun observeRegistry(uuid: Uuid): Flow<Registry?> {
-        if (!account.hasPermission(entityType = EntityType.REGISTRY, permission = Permission.READ)) {
-            val throwable = Throwable(message = "User does not have ${Permission.READ} permission for ${EntityType.REGISTRY}")
-            Telemetry.error(tag = TAG, message = "Invalid permissions", throwable = throwable)
-            return emptyFlow()
-        }
+        account.validatePermission(tag = TAG, entityType = EntityType.REGISTRY, permission = Permission.READ)?.let { return emptyFlow() }
 
         return registryDao.getRegistry(requestUuid = uuid)
             .asFlow { it.toRegistry() }
@@ -92,11 +85,7 @@ class RegistryGateway(
     }
 
     override suspend fun syncRegistries() = withContext(context = Dispatcher.IO) {
-        if (!account.hasPermission(entityType = EntityType.REGISTRY, permission = Permission.READ)) {
-            val throwable = Throwable(message = "User does not have ${Permission.READ} permission for ${EntityType.REGISTRY}")
-            Telemetry.error(tag = TAG, message = "Invalid permissions", throwable = throwable)
-            return@withContext
-        }
+        account.validatePermission(tag = TAG, entityType = EntityType.REGISTRY, permission = Permission.READ)?.let { return@withContext }
 
         val job = Job(
             userUuid = account.userUuid,
@@ -107,11 +96,7 @@ class RegistryGateway(
     }
 
     override suspend fun executeSyncRegistries(job: Job): JobResult = withContext(context = Dispatcher.IO) {
-        if (!account.hasPermission(entityType = EntityType.REGISTRY, permission = Permission.READ)) {
-            val throwable = Throwable(message = "User does not have ${Permission.READ} permission for ${EntityType.REGISTRY}")
-            Telemetry.error(tag = TAG, message = "Invalid permissions", throwable = throwable)
-            return@withContext throwable.toJobResult()
-        }
+        account.validatePermission(tag = TAG, entityType = EntityType.REGISTRY, permission = Permission.READ)?.let { return@withContext it.toJobResult() }
 
         val syncStartUtc = now().toString()
         val sync = AppFile.Sync.cache().value.orEmpty()

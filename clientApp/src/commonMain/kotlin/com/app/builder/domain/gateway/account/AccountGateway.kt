@@ -60,11 +60,7 @@ class AccountGateway(
     private val userDao = database.userQueries
 
     override fun observeAccount(userUuid: Uuid): Flow<Account?> {
-        if (!account.hasPermission(entityType = EntityType.ACCOUNT, permission = Permission.READ)) {
-            val throwable = Throwable(message = "User does not have ${Permission.READ} permission for ${EntityType.ACCOUNT}")
-            Telemetry.error(tag = TAG, message = "Invalid permissions", throwable = throwable)
-            return emptyFlow()
-        }
+        account.validatePermission(tag = TAG, entityType = EntityType.ACCOUNT, permission = Permission.READ)?.let { return emptyFlow() }
 
         return accountDao.getAccount(userUuid = userUuid)
             .asFlow { it.toAccount() }
@@ -86,11 +82,7 @@ class AccountGateway(
     }
 
     override suspend fun createAccount(registrationForm: RegistrationForm): Account? = withContext(context = Dispatcher.IO) {
-        if (!account.hasPermission(entityType = EntityType.ACCOUNT, permission = Permission.WRITE)) {
-            val throwable = Throwable(message = "User does not have ${Permission.WRITE} permission for ${EntityType.ACCOUNT}")
-            Telemetry.error(tag = TAG, message = "Invalid permissions", throwable = throwable)
-            return@withContext null
-        }
+        account.validatePermission(tag = TAG, entityType = EntityType.ACCOUNT, permission = Permission.WRITE)?.let { return@withContext null }
 
         val created = when (val result = httpClient.post<RegistrationForm, Account>(
             request = HttpRequest(url = URL.Register, headerMap = requestHeaderMap()),
@@ -117,11 +109,7 @@ class AccountGateway(
     }
 
     override suspend fun updateAccount(account: Account): Account? = withContext(context = Dispatcher.IO) {
-        if (!this@AccountGateway.account.hasPermission(entityType = EntityType.ACCOUNT, permission = Permission.WRITE)) {
-            val throwable = Throwable(message = "User does not have ${Permission.WRITE} permission for ${EntityType.ACCOUNT}")
-            Telemetry.error(tag = TAG, message = "Invalid permissions", throwable = throwable)
-            return@withContext null
-        }
+        this@AccountGateway.account.validatePermission(tag = TAG, entityType = EntityType.ACCOUNT, permission = Permission.WRITE)?.let { return@withContext null }
 
         val updated = when (val result = httpClient.post<Account, Account>(
             request = HttpRequest(url = URL.Accounts, headerMap = requestHeaderMap()),
@@ -145,11 +133,7 @@ class AccountGateway(
     }
 
     override suspend fun executeSyncAccount(job: Job): JobResult = withContext(context = Dispatcher.IO) {
-        if (!account.hasPermission(entityType = EntityType.ACCOUNT, permission = Permission.READ)) {
-            val throwable = Throwable(message = "User does not have ${Permission.READ} permission for ${EntityType.ACCOUNT}")
-            Telemetry.error(tag = TAG, message = "Invalid permissions", throwable = throwable)
-            return@withContext throwable.toJobResult()
-        }
+        account.validatePermission(tag = TAG, entityType = EntityType.ACCOUNT, permission = Permission.READ)?.let { return@withContext it.toJobResult() }
 
         val entityUuid = job.entityUuid ?: return@withContext Throwable(message = "Missing entity uuid").toJobResult()
 

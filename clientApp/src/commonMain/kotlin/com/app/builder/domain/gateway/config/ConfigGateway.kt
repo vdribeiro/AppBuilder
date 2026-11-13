@@ -17,6 +17,7 @@ import com.app.builder.data.storage.AppFile
 import com.app.builder.domain.Account
 import com.app.builder.domain.EntityType
 import com.app.builder.domain.Permission
+import com.app.builder.domain.gateway.account.validatePermission
 import com.app.builder.domain.scheduler.Job
 import com.app.builder.domain.scheduler.JobResult
 import com.app.builder.domain.scheduler.JobResult.NoOp.toJobResult
@@ -59,10 +60,7 @@ class ConfigGateway(
     }
 
     override suspend fun updateFeatureFlags(flags: ClientFlags): ClientFlags? = withContext(context = Dispatcher.IO) {
-        if (!account.hasPermission(entityType = EntityType.CLIENT_FLAG, permission = Permission.WRITE)) {
-            Telemetry.info(tag = TAG, message = "User does not have ${Permission.WRITE} permission for ${EntityType.CLIENT_FLAG}")
-            return@withContext null
-        }
+        account.validatePermission(tag = TAG, entityType = EntityType.CLIENT_FLAG, permission = Permission.WRITE)?.let { return@withContext null }
 
         when (val result = httpClient.post<ClientFlags, ClientFlags>(request = HttpRequest(url = URL.ClientFlags), body = flags)) {
             is HttpResult.Error -> {
@@ -80,10 +78,7 @@ class ConfigGateway(
     }
 
     override suspend fun updateConfigs(configs: ClientConfigs): ClientConfigs? = withContext(context = Dispatcher.IO) {
-        if (!account.hasPermission(entityType = EntityType.CLIENT_CONFIG, permission = Permission.WRITE)) {
-            Telemetry.info(tag = TAG, message = "User does not have ${Permission.WRITE} permission for ${EntityType.CLIENT_CONFIG}")
-            return@withContext null
-        }
+        account.validatePermission(tag = TAG, entityType = EntityType.CLIENT_CONFIG, permission = Permission.WRITE)?.let { return@withContext null }
 
         when (val result = httpClient.post<ClientConfigs, ClientConfigs>(request = HttpRequest(url = URL.ClientConfigs), body = configs)) {
             is HttpResult.Error -> {
@@ -101,10 +96,7 @@ class ConfigGateway(
     }
 
     override suspend fun updateServerFeatureFlags(flags: ServerFlags): ServerFlags? = withContext(context = Dispatcher.IO) {
-        if (!account.hasPermission(entityType = EntityType.SERVER_FLAG, permission = Permission.WRITE)) {
-            Telemetry.info(tag = TAG, message = "User does not have ${Permission.WRITE} permission for ${EntityType.SERVER_FLAG}")
-            return@withContext null
-        }
+        account.validatePermission(tag = TAG, entityType = EntityType.SERVER_FLAG, permission = Permission.WRITE)?.let { return@withContext null }
 
         when (val result = httpClient.post<ServerFlags, ServerFlags>(request = HttpRequest(url = URL.ServerFlags), body = flags)) {
             is HttpResult.Error -> {
@@ -122,10 +114,7 @@ class ConfigGateway(
     }
 
     override suspend fun updateServerConfigs(configs: ServerConfigs): ServerConfigs? = withContext(context = Dispatcher.IO) {
-        if (!account.hasPermission(entityType = EntityType.SERVER_CONFIG, permission = Permission.WRITE)) {
-            Telemetry.info(tag = TAG, message = "User does not have ${Permission.WRITE} permission for ${EntityType.SERVER_CONFIG}")
-            return@withContext null
-        }
+        account.validatePermission(tag = TAG, entityType = EntityType.SERVER_CONFIG, permission = Permission.WRITE)?.let { return@withContext null }
 
         when (val result = httpClient.post<ServerConfigs, ServerConfigs>(request = HttpRequest(url = URL.ServerConfigs), body = configs)) {
             is HttpResult.Error -> {

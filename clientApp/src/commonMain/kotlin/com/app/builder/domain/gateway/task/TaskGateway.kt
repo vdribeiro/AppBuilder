@@ -33,6 +33,7 @@ import com.app.builder.domain.Account
 import com.app.builder.domain.EntityType
 import com.app.builder.domain.Permission
 import com.app.builder.domain.Task
+import com.app.builder.domain.gateway.account.validatePermission
 import com.app.builder.domain.scheduler.Job
 import com.app.builder.domain.scheduler.JobResult
 import com.app.builder.domain.scheduler.JobResult.NoOp.toJobResult
@@ -59,11 +60,7 @@ class TaskGateway(
     private val taskDao = database.taskQueries
 
     override fun observeTasks(): Flow<List<Task>> {
-        if (!account.hasPermission(entityType = EntityType.TASK, permission = Permission.READ)) {
-            val throwable = Throwable(message = "User does not have ${Permission.READ} permission for ${EntityType.TASK}")
-            Telemetry.error(tag = TAG, message = "Invalid permissions", throwable = throwable)
-            return emptyFlow()
-        }
+        account.validatePermission(tag = TAG, entityType = EntityType.TASK, permission = Permission.READ)?.let { return emptyFlow() }
 
         return taskDao.getTasks(mapper = ::TaskSchema)
             .asFlow { it.toTask() }
@@ -83,11 +80,7 @@ class TaskGateway(
     }
 
     override fun observeTask(uuid: Uuid): Flow<Task?> {
-        if (!account.hasPermission(entityType = EntityType.TASK, permission = Permission.READ)) {
-            val throwable = Throwable(message = "User does not have ${Permission.READ} permission for ${EntityType.TASK}")
-            Telemetry.error(tag = TAG, message = "Invalid permissions", throwable = throwable)
-            return emptyFlow()
-        }
+        account.validatePermission(tag = TAG, entityType = EntityType.TASK, permission = Permission.READ)?.let { return emptyFlow() }
 
         return taskDao.getTask(taskUuid = uuid)
             .asFlow { it.toTask() }
@@ -100,11 +93,7 @@ class TaskGateway(
     }
 
     override suspend fun upsertTask(task: Task) = withContext(context = Dispatcher.IO) {
-        if (!account.hasPermission(entityType = EntityType.TASK, permission = Permission.WRITE)) {
-            val throwable = Throwable(message = "User does not have ${Permission.WRITE} permission for ${EntityType.TASK}")
-            Telemetry.error(tag = TAG, message = "Invalid permissions", throwable = throwable)
-            return@withContext
-        }
+        account.validatePermission(tag = TAG, entityType = EntityType.TASK, permission = Permission.WRITE)?.let { return@withContext }
 
         database.safeTransaction {
             upsertTaskInDatabase(task = task)
@@ -122,11 +111,7 @@ class TaskGateway(
     }
 
     override suspend fun syncTasks() = withContext(context = Dispatcher.IO) {
-        if (!account.hasPermission(entityType = EntityType.TASK, permission = Permission.READ)) {
-            val throwable = Throwable(message = "User does not have ${Permission.READ} permission for ${EntityType.TASK}")
-            Telemetry.error(tag = TAG, message = "Invalid permissions", throwable = throwable)
-            return@withContext
-        }
+        account.validatePermission(tag = TAG, entityType = EntityType.TASK, permission = Permission.READ)?.let { return@withContext }
 
         val job = Job(
             userUuid = account.userUuid,
@@ -137,11 +122,7 @@ class TaskGateway(
     }
 
     override suspend fun syncTask(uuid: Uuid) = withContext(context = Dispatcher.IO) {
-        if (!account.hasPermission(entityType = EntityType.TASK, permission = Permission.READ)) {
-            val throwable = Throwable(message = "User does not have ${Permission.READ} permission for ${EntityType.TASK}")
-            Telemetry.error(tag = TAG, message = "Invalid permissions", throwable = throwable)
-            return@withContext
-        }
+        account.validatePermission(tag = TAG, entityType = EntityType.TASK, permission = Permission.READ)?.let { return@withContext }
 
         val job = Job(
             userUuid = account.userUuid,
@@ -153,11 +134,7 @@ class TaskGateway(
     }
 
     override suspend fun executeSyncTasks(job: Job): JobResult = withContext(context = Dispatcher.IO) {
-        if (!account.hasPermission(entityType = EntityType.TASK, permission = Permission.READ)) {
-            val throwable = Throwable(message = "User does not have ${Permission.READ} permission for ${EntityType.TASK}")
-            Telemetry.error(tag = TAG, message = "Invalid permissions", throwable = throwable)
-            return@withContext throwable.toJobResult()
-        }
+        account.validatePermission(tag = TAG, entityType = EntityType.TASK, permission = Permission.READ)?.let { return@withContext it.toJobResult() }
 
         val syncStartUtc = now().toString()
         val sync = AppFile.Sync.cache().value.orEmpty()
@@ -193,11 +170,7 @@ class TaskGateway(
     }
 
     override suspend fun executeSyncTask(job: Job): JobResult = withContext(context = Dispatcher.IO) {
-        if (!account.hasPermission(entityType = EntityType.TASK, permission = Permission.READ)) {
-            val throwable = Throwable(message = "User does not have ${Permission.READ} permission for ${EntityType.TASK}")
-            Telemetry.error(tag = TAG, message = "Invalid permissions", throwable = throwable)
-            return@withContext throwable.toJobResult()
-        }
+        account.validatePermission(tag = TAG, entityType = EntityType.TASK, permission = Permission.READ)?.let { return@withContext it.toJobResult() }
 
         val entityUuid = job.entityUuid ?: return@withContext Throwable(message = "Missing entity uuid").toJobResult()
 
@@ -227,11 +200,7 @@ class TaskGateway(
     }
 
     override suspend fun executeUpsertTask(job: Job): JobResult = withContext(context = Dispatcher.IO) {
-        if (!account.hasPermission(entityType = EntityType.TASK, permission = Permission.WRITE)) {
-            val throwable = Throwable(message = "User does not have ${Permission.WRITE} permission for ${EntityType.TASK}")
-            Telemetry.error(tag = TAG, message = "Invalid permissions", throwable = throwable)
-            return@withContext throwable.toJobResult()
-        }
+        account.validatePermission(tag = TAG, entityType = EntityType.TASK, permission = Permission.WRITE)?.let { return@withContext it.toJobResult() }
 
         val task = job.payload?.let { decode<Task>(value = it) } ?: run {
             val throwable = Throwable(message = "Unable to decode task")

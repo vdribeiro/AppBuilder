@@ -33,6 +33,7 @@ import com.app.builder.domain.Account
 import com.app.builder.domain.EntityType
 import com.app.builder.domain.Equipment
 import com.app.builder.domain.Permission
+import com.app.builder.domain.gateway.account.validatePermission
 import com.app.builder.domain.scheduler.Job
 import com.app.builder.domain.scheduler.JobResult
 import com.app.builder.domain.scheduler.JobResult.NoOp.toJobResult
@@ -59,11 +60,7 @@ class EquipmentGateway(
     private val equipmentDao = database.equipmentQueries
 
     override fun observeEquipments(): Flow<List<Equipment>> {
-        if (!account.hasPermission(entityType = EntityType.EQUIPMENT, permission = Permission.READ)) {
-            val throwable = Throwable(message = "User does not have ${Permission.READ} permission for ${EntityType.EQUIPMENT}")
-            Telemetry.error(tag = TAG, message = "Invalid permissions", throwable = throwable)
-            return emptyFlow()
-        }
+        account.validatePermission(tag = TAG, entityType = EntityType.EQUIPMENT, permission = Permission.READ)?.let { return emptyFlow() }
 
         return equipmentDao.getEquipments(mapper = ::EquipmentSchema)
             .asFlow { it.toEquipment() }
@@ -83,11 +80,7 @@ class EquipmentGateway(
     }
 
     override fun observeEquipment(uuid: Uuid): Flow<Equipment?> {
-        if (!account.hasPermission(entityType = EntityType.EQUIPMENT, permission = Permission.READ)) {
-            val throwable = Throwable(message = "User does not have ${Permission.READ} permission for ${EntityType.EQUIPMENT}")
-            Telemetry.error(tag = TAG, message = "Invalid permissions", throwable = throwable)
-            return emptyFlow()
-        }
+        account.validatePermission(tag = TAG, entityType = EntityType.EQUIPMENT, permission = Permission.READ)?.let { return emptyFlow() }
 
         return equipmentDao.getEquipment(equipmentUuid = uuid)
             .asFlow { it.toEquipment() }
@@ -100,11 +93,7 @@ class EquipmentGateway(
     }
 
     override suspend fun upsertEquipment(equipment: Equipment) = withContext(context = Dispatcher.IO) {
-        if (!account.hasPermission(entityType = EntityType.EQUIPMENT, permission = Permission.WRITE)) {
-            val throwable = Throwable(message = "User does not have ${Permission.WRITE} permission for ${EntityType.EQUIPMENT}")
-            Telemetry.error(tag = TAG, message = "Invalid permissions", throwable = throwable)
-            return@withContext
-        }
+        account.validatePermission(tag = TAG, entityType = EntityType.EQUIPMENT, permission = Permission.WRITE)?.let { return@withContext }
 
         database.safeTransaction {
             upsertEquipmentInDatabase(equipment = equipment)
@@ -122,11 +111,7 @@ class EquipmentGateway(
     }
 
     override suspend fun syncEquipments() = withContext(context = Dispatcher.IO) {
-        if (!account.hasPermission(entityType = EntityType.EQUIPMENT, permission = Permission.READ)) {
-            val throwable = Throwable(message = "User does not have ${Permission.READ} permission for ${EntityType.EQUIPMENT}")
-            Telemetry.error(tag = TAG, message = "Invalid permissions", throwable = throwable)
-            return@withContext
-        }
+        account.validatePermission(tag = TAG, entityType = EntityType.EQUIPMENT, permission = Permission.READ)?.let { return@withContext }
 
         val job = Job(
             userUuid = account.userUuid,
@@ -137,11 +122,7 @@ class EquipmentGateway(
     }
 
     override suspend fun syncEquipment(uuid: Uuid) = withContext(context = Dispatcher.IO) {
-        if (!account.hasPermission(entityType = EntityType.EQUIPMENT, permission = Permission.READ)) {
-            val throwable = Throwable(message = "User does not have ${Permission.READ} permission for ${EntityType.EQUIPMENT}")
-            Telemetry.error(tag = TAG, message = "Invalid permissions", throwable = throwable)
-            return@withContext
-        }
+        account.validatePermission(tag = TAG, entityType = EntityType.EQUIPMENT, permission = Permission.READ)?.let { return@withContext }
 
         val job = Job(
             userUuid = account.userUuid,
@@ -153,11 +134,7 @@ class EquipmentGateway(
     }
 
     override suspend fun executeSyncEquipments(job: Job): JobResult = withContext(context = Dispatcher.IO) {
-        if (!account.hasPermission(entityType = EntityType.EQUIPMENT, permission = Permission.READ)) {
-            val throwable = Throwable(message = "User does not have ${Permission.READ} permission for ${EntityType.EQUIPMENT}")
-            Telemetry.error(tag = TAG, message = "Invalid permissions", throwable = throwable)
-            return@withContext throwable.toJobResult()
-        }
+        account.validatePermission(tag = TAG, entityType = EntityType.EQUIPMENT, permission = Permission.READ)?.let { return@withContext it.toJobResult() }
 
         val syncStartUtc = now().toString()
         val sync = AppFile.Sync.cache().value.orEmpty()
@@ -193,11 +170,7 @@ class EquipmentGateway(
     }
 
     override suspend fun executeSyncEquipment(job: Job): JobResult = withContext(context = Dispatcher.IO) {
-        if (!account.hasPermission(entityType = EntityType.EQUIPMENT, permission = Permission.READ)) {
-            val throwable = Throwable(message = "User does not have ${Permission.READ} permission for ${EntityType.EQUIPMENT}")
-            Telemetry.error(tag = TAG, message = "Invalid permissions", throwable = throwable)
-            return@withContext throwable.toJobResult()
-        }
+        account.validatePermission(tag = TAG, entityType = EntityType.EQUIPMENT, permission = Permission.READ)?.let { return@withContext it.toJobResult() }
 
         val entityUuid = job.entityUuid ?: return@withContext Throwable(message = "Missing entity uuid").toJobResult()
 
@@ -227,11 +200,7 @@ class EquipmentGateway(
     }
 
     override suspend fun executeUpsertEquipment(job: Job): JobResult = withContext(context = Dispatcher.IO) {
-        if (!account.hasPermission(entityType = EntityType.EQUIPMENT, permission = Permission.WRITE)) {
-            val throwable = Throwable(message = "User does not have ${Permission.WRITE} permission for ${EntityType.EQUIPMENT}")
-            Telemetry.error(tag = TAG, message = "Invalid permissions", throwable = throwable)
-            return@withContext throwable.toJobResult()
-        }
+        account.validatePermission(tag = TAG, entityType = EntityType.EQUIPMENT, permission = Permission.WRITE)?.let { return@withContext it.toJobResult() }
 
         val equipment = job.payload?.let { decode<Equipment>(value = it) } ?: run {
             val throwable = Throwable(message = "Unable to decode equipment")

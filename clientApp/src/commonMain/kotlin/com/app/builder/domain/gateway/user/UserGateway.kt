@@ -33,6 +33,7 @@ import com.app.builder.domain.Account
 import com.app.builder.domain.EntityType
 import com.app.builder.domain.Permission
 import com.app.builder.domain.User
+import com.app.builder.domain.gateway.account.validatePermission
 import com.app.builder.domain.gateway.authentication.toUser
 import com.app.builder.domain.gateway.authentication.toUserSchema
 import com.app.builder.domain.scheduler.Job
@@ -61,11 +62,7 @@ class UserGateway(
     private val userDao = database.userQueries
 
     override fun observeUsers(): Flow<List<User>> {
-        if (!account.hasPermission(entityType = EntityType.USER, permission = Permission.READ)) {
-            val throwable = Throwable(message = "User does not have ${Permission.READ} permission for ${EntityType.USER}")
-            Telemetry.error(tag = TAG, message = "Invalid permissions", throwable = throwable)
-            return emptyFlow()
-        }
+        account.validatePermission(tag = TAG, entityType = EntityType.USER, permission = Permission.READ)?.let { return emptyFlow() }
 
         return userDao.getUsers()
             .asFlow { it.toUser() }
@@ -85,11 +82,7 @@ class UserGateway(
     }
 
     override fun observeUser(uuid: Uuid): Flow<User?> {
-        if (!account.hasPermission(entityType = EntityType.USER, permission = Permission.READ)) {
-            val throwable = Throwable(message = "User does not have ${Permission.READ} permission for ${EntityType.USER}")
-            Telemetry.error(tag = TAG, message = "Invalid permissions", throwable = throwable)
-            return emptyFlow()
-        }
+        account.validatePermission(tag = TAG, entityType = EntityType.USER, permission = Permission.READ)?.let { return emptyFlow() }
 
         return userDao.getUser(userUuid = uuid)
             .asFlow { it.toUser() }
@@ -125,11 +118,7 @@ class UserGateway(
     }
 
     override suspend fun syncUsers() = withContext(context = Dispatcher.IO) {
-        if (!account.hasPermission(entityType = EntityType.USER, permission = Permission.READ)) {
-            val throwable = Throwable(message = "User does not have ${Permission.READ} permission for ${EntityType.USER}")
-            Telemetry.error(tag = TAG, message = "Invalid permissions", throwable = throwable)
-            return@withContext
-        }
+        account.validatePermission(tag = TAG, entityType = EntityType.USER, permission = Permission.READ)?.let { return@withContext }
 
         val job = Job(
             userUuid = account.userUuid,
@@ -140,11 +129,7 @@ class UserGateway(
     }
 
     override suspend fun syncUser(uuid: Uuid) = withContext(context = Dispatcher.IO) {
-        if (!account.hasPermission(entityType = EntityType.USER, permission = Permission.READ)) {
-            val throwable = Throwable(message = "User does not have ${Permission.READ} permission for ${EntityType.USER}")
-            Telemetry.error(tag = TAG, message = "Invalid permissions", throwable = throwable)
-            return@withContext
-        }
+        account.validatePermission(tag = TAG, entityType = EntityType.USER, permission = Permission.READ)?.let { return@withContext }
 
         val job = Job(
             userUuid = account.userUuid,
@@ -156,11 +141,7 @@ class UserGateway(
     }
 
     override suspend fun executeSyncUsers(job: Job): JobResult = withContext(context = Dispatcher.IO) {
-        if (!account.hasPermission(entityType = EntityType.USER, permission = Permission.READ)) {
-            val throwable = Throwable(message = "User does not have ${Permission.READ} permission for ${EntityType.USER}")
-            Telemetry.error(tag = TAG, message = "Invalid permissions", throwable = throwable)
-            return@withContext throwable.toJobResult()
-        }
+        account.validatePermission(tag = TAG, entityType = EntityType.USER, permission = Permission.READ)?.let { return@withContext it.toJobResult() }
 
         val syncStartUtc = now().toString()
         val sync = AppFile.Sync.cache().value.orEmpty()
@@ -196,11 +177,7 @@ class UserGateway(
     }
 
     override suspend fun executeSyncUser(job: Job): JobResult = withContext(context = Dispatcher.IO) {
-        if (!account.hasPermission(entityType = EntityType.USER, permission = Permission.READ)) {
-            val throwable = Throwable(message = "User does not have ${Permission.READ} permission for ${EntityType.USER}")
-            Telemetry.error(tag = TAG, message = "Invalid permissions", throwable = throwable)
-            return@withContext throwable.toJobResult()
-        }
+        account.validatePermission(tag = TAG, entityType = EntityType.USER, permission = Permission.READ)?.let { return@withContext it.toJobResult() }
 
         val entityUuid = job.entityUuid ?: return@withContext Throwable(message = "Missing entity uuid").toJobResult()
 
