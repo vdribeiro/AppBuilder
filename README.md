@@ -1239,6 +1239,7 @@ Declarations that resolve to a distinct implementation per source set:
 * `SharedTestCase`: The hermetic harness for unit, UI and server tests.
 * `PlatformTestCase`: Extends `SharedTestCase` with platform-specific setup.
 * `FakeAndroidKeyStore` / `FakeKeychain` / `FakeDesktopKeyStore`: In-memory Android KeyStore, Apple Keychain and desktop keystore fakes.
+* `SecretKey`: Makes the secret key fail to load, for tests of the failure path.
 * `Extensions`: Test helper extensions.
 
 </details>

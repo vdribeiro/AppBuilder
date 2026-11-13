@@ -7,6 +7,8 @@ import javax.crypto.SecretKeyFactory
 import javax.crypto.spec.GCMParameterSpec
 import javax.crypto.spec.PBEKeySpec
 import kotlin.io.encoding.Base64
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import android.security.keystore.KeyProperties
 import com.app.builder.App
@@ -32,15 +34,19 @@ internal actual suspend fun decryptContent(content: String): String {
     return cipher.doFinal(encryptedBytes).decodeToString()
 }
 
+/** Serializes the key lookup and generation within this process. */
+private val secretKeyMutex = Mutex()
+
 /**
  * Get the [SecretKey] from [keyStorage], or generate one when none is stored.
+ * The lookup and the generation run under [secretKeyMutex], so concurrent callers get the same key.
  *
  * @return the secret key or throw on error.
  */
 private suspend fun getSecretKey(): SecretKey = withContext(context = Dispatcher.IO) {
     runCatching {
         val alias = ALIAS
-        keyStorage.read(alias = alias) ?: keyStorage.generate(alias = alias)
+        secretKeyMutex.withLock { keyStorage.read(alias = alias) ?: keyStorage.generate(alias = alias) }
     }.onFailure {
         Telemetry.error(tag = TAG, message = "Unable to get secret key", throwable = it)
     }.getOrThrow()

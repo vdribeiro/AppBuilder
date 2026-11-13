@@ -30,6 +30,8 @@ import com.app.builder.core.telemetry.Telemetry
 
 internal actual suspend fun encryptContent(content: String): String {
     val secretKey = getSecretKey()
+    val cipherKey = secretKey.copyOfRange(fromIndex = 0, toIndex = KEY_SIZE.toInt())
+    val hmacKey = secretKey.copyOfRange(fromIndex = KEY_SIZE.toInt(), toIndex = secretKey.size)
     return memScoped {
         val inputData = content.encodeToByteArray()
 
@@ -44,8 +46,8 @@ internal actual suspend fun encryptContent(content: String): String {
             op = kCCEncrypt,
             alg = ALGORITHM,
             options = PADDING,
-            key = secretKey.refTo(index = 0),
-            keyLength = KEY_SIZE.toULong(),
+            key = cipherKey.refTo(index = 0),
+            keyLength = cipherKey.size.toULong(),
             iv = iv.refTo(index = 0),
             dataIn = inputData.takeIf { it.isNotEmpty() }?.refTo(index = 0),
             dataInLength = inputData.size.toULong(),
@@ -60,8 +62,8 @@ internal actual suspend fun encryptContent(content: String): String {
         val hmac = ByteArray(size = HMAC_LENGTH)
         CCHmac(
             algorithm = HMAC_ALGORITHM,
-            key = secretKey.refTo(index = 0),
-            keyLength = KEY_SIZE.toULong(),
+            key = hmacKey.refTo(index = 0),
+            keyLength = hmacKey.size.toULong(),
             data = macData.refTo(index = 0),
             dataLength = macData.size.toULong(),
             macOut = hmac.refTo(index = 0)
@@ -72,6 +74,8 @@ internal actual suspend fun encryptContent(content: String): String {
 
 internal actual suspend fun decryptContent(content: String): String {
     val secretKey = getSecretKey()
+    val cipherKey = secretKey.copyOfRange(fromIndex = 0, toIndex = KEY_SIZE.toInt())
+    val hmacKey = secretKey.copyOfRange(fromIndex = KEY_SIZE.toInt(), toIndex = secretKey.size)
     return memScoped {
         val combined = Base64.decode(source = content)
         if (combined.size < IV_LENGTH + HMAC_LENGTH) error(message = "Invalid length")
@@ -84,8 +88,8 @@ internal actual suspend fun decryptContent(content: String): String {
         val computedHmac = ByteArray(size = HMAC_LENGTH)
         CCHmac(
             algorithm = HMAC_ALGORITHM,
-            key = secretKey.refTo(index = 0),
-            keyLength = KEY_SIZE.toULong(),
+            key = hmacKey.refTo(index = 0),
+            keyLength = hmacKey.size.toULong(),
             data = macData.refTo(index = 0),
             dataLength = macData.size.toULong(),
             macOut = computedHmac.refTo(index = 0)
@@ -102,8 +106,8 @@ internal actual suspend fun decryptContent(content: String): String {
             op = kCCDecrypt,
             alg = ALGORITHM,
             options = PADDING,
-            key = secretKey.refTo(index = 0),
-            keyLength = KEY_SIZE.toULong(),
+            key = cipherKey.refTo(index = 0),
+            keyLength = cipherKey.size.toULong(),
             iv = iv.refTo(index = 0),
             dataIn = encryptedBytes.refTo(index = 0),
             dataInLength = encryptedBytes.size.toULong(),
@@ -119,6 +123,7 @@ internal actual suspend fun decryptContent(content: String): String {
 
 /**
  * Get the Secret Key from [keyStorage], or generate and store one when none is stored.
+ * The key is the AES key followed by the HMAC key.
  * A key is only generated when the storage reports that none exists; any other read failure throws, so an existing key is never replaced by a new one that cannot decrypt what was encrypted before.
  * A freshly generated key that the storage refuses to keep is rejected rather than returned, so callers never encrypt with a key that cannot be recovered to decrypt again.
  *
@@ -127,13 +132,14 @@ internal actual suspend fun decryptContent(content: String): String {
 private suspend fun getSecretKey(): ByteArray = withContext(context = Dispatcher.IO) {
     runCatching {
         val account = "${App.id}.masterkey"
+        val size = KEY_SIZE.toInt() + HMAC_KEY_SIZE
         val stored = keyStorage.read(account = account)
         if (stored != null) {
-            if (stored.size != KEY_SIZE.toInt()) error(message = "Stored secret key has an invalid length: ${stored.size}")
+            if (stored.size != size) error(message = "Stored secret key has an invalid length: ${stored.size}")
             return@runCatching stored
         }
-        ByteArray(size = KEY_SIZE.toInt())
-            .apply { arc4random_buf(__buf = refTo(index = 0), __nbytes = KEY_SIZE.toULong()) }
+        ByteArray(size = size)
+            .apply { arc4random_buf(__buf = refTo(index = 0), __nbytes = size.toULong()) }
             .also { keyStorage.add(account = account, key = it) }
     }.onFailure {
         Telemetry.error(tag = TAG, message = "Unable to get secret key", throwable = it)
@@ -177,6 +183,8 @@ private const val IV_LENGTH = 16
 private const val HMAC_LENGTH = 32
 /** The size, in bytes, of the AES secret key. */
 private const val KEY_SIZE = kCCKeySizeAES256
+/** The size, in bytes, of the HMAC secret key. */
+private const val HMAC_KEY_SIZE = 32
 /** The AES block size, in bytes, used to size the encryption output buffer. */
 private const val BLOCK_SIZE = kCCBlockSizeAES128
 /** The HMAC algorithm used to authenticate the encrypted payload. */

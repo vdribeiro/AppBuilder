@@ -9,6 +9,7 @@ import com.app.builder.data.serializer.decode
 import com.app.builder.data.serializer.encode
 import com.app.builder.test.FakeData
 import com.app.builder.test.TestCase
+import com.app.builder.test.useUnavailableSecretKey
 
 class CryptographyTest: TestCase() {
 
@@ -31,6 +32,16 @@ class CryptographyTest: TestCase() {
     @Test
     fun decryptMalformedContentFailsGracefully() = runUnitTest {
         assertNull(actual = decrypt(content = "not-a-valid-encrypted-payload"))
+    }
+
+    /** Verifies that [encrypt] and [decrypt] return null when the secret key cannot be loaded, on the platforms where it can be made unavailable. */
+    @Test
+    fun encryptAndDecryptFailWithoutSecretKey() = runUnitTest {
+        val encrypted = assertNotNull(actual = encrypt(content = "content"))
+        if (useUnavailableSecretKey()) {
+            assertNull(actual = encrypt(content = "content"))
+            assertNull(actual = decrypt(content = encrypted))
+        }
     }
 
     /** Verifies that [hash] produces a non-null result for the given content. */
