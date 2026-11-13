@@ -117,17 +117,22 @@ class TaskListScreenTest: TestCase() {
 
         router.navigate(screen = Screen.TaskList)
         router.navigate(screen = Screen.TaskDetail(uuid = otherTask.uuid.toString()), option = Router.NavOption.REPLACE_LAST)
+        waitForIdle()
         waitUntil { selectedUuids() == listOf(otherTask.uuid.toString()) }
 
         router.navigate(screen = Screen.TaskDetail(uuid = FakeData.task.uuid.toString()), option = Router.NavOption.REPLACE_LAST)
+        waitForIdle()
         waitUntil { selectedUuids() == listOf(FakeData.task.uuid.toString()) }
 
         router.navigate(screen = Screen.TaskDetail(uuid = uuid().toString(), new = true), option = Router.NavOption.REPLACE_LAST)
+        waitForIdle()
         waitUntil { selectedUuids().isEmpty() }
 
         router.navigate(screen = Screen.TaskDetail(uuid = otherTask.uuid.toString()), option = Router.NavOption.REPLACE_LAST)
+        waitForIdle()
         waitUntil { selectedUuids() == listOf(otherTask.uuid.toString()) }
         router.back()
+        waitForIdle()
         waitUntil { selectedUuids().isEmpty() }
     }
 

@@ -7,10 +7,12 @@ import kotlin.test.assertSame
 import kotlin.test.assertTrue
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
 import kotlinx.coroutines.withTimeoutOrNull
 import com.app.builder.Application.createDependency
@@ -133,7 +135,7 @@ class ApplicationTest: TestCase() {
 
             coroutineScope { launch(start = CoroutineStart.UNDISPATCHED) { Application.reset() }.cancel() }
 
-            withTimeout(timeout = 10.seconds) { Application.userDependency.first { it == null } }
+            withContext(context = Dispatchers.Default) { withTimeout(timeout = 10.seconds) { Application.userDependency.first { it == null } } }
             withTimeoutOrNull(timeout = 5.seconds) { Application.dependency.first { it == null } }
             assertSame(expected = dependency.get(), actual = Application.dependency.filterNotNull().first())
         }

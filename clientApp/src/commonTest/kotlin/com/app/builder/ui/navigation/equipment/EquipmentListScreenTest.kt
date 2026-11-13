@@ -117,17 +117,22 @@ class EquipmentListScreenTest: TestCase() {
 
         router.navigate(screen = Screen.EquipmentList)
         router.navigate(screen = Screen.EquipmentDetail(uuid = otherEquipment.uuid.toString()), option = Router.NavOption.REPLACE_LAST)
+        waitForIdle()
         waitUntil { selectedUuids() == listOf(otherEquipment.uuid.toString()) }
 
         router.navigate(screen = Screen.EquipmentDetail(uuid = FakeData.equipment.uuid.toString()), option = Router.NavOption.REPLACE_LAST)
+        waitForIdle()
         waitUntil { selectedUuids() == listOf(FakeData.equipment.uuid.toString()) }
 
         router.navigate(screen = Screen.EquipmentDetail(uuid = uuid().toString(), new = true), option = Router.NavOption.REPLACE_LAST)
+        waitForIdle()
         waitUntil { selectedUuids().isEmpty() }
 
         router.navigate(screen = Screen.EquipmentDetail(uuid = otherEquipment.uuid.toString()), option = Router.NavOption.REPLACE_LAST)
+        waitForIdle()
         waitUntil { selectedUuids() == listOf(otherEquipment.uuid.toString()) }
         router.back()
+        waitForIdle()
         waitUntil { selectedUuids().isEmpty() }
     }
 

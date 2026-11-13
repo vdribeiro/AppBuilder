@@ -57,6 +57,7 @@ class DeviceLocationProviderTest: TestCase() {
     /** Verifies that starting an update is ignored while the location capture feature flag is disabled. */
     @Test
     fun startUpdateIgnoredWhileFeatureFlagDisabled() = runUnitTest {
+        ClientFlags.set { it.copy(locationCapture = false) }
         val provider = testProvider()
 
         provider.startUpdate()

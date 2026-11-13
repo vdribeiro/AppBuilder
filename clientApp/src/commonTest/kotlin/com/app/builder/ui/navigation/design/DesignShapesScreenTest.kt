@@ -36,6 +36,7 @@ class DesignShapesScreenTest: DesignScreenTestCase() {
         onNodeWithTag(testTag = "shape_picker_dialog").assertIsDisplayed()
 
         onNodeWithTag(testTag = "shape_picker_radius").performSemanticsAction(key = SemanticsActions.SetProgress) { it(20f) }
+        waitForIdle()
         mainClock.advanceTimeByFrame()
         onNodeWithText(text = "20dp").assertIsDisplayed()
         onNodeWithText(text = "apply").performClick()

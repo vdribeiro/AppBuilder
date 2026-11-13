@@ -117,17 +117,22 @@ class BuildingListScreenTest: TestCase() {
 
         router.navigate(screen = Screen.BuildingList)
         router.navigate(screen = Screen.BuildingDetail(uuid = otherBuilding.uuid.toString()), option = Router.NavOption.REPLACE_LAST)
+        waitForIdle()
         waitUntil { selectedUuids() == listOf(otherBuilding.uuid.toString()) }
 
         router.navigate(screen = Screen.BuildingDetail(uuid = FakeData.building.uuid.toString()), option = Router.NavOption.REPLACE_LAST)
+        waitForIdle()
         waitUntil { selectedUuids() == listOf(FakeData.building.uuid.toString()) }
 
         router.navigate(screen = Screen.BuildingDetail(uuid = uuid().toString(), new = true), option = Router.NavOption.REPLACE_LAST)
+        waitForIdle()
         waitUntil { selectedUuids().isEmpty() }
 
         router.navigate(screen = Screen.BuildingDetail(uuid = otherBuilding.uuid.toString()), option = Router.NavOption.REPLACE_LAST)
+        waitForIdle()
         waitUntil { selectedUuids() == listOf(otherBuilding.uuid.toString()) }
         router.back()
+        waitForIdle()
         waitUntil { selectedUuids().isEmpty() }
     }
 

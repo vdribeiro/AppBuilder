@@ -10,7 +10,7 @@ kotlinx-collections = "0.5.2"
 kotlinx-atomicfu = "0.33.0"
 
 # Ktor
-ktor = "3.6.0"
+ktor = "3.5.2"
 
 # SQLDelight
 sqldelight = "2.4.1"
