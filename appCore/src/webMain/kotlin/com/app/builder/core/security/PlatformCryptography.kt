@@ -9,6 +9,7 @@ internal actual suspend fun decryptContent(content: String): String = decryptJs(
 
 /**
  * Encrypts [content] with AES-GCM using a non-extractable key stored in IndexedDB, generating the key on first use.
+ * A generated key is only stored when IndexedDB still holds none; otherwise the stored key is used and the generated one is dropped.
  *
  * @param content The plain text to encrypt.
  * @return A [Promise] resolving to the Base64 encoded string of the IV concatenated with the ciphertext.
@@ -41,9 +42,19 @@ internal actual suspend fun decryptContent(content: String): String = decryptJs(
                                 );
                                 // New transaction needed because 'await' yields the event loop
                                 const writeTx = db.transaction(storeName, "readwrite");
-                                const writeReq = writeTx.objectStore(storeName).put(newKey, keyId);
-                                writeReq.onsuccess = () => resolve(newKey);
-                                writeReq.onerror = () => reject(writeReq.error);
+                                const writeStore = writeTx.objectStore(storeName);
+                                // Readwrite transactions run one at a time, so the key is read again before the new one is added
+                                const storedReq = writeStore.get(keyId);
+                                storedReq.onsuccess = () => {
+                                    if (storedReq.result) {
+                                        resolve(storedReq.result);
+                                    } else {
+                                        const writeReq = writeStore.add(newKey, keyId);
+                                        writeReq.onsuccess = () => resolve(newKey);
+                                        writeReq.onerror = () => reject(writeReq.error);
+                                    }
+                                };
+                                storedReq.onerror = () => reject(storedReq.error);
                             } catch (err) {
                                 reject(err);
                             }
