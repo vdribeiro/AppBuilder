@@ -13,7 +13,6 @@ import kotlinx.coroutines.withContext
 import android.security.keystore.KeyProperties
 import com.app.builder.App
 import com.app.builder.core.flow.Dispatcher
-import com.app.builder.core.telemetry.Telemetry
 
 internal actual suspend fun encryptContent(content: String): String {
     val cipher = Cipher.getInstance(SPEC)
@@ -44,22 +43,20 @@ private val secretKeyMutex = Mutex()
  * @return the secret key or throw on error.
  */
 private suspend fun getSecretKey(): SecretKey = withContext(context = Dispatcher.IO) {
-    runCatching {
-        val alias = ALIAS
-        secretKeyMutex.withLock { keyStorage.read(alias = alias) ?: keyStorage.generate(alias = alias) }
-    }.onFailure {
-        Telemetry.error(tag = TAG, message = "Unable to get secret key", throwable = it)
-    }.getOrThrow()
+    val alias = ALIAS
+    secretKeyMutex.withLock { keyStorage.read(alias = alias) ?: keyStorage.generate(alias = alias) }
 }
 
 internal actual suspend fun sha256(content: String): ByteArray = MessageDigest.getInstance(HASH_ALGORITHM).digest(content.encodeToByteArray())
 
 internal actual suspend fun pbkdf2(password: String, salt: String, rounds: Int, size: Int): ByteArray {
     val spec = PBEKeySpec(password.toCharArray(), salt.encodeToByteArray(), rounds, size)
-    return SecretKeyFactory.getInstance(DERIVATION_ALGORITHM).generateSecret(spec).encoded
+    return try {
+        SecretKeyFactory.getInstance(DERIVATION_ALGORITHM).generateSecret(spec).encoded
+    } finally {
+        spec.clearPassword()
+    }
 }
-
-private const val TAG = "Cryptography"
 
 /** The length, in bits, of the GCM authentication tag appended to the ciphertext. */
 private const val TAG_LENGTH_BIT = 128

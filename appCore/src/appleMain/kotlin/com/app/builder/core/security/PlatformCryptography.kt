@@ -28,7 +28,6 @@ import platform.posix.arc4random_buf
 import platform.posix.size_tVar
 import com.app.builder.App
 import com.app.builder.core.flow.Dispatcher
-import com.app.builder.core.telemetry.Telemetry
 
 internal actual suspend fun encryptContent(content: String): String {
     val secretKey = getSecretKey()
@@ -135,22 +134,18 @@ private val secretKeyMutex = Mutex()
  * @return the secret key or throw on error.
  */
 private suspend fun getSecretKey(): ByteArray = withContext(context = Dispatcher.IO) {
-    runCatching {
-        val account = "${App.id}.masterkey"
-        val size = KEY_SIZE.toInt() + HMAC_KEY_SIZE
-        secretKeyMutex.withLock {
-            val stored = keyStorage.read(account = account)
-            if (stored != null) {
-                if (stored.size != size) error(message = "Stored secret key has an invalid length: ${stored.size}")
-                return@withLock stored
-            }
-            ByteArray(size = size)
-                .apply { arc4random_buf(__buf = refTo(index = 0), __nbytes = size.toULong()) }
-                .also { keyStorage.add(account = account, key = it) }
+    val account = "${App.id}.masterkey"
+    val size = KEY_SIZE.toInt() + HMAC_KEY_SIZE
+    secretKeyMutex.withLock {
+        val stored = keyStorage.read(account = account)
+        if (stored != null) {
+            if (stored.size != size) error(message = "Stored secret key has an invalid length: ${stored.size}")
+            return@withLock stored
         }
-    }.onFailure {
-        Telemetry.error(tag = TAG, message = "Unable to get secret key", throwable = it)
-    }.getOrThrow()
+        ByteArray(size = size)
+            .apply { arc4random_buf(__buf = refTo(index = 0), __nbytes = size.toULong()) }
+            .also { keyStorage.add(account = account, key = it) }
+    }
 }
 
 internal actual suspend fun sha256(content: String): ByteArray = memScoped {
@@ -181,8 +176,6 @@ internal actual suspend fun pbkdf2(password: String, salt: String, rounds: Int, 
     if (status != kCCSuccess) error(message = "Unable to derive key: $status")
     derived.asByteArray()
 }
-
-private const val TAG = "Cryptography"
 
 /** The length, in bytes, of the initialization vector used for AES encryption. */
 private const val IV_LENGTH = 16

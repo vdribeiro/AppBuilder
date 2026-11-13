@@ -18,7 +18,6 @@ import com.app.builder.App
 import com.app.builder.core.flow.Dispatcher
 import com.app.builder.core.platform.appDataPath
 import com.app.builder.core.platform.machineId
-import com.app.builder.core.telemetry.Telemetry
 import com.app.builder.data.storage.withFileLock
 import com.app.builder.data.storage.writeAtomically
 
@@ -88,48 +87,46 @@ private fun File.load(keyStore: KeyStore, password: CharArray) = runCatching { i
  * @return the secret key spec or throw on error.
  */
 private suspend fun loadSecretKey(alias: String): SecretKeySpec = withContext(context = Dispatcher.IO) {
-    runCatching {
-        withFileLock(file = File(appDataPath, "security.lock")) {
-            val keyStoreFile = File(appDataPath, "security.p12")
-            val keyStoreExists = keyStoreFile.exists()
-            val machineId = machineId()
-            val canCreateSecret = !keyStoreExists || (machineId != null && keyStoreFile.load(keyStore = KeyStore.getInstance("PKCS12"), password = machineId).isSuccess)
-            val secret = readKeystoreSecret() ?: if (canCreateSecret) createKeystoreSecret() else null
-            val password = secret?.toCharArray() ?: machineId ?: error(message = "Unable to get a keystore password")
+    withFileLock(file = File(appDataPath, "security.lock")) {
+        val keyStoreFile = File(appDataPath, "security.p12")
+        val keyStoreExists = keyStoreFile.exists()
+        val machineId = machineId()
+        val canCreateSecret = !keyStoreExists || (machineId != null && keyStoreFile.load(keyStore = KeyStore.getInstance("PKCS12"), password = machineId).isSuccess)
+        val secret = readKeystoreSecret() ?: if (canCreateSecret) createKeystoreSecret() else null
+        val password = secret?.toCharArray() ?: machineId ?: error(message = "Unable to get a keystore password")
 
-            val keyStore = KeyStore.getInstance("PKCS12")
-            val legacyPassword = when {
-                !keyStoreExists -> null.also { keyStore.load(null, password) }
-                keyStoreFile.load(keyStore = keyStore, password = password).isSuccess -> null
-                machineId != null && keyStoreFile.load(keyStore = keyStore, password = machineId).isSuccess -> machineId
-                else -> error(message = "Unable to open the keystore")
-            }
-
-            val entry = keyStore.getEntry(alias, KeyStore.PasswordProtection(legacyPassword ?: password)) as? KeyStore.SecretKeyEntry
-            val secretKey = when {
-                entry != null -> entry.secretKey
-                !keyStoreExists -> KeyGenerator.getInstance(ALGORITHM).apply { init(KEY_SIZE) }.generateKey()
-                else -> error(message = "The keystore holds no key under $alias")
-            }
-            if (!keyStoreExists || legacyPassword != null) {
-                keyStore.setEntry(alias, KeyStore.SecretKeyEntry(secretKey), KeyStore.PasswordProtection(password))
-                keyStoreFile.writeAtomically { stream -> keyStore.store(stream, password) }
-            }
-            SecretKeySpec(secretKey.encoded, ALGORITHM)
+        val keyStore = KeyStore.getInstance("PKCS12")
+        val legacyPassword = when {
+            !keyStoreExists -> null.also { keyStore.load(null, password) }
+            keyStoreFile.load(keyStore = keyStore, password = password).isSuccess -> null
+            machineId != null && keyStoreFile.load(keyStore = keyStore, password = machineId).isSuccess -> machineId
+            else -> error(message = "Unable to open the keystore")
         }
-    }.onFailure {
-        Telemetry.error(tag = TAG, message = "Unable to get secret key", throwable = it)
-    }.getOrThrow()
+
+        val entry = keyStore.getEntry(alias, KeyStore.PasswordProtection(legacyPassword ?: password)) as? KeyStore.SecretKeyEntry
+        val secretKey = when {
+            entry != null -> entry.secretKey
+            !keyStoreExists -> KeyGenerator.getInstance(ALGORITHM).apply { init(KEY_SIZE) }.generateKey()
+            else -> error(message = "The keystore holds no key under $alias")
+        }
+        if (!keyStoreExists || legacyPassword != null) {
+            keyStore.setEntry(alias, KeyStore.SecretKeyEntry(secretKey), KeyStore.PasswordProtection(password))
+            keyStoreFile.writeAtomically { stream -> keyStore.store(stream, password) }
+        }
+        SecretKeySpec(secretKey.encoded, ALGORITHM)
+    }
 }
 
 internal actual suspend fun sha256(content: String): ByteArray = MessageDigest.getInstance(HASH_ALGORITHM).digest(content.encodeToByteArray())
 
 internal actual suspend fun pbkdf2(password: String, salt: String, rounds: Int, size: Int): ByteArray {
     val spec = PBEKeySpec(password.toCharArray(), salt.encodeToByteArray(), rounds, size)
-    return SecretKeyFactory.getInstance(DERIVATION_ALGORITHM).generateSecret(spec).encoded
+    return try {
+        SecretKeyFactory.getInstance(DERIVATION_ALGORITHM).generateSecret(spec).encoded
+    } finally {
+        spec.clearPassword()
+    }
 }
-
-private const val TAG = "Cryptography"
 
 /** The length, in bits, of the GCM authentication tag appended to the ciphertext. */
 private const val TAG_LENGTH_BIT = 128
