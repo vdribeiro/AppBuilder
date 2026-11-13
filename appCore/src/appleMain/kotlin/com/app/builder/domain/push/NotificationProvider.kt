@@ -2,6 +2,7 @@ package com.app.builder.domain.push
 
 import kotlin.coroutines.resume
 import kotlinx.coroutines.suspendCancellableCoroutine
+import platform.Foundation.NSBundle
 import platform.UserNotifications.UNAuthorizationOptionAlert
 import platform.UserNotifications.UNAuthorizationOptionSound
 import platform.UserNotifications.UNMutableNotificationContent
@@ -56,10 +57,10 @@ actual object NotificationProvider {
     /**
      * Get the notification center safely.
      *
-     * @return The [UNUserNotificationCenter], or null on error.
+     * @return The [UNUserNotificationCenter], or null on error or when the process has no bundle identifier.
      */
-    private fun getNotificationCenter(): UNUserNotificationCenter? = runCatching {
-        UNUserNotificationCenter.currentNotificationCenter()
+    internal fun getNotificationCenter(): UNUserNotificationCenter? = runCatching {
+        if (NSBundle.mainBundle.bundleIdentifier == null) null else UNUserNotificationCenter.currentNotificationCenter()
     }.onFailure {
         Telemetry.error(tag = TAG, message = "Unable to get notification center", throwable = it)
     }.getOrNull()

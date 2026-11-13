@@ -18,10 +18,10 @@ import platform.UserNotifications.UNAuthorizationOptionAlert
 import platform.UserNotifications.UNAuthorizationOptionBadge
 import platform.UserNotifications.UNAuthorizationOptionSound
 import platform.UserNotifications.UNAuthorizationStatusAuthorized
-import platform.UserNotifications.UNUserNotificationCenter
 import platform.darwin.NSObject
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import com.app.builder.domain.push.NotificationProvider
 import com.app.builder.test.ExcludeFromTesting
 
 /** Apple [PermissionManager] implementation. */
@@ -36,9 +36,12 @@ private class ApplePermissionManager: PermissionManager() {
     override suspend fun hasPermission(permission: Permission): Boolean {
         super.hasPermission(permission = permission)
         return when (permission) {
-            Permission.NOTIFICATIONS -> suspendCancellableCoroutine { continuation ->
-                UNUserNotificationCenter.currentNotificationCenter().getNotificationSettingsWithCompletionHandler { settings ->
-                    continuation.resume(value = settings?.authorizationStatus == UNAuthorizationStatusAuthorized)
+            Permission.NOTIFICATIONS -> {
+                val notificationCenter = NotificationProvider.getNotificationCenter() ?: return false
+                suspendCancellableCoroutine { continuation ->
+                    notificationCenter.getNotificationSettingsWithCompletionHandler { settings ->
+                        continuation.resume(value = settings?.authorizationStatus == UNAuthorizationStatusAuthorized)
+                    }
                 }
             }
 
@@ -57,10 +60,13 @@ private class ApplePermissionManager: PermissionManager() {
     override suspend fun requestPermission(permission: Permission): Boolean {
         super.requestPermission(permission = permission)
         return when (permission) {
-            Permission.NOTIFICATIONS -> suspendCancellableCoroutine { continuation ->
-                UNUserNotificationCenter.currentNotificationCenter().requestAuthorizationWithOptions(
-                    options = UNAuthorizationOptionAlert or UNAuthorizationOptionSound or UNAuthorizationOptionBadge
-                ) { granted, _ -> continuation.resume(value = granted) }
+            Permission.NOTIFICATIONS -> {
+                val notificationCenter = NotificationProvider.getNotificationCenter() ?: return false
+                suspendCancellableCoroutine { continuation ->
+                    notificationCenter.requestAuthorizationWithOptions(
+                        options = UNAuthorizationOptionAlert or UNAuthorizationOptionSound or UNAuthorizationOptionBadge
+                    ) { granted, _ -> continuation.resume(value = granted) }
+                }
             }
 
             Permission.CAMERA -> when (AVCaptureDevice.authorizationStatusForMediaType(mediaType = AVMediaTypeVideo)) {
