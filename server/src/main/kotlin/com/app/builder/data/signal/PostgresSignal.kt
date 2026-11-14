@@ -20,6 +20,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import com.app.builder.core.flow.Dispatcher
+import com.app.builder.core.flow.runSuspendCatching
 import com.app.builder.core.telemetry.Telemetry
 import com.app.builder.test.ExcludeFromTesting
 import io.r2dbc.postgresql.PostgresqlConnectionFactory
@@ -50,21 +51,29 @@ class PostgresSignal(
     private var notifyConnection: PostgresqlConnection? = null
 
     override suspend fun notify(channel: String, payload: String): Boolean = notifyMutex.withLock {
-        runCatching {
-            val connection = notifyConnection ?: connectionFactory.create().awaitFirst().also { notifyConnection = it }
-            connection
-                .createStatement("SELECT pg_notify($1, $2)")
-                .bind("$1", channel)
-                .bind("$2", payload)
-                .execute()
-                .asFlow()
-                .collect { result -> result.rowsUpdated.awaitFirstOrNull() }
-            true
-        }.onFailure {
-            Telemetry.error(tag = TAG, message = "Unable to notify channel $channel", throwable = it)
-            notifyConnection?.closeSafely()
-            notifyConnection = null
-        }.getOrDefault(defaultValue = false)
+        var notified = false
+        try {
+            notified = runSuspendCatching {
+                val connection = notifyConnection ?: connectionFactory.create().awaitFirst().also { notifyConnection = it }
+                connection
+                    .createStatement("SELECT pg_notify($1, $2)")
+                    .bind("$1", channel)
+                    .bind("$2", payload)
+                    .execute()
+                    .asFlow()
+                    .collect { result -> result.rowsUpdated.awaitFirstOrNull() }
+                true
+            }.onFailure {
+                Telemetry.error(tag = TAG, message = "Unable to notify channel $channel", throwable = it)
+            }.getOrDefault(defaultValue = false)
+        } finally {
+            // Non-cancellable: a connection that failed or was canceled mid-statement must be closed and dropped
+            if (!notified) withContext(context = NonCancellable) {
+                notifyConnection?.closeSafely()
+                notifyConnection = null
+            }
+        }
+        notified
     }
 
     override fun observe(channel: String): Flow<String> = channels.getOrPut(key = channel) {
@@ -77,7 +86,7 @@ class PostgresSignal(
 
     /** Closes the connection. */
     private suspend fun PostgresqlConnection.closeSafely() {
-        runCatching {
+        runSuspendCatching {
             close().awaitFirstOrNull()
         }.onFailure {
             Telemetry.error(tag = TAG, message = "Unable to close notify connection", throwable = it)
