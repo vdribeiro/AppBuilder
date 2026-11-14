@@ -29,6 +29,7 @@ import com.app.builder.core.config.ClientConfigs
 import com.app.builder.core.config.ClientFlags
 import com.app.builder.core.flow.Dispatcher
 import com.app.builder.core.flow.LazyData
+import com.app.builder.core.flow.runSuspendCatching
 import com.app.builder.core.nfc.TagProvider
 import com.app.builder.core.platform.appDataPath
 import com.app.builder.core.platform.developmentMode
@@ -320,7 +321,7 @@ object Application {
         sqlDriverFactory: suspend () -> SqlDriver = { createSqlDriver(name = DATABASE_FILE, schema = AppDatabase.Schema) },
         httpEngineFactory: () -> HttpClientEngine = { createHttpEngine() },
     ): Dependency.AppGraph {
-        val sqlDriver = runCatching {
+        val sqlDriver = runSuspendCatching {
             sqlDriverFactory().also { Telemetry.info(tag = TAG, message = "Sql Driver created") }
         }.onFailure {
             Telemetry.error(tag = TAG, message = "Unable to create the Sql Driver", throwable = it)

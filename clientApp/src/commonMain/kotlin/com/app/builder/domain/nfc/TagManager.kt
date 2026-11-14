@@ -13,6 +13,7 @@ import kotlinx.coroutines.withContext
 import com.app.builder.Dependency
 import com.app.builder.Dependency.getUserGraph
 import com.app.builder.core.flow.Dispatcher
+import com.app.builder.core.flow.runSuspendCatching
 import com.app.builder.core.locale.now
 import com.app.builder.core.nfc.NfcRecord
 import com.app.builder.core.nfc.NfcTag
@@ -78,7 +79,7 @@ class TagManager(
      * @param tag The tag to process.
      */
     private suspend fun handleTag(tag: NfcTag) = withContext(context = Dispatcher.IO) {
-        runCatching {
+        runSuspendCatching {
             tag.records.forEach { record ->
                 when (record) {
                     is NfcRecord.Open -> DeepLink.send(deepLink = DeepLink.Entity(entityUuid = record.entityUuid, entityType = record.entityType))

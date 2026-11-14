@@ -125,7 +125,7 @@ class ApplicationTest: TestCase() {
         }
     }
 
-    /** Verifies that a reset still completes when the coroutine that requested it is cancelled, as the screen that requests it is once the application stops. */
+    /** Verifies that a reset still completes when the coroutine that requested it is canceled, as the screen that requests it is once the application stops. */
     @Test
     fun resetCompletesWhenCallerIsCancelled() = runUnitTest {
         withApplication {

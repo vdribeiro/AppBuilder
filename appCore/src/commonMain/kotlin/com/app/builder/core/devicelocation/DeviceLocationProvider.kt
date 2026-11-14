@@ -7,6 +7,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.withTimeoutOrNull
 import com.app.builder.core.config.ClientConfigs
 import com.app.builder.core.config.ClientFlags
+import com.app.builder.core.flow.runSuspendCatching
 import com.app.builder.core.telemetry.Telemetry
 
 /** Platform-agnostic device location capture controller intended to be extended by platform-specific implementations. Its update loop exists only to keep the platform's location cache warm. */
@@ -68,7 +69,7 @@ open class DeviceLocationProvider {
      *
      * @return The last known [DeviceLocation], or null if none is available.
      */
-    suspend fun getLastKnownLocation(): DeviceLocation? = runCatching {
+    suspend fun getLastKnownLocation(): DeviceLocation? = runSuspendCatching {
         if (!ClientFlags.value.locationCapture || !available || !hasPermission()) {
             stopUpdate()
             return null

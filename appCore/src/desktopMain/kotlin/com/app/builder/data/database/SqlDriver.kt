@@ -8,6 +8,7 @@ import app.cash.sqldelight.db.QueryResult
 import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.db.SqlSchema
 import com.app.builder.core.flow.Dispatcher
+import com.app.builder.core.flow.runSuspendCatching
 import com.app.builder.core.platform.appDataPath
 import com.app.builder.core.telemetry.Telemetry
 import com.app.builder.test.ExcludeFromTesting
@@ -22,7 +23,7 @@ actual suspend fun createSqlDriver(
         properties = Properties(),
         schema = schema.synchronous(),
     ).apply {
-        runCatching {
+        runSuspendCatching {
             execute(
                 identifier = null,
                 sql = "PRAGMA journal_mode=WAL;",

@@ -14,6 +14,7 @@ import com.app.builder.Dependency
 import com.app.builder.Dependency.getUserGraph
 import com.app.builder.core.config.ClientFlags
 import com.app.builder.core.flow.Dispatcher
+import com.app.builder.core.flow.runSuspendCatching
 import com.app.builder.core.telemetry.Telemetry
 import com.app.builder.domain.EntityType
 import com.app.builder.domain.PushPayload
@@ -70,7 +71,7 @@ class PayloadManager(
      */
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     internal suspend fun handlePushPayload(payload: PushPayload) = withContext(context = Dispatcher.IO) {
-        runCatching {
+        runSuspendCatching {
             when (payload) {
                 is PushPayload.Notification -> NotificationProvider.showNotification(notification = payload)
                 is PushPayload.EntityNotification -> NotificationProvider.showNotification(notification = payload).also { sync(payload = payload) }

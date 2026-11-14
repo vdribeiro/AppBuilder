@@ -9,6 +9,7 @@ import platform.UserNotifications.UNMutableNotificationContent
 import platform.UserNotifications.UNNotificationRequest
 import platform.UserNotifications.UNNotificationSound
 import platform.UserNotifications.UNUserNotificationCenter
+import com.app.builder.core.flow.runSuspendCatching
 import com.app.builder.core.telemetry.Telemetry
 import com.app.builder.data.serializer.encode
 import com.app.builder.domain.PushPayload
@@ -19,7 +20,7 @@ actual object NotificationProvider {
 
     private const val TAG = "NotificationProvider"
 
-    actual suspend fun showNotification(notification: PushPayload): Boolean = runCatching {
+    actual suspend fun showNotification(notification: PushPayload): Boolean = runSuspendCatching {
         val notificationCenter = getNotificationCenter() ?: return false
         suspendCancellableCoroutine { continuation ->
             notificationCenter.requestAuthorizationWithOptions(UNAuthorizationOptionAlert or UNAuthorizationOptionSound) { granted, _ ->

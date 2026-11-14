@@ -7,6 +7,7 @@ import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.db.SqlSchema
 import app.cash.sqldelight.driver.worker.WebWorkerDriver
 import com.app.builder.core.flow.Dispatcher
+import com.app.builder.core.flow.runSuspendCatching
 import com.app.builder.core.telemetry.Telemetry
 import com.app.builder.test.ExcludeFromTesting
 
@@ -16,7 +17,7 @@ actual suspend fun createSqlDriver(
     schema: SqlSchema<QueryResult.AsyncValue<Unit>>
 ): SqlDriver = withContext(context = Dispatcher.IO) {
     WebWorkerDriver(worker = getWorker()).also { driver ->
-        runCatching {
+        runSuspendCatching {
             schema.create(driver = driver).await()
         }.onFailure {
             Telemetry.error(tag = TAG, message = "Unable to create database schema", throwable = it)

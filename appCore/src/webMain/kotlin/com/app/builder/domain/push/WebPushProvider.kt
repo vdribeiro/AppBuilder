@@ -6,6 +6,7 @@ import kotlinx.coroutines.await
 import kotlinx.coroutines.launch
 import com.app.builder.WebPushConfig
 import com.app.builder.core.flow.Dispatcher
+import com.app.builder.core.flow.runSuspendCatching
 import com.app.builder.core.telemetry.Telemetry
 import com.app.builder.data.serializer.decode
 import com.app.builder.domain.PushPayload
@@ -19,7 +20,7 @@ object WebPushProvider {
 
     /** Observe FCM tokens. */
     suspend fun observeToken() {
-        val token = runCatching {
+        val token = runSuspendCatching {
             ensureFirebaseInitialized().await()
             getFcmWebToken(vapidKey = WebPushConfig.VAPID_KEY).await().toString().takeIf { it.isNotEmpty() }
         }.onFailure {
@@ -34,7 +35,7 @@ object WebPushProvider {
      * @param scope to handle payloads.
      */
     suspend fun observeMessages(scope: CoroutineScope) {
-        runCatching {
+        runSuspendCatching {
             ensureFirebaseInitialized().await()
             onFcmWebMessage { json ->
                 scope.launch(context = Dispatcher.Default) {

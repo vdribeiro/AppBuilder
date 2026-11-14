@@ -3,6 +3,7 @@ package com.app.builder.data.database
 import kotlinx.coroutines.withContext
 import app.cash.sqldelight.db.SqlDriver
 import com.app.builder.core.flow.Dispatcher
+import com.app.builder.core.flow.runSuspendCatching
 import com.app.builder.core.telemetry.Telemetry
 import database.Account
 import database.AppDatabase
@@ -36,7 +37,7 @@ typealias BuildingEquipmentSchema = BuildingEquipment
  * Executes within an IO dispatcher and captures failures gracefully.
  */
 suspend fun SqlDriver.reset() = withContext(context = Dispatcher.IO) {
-    runCatching {
+    runSuspendCatching {
         val tables = getTableNames()
         tables.forEach { execute(identifier = null, sql = "DROP TABLE IF EXISTS \"$it\"", parameters = 0).await() }
         AppDatabase.Schema.create(driver = this@reset).await()

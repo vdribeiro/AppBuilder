@@ -13,6 +13,7 @@ import androidx.core.location.LocationManagerCompat
 import com.app.builder.applicationContext
 import com.app.builder.core.config.ClientConfigs
 import com.app.builder.core.config.ClientFlags
+import com.app.builder.core.flow.runSuspendCatching
 import com.app.builder.core.locale.now
 import com.app.builder.core.security.uuid
 import com.app.builder.core.telemetry.Telemetry
@@ -175,7 +176,7 @@ internal class AndroidDeviceLocationProvider: DeviceLocationProvider() {
      * @return The freshest cached [Location], or null if none is available.
      */
     @RequiresPermission(anyOf = [Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION])
-    private suspend fun FusedLocationProviderClient.lastKnownLocation(): Location? = runCatching { lastLocation.await() }.getOrNull()
+    private suspend fun FusedLocationProviderClient.lastKnownLocation(): Location? = runSuspendCatching { lastLocation.await() }.getOrNull()
 
     /**
      * Returns the freshest cached location reported by any enabled provider on [LocationManager].

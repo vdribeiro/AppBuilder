@@ -3,6 +3,7 @@ package com.app.builder.data.resource
 import kotlinx.coroutines.withContext
 import appbuilder.clientapp.generated.resources.Res
 import com.app.builder.core.flow.Dispatcher
+import com.app.builder.core.flow.runSuspendCatching
 import com.app.builder.core.telemetry.Telemetry
 import com.app.builder.data.serializer.decode
 
@@ -15,7 +16,7 @@ import com.app.builder.data.serializer.decode
  * @return A list of deserialized [T] objects on success, or an empty list upon failure.
  */
 internal suspend inline fun <reified T> loadResource(json: JsonResource): List<T> = withContext(context = Dispatcher.IO) {
-    runCatching {
+    runSuspendCatching {
         decode<List<T>>(value = Res.readBytes(path = json.path).decodeToString())
     }.onFailure {
         Telemetry.error(tag = TAG, message = "Unable to load resource", throwable = it)

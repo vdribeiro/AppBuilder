@@ -11,7 +11,7 @@ import kotlinx.coroutines.ensureActive
  * @param T The type returned by [block].
  * @param block The block to call.
  * @return A [Result] holding the value returned by [block], or the exception it threw.
- * @throws CancellationException If the calling coroutine is cancelled.
+ * @throws CancellationException If the calling coroutine is canceled.
  */
 suspend inline fun <T> runSuspendCatching(block: () -> T): Result<T> =
     runCatching(block = block).onFailure { if (it is CancellationException) currentCoroutineContext().ensureActive() }
