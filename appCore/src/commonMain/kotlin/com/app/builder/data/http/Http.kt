@@ -1,5 +1,6 @@
 package com.app.builder.data.http
 
+import kotlin.coroutines.cancellation.CancellationException
 import kotlin.uuid.Uuid
 import kotlinx.coroutines.flow.consumeAsFlow
 import kotlinx.coroutines.flow.filterIsInstance
@@ -24,6 +25,7 @@ import io.ktor.sse.ServerSentEvent
 import io.ktor.websocket.Frame
 import com.app.builder.ServerConfig
 import com.app.builder.core.flow.Dispatcher
+import com.app.builder.core.flow.runSuspendCatching
 import com.app.builder.core.platform.developmentMode
 import com.app.builder.data.http.URL.Companion.DEV_HOST
 
@@ -32,11 +34,12 @@ import com.app.builder.data.http.URL.Companion.DEV_HOST
  *
  * @param request The request data.
  * @return A [HttpResult.Success] on success, or a [HttpResult.Error] encapsulating the caught exception.
+ * @throws CancellationException If the calling coroutine is canceled.
  */
 suspend fun HttpClient.head(
     request: HttpRequest
 ): HttpResult<Unit> = withContext(context = Dispatcher.IO) {
-    runCatching {
+    runSuspendCatching {
         head(urlString = "$baseUrl${request.url.path.encodeURLPath()}") {
             request.headerMap.forEach { header(key = it.key.header, value = it.value) }
             request.queryMap.forEach { url.parameters.append(name = it.key.parameter, value = it.value) }
@@ -51,11 +54,12 @@ suspend fun HttpClient.head(
  * @param T The expected response model type.
  * @param request The request data.
  * @return A [HttpResult.Success] containing [T] on success, or a [HttpResult.Error] encapsulating the caught exception.
+ * @throws CancellationException If the calling coroutine is canceled.
  */
 suspend inline fun <reified T> HttpClient.get(
     request: HttpRequest
 ): HttpResult<T> = withContext(context = Dispatcher.IO) {
-    runCatching {
+    runSuspendCatching {
         val response = get(urlString = "$baseUrl${request.url.path.encodeURLPath()}") {
             request.headerMap.forEach { header(key = it.key.header, value = it.value) }
             request.queryMap.forEach { url.parameters.append(name = it.key.parameter, value = it.value) }
@@ -71,12 +75,13 @@ suspend inline fun <reified T> HttpClient.get(
  * @param request The request data.
  * @param uuid The unique identifier of the entity to fetch, appended to [request]'s path.
  * @return A [HttpResult.Success] containing [T] on success, or a [HttpResult.Error] encapsulating the caught exception.
+ * @throws CancellationException If the calling coroutine is canceled.
  */
 suspend inline fun <reified T> HttpClient.get(
     request: HttpRequest,
     uuid: Uuid
 ): HttpResult<T> = withContext(context = Dispatcher.IO) {
-    runCatching {
+    runSuspendCatching {
         val response = get(urlString = "$baseUrl${request.url.path.encodeURLPath()}/$uuid") {
             request.headerMap.forEach { header(key = it.key.header, value = it.value) }
             request.queryMap.forEach { url.parameters.append(name = it.key.parameter, value = it.value) }
@@ -94,6 +99,7 @@ suspend inline fun <reified T> HttpClient.get(
  * @param cursorOf Extracts the [Query.CursorUtc] and [Query.CursorUuid] pair from an item, used to continue to the next page.
  * @param onPage Invoked with each page's items, in order. Return [HttpResult.Error] to abort pagination early.
  * @return [HttpResult.Success] once every page has been consumed, or the first [HttpResult.Error] encountered from the network or from [onPage].
+ * @throws CancellationException If the calling coroutine is canceled.
  */
 suspend inline fun <reified T> HttpClient.getPaginated(
     request: HttpRequest,
@@ -137,12 +143,13 @@ suspend inline fun <reified T> HttpClient.getPaginated(
  * @param request The request data.
  * @param body The optional content payload sent in the HTTP request body.
  * @return A [HttpResult.Success] containing [T] on success, or a [HttpResult.Error] encapsulating the caught exception.
+ * @throws CancellationException If the calling coroutine is canceled.
  */
 suspend inline fun <reified B, reified T> HttpClient.post(
     request: HttpRequest,
     body: B? = null,
 ): HttpResult<T> = withContext(context = Dispatcher.IO) {
-    runCatching {
+    runSuspendCatching {
         val response = post(urlString = "$baseUrl${request.url.path.encodeURLPath()}") {
             request.headerMap.forEach { header(key = it.key.header, value = it.value) }
             request.queryMap.forEach { url.parameters.append(name = it.key.parameter, value = it.value) }
@@ -161,13 +168,14 @@ suspend inline fun <reified B, reified T> HttpClient.post(
  * @param onConnected A callback function invoked after a successful connection.
  * @param block A callback function invoked for every incoming event.
  * @return A [HttpResult.Success] on success, or a [HttpResult.Error] encapsulating the caught exception.
+ * @throws CancellationException If the calling coroutine is canceled.
  */
 suspend fun HttpClient.sse(
     request: HttpRequest,
     onConnected: suspend ClientSSESession.() -> Unit,
     block: suspend ClientSSESession.(ServerSentEvent) -> Unit,
 ): HttpResult<Unit> = withContext(context = Dispatcher.IO) {
-    runCatching {
+    runSuspendCatching {
         serverSentEvents(urlString = "$baseUrl${request.url.path.encodeURLPath()}") {
             onConnected()
             incoming.collect { event -> block(event) }
@@ -185,13 +193,14 @@ suspend fun HttpClient.sse(
  * @param onConnected A callback function invoked after a successful connection.
  * @param block A callback function invoked for every incoming frame that matches the defined type [T].
  * @return A [HttpResult.Success] on success, or a [HttpResult.Error] encapsulating the caught exception.
+ * @throws CancellationException If the calling coroutine is canceled.
  */
 suspend inline fun <reified T: Frame> HttpClient.webSocket(
     request: HttpRequest,
     crossinline onConnected: suspend DefaultClientWebSocketSession.() -> Unit,
     crossinline block: suspend DefaultClientWebSocketSession.(T) -> Unit,
 ): HttpResult<Unit> = withContext(context = Dispatcher.IO) {
-    runCatching {
+    runSuspendCatching {
         val query = request.queryMap.entries.joinToString(separator = "&") { (key, value) ->
             "${key.parameter.encodeURLQueryComponent()}=${value.encodeURLQueryComponent()}"
         }.let { if (it.isNotBlank()) "?$it" else "" }
