@@ -543,7 +543,9 @@ A link between two features is an entity of its own, so one side can be read or 
 | `LinkPickerStore` and `LinkPicker` | The dialog to tick the entities to link, generic over the entity and its list row.                     |
 | `{Feature}LinkPicker`              | In `ui/component/{feature}`: binds the picker to that feature's use cases, list filters and list rows. |
 
-A detail store keeps the edited and stored links of its entity and saves them after the entity itself. The picker has its own store, created in the entry provider, and hands the ticked entities back through `onConfirm`.
+A detail store keeps the edited and stored links of its entity and saves them after the entity itself.
+Its state also holds `writable` for the entity and one `LinkPermissions` per link, which the screen uses to show and unlock the card and each `LinkSection`.
+The picker has its own store, created in the entry provider, and hands the ticked entities back through `onConfirm`.
 
 ### UseCases vs Repositories
 
