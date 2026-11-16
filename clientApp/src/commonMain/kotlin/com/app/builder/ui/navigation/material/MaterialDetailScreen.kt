@@ -10,14 +10,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.app.builder.core.config.ClientFlags
 import com.app.builder.core.locale.getLocalDateTime
 import com.app.builder.core.security.toUuid
 import com.app.builder.core.security.uuid
 import com.app.builder.domain.Building
 import com.app.builder.domain.EntityType
 import com.app.builder.domain.Material
-import com.app.builder.domain.Permission
 import com.app.builder.ui.InjectTranslations
 import com.app.builder.ui.LocalSplitScreen
 import com.app.builder.ui.Preview
@@ -30,7 +28,6 @@ import com.app.builder.ui.component.filters.FiltersAction
 import com.app.builder.ui.component.filters.FiltersState
 import com.app.builder.ui.component.link.LinkPickerAction
 import com.app.builder.ui.component.link.LinkPickerState
-import com.app.builder.ui.component.link.linkPermissions
 import com.app.builder.ui.component.link.toLinkItem
 import com.app.builder.ui.component.list.BuildingItem
 import com.app.builder.ui.component.navigation.Navigation
@@ -61,11 +58,6 @@ fun MaterialDetailScreen(
     store: Store<MaterialDetailScreenState, MaterialDetailScreenAction>,
 ) {
     val state by store.stateFlow.collectAsStateWithLifecycle()
-    val session by sessionStore.stateFlow.collectAsStateWithLifecycle()
-    val flags by ClientFlags.flow.collectAsStateWithLifecycle()
-    val account = session.account
-    val canEditMaterial = account?.hasPermission(entityType = EntityType.MATERIAL, permission = Permission.WRITE) == true
-    val buildingLinks = account.linkPermissions(enabled = flags.buildingMaterials, linked = EntityType.BUILDING, link = EntityType.BUILDING_MATERIAL)
     val material = state.material
     val deleted = material?.deletedAt != null
 
@@ -79,7 +71,7 @@ fun MaterialDetailScreen(
                 sessionStore = sessionStore,
                 filtersStore = filtersStore.takeIf { splitScreen },
                 entityType = EntityType.MATERIAL,
-                editEntityTypes = if (buildingLinks.canEdit) setOf(EntityType.BUILDING_MATERIAL) else emptySet(),
+                editEntityTypes = if (state.buildingLinks.canEdit) setOf(EntityType.BUILDING_MATERIAL) else emptySet(),
                 deleted = deleted,
                 onAddClick = if (splitScreen && !state.editing) {
                     { router.navigate(screen = Screen.MaterialDetail(uuid = uuid().toString(), new = true), option = Router.NavOption.REPLACE_LAST) }
@@ -102,7 +94,7 @@ fun MaterialDetailScreen(
     ) {
         Column(modifier = Modifier.fillMaxSize().verticalScroll(state = rememberScrollState())) {
             MaterialCard(
-                enabled = material != null && state.editing && canEditMaterial,
+                enabled = material != null && state.editing && state.writable,
                 uuid = material?.uuid?.toString(),
                 modifiedAt = material?.modifiedAt?.let { getLocalDateTime(utc = it.toString()) },
                 deletedAt = material?.deletedAt?.let { getLocalDateTime(utc = it.toString()) },
@@ -111,11 +103,11 @@ fun MaterialDetailScreen(
                 description = material?.description,
                 onDescriptionChange = { store.send(action = MaterialDetailScreenAction.ChangeDescription(description = it)) },
                 links = {
-                    if (material != null && buildingLinks.canRead) LinkSection(
+                    if (material != null && state.buildingLinks.canRead) LinkSection(
                         tag = "material_buildings",
                         label = "material_buildings",
                         items = state.buildings.map { it.toLinkItem() }.toImmutableList(),
-                        editing = state.editing && buildingLinks.canEdit,
+                        editing = state.editing && state.buildingLinks.canEdit,
                         linkLabel = "material_link_buildings",
                         onLinkClick = { buildingPickerStore.send(action = LinkPickerAction.Open(picked = state.buildings.map { it.uuid }.toSet())) },
                         onRemove = { item -> item.uuid.toUuid()?.let { store.send(action = MaterialDetailScreenAction.RemoveBuilding(buildingUuid = it)) } },

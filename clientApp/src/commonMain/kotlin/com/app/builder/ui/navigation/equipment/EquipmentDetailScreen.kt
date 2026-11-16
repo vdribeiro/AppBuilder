@@ -10,14 +10,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.app.builder.core.config.ClientFlags
 import com.app.builder.core.locale.getLocalDateTime
 import com.app.builder.core.security.toUuid
 import com.app.builder.core.security.uuid
 import com.app.builder.domain.Building
 import com.app.builder.domain.EntityType
 import com.app.builder.domain.Equipment
-import com.app.builder.domain.Permission
 import com.app.builder.ui.InjectTranslations
 import com.app.builder.ui.LocalSplitScreen
 import com.app.builder.ui.Preview
@@ -29,7 +27,6 @@ import com.app.builder.ui.component.filters.FiltersAction
 import com.app.builder.ui.component.filters.FiltersState
 import com.app.builder.ui.component.link.LinkPickerAction
 import com.app.builder.ui.component.link.LinkPickerState
-import com.app.builder.ui.component.link.linkPermissions
 import com.app.builder.ui.component.link.toLinkItem
 import com.app.builder.ui.component.list.BuildingItem
 import com.app.builder.ui.component.navigation.Navigation
@@ -60,11 +57,6 @@ fun EquipmentDetailScreen(
     store: Store<EquipmentDetailScreenState, EquipmentDetailScreenAction>,
 ) {
     val state by store.stateFlow.collectAsStateWithLifecycle()
-    val session by sessionStore.stateFlow.collectAsStateWithLifecycle()
-    val flags by ClientFlags.flow.collectAsStateWithLifecycle()
-    val account = session.account
-    val canEditEquipment = account?.hasPermission(entityType = EntityType.EQUIPMENT, permission = Permission.WRITE) == true
-    val buildingLinks = account.linkPermissions(enabled = flags.buildingEquipments, linked = EntityType.BUILDING, link = EntityType.BUILDING_EQUIPMENT)
     val equipment = state.equipment
     val deleted = equipment?.deletedAt != null
 
@@ -78,7 +70,7 @@ fun EquipmentDetailScreen(
                 sessionStore = sessionStore,
                 filtersStore = filtersStore.takeIf { splitScreen },
                 entityType = EntityType.EQUIPMENT,
-                editEntityTypes = if (buildingLinks.canEdit) setOf(EntityType.BUILDING_EQUIPMENT) else emptySet(),
+                editEntityTypes = if (state.buildingLinks.canEdit) setOf(EntityType.BUILDING_EQUIPMENT) else emptySet(),
                 deleted = deleted,
                 onAddClick = if (splitScreen && !state.editing) {
                     { router.navigate(screen = Screen.EquipmentDetail(uuid = uuid().toString(), new = true), option = Router.NavOption.REPLACE_LAST) }
@@ -101,7 +93,7 @@ fun EquipmentDetailScreen(
     ) {
         Column(modifier = Modifier.fillMaxSize().verticalScroll(state = rememberScrollState())) {
             EquipmentCard(
-                enabled = equipment != null && state.editing && canEditEquipment,
+                enabled = equipment != null && state.editing && state.writable,
                 uuid = equipment?.uuid?.toString(),
                 modifiedAt = equipment?.modifiedAt?.let { getLocalDateTime(utc = it.toString()) },
                 deletedAt = equipment?.deletedAt?.let { getLocalDateTime(utc = it.toString()) },
@@ -113,11 +105,11 @@ fun EquipmentDetailScreen(
                 statuses = state.statuses,
                 onStatusChange = { key -> Equipment.Status.entries.firstOrNull { it.translationKey == key }?.let { store.send(action = EquipmentDetailScreenAction.ChangeStatus(status = it)) } },
                 links = {
-                    if (equipment != null && buildingLinks.canRead) LinkSection(
+                    if (equipment != null && state.buildingLinks.canRead) LinkSection(
                         tag = "equipment_buildings",
                         label = "equipment_buildings",
                         items = state.buildings.map { it.toLinkItem() }.toImmutableList(),
-                        editing = state.editing && buildingLinks.canEdit,
+                        editing = state.editing && state.buildingLinks.canEdit,
                         linkLabel = "equipment_link_buildings",
                         onLinkClick = { buildingPickerStore.send(action = LinkPickerAction.Open(picked = state.buildings.map { it.uuid }.toSet())) },
                         onRemove = { item -> item.uuid.toUuid()?.let { store.send(action = EquipmentDetailScreenAction.RemoveBuilding(buildingUuid = it)) } },

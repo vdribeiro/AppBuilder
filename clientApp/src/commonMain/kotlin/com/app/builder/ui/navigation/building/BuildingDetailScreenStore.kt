@@ -4,18 +4,24 @@ import kotlin.math.round
 import kotlin.time.Instant
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.firstOrNull
+import com.app.builder.core.config.ClientFlags
 import com.app.builder.core.locale.now
 import com.app.builder.core.security.toUuid
 import com.app.builder.core.telemetry.Telemetry
 import com.app.builder.domain.Building
 import com.app.builder.domain.BuildingEquipment
 import com.app.builder.domain.BuildingMaterial
+import com.app.builder.domain.EntityType
+import com.app.builder.domain.Permission
+import com.app.builder.domain.gateway.authentication.AuthenticationUseCases
 import com.app.builder.domain.gateway.building.BuildingUseCases
 import com.app.builder.domain.gateway.buildingequipment.BuildingEquipmentUseCases
 import com.app.builder.domain.gateway.buildingmaterial.BuildingMaterialUseCases
 import com.app.builder.ui.component.link.Link
 import com.app.builder.ui.component.link.linkChanges
+import com.app.builder.ui.component.link.linkPermissions
 import com.app.builder.ui.navigation.Router
 import com.app.builder.ui.store.Store
 
@@ -27,6 +33,7 @@ import com.app.builder.ui.store.Store
  * @property buildingUseCases Use cases used to observe and save the building.
  * @property buildingEquipmentUseCases Use cases used to observe and save the building equipments of the building.
  * @property buildingMaterialUseCases Use cases used to observe and save the building materials of the building.
+ * @property authenticationUseCases Use cases used to observe the current account.
  * @property buildingUuid UUID of the building being displayed.
  * @property new Whether the building is new and not stored yet, starting it in edit mode.
  */
@@ -36,6 +43,7 @@ class BuildingDetailScreenStore(
     private val buildingUseCases: BuildingUseCases,
     private val buildingEquipmentUseCases: BuildingEquipmentUseCases,
     private val buildingMaterialUseCases: BuildingMaterialUseCases,
+    private val authenticationUseCases: AuthenticationUseCases,
     private val buildingUuid: String,
     private val new: Boolean = false
 ): Store<BuildingDetailScreenState, BuildingDetailScreenAction>(initialState = state) {
@@ -44,7 +52,7 @@ class BuildingDetailScreenStore(
     }
 
     /**
-     * Starts a [new] building in edit mode, then observes the building with [buildingUuid] and its linked equipments and materials, ignoring their changes while they're being edited.
+     * Starts a [new] building in edit mode, then observes what the current account can do with the building and its links, and the building with [buildingUuid] and its linked equipments and materials, ignoring their changes while they're being edited.
      *
      * @return The [Job] representing this execution.
      */
@@ -58,6 +66,15 @@ class BuildingDetailScreenStore(
 
         if (new) updateState { it.showing(building = Building(uuid = uuid)).copy(editing = true, new = true) }
 
+        combine(
+            flow = authenticationUseCases.observeCurrentAccount(),
+            flow2 = ClientFlags.flow
+        ) { account, flags -> account to flags }.observe(id = "permissions") { (account, flags) ->
+            val writable = account?.hasPermission(entityType = EntityType.BUILDING, permission = Permission.WRITE) ?: false
+            val equipmentLinks = account.linkPermissions(enabled = flags.buildingEquipments, linked = EntityType.EQUIPMENT, link = EntityType.BUILDING_EQUIPMENT)
+            val materialLinks = account.linkPermissions(enabled = flags.buildingMaterials, linked = EntityType.MATERIAL, link = EntityType.BUILDING_MATERIAL)
+            updateState { it.copy(writable = writable, equipmentLinks = equipmentLinks, materialLinks = materialLinks) }
+        }
         buildingUseCases.observeBuilding(uuid = uuid).observe(id = "building") { building ->
             updateState { if (it.editing) it.copy(storedBuilding = building) else it.showing(building = building).copy(storedBuilding = building) }
         }

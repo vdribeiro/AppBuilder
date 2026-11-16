@@ -6,6 +6,7 @@ import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
 import com.app.builder.domain.Equipment
 import com.app.builder.ui.component.link.Link
+import com.app.builder.ui.component.link.LinkPermissions
 
 /** Actions supported by the Equipment Detail Screen. */
 sealed interface EquipmentDetailScreenAction {
@@ -61,6 +62,8 @@ sealed interface EquipmentDetailScreenAction {
  * @property statuses Every equipment status, in selection order.
  * @property buildings The buildings linked to the equipment, including the edits that are not saved yet.
  * @property storedBuildings The buildings linked to the equipment as stored.
+ * @property writable Whether the current user can edit, delete and restore the equipment.
+ * @property buildingLinks What the current user can do with the links to the buildings of the equipment.
  */
 data class EquipmentDetailScreenState(
     val equipment: Equipment? = null,
@@ -70,4 +73,6 @@ data class EquipmentDetailScreenState(
     val statuses: ImmutableList<String> = Equipment.Status.entries.map { it.translationKey }.toPersistentList(),
     val buildings: ImmutableList<Link> = persistentListOf(),
     val storedBuildings: ImmutableList<Link> = persistentListOf(),
+    val writable: Boolean = false,
+    val buildingLinks: LinkPermissions = LinkPermissions(),
 )

@@ -40,6 +40,7 @@ fun EntryProviderScope<NavKey>.materialProvider(useCases: UseCases) {
                     router = router,
                     materialUseCases = useCases.materialUseCases,
                     buildingMaterialUseCases = useCases.buildingMaterialUseCases,
+                    authenticationUseCases = useCases.authenticationUseCases,
                     materialUuid = it.uuid,
                     new = it.new
                 )

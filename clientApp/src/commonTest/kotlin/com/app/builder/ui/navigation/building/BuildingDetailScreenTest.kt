@@ -40,6 +40,7 @@ import com.app.builder.ui.component.equipment.equipmentLinkPickerStore
 import com.app.builder.ui.component.filters.FiltersState
 import com.app.builder.ui.component.filters.FiltersStore
 import com.app.builder.ui.component.link.Link
+import com.app.builder.ui.component.link.LinkPermissions
 import com.app.builder.ui.component.link.LinkPickerStore
 import com.app.builder.ui.component.list.EquipmentItem
 import com.app.builder.ui.component.list.MaterialItem
@@ -100,6 +101,7 @@ class BuildingDetailScreenTest: TestCase() {
             buildingUseCases = useCases.buildingUseCases,
             buildingEquipmentUseCases = useCases.buildingEquipmentUseCases,
             buildingMaterialUseCases = useCases.buildingMaterialUseCases,
+            authenticationUseCases = useCases.authenticationUseCases,
             buildingUuid = buildingUuid.toString(),
             new = new
         )
@@ -136,6 +138,7 @@ class BuildingDetailScreenTest: TestCase() {
             buildingUseCases = useCases.buildingUseCases,
             buildingEquipmentUseCases = useCases.buildingEquipmentUseCases,
             buildingMaterialUseCases = useCases.buildingMaterialUseCases,
+            authenticationUseCases = useCases.authenticationUseCases,
             buildingUuid = FakeData.building.uuid.toString()
         )
         val sessionStore = SessionStore(state = SessionState(), authenticationUseCases = useCases.authenticationUseCases)
@@ -424,6 +427,7 @@ class BuildingDetailScreenTest: TestCase() {
             buildingUseCases = useCases.buildingUseCases,
             buildingEquipmentUseCases = useCases.buildingEquipmentUseCases,
             buildingMaterialUseCases = useCases.buildingMaterialUseCases,
+            authenticationUseCases = useCases.authenticationUseCases,
             buildingUuid = FakeData.building.uuid.toString()
         )
         store.stateFlow.first { it.building != null }
@@ -456,6 +460,7 @@ class BuildingDetailScreenTest: TestCase() {
             buildingUseCases = useCases.buildingUseCases,
             buildingEquipmentUseCases = useCases.buildingEquipmentUseCases,
             buildingMaterialUseCases = useCases.buildingMaterialUseCases,
+            authenticationUseCases = useCases.authenticationUseCases,
             buildingUuid = FakeData.building.uuid.toString()
         )
         store.stateFlow.first { it.building != null }
@@ -479,6 +484,7 @@ class BuildingDetailScreenTest: TestCase() {
             buildingUseCases = useCases.buildingUseCases,
             buildingEquipmentUseCases = useCases.buildingEquipmentUseCases,
             buildingMaterialUseCases = useCases.buildingMaterialUseCases,
+            authenticationUseCases = useCases.authenticationUseCases,
             buildingUuid = FakeData.building.uuid.toString()
         )
         store.stateFlow.first { it.building != null }
@@ -513,6 +519,7 @@ class BuildingDetailScreenTest: TestCase() {
         buildingUseCases = useCases.buildingUseCases,
         buildingEquipmentUseCases = useCases.buildingEquipmentUseCases,
         buildingMaterialUseCases = useCases.buildingMaterialUseCases,
+        authenticationUseCases = useCases.authenticationUseCases,
         buildingUuid = FakeData.building.uuid.toString()
     )
 
@@ -791,5 +798,19 @@ class BuildingDetailScreenTest: TestCase() {
         waitUntil { store.state.building != null && sessionStore.state.account != null }
         onNodeWithTag(testTag = "building_equipments").assertExists()
         onNodeWithTag(testTag = "building_materials").assertDoesNotExist()
+    }
+
+    /** Verifies that the state follows what the current account can do: an admin can write the building and edit its links, a user with only read permission can do neither, and the links can't be read while their client feature flag is off. */
+    @Test
+    fun permissions() = runUnitTest {
+        val admin = buildingStore(useCases = storedBuildingUseCases()).stateFlow.first { it.writable }
+        assertTrue(actual = admin.let { it.equipmentLinks == LinkPermissions(canRead = true, canEdit = true) && it.materialLinks == LinkPermissions(canRead = true, canEdit = true) })
+
+        val reader = buildingStore(useCases = storedBuildingUseCases(credentials = FakeData.credentials)).stateFlow.first { it.equipmentLinks.canRead }
+        assertFalse(actual = reader.writable || reader.equipmentLinks.canEdit)
+
+        ClientFlags.set { it.copy(buildingEquipments = false, buildingMaterials = false) }
+        val disabled = buildingStore(useCases = storedBuildingUseCases()).stateFlow.first { it.writable }
+        assertTrue(actual = disabled.let { it.equipmentLinks == LinkPermissions() && it.materialLinks == LinkPermissions() })
     }
 }

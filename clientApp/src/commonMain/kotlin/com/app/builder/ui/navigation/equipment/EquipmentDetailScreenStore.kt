@@ -3,16 +3,22 @@ package com.app.builder.ui.navigation.equipment
 import kotlin.time.Instant
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.firstOrNull
+import com.app.builder.core.config.ClientFlags
 import com.app.builder.core.locale.now
 import com.app.builder.core.security.toUuid
 import com.app.builder.core.telemetry.Telemetry
 import com.app.builder.domain.BuildingEquipment
+import com.app.builder.domain.EntityType
 import com.app.builder.domain.Equipment
+import com.app.builder.domain.Permission
+import com.app.builder.domain.gateway.authentication.AuthenticationUseCases
 import com.app.builder.domain.gateway.buildingequipment.BuildingEquipmentUseCases
 import com.app.builder.domain.gateway.equipment.EquipmentUseCases
 import com.app.builder.ui.component.link.Link
 import com.app.builder.ui.component.link.linkChanges
+import com.app.builder.ui.component.link.linkPermissions
 import com.app.builder.ui.navigation.Router
 import com.app.builder.ui.store.Store
 
@@ -23,6 +29,7 @@ import com.app.builder.ui.store.Store
  * @property router The router used for navigation.
  * @property equipmentUseCases Use cases used to observe and save the equipment.
  * @property buildingEquipmentUseCases Use cases used to observe and save the building equipments of the equipment.
+ * @property authenticationUseCases Use cases used to observe the current account.
  * @property equipmentUuid UUID of the equipment being displayed.
  * @property new Whether the equipment is new and not stored yet, starting it in edit mode.
  */
@@ -31,6 +38,7 @@ class EquipmentDetailScreenStore(
     private val router: Router,
     private val equipmentUseCases: EquipmentUseCases,
     private val buildingEquipmentUseCases: BuildingEquipmentUseCases,
+    private val authenticationUseCases: AuthenticationUseCases,
     private val equipmentUuid: String,
     private val new: Boolean = false
 ): Store<EquipmentDetailScreenState, EquipmentDetailScreenAction>(initialState = state) {
@@ -39,7 +47,7 @@ class EquipmentDetailScreenStore(
     }
 
     /**
-     * Starts a [new] equipment in edit mode, then observes the equipment with [equipmentUuid] and its linked buildings, ignoring their changes while they're being edited.
+     * Starts a [new] equipment in edit mode, then observes what the current account can do with the equipment and its links, and the equipment with [equipmentUuid] and its linked buildings, ignoring their changes while they're being edited.
      *
      * @return The [Job] representing this execution.
      */
@@ -53,6 +61,14 @@ class EquipmentDetailScreenStore(
 
         if (new) updateState { it.copy(equipment = Equipment(uuid = uuid), editing = true, new = true) }
 
+        combine(
+            flow = authenticationUseCases.observeCurrentAccount(),
+            flow2 = ClientFlags.flow
+        ) { account, flags -> account to flags }.observe(id = "permissions") { (account, flags) ->
+            val writable = account?.hasPermission(entityType = EntityType.EQUIPMENT, permission = Permission.WRITE) ?: false
+            val buildingLinks = account.linkPermissions(enabled = flags.buildingEquipments, linked = EntityType.BUILDING, link = EntityType.BUILDING_EQUIPMENT)
+            updateState { it.copy(writable = writable, buildingLinks = buildingLinks) }
+        }
         equipmentUseCases.observeEquipment(uuid = uuid).observe(id = "equipment") { equipment ->
             updateState { if (it.editing) it.copy(storedEquipment = equipment) else it.copy(equipment = equipment, storedEquipment = equipment) }
         }

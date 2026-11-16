@@ -40,6 +40,7 @@ fun EntryProviderScope<NavKey>.equipmentProvider(useCases: UseCases) {
                     router = router,
                     equipmentUseCases = useCases.equipmentUseCases,
                     buildingEquipmentUseCases = useCases.buildingEquipmentUseCases,
+                    authenticationUseCases = useCases.authenticationUseCases,
                     equipmentUuid = it.uuid,
                     new = it.new
                 )

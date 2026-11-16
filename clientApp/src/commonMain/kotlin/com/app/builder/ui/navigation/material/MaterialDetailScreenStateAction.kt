@@ -5,6 +5,7 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import com.app.builder.domain.Material
 import com.app.builder.ui.component.link.Link
+import com.app.builder.ui.component.link.LinkPermissions
 
 /** Actions supported by the Material Detail Screen. */
 sealed interface MaterialDetailScreenAction {
@@ -60,6 +61,8 @@ sealed interface MaterialDetailScreenAction {
  * @property new Whether the material is new and not stored yet.
  * @property buildings The buildings linked to the material with their quantities as typed, including the edits that are not saved yet.
  * @property storedBuildings The buildings linked to the material with their quantities, as stored.
+ * @property writable Whether the current user can edit, delete and restore the material.
+ * @property buildingLinks What the current user can do with the links to the buildings of the material.
  */
 data class MaterialDetailScreenState(
     val material: Material? = null,
@@ -68,4 +71,6 @@ data class MaterialDetailScreenState(
     val new: Boolean = false,
     val buildings: ImmutableList<Link> = persistentListOf(),
     val storedBuildings: ImmutableList<Link> = persistentListOf(),
+    val writable: Boolean = false,
+    val buildingLinks: LinkPermissions = LinkPermissions(),
 )

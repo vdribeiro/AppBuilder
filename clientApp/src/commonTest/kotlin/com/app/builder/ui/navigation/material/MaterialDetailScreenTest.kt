@@ -23,6 +23,7 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextReplacement
 import com.app.builder.Dependency.getUserDependency
+import com.app.builder.core.config.ClientFlags
 import com.app.builder.core.locale.now
 import com.app.builder.core.security.uuid
 import com.app.builder.domain.Building
@@ -35,6 +36,7 @@ import com.app.builder.ui.component.building.buildingLinkPickerStore
 import com.app.builder.ui.component.filters.FiltersState
 import com.app.builder.ui.component.filters.FiltersStore
 import com.app.builder.ui.component.link.Link
+import com.app.builder.ui.component.link.LinkPermissions
 import com.app.builder.ui.component.link.LinkPickerStore
 import com.app.builder.ui.component.list.BuildingItem
 import com.app.builder.ui.component.session.SessionState
@@ -74,6 +76,7 @@ class MaterialDetailScreenTest: TestCase() {
             router = router,
             materialUseCases = useCases.materialUseCases,
             buildingMaterialUseCases = useCases.buildingMaterialUseCases,
+            authenticationUseCases = useCases.authenticationUseCases,
             materialUuid = materialUuid.toString(),
             new = new
         )
@@ -105,6 +108,7 @@ class MaterialDetailScreenTest: TestCase() {
             router = router,
             materialUseCases = useCases.materialUseCases,
             buildingMaterialUseCases = useCases.buildingMaterialUseCases,
+            authenticationUseCases = useCases.authenticationUseCases,
             materialUuid = FakeData.material.uuid.toString()
         )
         val sessionStore = SessionStore(state = SessionState(), authenticationUseCases = useCases.authenticationUseCases)
@@ -386,6 +390,7 @@ class MaterialDetailScreenTest: TestCase() {
         router = router,
         materialUseCases = useCases.materialUseCases,
         buildingMaterialUseCases = useCases.buildingMaterialUseCases,
+        authenticationUseCases = useCases.authenticationUseCases,
         materialUuid = FakeData.material.uuid.toString()
     )
 
@@ -487,5 +492,19 @@ class MaterialDetailScreenTest: TestCase() {
         store.send(action = MaterialDetailScreenAction.SetBuildings(buildings = persistentListOf(picked, other)))
 
         assertEquals(expected = listOf(picked.copy(quantity = "8"), other.copy(quantity = "1")), actual = store.state.buildings)
+    }
+
+    /** Verifies that the state follows what the current account can do: an admin can write the material and edit its links, a user with only read permission can do neither, and the links can't be read while their client feature flag is off. */
+    @Test
+    fun permissions() = runUnitTest {
+        val admin = materialStore(useCases = storedMaterialUseCases()).stateFlow.first { it.writable }
+        assertTrue(actual = admin.let { it.buildingLinks == LinkPermissions(canRead = true, canEdit = true) })
+
+        val reader = materialStore(useCases = storedMaterialUseCases(credentials = FakeData.credentials)).stateFlow.first { it.buildingLinks.canRead }
+        assertFalse(actual = reader.writable || reader.buildingLinks.canEdit)
+
+        ClientFlags.set { it.copy(buildingMaterials = false) }
+        val disabled = materialStore(useCases = storedMaterialUseCases()).stateFlow.first { it.writable }
+        assertTrue(actual = disabled.let { it.buildingLinks == LinkPermissions() })
     }
 }

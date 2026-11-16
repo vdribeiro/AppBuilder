@@ -5,6 +5,7 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import com.app.builder.domain.Building
 import com.app.builder.ui.component.link.Link
+import com.app.builder.ui.component.link.LinkPermissions
 
 /** Actions supported by the Building Detail Screen. */
 sealed interface BuildingDetailScreenAction {
@@ -101,6 +102,9 @@ sealed interface BuildingDetailScreenAction {
  * @property storedEquipments The equipments linked to the building as stored.
  * @property materials The materials linked to the building with their quantities as typed, including the edits that are not saved yet.
  * @property storedMaterials The materials linked to the building with their quantities, as stored.
+ * @property writable Whether the current user can edit, delete and restore the building.
+ * @property equipmentLinks What the current user can do with the links to the equipments of the building.
+ * @property materialLinks What the current user can do with the links to the materials of the building.
  */
 data class BuildingDetailScreenState(
     val building: Building? = null,
@@ -113,6 +117,9 @@ data class BuildingDetailScreenState(
     val storedEquipments: ImmutableList<Link> = persistentListOf(),
     val materials: ImmutableList<Link> = persistentListOf(),
     val storedMaterials: ImmutableList<Link> = persistentListOf(),
+    val writable: Boolean = false,
+    val equipmentLinks: LinkPermissions = LinkPermissions(),
+    val materialLinks: LinkPermissions = LinkPermissions(),
 ) {
     /** Whether [latitude] is not a number within ±90, or is missing while [longitude] is set. */
     val latitudeError: Boolean

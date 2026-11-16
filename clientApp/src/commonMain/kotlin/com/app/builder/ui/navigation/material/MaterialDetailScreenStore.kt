@@ -3,16 +3,22 @@ package com.app.builder.ui.navigation.material
 import kotlin.time.Instant
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.firstOrNull
+import com.app.builder.core.config.ClientFlags
 import com.app.builder.core.locale.now
 import com.app.builder.core.security.toUuid
 import com.app.builder.core.telemetry.Telemetry
 import com.app.builder.domain.BuildingMaterial
+import com.app.builder.domain.EntityType
 import com.app.builder.domain.Material
+import com.app.builder.domain.Permission
+import com.app.builder.domain.gateway.authentication.AuthenticationUseCases
 import com.app.builder.domain.gateway.buildingmaterial.BuildingMaterialUseCases
 import com.app.builder.domain.gateway.material.MaterialUseCases
 import com.app.builder.ui.component.link.Link
 import com.app.builder.ui.component.link.linkChanges
+import com.app.builder.ui.component.link.linkPermissions
 import com.app.builder.ui.navigation.Router
 import com.app.builder.ui.store.Store
 
@@ -23,6 +29,7 @@ import com.app.builder.ui.store.Store
  * @property router The router used for navigation.
  * @property materialUseCases Use cases used to observe and save the material.
  * @property buildingMaterialUseCases Use cases used to observe and save the building materials of the material.
+ * @property authenticationUseCases Use cases used to observe the current account.
  * @property materialUuid UUID of the material being displayed.
  * @property new Whether the material is new and not stored yet, starting it in edit mode.
  */
@@ -31,6 +38,7 @@ class MaterialDetailScreenStore(
     private val router: Router,
     private val materialUseCases: MaterialUseCases,
     private val buildingMaterialUseCases: BuildingMaterialUseCases,
+    private val authenticationUseCases: AuthenticationUseCases,
     private val materialUuid: String,
     private val new: Boolean = false
 ): Store<MaterialDetailScreenState, MaterialDetailScreenAction>(initialState = state) {
@@ -39,7 +47,7 @@ class MaterialDetailScreenStore(
     }
 
     /**
-     * Starts a [new] material in edit mode, then observes the material with [materialUuid] and its linked buildings with their quantities, ignoring their changes while they're being edited.
+     * Starts a [new] material in edit mode, then observes what the current account can do with the material and its links, and the material with [materialUuid] and its linked buildings with their quantities, ignoring their changes while they're being edited.
      *
      * @return The [Job] representing this execution.
      */
@@ -53,6 +61,14 @@ class MaterialDetailScreenStore(
 
         if (new) updateState { it.copy(material = Material(uuid = uuid), editing = true, new = true) }
 
+        combine(
+            flow = authenticationUseCases.observeCurrentAccount(),
+            flow2 = ClientFlags.flow
+        ) { account, flags -> account to flags }.observe(id = "permissions") { (account, flags) ->
+            val writable = account?.hasPermission(entityType = EntityType.MATERIAL, permission = Permission.WRITE) ?: false
+            val buildingLinks = account.linkPermissions(enabled = flags.buildingMaterials, linked = EntityType.BUILDING, link = EntityType.BUILDING_MATERIAL)
+            updateState { it.copy(writable = writable, buildingLinks = buildingLinks) }
+        }
         materialUseCases.observeMaterial(uuid = uuid).observe(id = "material") { material ->
             updateState { if (it.editing) it.copy(storedMaterial = material) else it.copy(material = material, storedMaterial = material) }
         }

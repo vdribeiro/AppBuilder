@@ -45,6 +45,7 @@ fun EntryProviderScope<NavKey>.buildingProvider(useCases: UseCases) {
                     buildingUseCases = useCases.buildingUseCases,
                     buildingEquipmentUseCases = useCases.buildingEquipmentUseCases,
                     buildingMaterialUseCases = useCases.buildingMaterialUseCases,
+                    authenticationUseCases = useCases.authenticationUseCases,
                     buildingUuid = it.uuid,
                     new = it.new
                 )

@@ -23,6 +23,7 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextReplacement
 import com.app.builder.Dependency.getUserDependency
+import com.app.builder.core.config.ClientFlags
 import com.app.builder.core.locale.now
 import com.app.builder.core.security.uuid
 import com.app.builder.domain.Building
@@ -35,6 +36,7 @@ import com.app.builder.ui.component.building.buildingLinkPickerStore
 import com.app.builder.ui.component.filters.FiltersState
 import com.app.builder.ui.component.filters.FiltersStore
 import com.app.builder.ui.component.link.Link
+import com.app.builder.ui.component.link.LinkPermissions
 import com.app.builder.ui.component.link.LinkPickerStore
 import com.app.builder.ui.component.list.BuildingItem
 import com.app.builder.ui.component.session.SessionState
@@ -74,6 +76,7 @@ class EquipmentDetailScreenTest: TestCase() {
             router = router,
             equipmentUseCases = useCases.equipmentUseCases,
             buildingEquipmentUseCases = useCases.buildingEquipmentUseCases,
+            authenticationUseCases = useCases.authenticationUseCases,
             equipmentUuid = equipmentUuid.toString(),
             new = new
         )
@@ -105,6 +108,7 @@ class EquipmentDetailScreenTest: TestCase() {
             router = router,
             equipmentUseCases = useCases.equipmentUseCases,
             buildingEquipmentUseCases = useCases.buildingEquipmentUseCases,
+            authenticationUseCases = useCases.authenticationUseCases,
             equipmentUuid = FakeData.equipment.uuid.toString()
         )
         val sessionStore = SessionStore(state = SessionState(), authenticationUseCases = useCases.authenticationUseCases)
@@ -405,6 +409,7 @@ class EquipmentDetailScreenTest: TestCase() {
         router = router,
         equipmentUseCases = useCases.equipmentUseCases,
         buildingEquipmentUseCases = useCases.buildingEquipmentUseCases,
+        authenticationUseCases = useCases.authenticationUseCases,
         equipmentUuid = FakeData.equipment.uuid.toString()
     )
 
@@ -453,5 +458,19 @@ class EquipmentDetailScreenTest: TestCase() {
 
         assertTrue(actual = useCases.buildingEquipmentUseCases.observeBuildingsOfEquipment(equipmentUuid = FakeData.equipment.uuid).first { it.isEmpty() }.isEmpty())
         assertEquals(expected = FakeData.equipment, actual = useCases.equipmentUseCases.observeEquipment(uuid = FakeData.equipment.uuid).first())
+    }
+
+    /** Verifies that the state follows what the current account can do: an admin can write the equipment and edit its links, a user with only read permission can do neither, and the links can't be read while their client feature flag is off. */
+    @Test
+    fun permissions() = runUnitTest {
+        val admin = equipmentStore(useCases = storedEquipmentUseCases()).stateFlow.first { it.writable }
+        assertTrue(actual = admin.let { it.buildingLinks == LinkPermissions(canRead = true, canEdit = true) })
+
+        val reader = equipmentStore(useCases = storedEquipmentUseCases(credentials = FakeData.credentials)).stateFlow.first { it.buildingLinks.canRead }
+        assertFalse(actual = reader.writable || reader.buildingLinks.canEdit)
+
+        ClientFlags.set { it.copy(buildingEquipments = false) }
+        val disabled = equipmentStore(useCases = storedEquipmentUseCases()).stateFlow.first { it.writable }
+        assertTrue(actual = disabled.let { it.buildingLinks == LinkPermissions() })
     }
 }
