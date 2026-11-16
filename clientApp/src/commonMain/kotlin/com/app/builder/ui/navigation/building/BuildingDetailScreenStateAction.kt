@@ -9,10 +9,16 @@ import kotlinx.collections.immutable.toImmutableList
 import com.app.builder.data.storage.AppFile
 import com.app.builder.domain.Building
 import com.app.builder.domain.Equipment
+import com.app.builder.domain.Material
+import com.app.builder.domain.gateway.buildingmaterial.MaterialInBuilding
 import com.app.builder.ui.component.list.EquipmentItem
+import com.app.builder.ui.component.list.MaterialItem
 import com.app.builder.ui.navigation.equipment.equipmentFilterDefaults
 import com.app.builder.ui.navigation.equipment.filtered
 import com.app.builder.ui.navigation.equipment.toEquipmentItem
+import com.app.builder.ui.navigation.material.filtered
+import com.app.builder.ui.navigation.material.materialFilterDefaults
+import com.app.builder.ui.navigation.material.toMaterialItem
 
 /** Actions supported by the Building Detail Screen. */
 sealed interface BuildingDetailScreenAction {
@@ -71,6 +77,31 @@ sealed interface BuildingDetailScreenAction {
      * @param equipmentUuid The unique identifier of the equipment.
      */
     data class RemoveEquipment(val equipmentUuid: Uuid): BuildingDetailScreenAction
+    /** Opens the material picker with the linked materials ticked. */
+    data object OpenMaterialPicker: BuildingDetailScreenAction
+    /** Closes the material picker and clears the ticked materials. */
+    data object CloseMaterialPicker: BuildingDetailScreenAction
+    /**
+     * Ticks or unticks a material in the picker.
+     *
+     * @param materialUuid The unique identifier of the material.
+     */
+    data class ToggleMaterialPick(val materialUuid: Uuid): BuildingDetailScreenAction
+    /** Sets the materials linked to the edited building to the ticked ones, keeping the quantities already typed, and closes the material picker. */
+    data object SaveMaterialPick: BuildingDetailScreenAction
+    /**
+     * Unlinks a material from the edited building.
+     *
+     * @param materialUuid The unique identifier of the material.
+     */
+    data class RemoveMaterial(val materialUuid: Uuid): BuildingDetailScreenAction
+    /**
+     * Updates the typed quantity of a material stored in the edited building.
+     *
+     * @param materialUuid The unique identifier of the material.
+     * @param quantity The new quantity text.
+     */
+    data class ChangeMaterialQuantity(val materialUuid: Uuid, val quantity: String): BuildingDetailScreenAction
     /** Start editing the current building. */
     data object Edit: BuildingDetailScreenAction
     /** Save the edited building and stop editing it. */
@@ -98,6 +129,12 @@ sealed interface BuildingDetailScreenAction {
  * @property equipmentFilters The equipment list filters, applied to the equipment picker.
  * @property equipmentPickerOpen Whether the equipment picker is open.
  * @property pickedEquipments The equipments ticked in the equipment picker.
+ * @property materials The materials linked to the building with their quantities as typed, including the edits that are not saved yet.
+ * @property storedMaterials The materials linked to the building with their quantities, as stored.
+ * @property allMaterials Every material that is not deleted.
+ * @property materialFilters The material list filters, applied to the material picker.
+ * @property materialPickerOpen Whether the material picker is open.
+ * @property pickedMaterials The materials ticked in the material picker.
  */
 data class BuildingDetailScreenState(
     val building: Building? = null,
@@ -112,6 +149,12 @@ data class BuildingDetailScreenState(
     val equipmentFilters: AppFile.ActionBarData = equipmentFilterDefaults,
     val equipmentPickerOpen: Boolean = false,
     val pickedEquipments: ImmutableSet<Uuid> = persistentSetOf(),
+    val materials: ImmutableList<MaterialLink> = persistentListOf(),
+    val storedMaterials: ImmutableList<MaterialInBuilding> = persistentListOf(),
+    val allMaterials: ImmutableList<Material> = persistentListOf(),
+    val materialFilters: AppFile.ActionBarData = materialFilterDefaults,
+    val materialPickerOpen: Boolean = false,
+    val pickedMaterials: ImmutableSet<Uuid> = persistentSetOf(),
 ) {
     /**
      * The rows of the equipment picker: [allEquipments] filtered and sorted by [equipmentFilters], without the deleted ones, ticked when in [pickedEquipments].
@@ -119,6 +162,15 @@ data class BuildingDetailScreenState(
     val equipmentPickerItems: ImmutableList<EquipmentItem> by lazy {
         allEquipments.filtered(actionBarData = equipmentFilters.copy(showDeleted = false)).map { equipment ->
             equipment.toEquipmentItem(visibilityProperties = equipmentFilters.visibleProperties, selectedUuid = null).copy(checked = equipment.uuid in pickedEquipments)
+        }.toImmutableList()
+    }
+
+    /**
+     * The rows of the material picker: [allMaterials] filtered and sorted by [materialFilters], without the deleted ones, ticked when in [pickedMaterials].
+     */
+    val materialPickerItems: ImmutableList<MaterialItem> by lazy {
+        allMaterials.filtered(actionBarData = materialFilters.copy(showDeleted = false)).map { material ->
+            material.toMaterialItem(visibilityProperties = materialFilters.visibleProperties, selectedUuid = null).copy(checked = material.uuid in pickedMaterials)
         }.toImmutableList()
     }
 
@@ -138,3 +190,25 @@ data class BuildingDetailScreenState(
  * @return `true` if the text is blank or a valid coordinate.
  */
 private fun String.isCoordinate(limit: Double): Boolean = isBlank() || toDoubleOrNull()?.let { it in -limit..limit } == true
+
+/**
+ * A material linked to the building being viewed or edited.
+ *
+ * @property material The linked material.
+ * @property quantity The quantity of the material stored in the building, as typed.
+ */
+data class MaterialLink(
+    val material: Material,
+    val quantity: String = "1"
+) {
+    /** Whether [quantity] is not a whole number of at least one. */
+    val quantityError: Boolean
+        get() = quantity.toIntOrNull()?.let { it >= 1 } != true
+}
+
+/**
+ * Converts this material stored in a building into a [MaterialLink], with its quantity as text.
+ *
+ * @return The corresponding [MaterialLink].
+ */
+internal fun MaterialInBuilding.toMaterialLink(): MaterialLink = MaterialLink(material = material, quantity = quantity.toString())

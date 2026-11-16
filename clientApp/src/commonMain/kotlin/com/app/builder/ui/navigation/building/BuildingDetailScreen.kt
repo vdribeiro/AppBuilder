@@ -23,6 +23,7 @@ import com.app.builder.ui.LocalSplitScreen
 import com.app.builder.ui.Preview
 import com.app.builder.ui.component.actionbar.ActionBar
 import com.app.builder.ui.component.card.BuildingCard
+import com.app.builder.ui.component.field.LinkExtra
 import com.app.builder.ui.component.field.LinkItem
 import com.app.builder.ui.component.field.LinkSection
 import com.app.builder.ui.component.filters.FiltersAction
@@ -30,6 +31,7 @@ import com.app.builder.ui.component.filters.FiltersState
 import com.app.builder.ui.component.filters.StoreFilters
 import com.app.builder.ui.component.filters.StoreFiltersButton
 import com.app.builder.ui.component.list.EquipmentList
+import com.app.builder.ui.component.list.MaterialList
 import com.app.builder.ui.component.navigation.Navigation
 import com.app.builder.ui.component.navigation.NavigationRoute
 import com.app.builder.ui.component.overlay.PickerDialog
@@ -51,6 +53,7 @@ import com.app.builder.domain.Permission as DomainPermission
  * @param sessionStore The session store shared by every screen.
  * @param filtersStore The building filters shared by every building screen, shown when the building list is beside this screen.
  * @param equipmentFiltersStore The equipment list filters, shown in the equipment picker.
+ * @param materialFiltersStore The material list filters, shown in the material picker.
  * @param store Provides the building detail state and receives its actions.
  */
 @Composable
@@ -58,6 +61,7 @@ fun BuildingDetailScreen(
     sessionStore: Store<SessionState, Unit>,
     filtersStore: Store<FiltersState, FiltersAction>,
     equipmentFiltersStore: Store<FiltersState, FiltersAction>,
+    materialFiltersStore: Store<FiltersState, FiltersAction>,
     store: Store<BuildingDetailScreenState, BuildingDetailScreenAction>,
 ) {
     val state by store.stateFlow.collectAsStateWithLifecycle()
@@ -70,6 +74,9 @@ fun BuildingDetailScreen(
     val canReadEquipments = account?.hasPermission(entityType = EntityType.EQUIPMENT, permission = DomainPermission.READ) == true
     val canReadLinks = flags.buildingEquipments && canReadEquipments && account.hasPermission(entityType = EntityType.BUILDING_EQUIPMENT, permission = DomainPermission.READ)
     val canEditLinks = flags.buildingEquipments && canReadEquipments && account.hasPermission(entityType = EntityType.BUILDING_EQUIPMENT, permission = DomainPermission.WRITE)
+    val canReadMaterials = account?.hasPermission(entityType = EntityType.MATERIAL, permission = DomainPermission.READ) == true
+    val canReadMaterialLinks = flags.buildingMaterials && canReadMaterials && account.hasPermission(entityType = EntityType.BUILDING_MATERIAL, permission = DomainPermission.READ)
+    val canEditMaterialLinks = flags.buildingMaterials && canReadMaterials && account.hasPermission(entityType = EntityType.BUILDING_MATERIAL, permission = DomainPermission.WRITE)
 
     val router = LocalRouter.current
     val splitScreen = LocalSplitScreen.current
@@ -84,7 +91,7 @@ fun BuildingDetailScreen(
                 sessionStore = sessionStore,
                 filtersStore = filtersStore.takeIf { splitScreen },
                 entityType = EntityType.BUILDING,
-                editEntityTypes = if (canEditLinks) setOf(EntityType.BUILDING_EQUIPMENT) else emptySet(),
+                editEntityTypes = setOfNotNull(EntityType.BUILDING_EQUIPMENT.takeIf { canEditLinks }, EntityType.BUILDING_MATERIAL.takeIf { canEditMaterialLinks }),
                 deleted = deleted,
                 onAddClick = if (splitScreen && !state.editing) {
                     { router.navigate(screen = Screen.BuildingDetail(uuid = uuid().toString(), new = true), option = Router.NavOption.REPLACE_LAST) }
@@ -143,6 +150,21 @@ fun BuildingDetailScreen(
                         onRemove = { item -> item.uuid.toUuid()?.let { store.send(action = BuildingDetailScreenAction.RemoveEquipment(equipmentUuid = it)) } },
                         onClick = { item -> router.navigate(screen = Screen.EquipmentDetail(uuid = item.uuid), option = Router.NavOption.ADD) }
                     )
+                    if (building != null && canReadMaterialLinks) LinkSection(
+                        tag = "building_materials",
+                        label = "building_materials",
+                        items = state.materials.map { LinkItem(uuid = it.material.uuid.toString(), name = it.material.name, extra = LinkExtra.Number(value = it.quantity, error = it.quantityError)) }.toImmutableList(),
+                        editing = state.editing && canEditMaterialLinks,
+                        linkLabel = "building_link_materials",
+                        onLinkClick = { store.send(action = BuildingDetailScreenAction.OpenMaterialPicker) },
+                        onRemove = { item -> item.uuid.toUuid()?.let { store.send(action = BuildingDetailScreenAction.RemoveMaterial(materialUuid = it)) } },
+                        onExtraChange = { item, extra ->
+                            when (extra) {
+                                is LinkExtra.Number -> item.uuid.toUuid()?.let { store.send(action = BuildingDetailScreenAction.ChangeMaterialQuantity(materialUuid = it, quantity = extra.value)) }
+                            }
+                        },
+                        onClick = { item -> router.navigate(screen = Screen.MaterialDetail(uuid = item.uuid), option = Router.NavOption.ADD) }
+                    )
                 },
             )
         }
@@ -163,6 +185,25 @@ fun BuildingDetailScreen(
             EquipmentList(
                 items = state.equipmentPickerItems,
                 onClick = { item -> item.uuid.toUuid()?.let { store.send(action = BuildingDetailScreenAction.ToggleEquipmentPick(equipmentUuid = it)) } }
+            )
+        }
+    }
+
+    if (state.materialPickerOpen) {
+        val materialFilters by materialFiltersStore.stateFlow.collectAsStateWithLifecycle()
+        PickerDialog(
+            tag = "material_picker",
+            title = "building_link_materials",
+            onSave = { store.send(action = BuildingDetailScreenAction.SaveMaterialPick) },
+            onDismiss = { store.send(action = BuildingDetailScreenAction.CloseMaterialPicker) },
+            actions = { StoreFiltersButton(filtersStore = materialFiltersStore) },
+            secondaryActions = if (materialFilters.filtersExpanded) {
+                { StoreFilters(filtersStore = materialFiltersStore, showDeletedToggle = false) }
+            } else null,
+        ) {
+            MaterialList(
+                items = state.materialPickerItems,
+                onClick = { item -> item.uuid.toUuid()?.let { store.send(action = BuildingDetailScreenAction.ToggleMaterialPick(materialUuid = it)) } }
             )
         }
     }
@@ -187,6 +228,7 @@ private fun BuildingDetailScreenPreview() = Preview {
         sessionStore = previewStore(initialState = SessionState()),
         filtersStore = previewStore(initialState = FiltersState()),
         equipmentFiltersStore = previewStore(initialState = FiltersState()),
+        materialFiltersStore = previewStore(initialState = FiltersState()),
         store = previewStore(
             initialState = BuildingDetailScreenState(
                 building = building,
