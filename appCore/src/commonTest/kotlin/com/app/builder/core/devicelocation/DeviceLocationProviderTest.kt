@@ -3,9 +3,13 @@ package com.app.builder.core.devicelocation
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 import kotlin.uuid.Uuid
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.awaitCancellation
+import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import com.app.builder.core.config.ClientConfigs
 import com.app.builder.core.config.ClientFlags
 import com.app.builder.test.TestCase
@@ -147,6 +151,31 @@ class DeviceLocationProviderTest: TestCase() {
         }
 
         assertNull(actual = provider.getLastKnownLocation())
+    }
+
+    /** Verifies that [DeviceLocationProvider.getLastKnownLocation] rethrows the cancellation of the calling coroutine instead of answering from the last captured fix. */
+    @Test
+    fun getLastKnownLocationRethrowsTheCancellationOfTheCaller() = runUnitTest {
+        ClientFlags.set { it.copy(locationCapture = true) }
+        val fixture = fixtureLocation()
+        var returnedFixture = true
+        val provider = object: DeviceLocationProvider() {
+            override val available: Boolean = true
+            override fun hasPermission(): Boolean = true
+            override suspend fun platformGetLastKnownLocation(): DeviceLocation? {
+                if (returnedFixture) return fixture
+                awaitCancellation()
+            }
+        }
+        assertEquals(expected = fixture, actual = provider.getLastKnownLocation())
+        returnedFixture = false
+        var result: DeviceLocation? = null
+
+        val job = launch(start = CoroutineStart.UNDISPATCHED) { result = provider.getLastKnownLocation() }
+        job.cancelAndJoin()
+
+        assertTrue(actual = job.isCancelled)
+        assertNull(actual = result)
     }
 
     /** Verifies that a platform query which returns within the timeout is used as-is. */

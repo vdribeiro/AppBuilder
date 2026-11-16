@@ -40,6 +40,8 @@ data class ClientFlags(
     val deviceFiles: Boolean,
     /** Toggles the User Profile screen. When false, falls back to the error screen. */
     val userProfile: Boolean,
+    /** Toggles the Help screen. When false, the screen falls back to the error screen and its entry is hidden from the User Profile screen. */
+    val help: Boolean,
     /** Toggles the user screens. When false, falls back to the error screen. */
     val users: Boolean,
     /** Toggles the registry screens and whether registry entities are queued for background sync. When false, registry screens fall back to the error screen, their navigation item is hidden, and registry data is excluded from sync even if the user has permission to read it. */
@@ -73,6 +75,7 @@ data class ClientFlags(
             notifications = true,
             deviceFiles = true,
             userProfile = true,
+            help = true,
             users = true,
             registries = true,
             tasks = true,

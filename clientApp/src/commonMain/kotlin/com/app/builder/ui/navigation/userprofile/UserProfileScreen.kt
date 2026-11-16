@@ -6,6 +6,7 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.app.builder.AppInfo
+import com.app.builder.core.config.ClientFlags
 import com.app.builder.ui.Preview
 import com.app.builder.ui.component.bar.TopActionBar
 import com.app.builder.ui.component.container.UserProfile
@@ -26,6 +27,7 @@ fun UserProfileScreen(
     store: Store<UserProfileScreenState, UserProfileScreenAction>
 ) {
     val state by store.stateFlow.collectAsStateWithLifecycle()
+    val flags by ClientFlags.flow.collectAsStateWithLifecycle()
     val router = LocalRouter.current
     val uri = LocalUriHandler.current
 
@@ -50,6 +52,9 @@ fun UserProfileScreen(
             onNotificationsClick = { store.send(action = UserProfileScreenAction.Notifications) },
             onLogoutClick = { store.send(action = UserProfileScreenAction.Logout) },
             onResetClick = { store.send(action = UserProfileScreenAction.Reset) },
+            onHelpClick = if (flags.help) {
+                { router.navigate(screen = Screen.Help) }
+            } else null,
             onSendFeedbackClick = { router.navigate(screen = Screen.Error(error = false)) },
             onCopyrightClick = { uri.open(uri = AppInfo.COPYRIGHT) },
             onPrivacyPolicyClick = { uri.open(uri = AppInfo.PRIVACY_POLICY) },

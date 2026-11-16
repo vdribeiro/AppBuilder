@@ -75,6 +75,10 @@ sealed interface Screen: NavKey {
     @Serializable
     @SerialName(value = "screen_user_profile")
     data object UserProfile: Screen
+    /** The help screen, explaining the status icons. */
+    @Serializable
+    @SerialName(value = "screen_help")
+    data object Help: Screen
     /** The screen listing all users. */
     @Serializable
     @SerialName(value = "screen_user_list")

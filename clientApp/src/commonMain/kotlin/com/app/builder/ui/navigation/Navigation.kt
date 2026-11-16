@@ -18,6 +18,7 @@ import com.app.builder.ui.navigation.devicefiles.deviceFilesProvider
 import com.app.builder.ui.navigation.devicelocation.deviceLocationProvider
 import com.app.builder.ui.navigation.equipment.equipmentProvider
 import com.app.builder.ui.navigation.error.errorProvider
+import com.app.builder.ui.navigation.help.helpProvider
 import com.app.builder.ui.navigation.home.homeProvider
 import com.app.builder.ui.navigation.login.authenticationProvider
 import com.app.builder.ui.navigation.nfc.nfcProvider
@@ -87,6 +88,7 @@ fun UnauthenticatedNavigation(
                 if (useCases == null) return@Navigation
                 if (ClientFlags.value.home) homeProvider(useCases = useCases)
                 if (ClientFlags.value.userProfile) userProfileProvider(useCases = useCases)
+                if (ClientFlags.value.help) helpProvider()
                 if (ClientFlags.value.login) authenticationProvider(useCases = useCases)
             }
         )
@@ -115,6 +117,7 @@ fun AuthenticatedNavigation(
                 if (ClientFlags.value.home) homeProvider(useCases = useCases)
                 if (ClientFlags.value.design) designProvider(useCases = useCases)
                 if (ClientFlags.value.userProfile) userProfileProvider(useCases = useCases)
+                if (ClientFlags.value.help) helpProvider()
                 if (ClientFlags.value.users) userProvider(useCases = useCases)
                 if (ClientFlags.value.locationCapture) deviceLocationProvider(useCases = useCases)
                 if (ClientFlags.value.nfc) nfcProvider(useCases = useCases)
@@ -124,8 +127,8 @@ fun AuthenticatedNavigation(
                 if (ClientFlags.value.notifications) pushProvider(useCases = useCases)
                 if (ClientFlags.value.registries) registryProvider(useCases = useCases)
                 if (ClientFlags.value.tasks) taskProvider(useCases = useCases)
-                if (ClientFlags.value.equipments) equipmentProvider(useCases = useCases)
                 if (ClientFlags.value.buildings) buildingProvider(useCases = useCases)
+                if (ClientFlags.value.equipments) equipmentProvider(useCases = useCases)
                 translationsProvider(useCases = useCases)
             }
         )

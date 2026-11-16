@@ -9,6 +9,7 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
+import com.app.builder.core.config.ClientFlags
 import com.app.builder.test.FakeData
 import com.app.builder.test.TestCase
 import com.app.builder.ui.navigation.Screen
@@ -37,6 +38,39 @@ class UserProfileScreenTest: TestCase() {
 
         onNodeWithText(text = "send_feedback").performScrollTo().performClick()
         assertEquals(expected = listOf(Screen.Error(error = false)), actual = router.backStack.toList())
+    }
+
+    /** Verifies that help is hidden while the help client flag is disabled. */
+    @Test
+    fun helpHiddenWhenDisabled() = runUITest {
+        val authenticationUseCases = dependency.get()
+            .userGraph
+            .useCases
+            .authenticationUseCases
+
+        setUI { UserProfileScreen(store = UserProfileScreenStore(state = UserProfileScreenState(), authenticationUseCases = authenticationUseCases)) }
+
+        onNodeWithText(text = "help").assertIsDisplayed()
+
+        ClientFlags.set { it.copy(help = false) }
+        waitForIdle()
+
+        onNodeWithText(text = "help").assertDoesNotExist()
+        onNodeWithText(text = "send_feedback").assertIsDisplayed()
+    }
+
+    /** Verifies that help opens the help screen. */
+    @Test
+    fun help() = runUITest {
+        val authenticationUseCases = dependency.get()
+            .userGraph
+            .useCases
+            .authenticationUseCases
+
+        setUI { UserProfileScreen(store = UserProfileScreenStore(state = UserProfileScreenState(), authenticationUseCases = authenticationUseCases)) }
+
+        onNodeWithText(text = "help").performScrollTo().performClick()
+        assertEquals(expected = listOf(Screen.Help), actual = router.backStack.toList())
     }
 
     /** Verifies that a logged in user sees their name and account settings, and that logging out turns the profile back into a guest one. */

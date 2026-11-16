@@ -536,6 +536,46 @@
   },
   {
     "languageIso": "en",
+    "key": "help",
+    "value": "Help"
+  },
+  {
+    "languageIso": "en",
+    "key": "help_status_icons",
+    "value": "Status icons"
+  },
+  {
+    "languageIso": "en",
+    "key": "help_session_expired",
+    "value": "Session expired"
+  },
+  {
+    "languageIso": "en",
+    "key": "help_session_expired_description",
+    "value": "The server no longer accepts your session, so nothing syncs. Log out and log in again to sync your changes."
+  },
+  {
+    "languageIso": "en",
+    "key": "help_not_synced",
+    "value": "Not synced"
+  },
+  {
+    "languageIso": "en",
+    "key": "help_not_synced_description",
+    "value": "Some changes are saved on this device and still waiting to sync. They sync on their own once the server can be reached."
+  },
+  {
+    "languageIso": "en",
+    "key": "help_clock_untrusted",
+    "value": "Clock not trusted"
+  },
+  {
+    "languageIso": "en",
+    "key": "help_clock_untrusted_description",
+    "value": "The device clock differs too much from the server clock, so changes wait to sync. Syncing resumes once the clock is confirmed."
+  },
+  {
+    "languageIso": "en",
     "key": "equipment",
     "value": "Equipment"
   },

@@ -3,9 +3,14 @@ package com.app.builder.data.http
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlin.uuid.Uuid
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.awaitCancellation
+import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.mock.respond
@@ -214,6 +219,47 @@ class HttpTest: TestCase() {
             assertIs<HttpResult.Error<*>>(value = it)
             assertIs<CancellationException>(value = it.error)
         }
+    }
+
+    /** Verifies that every request wrapper rethrows the cancellation of the calling coroutine instead of reporting it as an error result. */
+    @Test
+    fun requestsRethrowTheCancellationOfTheCaller() = runUnitTest {
+        val client = HttpClient(engine = TestEngine { awaitCancellation() }) {
+            installContentNegotiation()
+        }
+        val requests = listOf<suspend () -> HttpResult<*>>(
+            { client.head(request = HttpRequest(url = URL.Probe)) },
+            { client.get<Translation>(request = HttpRequest(url = URL.Translations)) },
+            { client.get<Translation>(request = HttpRequest(url = URL.Translations), uuid = Uuid.NIL) },
+            { client.post<Translation, Translation>(request = HttpRequest(url = URL.Translations), body = translation) },
+        )
+
+        requests.forEach { request ->
+            var result: HttpResult<*>? = null
+
+            val job = launch(start = CoroutineStart.UNDISPATCHED) { result = request() }
+            job.cancelAndJoin()
+
+            assertTrue(actual = job.isCancelled)
+            assertNull(actual = result)
+        }
+    }
+
+    /** Verifies SSE rethrows the cancellation of the calling coroutine instead of reporting it as an error result. */
+    @Test
+    fun sseRethrowsTheCancellationOfTheCaller() = runUnitTest {
+        val client = HttpClient(engine = TestEngine { respondSse(pushPayload = FakeData.notification) }) {
+            installSse()
+        }
+        var result: HttpResult<Unit>? = null
+
+        val job = launch(start = CoroutineStart.UNDISPATCHED) {
+            result = client.sse(request = HttpRequest(url = URL.Push), onConnected = {}, block = { awaitCancellation() })
+        }
+        job.cancelAndJoin()
+
+        assertTrue(actual = job.isCancelled)
+        assertNull(actual = result)
     }
 
     /** A fixture item used to exercise [HttpClient.getPaginated]'s cursor advance and terminal condition. */

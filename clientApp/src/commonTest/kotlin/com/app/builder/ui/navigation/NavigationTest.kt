@@ -79,6 +79,21 @@ class NavigationTest: TestCase() {
         assertEquals(expected = listOf(Screen.TaskList), actual = router.backStack.toList())
     }
 
+    /** Verifies that navigating to the help screen while the help client flag is disabled falls back to the error screen. */
+    @Test
+    fun helpFallsBackToErrorScreenWhenDisabled() = runUITest {
+        val useCases = dependency.get().userGraph.useCases
+        ClientFlags.set { it.copy(help = false) }
+        router.navigate(screen = Screen.Help)
+
+        setUI {
+            UnauthenticatedNavigation(useCases = useCases)
+        }
+        waitForIdle()
+
+        assertEquals(expected = listOf(Screen.Error(error = true)), actual = router.backStack.toList())
+    }
+
     /** Verifies that navigating to the login screen while the login client flag is disabled falls back to the error screen. */
     @Test
     fun fallBackToErrorScreen() = runUITest {
@@ -112,6 +127,7 @@ class NavigationTest: TestCase() {
             Screen.DesignShapes,
             Screen.DesignTypography,
             Screen.UserProfile,
+            Screen.Help,
             Screen.UserList,
             Screen.DeviceLocation,
             Screen.NFC,

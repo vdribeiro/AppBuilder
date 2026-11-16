@@ -34,6 +34,7 @@ import com.app.builder.ui.core.text.Text
  * @param onNotificationsClick Callback invoked when notifications is clicked.
  * @param onLogoutClick Callback invoked when logout is clicked.
  * @param onResetClick Callback invoked when reset is clicked.
+ * @param onHelpClick Callback invoked when help is clicked, or `null` to hide help.
  * @param onSendFeedbackClick Callback invoked when send feedback is clicked.
  * @param onCopyrightClick Callback invoked when copyright is clicked.
  * @param onPrivacyPolicyClick Callback invoked when privacy policy is clicked.
@@ -51,6 +52,7 @@ fun UserProfile(
     onNotificationsClick: () -> Unit = {},
     onLogoutClick: () -> Unit = {},
     onResetClick: () -> Unit = {},
+    onHelpClick: (() -> Unit)? = null,
     onSendFeedbackClick: () -> Unit = {},
     onCopyrightClick: () -> Unit = {},
     onPrivacyPolicyClick: () -> Unit = {},
@@ -112,6 +114,13 @@ fun UserProfile(
 
         item {
             UserProfileSection(title = "about") {
+                if (onHelpClick != null) {
+                    ListItem(
+                        modifier = Modifier.clickable { onHelpClick() },
+                        headlineText = "help",
+                    )
+                    Divider()
+                }
                 ListItem(
                     modifier = Modifier.clickable { onSendFeedbackClick() },
                     headlineText = "send_feedback",
@@ -167,5 +176,6 @@ private fun UserProfilePreview() = Preview {
         name = "Vitor Ribeiro",
         language = "Ingrish",
         appVersion = "1.0.0",
+        onHelpClick = {},
     )
 }

@@ -8,6 +8,8 @@ import kotlin.test.assertTrue
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.awaitCancellation
+import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
@@ -72,6 +74,20 @@ class ApplicationTest: TestCase() {
 
         assertSame(expected = NoOpSqlDriver, actual = graph.sqlDriver)
         assertSame(expected = NoOpHttpClientEngine, actual = graph.httpClientEngine)
+    }
+
+    /** Verifies that the cancellation of the calling coroutine is rethrown instead of building the graph on a No-Op sql driver. */
+    @Test
+    fun createDependencyRethrowsTheCancellationOfTheCaller() = runUnitTest {
+        var graph: Dependency.AppGraph? = null
+
+        val job = launch(start = CoroutineStart.UNDISPATCHED) {
+            graph = createDependency(sqlDriverFactory = { awaitCancellation() }, httpEngineFactory = { NoOpHttpClientEngine })
+        }
+        job.cancelAndJoin()
+
+        assertTrue(actual = job.isCancelled)
+        assertNull(actual = graph)
     }
 
     /** Verifies that starting sets the app graph without a user graph, and stopping clears it. */
