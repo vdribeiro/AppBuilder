@@ -18,9 +18,11 @@ import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
 import com.app.builder.Application.createDependency
 import com.app.builder.Dependency.getUserDependency
+import com.app.builder.core.config.ClientFlags
 import com.app.builder.data.database.NoOpSqlDriver
 import com.app.builder.data.database.createMockSqlDriver
 import com.app.builder.data.http.NoOpHttpClientEngine
+import com.app.builder.domain.EntityType
 import com.app.builder.data.http.createMockHttpEngine
 import com.app.builder.test.FakeData
 import com.app.builder.test.TestCase
@@ -124,6 +126,26 @@ class ApplicationTest: TestCase() {
 
             userGraph.useCases.authenticationUseCases.logout(userUuid = userGraph.account.userUuid)
             Application.userDependency.first { it == null }
+        }
+    }
+
+    /** Verifies that the tasks sync is not requested while the tasks flag is off, and is requested once it turns on. */
+    @Test
+    fun entitySyncFollowsItsFlag() = runUnitTest {
+        withApplication {
+            ClientFlags.set { it.copy(tasks = false) }
+            login()
+            Application.userDependency.filterNotNull().first()
+            val jobs = dependency.get().scheduler.observeActiveJobs()
+            withContext(context = Dispatchers.Default) {
+                withTimeout(timeout = 10.seconds) {
+                    val synced = jobs.first { jobs -> jobs.any { it.entityType == EntityType.REGISTRY } }
+                    assertTrue(actual = synced.none { it.entityType == EntityType.TASK })
+
+                    ClientFlags.set { it.copy(tasks = true) }
+                    jobs.first { jobs -> jobs.any { it.entityType == EntityType.TASK } }
+                }
+            }
         }
     }
 

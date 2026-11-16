@@ -69,8 +69,11 @@ object Application {
     /** Guards concurrent start()/stop() transitions. */
     private val mutex by lazy { Mutex() }
 
-    /** The currently active job. */
-    private var job: Job? = null
+    /** The app job. */
+    private var appJob: Job? = null
+
+    /** The job requesting syncs. */
+    private var syncJob: Job? = null
 
     /** Backing state for the [Dependency.AppGraph] graph. */
     private val _dependency: MutableStateFlow<Dependency.AppGraph?> = MutableStateFlow(value = null)
@@ -142,8 +145,8 @@ object Application {
     /** Stops all application services, suspending until they have fully canceled. */
     suspend fun stop() = withContext(context = Dispatcher.IO) {
         mutex.withLock {
-            job?.cancelAndJoin()
-            job = null
+            appJob?.cancelAndJoin()
+            appJob = null
             _userDependency.value?.stop()
             _userDependency.update { null }
             _dependency.value?.stop()
@@ -181,7 +184,7 @@ object Application {
      * If the job is already running, this is a no-op.
      */
     private fun startAppJob() {
-        if (job?.isActive != true) job = scope.launch(context = Dispatcher.IO) {
+        if (appJob?.isActive != true) appJob = scope.launch(context = Dispatcher.IO) {
             _dependency.value?.stop()
             Telemetry.info(tag = TAG, message = "Development mode: $developmentMode")
             Telemetry.info(tag = TAG, message = "Platform: $platform")
@@ -220,7 +223,7 @@ object Application {
 
                     else -> {
                         Telemetry.info(tag = TAG, message = "Initializing authenticated dependencies for user ${authenticatedDependency.account.userUuid}")
-                        authenticatedDependency.start()
+                        authenticatedDependency.start(scope = scope)
                         Telemetry.info(tag = TAG, message = "Setting authenticated dependencies for user ${authenticatedDependency.account.userUuid}")
                         _userDependency.update { authenticatedDependency }
                     }
@@ -274,28 +277,47 @@ object Application {
 
     /** Stops [Dependency.UserGraph] services. */
     private suspend fun Dependency.UserGraph.stop() {
+        syncJob?.cancelAndJoin()
+        syncJob = null
         Telemetry.info(tag = TAG, message = "Stopping push service for user ${account.userUuid}")
         pushService.stop()
     }
 
-    /** Starts [Dependency.UserGraph] services. */
-    private suspend fun Dependency.UserGraph.start() {
-        sync()
+    /**
+     * Starts [Dependency.UserGraph] services.
+     *
+     * @param scope The scope to collect on.
+     */
+    private fun Dependency.UserGraph.start(scope: CoroutineScope) {
+        syncJob = scope.launch {
+            var previous: ClientFlags? = null
+            ClientFlags.flow.collect {
+                sync(flags = it, previous = previous)
+                previous = it
+            }
+        }
         Telemetry.info(tag = TAG, message = "Starting push service for user ${account.userUuid}")
         pushService.start()
     }
 
-    /** Request syncs. */
-    private suspend fun Dependency.UserGraph.sync() {
-        Telemetry.info(tag = TAG, message = "Requesting sync for user ${account.userUuid}")
-        repositories.userRepository.syncUsers()
-        if (ClientFlags.value.registries) repositories.registryRepository.syncRegistries()
-        if (ClientFlags.value.tasks) repositories.taskRepository.syncTasks()
-        if (ClientFlags.value.buildings) repositories.buildingRepository.syncBuildings()
-        if (ClientFlags.value.equipments) repositories.equipmentRepository.syncEquipments()
-        if (ClientFlags.value.buildingEquipments) repositories.buildingEquipmentRepository.syncBuildingEquipments()
-        if (ClientFlags.value.materials) repositories.materialRepository.syncMaterials()
-        if (ClientFlags.value.buildingMaterials) repositories.buildingMaterialRepository.syncBuildingMaterials()
+    /**
+     * Requests the sync of each entity whose client feature flag turned on.
+     *
+     * @param flags The current client feature flags.
+     * @param previous The client feature flags of the last request, or `null` on the first one, which also syncs the users.
+     */
+    private suspend fun Dependency.UserGraph.sync(flags: ClientFlags, previous: ClientFlags?) {
+        if (previous == null) {
+            Telemetry.info(tag = TAG, message = "Requesting sync for user ${account.userUuid}")
+            repositories.userRepository.syncUsers()
+        }
+        if (flags.registries && previous?.registries != true) repositories.registryRepository.syncRegistries()
+        if (flags.tasks && previous?.tasks != true) repositories.taskRepository.syncTasks()
+        if (flags.buildings && previous?.buildings != true) repositories.buildingRepository.syncBuildings()
+        if (flags.equipments && previous?.equipments != true) repositories.equipmentRepository.syncEquipments()
+        if (flags.buildingEquipments && previous?.buildingEquipments != true) repositories.buildingEquipmentRepository.syncBuildingEquipments()
+        if (flags.materials && previous?.materials != true) repositories.materialRepository.syncMaterials()
+        if (flags.buildingMaterials && previous?.buildingMaterials != true) repositories.buildingMaterialRepository.syncBuildingMaterials()
     }
 
     /** Register lifecycles of services. */
