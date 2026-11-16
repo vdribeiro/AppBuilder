@@ -37,7 +37,7 @@ val LocalRouter: ProvidableCompositionLocal<Router> = staticCompositionLocalOf {
  * Hosts the application navigation stack and renders the active screen.
  *
  * @param modifier Applied to the navigation container.
- * @param fallbackScreen The screen navigated to when the backstack yields an unknown destination. Its entry must be registered in [entryProviderScope]. When null, an unknown destination throws.
+ * @param fallbackScreen The screen navigated to when the backstack yields an unknown destination, including a shown screen whose entry stops being registered. Its entry must be registered in [entryProviderScope]. When null, an unknown destination throws.
  * @param entryProviderScope The [EntryProviderScope] for the navigation graph.
  */
 @Composable
@@ -48,6 +48,7 @@ fun Navigation(
 ) {
     val router = LocalRouter.current
     val splitSceneStrategy = remember { SplitSceneStrategy<NavKey>() }
+    val entryProvider = fallbackEntryProvider(router = router, fallbackScreen = fallbackScreen, entryProviderScope = entryProviderScope)
     NavDisplay(
         modifier = modifier.navigationHandler(onBack = { router.back() }),
         onBack = { router.back() },
@@ -62,12 +63,7 @@ fun Navigation(
             rememberSaveableStateHolderNavEntryDecorator(),
             rememberViewModelStoreNavEntryDecorator()
         ),
-        entryProvider = entryProvider(fallback = {
-            if (fallbackScreen == null) throw IllegalStateException("Unknown screen $it")
-            NavEntry(key = it) { LaunchedEffect(key1 = Unit) { router.navigate(screen = fallbackScreen, option = Router.NavOption.CLEAR) } }
-        }) {
-            entryProviderScope()
-        }
+        entryProvider = entryProvider
     )
 }
 
@@ -131,3 +127,35 @@ fun UriHandler.open(uri: String?) {
         Telemetry.error(tag = "Routing", message = "Unable to open uri: $uri", throwable = it)
     }
 }
+
+/**
+ * Builds the entry provider of the navigation graph and navigates to [fallbackScreen] when the top of the backstack is an unregistered screen.
+ *
+ * @param router The [Router] holding the backstack.
+ * @param fallbackScreen The screen navigated to on an unregistered screen. When null, an unregistered screen throws.
+ * @param entryProviderScope The [EntryProviderScope] for the navigation graph.
+ * @return The entry provider, resolving an unregistered screen to an entry marked with [UNREGISTERED].
+ */
+@Composable
+private fun fallbackEntryProvider(
+    router: Router,
+    fallbackScreen: NavKey?,
+    entryProviderScope: EntryProviderScope<NavKey>.() -> Unit
+): (NavKey) -> NavEntry<NavKey> {
+    val entryProvider = entryProvider(fallback = {
+        if (fallbackScreen == null) throw IllegalStateException("Unknown screen $it")
+        NavEntry(key = it, metadata = mapOf(UNREGISTERED to true)) {
+            LaunchedEffect(key1 = Unit) { router.navigate(screen = fallbackScreen, option = Router.NavOption.CLEAR) }
+        }
+    }) {
+        entryProviderScope()
+    }
+    val unregistered = fallbackScreen != null && router.backStack.lastOrNull()?.let { entryProvider(it).metadata[UNREGISTERED] } == true
+    if (fallbackScreen != null && unregistered) LaunchedEffect(key1 = Unit) {
+        router.navigate(screen = fallbackScreen, option = Router.NavOption.CLEAR)
+    }
+    return entryProvider
+}
+
+/** Metadata key marking the entry of an unregistered screen. */
+private const val UNREGISTERED = "unregistered"
