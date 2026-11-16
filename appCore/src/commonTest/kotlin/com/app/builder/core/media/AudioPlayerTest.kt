@@ -151,7 +151,7 @@ class AudioPlayerTest: TestCase() {
         assertEquals(expected = listOf("stop", "setPlaylist"), actual = audioPlayer.events)
     }
 
-    /** Verifies that disabling the music feature flag stops playback immediately. */
+    /** Verifies that disabling the music feature flag stops playback immediately, and that playing while it is off stops instead. */
     @Test
     fun disabledByFeatureFlagStopsImmediately() = runUnitTest {
         val audioPlayer = RecordingAudioPlayer()
@@ -160,9 +160,13 @@ class AudioPlayerTest: TestCase() {
         audioPlayer.events.clear()
 
         ClientFlags.set { it.copy(music = false) }
-        audioPlayer.play()
 
         assertEquals(expected = listOf("stop"), actual = audioPlayer.events)
+        assertEquals(expected = AudioPlayer.State.Idle, actual = audioPlayer.state.value)
+
+        audioPlayer.play()
+
+        assertEquals(expected = listOf("stop", "stop"), actual = audioPlayer.events)
         assertEquals(expected = AudioPlayer.State.Idle, actual = audioPlayer.state.value)
     }
 

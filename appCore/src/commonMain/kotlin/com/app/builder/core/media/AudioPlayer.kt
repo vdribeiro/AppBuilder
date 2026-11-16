@@ -1,10 +1,18 @@
 package com.app.builder.core.media
 
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import com.app.builder.core.config.ClientFlags
+import com.app.builder.core.flow.Dispatcher
 import com.app.builder.core.telemetry.Telemetry
 
 /** Audio player intended to be extended by platform-specific implementations. */
@@ -33,6 +41,19 @@ open class AudioPlayer {
     private val _state: MutableStateFlow<State> = MutableStateFlow(value = State.Idle)
     /** Observable state of audio playback. */
     val state: StateFlow<State> = _state.asStateFlow()
+
+    /** Scope observing the music client feature flag on the main thread. */
+    private val flagScope = CoroutineScope(context = SupervisorJob() + Dispatcher.Main)
+
+    init {
+        flagScope.launch {
+            ClientFlags.flow
+                .map { it.music }
+                .distinctUntilChanged()
+                .filter { !it }
+                .collect { if (state.value != State.Idle) stop() }
+        }
+    }
 
     /**
      * Set the [playlist].
@@ -93,6 +114,7 @@ open class AudioPlayer {
 
     /** Stops playback and releases platform resources. */
     fun dispose() {
+        flagScope.cancel()
         stop()
         runCatching {
             platformDispose()
