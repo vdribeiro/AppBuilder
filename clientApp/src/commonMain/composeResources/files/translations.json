@@ -698,5 +698,60 @@
     "languageIso": "en",
     "key": "equipment_link_buildings",
     "value": "Link buildings"
+  },
+  {
+    "languageIso": "en",
+    "key": "material",
+    "value": "Material"
+  },
+  {
+    "languageIso": "en",
+    "key": "material_list",
+    "value": "Material List"
+  },
+  {
+    "languageIso": "en",
+    "key": "material_name",
+    "value": "Name"
+  },
+  {
+    "languageIso": "en",
+    "key": "material_description",
+    "value": "Description"
+  },
+  {
+    "languageIso": "en",
+    "key": "material_modified_at",
+    "value": "Modified At"
+  },
+  {
+    "languageIso": "en",
+    "key": "material_deleted_at",
+    "value": "Deleted At"
+  },
+  {
+    "languageIso": "en",
+    "key": "material_uuid",
+    "value": "UUID"
+  },
+  {
+    "languageIso": "en",
+    "key": "building_materials",
+    "value": "Materials"
+  },
+  {
+    "languageIso": "en",
+    "key": "building_link_materials",
+    "value": "Link materials"
+  },
+  {
+    "languageIso": "en",
+    "key": "material_buildings",
+    "value": "Buildings"
+  },
+  {
+    "languageIso": "en",
+    "key": "material_link_buildings",
+    "value": "Link buildings"
   }
 ]

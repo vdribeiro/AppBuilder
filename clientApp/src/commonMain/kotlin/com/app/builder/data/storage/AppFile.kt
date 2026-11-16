@@ -47,7 +47,11 @@ object AppFile {
             /** The UTC instant when equipments were last synchronized. */
             EQUIPMENTS_LAST_SYNC_UTC,
             /** The UTC instant when building equipments were last synchronized. */
-            BUILDING_EQUIPMENTS_LAST_SYNC_UTC
+            BUILDING_EQUIPMENTS_LAST_SYNC_UTC,
+            /** The UTC instant when materials were last synchronized. */
+            MATERIALS_LAST_SYNC_UTC,
+            /** The UTC instant when building materials were last synchronized. */
+            BUILDING_MATERIALS_LAST_SYNC_UTC
         }
 
         override val serializer: KSerializer<Map<Key, String>> =
@@ -128,6 +132,11 @@ object AppFile {
         override val serializer: KSerializer<ActionBarData> = ActionBarData.serializer()
     }
 
+    /** Material preferences. */
+    data object MaterialPreferences: StorageFile<ActionBarData>(path = "material_preferences", encrypted = false) {
+        override val serializer: KSerializer<ActionBarData> = ActionBarData.serializer()
+    }
+
     /** Every screen preferences files in this module. */
     val preferences: List<StorageFile<*>> = listOf(
         TranslationPreferences,
@@ -136,6 +145,7 @@ object AppFile {
         TaskPreferences,
         BuildingPreferences,
         EquipmentPreferences,
+        MaterialPreferences,
     )
 
     /** Every file in this module. */

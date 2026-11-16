@@ -4,8 +4,10 @@ import com.app.builder.domain.gateway.account.AccountUseCases
 import com.app.builder.domain.gateway.authentication.AuthenticationUseCases
 import com.app.builder.domain.gateway.building.BuildingUseCases
 import com.app.builder.domain.gateway.buildingequipment.BuildingEquipmentUseCases
+import com.app.builder.domain.gateway.buildingmaterial.BuildingMaterialUseCases
 import com.app.builder.domain.gateway.config.ConfigUseCases
 import com.app.builder.domain.gateway.equipment.EquipmentUseCases
+import com.app.builder.domain.gateway.material.MaterialUseCases
 import com.app.builder.domain.gateway.push.PushUseCases
 import com.app.builder.domain.gateway.registry.RegistryUseCases
 import com.app.builder.domain.gateway.status.StatusUseCases
@@ -37,6 +39,10 @@ interface UseCases {
     val buildingUseCases: BuildingUseCases
     /** The use cases for managing building equipments. */
     val buildingEquipmentUseCases: BuildingEquipmentUseCases
+    /** The use cases for managing materials. */
+    val materialUseCases: MaterialUseCases
+    /** The use cases for managing building materials. */
+    val buildingMaterialUseCases: BuildingMaterialUseCases
     /** The use cases for browsing translations. */
     val translationUseCases: TranslationUseCases
 }

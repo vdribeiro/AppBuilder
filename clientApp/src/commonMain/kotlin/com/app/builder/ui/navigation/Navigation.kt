@@ -19,6 +19,7 @@ import com.app.builder.ui.navigation.design.designProvider
 import com.app.builder.ui.navigation.devicefiles.deviceFilesProvider
 import com.app.builder.ui.navigation.devicelocation.deviceLocationProvider
 import com.app.builder.ui.navigation.equipment.equipmentProvider
+import com.app.builder.ui.navigation.material.materialProvider
 import com.app.builder.ui.navigation.error.errorProvider
 import com.app.builder.ui.navigation.help.helpProvider
 import com.app.builder.ui.navigation.home.homeProvider
@@ -135,6 +136,7 @@ fun AuthenticatedNavigation(
                 if (flags.tasks) taskProvider(useCases = useCases)
                 if (flags.buildings) buildingProvider(useCases = useCases)
                 if (flags.equipments) equipmentProvider(useCases = useCases)
+                if (flags.materials) materialProvider(useCases = useCases)
                 translationsProvider(useCases = useCases)
             }
         )
@@ -188,6 +190,8 @@ private fun setBackStack(
         EntityType.EQUIPMENT -> buildList<Screen> { add(Screen.EquipmentList); entityUuid?.let { add(Screen.EquipmentDetail(uuid = it.toString())) } }
         EntityType.BUILDING -> buildList<Screen> { add(Screen.BuildingList); entityUuid?.let { add(Screen.BuildingDetail(uuid = it.toString())) } }
         EntityType.BUILDING_EQUIPMENT -> listOf(Screen.BuildingList)
+        EntityType.MATERIAL -> buildList<Screen> { add(Screen.MaterialList); entityUuid?.let { add(Screen.MaterialDetail(uuid = it.toString())) } }
+        EntityType.BUILDING_MATERIAL -> listOf(Screen.BuildingList)
     }
     if (backStack.isNotEmpty()) router.backStack.apply {
         clear()

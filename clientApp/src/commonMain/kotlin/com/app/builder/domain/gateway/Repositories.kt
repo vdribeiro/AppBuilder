@@ -4,9 +4,11 @@ import com.app.builder.domain.gateway.account.AccountRepository
 import com.app.builder.domain.gateway.authentication.AuthenticationRepository
 import com.app.builder.domain.gateway.building.BuildingRepository
 import com.app.builder.domain.gateway.buildingequipment.BuildingEquipmentRepository
+import com.app.builder.domain.gateway.buildingmaterial.BuildingMaterialRepository
 import com.app.builder.domain.gateway.config.ConfigRepository
 import com.app.builder.domain.gateway.devicelocation.DeviceLocationRepository
 import com.app.builder.domain.gateway.equipment.EquipmentRepository
+import com.app.builder.domain.gateway.material.MaterialRepository
 import com.app.builder.domain.gateway.registry.RegistryRepository
 import com.app.builder.domain.gateway.task.TaskRepository
 import com.app.builder.domain.gateway.translation.TranslationRepository
@@ -36,4 +38,8 @@ interface Repositories {
     val buildingRepository: BuildingRepository
     /** The repository for managing building equipments. */
     val buildingEquipmentRepository: BuildingEquipmentRepository
+    /** The repository for managing materials. */
+    val materialRepository: MaterialRepository
+    /** The repository for managing building materials. */
+    val buildingMaterialRepository: BuildingMaterialRepository
 }

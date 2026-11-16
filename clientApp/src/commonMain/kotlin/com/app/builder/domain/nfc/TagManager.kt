@@ -125,7 +125,9 @@ class TagManager(
             EntityType.NFC,
             EntityType.EQUIPMENT,
             EntityType.BUILDING,
-            EntityType.BUILDING_EQUIPMENT -> Unit
+            EntityType.BUILDING_EQUIPMENT,
+            EntityType.MATERIAL,
+            EntityType.BUILDING_MATERIAL -> Unit
         }
     }
 

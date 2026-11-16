@@ -11,10 +11,12 @@ import com.app.builder.domain.route.provider.accountRoutes
 import com.app.builder.domain.route.provider.authenticationRoutes
 import com.app.builder.domain.route.provider.broadcastRoutes
 import com.app.builder.domain.route.provider.buildingEquipmentRoutes
+import com.app.builder.domain.route.provider.buildingMaterialRoutes
 import com.app.builder.domain.route.provider.buildingRoutes
 import com.app.builder.domain.route.provider.configRoutes
 import com.app.builder.domain.route.provider.deviceLocationRoutes
 import com.app.builder.domain.route.provider.equipmentRoutes
+import com.app.builder.domain.route.provider.materialRoutes
 import com.app.builder.domain.route.provider.probeRoutes
 import com.app.builder.domain.route.provider.pushRoutes
 import com.app.builder.domain.route.provider.registryRoutes
@@ -45,5 +47,7 @@ fun Application.installRouting(dependency: Dependency) {
         if (ServerFlags.value.equipments) equipmentRoutes(permissionService = permissionService, equipmentUseCases = useCases.equipmentUseCases, registryUseCases = useCases.registryUseCases)
         if (ServerFlags.value.buildings) buildingRoutes(permissionService = permissionService, buildingUseCases = useCases.buildingUseCases, registryUseCases = useCases.registryUseCases)
         if (ServerFlags.value.buildingEquipments) buildingEquipmentRoutes(permissionService = permissionService, buildingEquipmentUseCases = useCases.buildingEquipmentUseCases, registryUseCases = useCases.registryUseCases)
+        if (ServerFlags.value.materials) materialRoutes(permissionService = permissionService, materialUseCases = useCases.materialUseCases, registryUseCases = useCases.registryUseCases)
+        if (ServerFlags.value.buildingMaterials) buildingMaterialRoutes(permissionService = permissionService, buildingMaterialUseCases = useCases.buildingMaterialUseCases, registryUseCases = useCases.registryUseCases)
     }
 }

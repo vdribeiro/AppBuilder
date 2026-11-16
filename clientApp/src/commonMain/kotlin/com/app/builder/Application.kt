@@ -294,6 +294,8 @@ object Application {
         if (ClientFlags.value.buildings) repositories.buildingRepository.syncBuildings()
         if (ClientFlags.value.equipments) repositories.equipmentRepository.syncEquipments()
         if (ClientFlags.value.buildingEquipments) repositories.buildingEquipmentRepository.syncBuildingEquipments()
+        if (ClientFlags.value.materials) repositories.materialRepository.syncMaterials()
+        if (ClientFlags.value.buildingMaterials) repositories.buildingMaterialRepository.syncBuildingMaterials()
     }
 
     /** Register lifecycles of services. */
