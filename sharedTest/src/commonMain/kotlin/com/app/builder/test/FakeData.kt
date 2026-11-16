@@ -13,9 +13,11 @@ import com.app.builder.domain.Authentication
 import com.app.builder.domain.BearerToken
 import com.app.builder.domain.DeviceLocation
 import com.app.builder.domain.EntityType
+import com.app.builder.domain.Material
 import com.app.builder.domain.Equipment
 import com.app.builder.domain.Building
 import com.app.builder.domain.BuildingEquipment
+import com.app.builder.domain.BuildingMaterial
 import com.app.builder.domain.Permission
 import com.app.builder.domain.PushPayload
 import com.app.builder.domain.RegistrationForm
@@ -98,6 +100,8 @@ object FakeData {
                 EntityType.EQUIPMENT -> Permission.READ
                 EntityType.BUILDING -> Permission.READ
                 EntityType.BUILDING_EQUIPMENT -> Permission.READ
+                EntityType.MATERIAL -> Permission.READ
+                EntityType.BUILDING_MATERIAL -> Permission.READ
             }?.let { type to it }
         }.toMap()
     )
@@ -202,6 +206,17 @@ object FakeData {
     val buildingEquipment: BuildingEquipment = BuildingEquipment(
         buildingUuid = building.uuid,
         equipmentUuid = equipment.uuid
+    )
+
+    val material: Material = Material(
+        name = "Material Name",
+        description = "Material Description"
+    )
+
+    val buildingMaterial: BuildingMaterial = BuildingMaterial(
+        buildingUuid = building.uuid,
+        materialUuid = material.uuid,
+        quantity = 3
     )
 
     val deviceLocation: DeviceLocation = DeviceLocation(

@@ -20,4 +20,6 @@ enum class EntityType {
     EQUIPMENT,
     BUILDING,
     BUILDING_EQUIPMENT,
+    MATERIAL,
+    BUILDING_MATERIAL,
 }
