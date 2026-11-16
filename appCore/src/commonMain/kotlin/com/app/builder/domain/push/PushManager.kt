@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
@@ -62,6 +63,9 @@ class PushManager(
     /** Tracks the currently active push loop. */
     private var listenJob: Job? = null
 
+    /** Whether the push client feature flag is on. */
+    private val enabled: Flow<Boolean> = ClientFlags.flow.map { it.push }.distinctUntilChanged()
+
     override suspend fun stop() = withContext(context = Dispatcher.IO) {
         mutex.withLock {
             tokenJob?.cancelAndJoin()
@@ -72,7 +76,6 @@ class PushManager(
     }
 
     override fun start() {
-        if (!ClientFlags.value.push) return
         if (!mutex.tryLock()) return
         try {
             startTokenJob()
@@ -91,8 +94,9 @@ class PushManager(
             Telemetry.info(tag = TAG, message = "Registering token for push notifications")
             combine(
                 flow = PushProvider.token.filterNotNull(),
-                flow2 = sessionActive
-            ) { token, active -> token.takeIf { active } }
+                flow2 = sessionActive,
+                flow3 = enabled
+            ) { token, active, enabled -> token.takeIf { active && enabled } }
                 .filterNotNull()
                 .distinctUntilChanged()
                 .collectLatest { registerDeviceToken(token = it) }
@@ -108,8 +112,9 @@ class PushManager(
             Telemetry.info(tag = TAG, message = "Listen to push notifications")
             combine(
                 flow = getInternetAvailabilityFlow(),
-                flow2 = sessionActive
-            ) { online, active -> online && active }
+                flow2 = sessionActive,
+                flow3 = enabled
+            ) { online, active, enabled -> online && active && enabled }
                 .distinctUntilChanged()
                 .collectLatest { connectable ->
                     if (!connectable) return@collectLatest

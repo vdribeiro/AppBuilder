@@ -5,8 +5,12 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
@@ -49,6 +53,9 @@ class BroadcastManager(
     /** Tracks the currently active broadcast loop. */
     private var listenJob: Job? = null
 
+    /** Whether the broadcast client feature flag is on. */
+    private val enabled: Flow<Boolean> = ClientFlags.flow.map { it.broadcast }.distinctUntilChanged()
+
     override suspend fun stop() = withContext(context = Dispatcher.IO) {
         mutex.withLock {
             tokenJob?.cancelAndJoin()
@@ -59,7 +66,6 @@ class BroadcastManager(
     }
 
     override fun start() {
-        if (!ClientFlags.value.broadcast) return
         if (!mutex.tryLock()) return
         try {
             startSubscribeJob()
@@ -76,9 +82,13 @@ class BroadcastManager(
     private fun startSubscribeJob() {
         if (tokenJob?.isActive != true) tokenJob = scope.launch(context = Dispatcher.Default) {
             Telemetry.info(tag = TAG, message = "Subscribe to FCM broadcasts")
-            PushProvider.token.filterNotNull().collectLatest {
-                subscribeToBroadcast(token = it)
-            }
+            combine(
+                flow = PushProvider.token.filterNotNull(),
+                flow2 = enabled
+            ) { token, enabled -> token.takeIf { enabled } }
+                .filterNotNull()
+                .distinctUntilChanged()
+                .collectLatest { subscribeToBroadcast(token = it) }
         }
     }
 
@@ -89,21 +99,26 @@ class BroadcastManager(
     private fun startListenJob() {
         if (listenJob?.isActive != true) listenJob = scope.launch(context = Dispatcher.IO) {
             Telemetry.info(tag = TAG, message = "Listen to broadcasts")
-            getInternetAvailabilityFlow().collectLatest { online ->
-                if (!online) return@collectLatest
+            combine(
+                flow = getInternetAvailabilityFlow(),
+                flow2 = enabled
+            ) { online, enabled -> online && enabled }
+                .distinctUntilChanged()
+                .collectLatest { connectable ->
+                    if (!connectable) return@collectLatest
 
-                var retryDelay = ClientConfigs.value.broadcastRetryDelay
-                while (this@launch.isActive) {
-                    listen(
-                        onConnected = { retryDelay = ClientConfigs.value.broadcastRetryDelay }
-                    ) { pushPayload ->
-                        Telemetry.info(tag = TAG, message = "Received push payload: ${pushPayload.uuid}")
-                        PushProvider.handlePushPayload(pushPayload = pushPayload)
+                    var retryDelay = ClientConfigs.value.broadcastRetryDelay
+                    while (this@launch.isActive) {
+                        listen(
+                            onConnected = { retryDelay = ClientConfigs.value.broadcastRetryDelay }
+                        ) { pushPayload ->
+                            Telemetry.info(tag = TAG, message = "Received push payload: ${pushPayload.uuid}")
+                            PushProvider.handlePushPayload(pushPayload = pushPayload)
+                        }
+                        delay(timeMillis = retryDelay)
+                        retryDelay = (retryDelay * 2).coerceAtMost(maximumValue = ClientConfigs.value.broadcastMaxRetryDelay)
                     }
-                    delay(timeMillis = retryDelay)
-                    retryDelay = (retryDelay * 2).coerceAtMost(maximumValue = ClientConfigs.value.broadcastMaxRetryDelay)
                 }
-            }
         }
     }
 

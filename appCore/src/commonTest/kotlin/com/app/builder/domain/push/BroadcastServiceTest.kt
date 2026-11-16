@@ -3,6 +3,7 @@ package com.app.builder.domain.push
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
+import kotlin.time.Duration.Companion.minutes
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
@@ -123,6 +124,27 @@ class BroadcastServiceTest: TestCase() {
         broadcastService.start()
         subscribedTokens.first { it.size == 2 }
         broadcastService.stop()
+    }
+
+    /** Verifies that a running service connects when the broadcast feature flag turns on and stops reconnecting when it turns off. */
+    @Test
+    fun runningServiceFollowsTheBroadcastFlag() = runUnitTest {
+        ClientFlags.set { it.copy(broadcast = false) }
+        val broadcastService = broadcastService()
+        broadcastService.start()
+        testScheduler.runCurrent()
+        assertEquals(expected = 0, actual = broadcastConnections.value)
+
+        ClientFlags.set { it.copy(broadcast = true) }
+        broadcastConnections.first { it > 0 }
+
+        ClientFlags.set { it.copy(broadcast = false) }
+        testScheduler.runCurrent()
+        val connections = broadcastConnections.value
+        testScheduler.advanceTimeBy(delayTime = 10.minutes)
+        broadcastService.stop()
+
+        assertEquals(expected = connections, actual = broadcastConnections.value)
     }
 
     /** Verifies that starting the service does nothing while the broadcast feature flag is disabled. */

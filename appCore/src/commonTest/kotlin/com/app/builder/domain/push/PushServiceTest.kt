@@ -3,6 +3,7 @@ package com.app.builder.domain.push
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
+import kotlin.time.Duration.Companion.minutes
 import kotlin.uuid.Uuid
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -191,6 +192,27 @@ class PushServiceTest: TestCase() {
         pushService.start()
         registeredTokens.first { it.size == 2 }
         pushService.stop()
+    }
+
+    /** Verifies that a running service connects when the push feature flag turns on and stops reconnecting when it turns off. */
+    @Test
+    fun runningServiceFollowsThePushFlag() = runUnitTest {
+        ClientFlags.set { it.copy(push = false) }
+        val pushService = pushService(user = FakeData.adminUser)
+        pushService.start()
+        testScheduler.runCurrent()
+        assertEquals(expected = 0, actual = ticketRequests.value)
+
+        ClientFlags.set { it.copy(push = true) }
+        pushConnections.first { it > 0 }
+
+        ClientFlags.set { it.copy(push = false) }
+        testScheduler.runCurrent()
+        val requests = ticketRequests.value
+        testScheduler.advanceTimeBy(delayTime = 10.minutes)
+        pushService.stop()
+
+        assertEquals(expected = requests, actual = ticketRequests.value)
     }
 
     /** Verifies that starting the service does nothing while the push feature flag is disabled. */
