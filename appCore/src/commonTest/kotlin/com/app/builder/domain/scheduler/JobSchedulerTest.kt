@@ -165,6 +165,24 @@ class JobSchedulerTest: TestCase() {
         assertEquals(expected = Job.State.COMPLETE, actual = jobStore.jobs.value.first { it.uuid == job.uuid }.state)
     }
 
+    /** Verifies a running scheduler holds pending jobs while the scheduler flag is off and executes them once it turns on. */
+    @Test
+    fun pendingJobsWaitForTheSchedulerFlag() = runUnitTest {
+        val jobStore = LocalJobStore()
+        val scheduler = JobScheduler(jobStore = jobStore, jobFactory = FakeJobFactory(), clockService = FakeClockService())
+        val job = Job(userUuid = Uuid.NIL, entityType = EntityType.CLIENT_FLAG, type = Job.Type.GET)
+        scheduler.queue(job = job)
+
+        ClientFlags.set { it.copy(scheduler = false) }
+        scheduler.start()
+        testScheduler.runCurrent()
+        assertEquals(expected = Job.State.PENDING, actual = jobStore.jobs.value.first { it.uuid == job.uuid }.state)
+
+        ClientFlags.set { it.copy(scheduler = true) }
+        jobStore.jobs.first { jobs -> jobs.any { it.uuid == job.uuid && it.state == Job.State.COMPLETE } }
+        scheduler.stop()
+    }
+
     /** Verifies starting the scheduler does not execute jobs while the clock is untrusted. */
     @Test
     fun startDoesNotExecuteJobsWhenClockIsUntrusted() = runUnitTest {

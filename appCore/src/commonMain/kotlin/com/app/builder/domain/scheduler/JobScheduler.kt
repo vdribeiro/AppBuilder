@@ -13,7 +13,9 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
@@ -113,7 +115,6 @@ class JobScheduler(
     }
 
     override fun start() {
-        if (!ClientFlags.value.scheduler) return
         if (!mutex.tryLock()) return
 
         try {
@@ -168,8 +169,9 @@ class JobScheduler(
                 flow = observePendingJobs(),
                 flow2 = getInternetAvailabilityFlow(),
                 flow3 = clockService.trusted,
-                flow4 = wake
-            ) { jobs, online, trusted, _ -> if (online && trusted) jobs else emptyList() }.collect { jobs ->
+                flow4 = wake,
+                flow5 = ClientFlags.flow.map { it.scheduler }.distinctUntilChanged()
+            ) { jobs, online, trusted, _, enabled -> if (online && trusted && enabled) jobs else emptyList() }.collect { jobs ->
                 if (jobs.isEmpty()) return@collect
                 val now = now()
                 // Deferred jobs stay in the grouping below so that a mutation awaiting its retry still holds back a full sync of the same entity type,
