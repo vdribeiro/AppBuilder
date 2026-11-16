@@ -9,6 +9,7 @@ import com.app.builder.ui.lifecycle.hostViewModel
 import com.app.builder.ui.navigation.LocalRouter
 import com.app.builder.ui.navigation.Screen
 import com.app.builder.ui.navigation.equipment.equipmentFiltersStore
+import com.app.builder.ui.navigation.material.materialFiltersStore
 import com.app.builder.ui.navigation.scene.SplitSceneStrategy.Companion.split
 
 /**
@@ -31,6 +32,7 @@ fun EntryProviderScope<NavKey>.buildingProvider(useCases: UseCases) {
             sessionStore = hostViewModel(key = SessionStore.KEY) { SessionStore.get(useCases = useCases) },
             filtersStore = buildingFiltersStore(),
             equipmentFiltersStore = equipmentFiltersStore(),
+            materialFiltersStore = materialFiltersStore(),
             store = viewModel {
                 BuildingDetailScreenStore(
                     state = BuildingDetailScreenState(),
@@ -38,6 +40,8 @@ fun EntryProviderScope<NavKey>.buildingProvider(useCases: UseCases) {
                     buildingUseCases = useCases.buildingUseCases,
                     buildingEquipmentUseCases = useCases.buildingEquipmentUseCases,
                     equipmentUseCases = useCases.equipmentUseCases,
+                    buildingMaterialUseCases = useCases.buildingMaterialUseCases,
+                    materialUseCases = useCases.materialUseCases,
                     buildingUuid = it.uuid,
                     new = it.new
                 )
