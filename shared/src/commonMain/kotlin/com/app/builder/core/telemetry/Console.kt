@@ -18,7 +18,7 @@ import com.app.builder.core.telemetry.Console.dispatcher
  * A thread-safe in-memory log buffer.
  *
  * This object maintains a circular-style buffer of the most recent [CONSOLE_SIZE] log entries.
- * It uses a single-threaded dispatcher to synchronize access to the [ArrayDeque], ensuring consistency across concurrent coroutine calls without platform-specific locks.
+ * It uses a single-threaded dispatcher to synchronize updates to the retained lines, ensuring consistency across concurrent coroutine calls without platform-specific locks.
  */
 object Console: TelemetryEngine {
     /** The maximum number of log lines to retain in memory. */
@@ -28,10 +28,8 @@ object Console: TelemetryEngine {
     private val dispatcher = Dispatchers.Default.limitedParallelism(parallelism = 1)
     /** Internal scope for asynchronous logging operations, using a [SupervisorJob] to ensure that a failure in one log operation doesn't cancel the console entirely. */
     private val scope = CoroutineScope(context = dispatcher + SupervisorJob())
-    /** Non-thread-safe collection used to store log lines. Access is restricted to the [dispatcher] for safety. */
-    private val buffer = ArrayDeque<String>(initialCapacity = CONSOLE_SIZE)
 
-    /** Backing state for [logs]. */
+    /** Backing state for [logs]. Updates are restricted to the [dispatcher] for safety. */
     private val _logs: MutableStateFlow<List<String>> = MutableStateFlow(value = emptyList())
     /** The retained log lines, ordered from oldest to newest. */
     val logs: StateFlow<List<String>> = _logs.asStateFlow()
@@ -42,10 +40,7 @@ object Console: TelemetryEngine {
                 .map { it.console }
                 .distinctUntilChanged()
                 .filter { !it }
-                .collect {
-                    buffer.clear()
-                    _logs.value = emptyList()
-                }
+                .collect { _logs.value = emptyList() }
         }
     }
 
@@ -60,13 +55,8 @@ object Console: TelemetryEngine {
         if (!ClientFlags.value.console) return
         scope.launch {
             if (!ClientFlags.value.console) return@launch
-            log.splitToSequence("\n").forEach { line ->
-                if (line.isNotEmpty()) {
-                    if (buffer.size >= CONSOLE_SIZE) buffer.removeFirstOrNull()
-                    buffer.addLast(element = line)
-                }
-            }
-            _logs.value = buffer.toList()
+            val lines = log.split("\n").filter { it.isNotEmpty() }
+            _logs.value = (_logs.value + lines).takeLast(n = CONSOLE_SIZE)
         }
     }
 
