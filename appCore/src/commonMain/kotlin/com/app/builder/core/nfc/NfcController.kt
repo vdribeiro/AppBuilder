@@ -1,9 +1,16 @@
 package com.app.builder.core.nfc
 
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import com.app.builder.core.config.ClientFlags
 import com.app.builder.core.telemetry.Telemetry
 
@@ -28,8 +35,22 @@ open class NfcController {
     /** Observable state of the NFC session. */
     val state: StateFlow<State> = _state.asStateFlow()
 
+    /** Scope observing the nfc client feature flag. */
+    private val flagScope = CoroutineScope(context = SupervisorJob())
+
+    init {
+        flagScope.launch {
+            ClientFlags.flow
+                .map { it.nfc }
+                .distinctUntilChanged()
+                .filter { !it }
+                .collect { if (state.value != State.Idle) stop() }
+        }
+    }
+
     /** Stops any active session and releases nfc resources. */
     fun dispose() {
+        flagScope.cancel()
         stop()
         runCatching {
             platformDispose()

@@ -3,6 +3,7 @@ package com.app.builder.core.nfc
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
+import kotlinx.coroutines.flow.first
 import com.app.builder.core.config.ClientFlags
 import com.app.builder.domain.EntityType
 import com.app.builder.test.TestCase
@@ -102,6 +103,18 @@ class NfcControllerTest: TestCase() {
         reader.read()
 
         assertEquals(expected = NfcController.State.Idle, actual = reader.state.value)
+    }
+
+    /** Verifies that disabling the NFC feature flag stops the active session. */
+    @Test
+    fun disabledFlagStopsTheActiveSession() = runUnitTest {
+        val reader = RecordingNfcController()
+        reader.read()
+        assertEquals(expected = NfcController.State.Scanning, actual = reader.state.value)
+
+        ClientFlags.set { it.copy(nfc = false) }
+
+        reader.state.first { it == NfcController.State.Idle }
     }
 
     /** Verifies that disabling the NFC feature flag makes a write request stop the session instead of writing. */
