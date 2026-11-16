@@ -13,15 +13,15 @@ class NavigationRouteTest: TestCase() {
     /** Verifies that without an account there are no routes to open. */
     @Test
     fun noAccount() = runUnitTest {
-        assertEquals(expected = emptyList(), actual = permittedRoutes(account = null))
+        assertEquals(expected = emptyList(), actual = permittedRoutes(account = null, flags = ClientFlags.value))
     }
 
     /** Verifies that an account with every permission opens every domain route, in display order. */
     @Test
     fun everyPermission() = runUnitTest {
-        val routes = permittedRoutes(account = FakeData.adminAccount)
+        val routes = permittedRoutes(account = FakeData.adminAccount, flags = ClientFlags.value)
 
-        assertEquals(expected = listOf(NavigationRoute.TASK, NavigationRoute.EQUIPMENT, NavigationRoute.BUILDING, NavigationRoute.USER, NavigationRoute.REGISTRY, NavigationRoute.HOME), actual = routes.filter { it.section == NavigationSection.MAIN })
+        assertEquals(expected = listOf(NavigationRoute.HOME, NavigationRoute.TASK, NavigationRoute.BUILDING, NavigationRoute.EQUIPMENT, NavigationRoute.USER, NavigationRoute.REGISTRY), actual = routes.filter { it.section == NavigationSection.MAIN })
         assertTrue(actual = NavigationRoute.CONFIG in routes)
         assertTrue(actual = NavigationRoute.TRANSLATION in routes)
     }
@@ -31,7 +31,7 @@ class NavigationRouteTest: TestCase() {
     fun featureFlagOff() = runUnitTest {
         ClientFlags.set { it.copy(tasks = false, equipments = false, buildings = false, design = false) }
 
-        val routes = permittedRoutes(account = FakeData.adminAccount)
+        val routes = permittedRoutes(account = FakeData.adminAccount, flags = ClientFlags.value)
 
         assertFalse(actual = NavigationRoute.TASK in routes)
         assertFalse(actual = NavigationRoute.EQUIPMENT in routes)

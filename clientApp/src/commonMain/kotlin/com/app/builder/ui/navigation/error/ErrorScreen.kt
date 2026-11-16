@@ -11,6 +11,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.PreviewLightDark
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.app.builder.core.config.ClientFlags
 import com.app.builder.core.telemetry.Console
 import com.app.builder.ui.AppState
@@ -35,6 +36,7 @@ import com.app.builder.ui.screen.Screen
 fun ErrorScreen(error: Boolean) {
     val router = LocalRouter.current
     val appState = LocalAppState.current
+    val flags by ClientFlags.flow.collectAsStateWithLifecycle()
 
     Screen(
         modifier = Modifier.imePadding(),
@@ -56,7 +58,7 @@ fun ErrorScreen(error: Boolean) {
         }
     ) {
         var logs: String? by remember { mutableStateOf(value = null) }
-        if (ClientFlags.value.console) LaunchedEffect(key1 = Unit) {
+        if (flags.console) LaunchedEffect(key1 = Unit) {
             while (isActive) {
                 logs = Console.getSnapshot().joinToString(separator = "\n").ifBlank { null }
                 delay(timeMillis = 1000)

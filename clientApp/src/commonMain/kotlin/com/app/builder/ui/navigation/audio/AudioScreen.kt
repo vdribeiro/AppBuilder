@@ -52,6 +52,7 @@ fun AudioScreen(
     val router = LocalRouter.current
 
     val state by audioPlayer.state.collectAsStateWithLifecycle()
+    val flags by ClientFlags.flow.collectAsStateWithLifecycle()
 
     var selected by remember { mutableStateOf(value = setOf<AudioResource>(Ping)) }
     var loop by remember { mutableStateOf(value = true) }
@@ -63,7 +64,7 @@ fun AudioScreen(
         topBar = { ActionBar(sessionStore = sessionStore) },
         bottomBar = { Navigation(sessionStore = sessionStore, selected = NavigationRoute.AUDIO) },
     ) {
-        if (!ClientFlags.value.music || !audioPlayer.available) {
+        if (!flags.music || !audioPlayer.available) {
             Text(modifier = Modifier.align(alignment = Alignment.Center), text = "audio_unavailable")
             return@Screen
         }

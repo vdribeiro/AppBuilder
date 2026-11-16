@@ -23,6 +23,7 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.app.builder.core.config.ClientFlags
 import com.app.builder.ui.LocalShapes
 import com.app.builder.ui.Preview
@@ -54,7 +55,7 @@ import com.app.builder.ui.core.text.Text
 fun LazyColumn(
     modifier: Modifier = Modifier,
     state: LazyListState = rememberLazyListState(),
-    scrollBar: Boolean = ClientFlags.value.scrollBar,
+    scrollBar: Boolean = ClientFlags.flow.collectAsStateWithLifecycle().value.scrollBar,
     contentPadding: PaddingValues = PaddingValues(all = 0.dp),
     reverseLayout: Boolean = false,
     verticalArrangement: Arrangement.Vertical = if (!reverseLayout) Arrangement.Top else Arrangement.Bottom,

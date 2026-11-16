@@ -34,6 +34,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.app.builder.core.config.ClientFlags
 import com.app.builder.domain.Account
 import com.app.builder.domain.EntityType
 import com.app.builder.domain.Permission
@@ -63,7 +64,8 @@ fun Navigation(
 ) {
     val session by sessionStore.stateFlow.collectAsStateWithLifecycle()
     val router = LocalRouter.current
-    val routes = remember(key1 = session.account) { permittedRoutes(account = session.account) }
+    val flags by ClientFlags.flow.collectAsStateWithLifecycle()
+    val routes = remember(key1 = session.account, key2 = flags) { permittedRoutes(account = session.account, flags = flags) }
     val items = remember(key1 = routes, key2 = selected, key3 = router) {
         navigationItems(routes = routes, selected = selected, router = router)
     }

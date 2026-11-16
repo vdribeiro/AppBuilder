@@ -94,6 +94,24 @@ class NavigationTest: TestCase() {
         assertEquals(expected = listOf(Screen.Error(error = true)), actual = router.backStack.toList())
     }
 
+    /** Verifies that disabling the client flag of the screen being shown falls back to the error screen. */
+    @Test
+    fun fallBackToErrorScreenWhenFlagIsDisabledWhileShowing() = runUITest {
+        val useCases = dependency.get().userGraph.useCases
+        router.navigate(screen = Screen.Help)
+
+        setUI {
+            UnauthenticatedNavigation(useCases = useCases)
+        }
+        waitForIdle()
+        assertEquals(expected = listOf(Screen.Help), actual = router.backStack.toList())
+
+        ClientFlags.set { it.copy(help = false) }
+        waitForIdle()
+
+        assertEquals(expected = listOf(Screen.Error(error = true)), actual = router.backStack.toList())
+    }
+
     /** Verifies that navigating to the login screen while the login client flag is disabled falls back to the error screen. */
     @Test
     fun fallBackToErrorScreen() = runUITest {

@@ -57,11 +57,12 @@ fun EquipmentDetailScreen(
 ) {
     val state by store.stateFlow.collectAsStateWithLifecycle()
     val session by sessionStore.stateFlow.collectAsStateWithLifecycle()
+    val flags by ClientFlags.flow.collectAsStateWithLifecycle()
     val account = session.account
     val canEditEquipment = account?.hasPermission(entityType = EntityType.EQUIPMENT, permission = Permission.WRITE) == true
     val canReadBuildings = account?.hasPermission(entityType = EntityType.BUILDING, permission = Permission.READ) == true
-    val canReadLinks = ClientFlags.value.buildingEquipments && canReadBuildings && account.hasPermission(entityType = EntityType.BUILDING_EQUIPMENT, permission = Permission.READ)
-    val canEditLinks = ClientFlags.value.buildingEquipments && canReadBuildings && account.hasPermission(entityType = EntityType.BUILDING_EQUIPMENT, permission = Permission.WRITE)
+    val canReadLinks = flags.buildingEquipments && canReadBuildings && account.hasPermission(entityType = EntityType.BUILDING_EQUIPMENT, permission = Permission.READ)
+    val canEditLinks = flags.buildingEquipments && canReadBuildings && account.hasPermission(entityType = EntityType.BUILDING_EQUIPMENT, permission = Permission.WRITE)
     val equipment = state.equipment
     val deleted = equipment?.deletedAt != null
 

@@ -7,6 +7,9 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 import kotlinx.serialization.Serializable
 import androidx.compose.foundation.text.BasicText
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.UriHandler
 import androidx.compose.ui.test.onNodeWithText
 import androidx.navigation3.runtime.EntryProviderScope
@@ -49,6 +52,32 @@ class RoutingTest: TestCase() {
                 entryProviderScope = { registerFakeScreens() }
             )
         }
+        waitForIdle()
+
+        assertEquals(expected = listOf(FakeScreen.First), actual = router.backStack.toList())
+        onNodeWithText(text = "First Screen").assertExists()
+    }
+
+    /** Falls back to the fallback screen when the shown screen stops being registered. */
+    @Test
+    fun shownScreenFallsBackWhenItStopsBeingRegistered() = runUITest {
+        var registered by mutableStateOf(value = true)
+        router.navigate(screen = FakeScreen.Second)
+        waitForIdle()
+
+        setUI {
+            Navigation(
+                fallbackScreen = FakeScreen.First,
+                entryProviderScope = {
+                    entry<FakeScreen.First> { BasicText(text = "First Screen") }
+                    if (registered) entry<FakeScreen.Second> { BasicText(text = "Second Screen") }
+                }
+            )
+        }
+        waitForIdle()
+        onNodeWithText(text = "Second Screen").assertExists()
+
+        registered = false
         waitForIdle()
 
         assertEquals(expected = listOf(FakeScreen.First), actual = router.backStack.toList())

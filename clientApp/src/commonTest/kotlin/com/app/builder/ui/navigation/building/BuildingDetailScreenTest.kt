@@ -616,6 +616,21 @@ class BuildingDetailScreenTest: TestCase() {
         onNodeWithTag(testTag = "building_equipments").assertDoesNotExist()
     }
 
+    /** Verifies that the equipment section disappears when the building equipments flag is disabled while the screen is showing. */
+    @Test
+    fun equipmentSectionHidesWhenFlagIsDisabledWhileShowing() = runUITest {
+        val useCases = storedBuildingUseCases()
+        val (store, sessionStore) = setBuildingDetailScreen(useCases = useCases)
+
+        waitUntil { store.state.building != null && sessionStore.state.account != null }
+        onNodeWithTag(testTag = "building_equipments").assertExists()
+
+        ClientFlags.set { it.copy(buildingEquipments = false) }
+        waitForIdle()
+
+        onNodeWithTag(testTag = "building_equipments").assertDoesNotExist()
+    }
+
     /** Verifies that the picker applies the equipment list filters, searching and leaving out the deleted equipments. */
     @Test
     fun pickerAppliesEquipmentFilters() = runUnitTest {

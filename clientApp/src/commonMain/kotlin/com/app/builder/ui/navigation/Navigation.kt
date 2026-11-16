@@ -3,7 +3,9 @@ package com.app.builder.ui.navigation
 import kotlin.uuid.Uuid
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.app.builder.core.config.ClientFlags
 import com.app.builder.domain.EntityType
 import com.app.builder.domain.deeplink.DeepLink
@@ -79,6 +81,8 @@ fun UnauthenticatedNavigation(
     modifier: Modifier = Modifier,
     useCases: UseCases?
 ) {
+    val flags by ClientFlags.flow.collectAsStateWithLifecycle()
+
     HostViewModelStoreOwner(key = useCases) {
         Navigation(
             modifier = modifier,
@@ -86,10 +90,10 @@ fun UnauthenticatedNavigation(
             entryProviderScope = {
                 errorProvider()
                 if (useCases == null) return@Navigation
-                if (ClientFlags.value.home) homeProvider(useCases = useCases)
-                if (ClientFlags.value.userProfile) userProfileProvider(useCases = useCases)
-                if (ClientFlags.value.help) helpProvider()
-                if (ClientFlags.value.login) authenticationProvider(useCases = useCases)
+                if (flags.home) homeProvider(useCases = useCases)
+                if (flags.userProfile) userProfileProvider(useCases = useCases)
+                if (flags.help) helpProvider()
+                if (flags.login) authenticationProvider(useCases = useCases)
             }
         )
     }
@@ -106,6 +110,8 @@ fun AuthenticatedNavigation(
     modifier: Modifier = Modifier,
     useCases: UseCases?,
 ) {
+    val flags by ClientFlags.flow.collectAsStateWithLifecycle()
+
     HostViewModelStoreOwner(key = useCases) {
         Navigation(
             modifier = modifier,
@@ -114,21 +120,21 @@ fun AuthenticatedNavigation(
                 errorProvider()
                 if (useCases == null) return@Navigation
                 configsProvider(useCases = useCases)
-                if (ClientFlags.value.home) homeProvider(useCases = useCases)
-                if (ClientFlags.value.design) designProvider(useCases = useCases)
-                if (ClientFlags.value.userProfile) userProfileProvider(useCases = useCases)
-                if (ClientFlags.value.help) helpProvider()
-                if (ClientFlags.value.users) userProvider(useCases = useCases)
-                if (ClientFlags.value.locationCapture) deviceLocationProvider(useCases = useCases)
-                if (ClientFlags.value.nfc) nfcProvider(useCases = useCases)
-                if (ClientFlags.value.camera) cameraProvider(useCases = useCases)
-                if (ClientFlags.value.deviceFiles) deviceFilesProvider(useCases = useCases)
-                if (ClientFlags.value.music) audioProvider(useCases = useCases)
-                if (ClientFlags.value.notifications) pushProvider(useCases = useCases)
-                if (ClientFlags.value.registries) registryProvider(useCases = useCases)
-                if (ClientFlags.value.tasks) taskProvider(useCases = useCases)
-                if (ClientFlags.value.buildings) buildingProvider(useCases = useCases)
-                if (ClientFlags.value.equipments) equipmentProvider(useCases = useCases)
+                if (flags.home) homeProvider(useCases = useCases)
+                if (flags.design) designProvider(useCases = useCases)
+                if (flags.userProfile) userProfileProvider(useCases = useCases)
+                if (flags.help) helpProvider()
+                if (flags.users) userProvider(useCases = useCases)
+                if (flags.locationCapture) deviceLocationProvider(useCases = useCases)
+                if (flags.nfc) nfcProvider(useCases = useCases)
+                if (flags.camera) cameraProvider(useCases = useCases)
+                if (flags.deviceFiles) deviceFilesProvider(useCases = useCases)
+                if (flags.music) audioProvider(useCases = useCases)
+                if (flags.notifications) pushProvider(useCases = useCases)
+                if (flags.registries) registryProvider(useCases = useCases)
+                if (flags.tasks) taskProvider(useCases = useCases)
+                if (flags.buildings) buildingProvider(useCases = useCases)
+                if (flags.equipments) equipmentProvider(useCases = useCases)
                 translationsProvider(useCases = useCases)
             }
         )

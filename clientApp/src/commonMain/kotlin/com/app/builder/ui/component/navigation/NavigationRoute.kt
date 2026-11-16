@@ -44,20 +44,21 @@ enum class NavigationRoute(val section: NavigationSection) {
 }
 
 /**
- * Resolves the routes the given account can open, from its permissions and the client feature flags.
+ * Resolves the routes the given account can open, from its permissions and the given client feature flags.
  *
  * @param account The current user's account, or `null` when no user is signed in.
+ * @param flags The client feature flags.
  * @return The routes the account can open, in display order, or none without an account.
  */
-fun permittedRoutes(account: Account?): ImmutableList<NavigationRoute> {
+fun permittedRoutes(account: Account?, flags: ClientFlags): ImmutableList<NavigationRoute> {
     val permissions = account?.permissions ?: return persistentListOf()
     return buildList {
-        if (ClientFlags.value.home) add(NavigationRoute.HOME)
-        if (ClientFlags.value.tasks && permissions[EntityType.TASK] != null) add(NavigationRoute.TASK)
-        if (ClientFlags.value.buildings && permissions[EntityType.BUILDING] != null) add(NavigationRoute.BUILDING)
-        if (ClientFlags.value.equipments && permissions[EntityType.EQUIPMENT] != null) add(NavigationRoute.EQUIPMENT)
-        if (ClientFlags.value.users && permissions[EntityType.USER] != null) add(NavigationRoute.USER)
-        if (ClientFlags.value.registries && permissions[EntityType.REGISTRY] != null) add(NavigationRoute.REGISTRY)
+        if (flags.home) add(NavigationRoute.HOME)
+        if (flags.tasks && permissions[EntityType.TASK] != null) add(NavigationRoute.TASK)
+        if (flags.buildings && permissions[EntityType.BUILDING] != null) add(NavigationRoute.BUILDING)
+        if (flags.equipments && permissions[EntityType.EQUIPMENT] != null) add(NavigationRoute.EQUIPMENT)
+        if (flags.users && permissions[EntityType.USER] != null) add(NavigationRoute.USER)
+        if (flags.registries && permissions[EntityType.REGISTRY] != null) add(NavigationRoute.REGISTRY)
         if (listOf(
                 EntityType.CLIENT_FLAG,
                 EntityType.CLIENT_CONFIG,
@@ -65,14 +66,14 @@ fun permittedRoutes(account: Account?): ImmutableList<NavigationRoute> {
                 EntityType.SERVER_CONFIG
             ).any { permissions[it] != null }
         ) add(NavigationRoute.CONFIG)
-        if (ClientFlags.value.notifications && permissions[EntityType.NOTIFICATION] != null) add(NavigationRoute.NOTIFICATION)
-        if (ClientFlags.value.locationCapture && permissions[EntityType.DEVICE_LOCATION] != null) add(NavigationRoute.DEVICE_LOCATION)
-        if (ClientFlags.value.nfc && permissions[EntityType.NFC] != null) add(NavigationRoute.NFC)
-        if (ClientFlags.value.camera) add(NavigationRoute.CAMERA)
-        if (ClientFlags.value.music) add(NavigationRoute.AUDIO)
-        if (ClientFlags.value.deviceFiles) add(NavigationRoute.DEVICE_FILE)
+        if (flags.notifications && permissions[EntityType.NOTIFICATION] != null) add(NavigationRoute.NOTIFICATION)
+        if (flags.locationCapture && permissions[EntityType.DEVICE_LOCATION] != null) add(NavigationRoute.DEVICE_LOCATION)
+        if (flags.nfc && permissions[EntityType.NFC] != null) add(NavigationRoute.NFC)
+        if (flags.camera) add(NavigationRoute.CAMERA)
+        if (flags.music) add(NavigationRoute.AUDIO)
+        if (flags.deviceFiles) add(NavigationRoute.DEVICE_FILE)
         if (permissions[EntityType.TRANSLATION] != null) add(NavigationRoute.TRANSLATION)
-        if (ClientFlags.value.design) addAll(
+        if (flags.design) addAll(
             elements = listOf(
                 NavigationRoute.DESIGN_COMPONENTS,
                 NavigationRoute.DESIGN_COLORS,

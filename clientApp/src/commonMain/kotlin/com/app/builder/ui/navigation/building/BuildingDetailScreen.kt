@@ -62,13 +62,14 @@ fun BuildingDetailScreen(
 ) {
     val state by store.stateFlow.collectAsStateWithLifecycle()
     val session by sessionStore.stateFlow.collectAsStateWithLifecycle()
+    val flags by ClientFlags.flow.collectAsStateWithLifecycle()
     val building = state.building
     val deleted = building?.deletedAt != null
     val account = session.account
     val canEditBuilding = account?.hasPermission(entityType = EntityType.BUILDING, permission = DomainPermission.WRITE) == true
     val canReadEquipments = account?.hasPermission(entityType = EntityType.EQUIPMENT, permission = DomainPermission.READ) == true
-    val canReadLinks = ClientFlags.value.buildingEquipments && canReadEquipments && account.hasPermission(entityType = EntityType.BUILDING_EQUIPMENT, permission = DomainPermission.READ)
-    val canEditLinks = ClientFlags.value.buildingEquipments && canReadEquipments && account.hasPermission(entityType = EntityType.BUILDING_EQUIPMENT, permission = DomainPermission.WRITE)
+    val canReadLinks = flags.buildingEquipments && canReadEquipments && account.hasPermission(entityType = EntityType.BUILDING_EQUIPMENT, permission = DomainPermission.READ)
+    val canEditLinks = flags.buildingEquipments && canReadEquipments && account.hasPermission(entityType = EntityType.BUILDING_EQUIPMENT, permission = DomainPermission.WRITE)
 
     val router = LocalRouter.current
     val splitScreen = LocalSplitScreen.current
