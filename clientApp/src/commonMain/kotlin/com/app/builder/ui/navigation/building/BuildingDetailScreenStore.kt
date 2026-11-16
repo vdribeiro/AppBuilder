@@ -69,7 +69,7 @@ class BuildingDetailScreenStore(
         combine(
             flow = authenticationUseCases.observeCurrentAccount(),
             flow2 = ClientFlags.flow
-        ) { account, flags -> account to flags }.observe(id = "permissions") { (account, flags) ->
+        ) { account, flags -> account to flags }.observe(id = "current_account") { (account, flags) ->
             val writable = account?.hasPermission(entityType = EntityType.BUILDING, permission = Permission.WRITE) ?: false
             val equipmentLinks = account.linkPermissions(enabled = flags.buildingEquipments, linked = EntityType.EQUIPMENT, link = EntityType.BUILDING_EQUIPMENT)
             val materialLinks = account.linkPermissions(enabled = flags.buildingMaterials, linked = EntityType.MATERIAL, link = EntityType.BUILDING_MATERIAL)

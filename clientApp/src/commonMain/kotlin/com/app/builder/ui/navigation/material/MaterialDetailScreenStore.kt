@@ -64,7 +64,7 @@ class MaterialDetailScreenStore(
         combine(
             flow = authenticationUseCases.observeCurrentAccount(),
             flow2 = ClientFlags.flow
-        ) { account, flags -> account to flags }.observe(id = "permissions") { (account, flags) ->
+        ) { account, flags -> account to flags }.observe(id = "current_account") { (account, flags) ->
             val writable = account?.hasPermission(entityType = EntityType.MATERIAL, permission = Permission.WRITE) ?: false
             val buildingLinks = account.linkPermissions(enabled = flags.buildingMaterials, linked = EntityType.BUILDING, link = EntityType.BUILDING_MATERIAL)
             updateState { it.copy(writable = writable, buildingLinks = buildingLinks) }

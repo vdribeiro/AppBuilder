@@ -64,7 +64,7 @@ class EquipmentDetailScreenStore(
         combine(
             flow = authenticationUseCases.observeCurrentAccount(),
             flow2 = ClientFlags.flow
-        ) { account, flags -> account to flags }.observe(id = "permissions") { (account, flags) ->
+        ) { account, flags -> account to flags }.observe(id = "current_account") { (account, flags) ->
             val writable = account?.hasPermission(entityType = EntityType.EQUIPMENT, permission = Permission.WRITE) ?: false
             val buildingLinks = account.linkPermissions(enabled = flags.buildingEquipments, linked = EntityType.BUILDING, link = EntityType.BUILDING_EQUIPMENT)
             updateState { it.copy(writable = writable, buildingLinks = buildingLinks) }
