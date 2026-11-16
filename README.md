@@ -526,6 +526,25 @@ Gate every new feature behind a flag, and give it the flag before its first scre
 2. **Use cases**: add them to `domain/usecase` and register them in `UseCases` and `Gateways`.
 3. **Routes**: add them to `domain/route/provider` and link them in `Routing`, gated by the flag. Validate access and log request telemetry.
 
+### Linking Features
+
+A link between two features is an entity of its own, so one side can be read or synced without the other.
+
+* **Shared**: a model holding both UUIDs and any value the link carries, such as a quantity, with its own `EntityType`, flag and permission. Its `uuid` is derived from the pair with `uuidOf`, so a pair has one row.
+* **Gateway and server**: its own `domain/gateway/{link}`, table and routes, like any feature. Unlinking is a soft delete of the link.
+* **Design**: `LinkSection` lists the linked entities on a detail card. A `LinkItem` can carry a `LinkExtra`, shown after its name and editable while editing.
+* **Client UI**: `ui/component/link` holds what every link shares.
+
+| Piece                              | Purpose                                                                                                |
+|------------------------------------|--------------------------------------------------------------------------------------------------------|
+| `Link`                             | A linked entity in a detail screen's state: its UUID, name and optional quantity as typed.             |
+| `linkChanges(edited, stored)`      | The links to upsert and to remove when the detail screen is saved.                                     |
+| `linkPermissions`                  | Whether an account can read and edit the links, from the link's flag and both entities' permissions.   |
+| `LinkPickerStore` and `LinkPicker` | The dialog to tick the entities to link, generic over the entity and its list row.                     |
+| `{Feature}LinkPicker`              | In `ui/component/{feature}`: binds the picker to that feature's use cases, list filters and list rows. |
+
+A detail store keeps the edited and stored links of its entity and saves them after the entity itself. The picker has its own store, created in the entry provider, and hands the ticked entities back through `onConfirm`.
+
 ### UseCases vs Repositories
 
 They are not "domain logic" vs "data access". They are two consumer contracts on the **same** gateway:
@@ -1349,8 +1368,8 @@ Declarations that resolve to a distinct implementation per source set:
 **ui**
 
 * `App`: Top-level composable. Provides `LocalAppState`, `LocalRouter`, `LocalPermissionManager`, `LocalAudioPlayer`, `LocalCamera` and `LocalNfcController`.
-* **navigation**: **provider** routes, the `Screen` sealed interface, and the `Navigation` graph.
-* **component**, **screen**: Each a sub-package with its composable and store, including `design/DesignScreen`.
+* **navigation**: The `Screen` sealed interface, the `Navigation` graph, and one sub-package per feature with its screens, their stores and its entry provider.
+* **component**: Pieces shared between screens, each a sub-package and one per feature for its list filters and link picker.
 
 **root**
 
