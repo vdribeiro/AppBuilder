@@ -15,6 +15,9 @@ import com.app.builder.domain.gateway.building.BuildingUseCases
 import com.app.builder.domain.gateway.buildingequipment.BuildingEquipmentGateway
 import com.app.builder.domain.gateway.buildingequipment.BuildingEquipmentRepository
 import com.app.builder.domain.gateway.buildingequipment.BuildingEquipmentUseCases
+import com.app.builder.domain.gateway.buildingmaterial.BuildingMaterialGateway
+import com.app.builder.domain.gateway.buildingmaterial.BuildingMaterialRepository
+import com.app.builder.domain.gateway.buildingmaterial.BuildingMaterialUseCases
 import com.app.builder.domain.gateway.config.ConfigGateway
 import com.app.builder.domain.gateway.config.ConfigRepository
 import com.app.builder.domain.gateway.config.ConfigUseCases
@@ -23,6 +26,9 @@ import com.app.builder.domain.gateway.devicelocation.DeviceLocationRepository
 import com.app.builder.domain.gateway.equipment.EquipmentGateway
 import com.app.builder.domain.gateway.equipment.EquipmentRepository
 import com.app.builder.domain.gateway.equipment.EquipmentUseCases
+import com.app.builder.domain.gateway.material.MaterialGateway
+import com.app.builder.domain.gateway.material.MaterialRepository
+import com.app.builder.domain.gateway.material.MaterialUseCases
 import com.app.builder.domain.gateway.push.PushGateway
 import com.app.builder.domain.gateway.push.PushUseCases
 import com.app.builder.domain.gateway.registry.RegistryGateway
@@ -166,4 +172,22 @@ class Gateways(
     )
     override val buildingEquipmentUseCases: BuildingEquipmentUseCases = buildingEquipmentGateway
     override val buildingEquipmentRepository: BuildingEquipmentRepository = buildingEquipmentGateway
+
+    private val materialGateway: MaterialGateway = MaterialGateway(
+        account = account,
+        database = database,
+        httpClient = httpClient,
+        scheduler = scheduler
+    )
+    override val materialUseCases: MaterialUseCases = materialGateway
+    override val materialRepository: MaterialRepository = materialGateway
+
+    private val buildingMaterialGateway: BuildingMaterialGateway = BuildingMaterialGateway(
+        account = account,
+        database = database,
+        httpClient = httpClient,
+        scheduler = scheduler
+    )
+    override val buildingMaterialUseCases: BuildingMaterialUseCases = buildingMaterialGateway
+    override val buildingMaterialRepository: BuildingMaterialRepository = buildingMaterialGateway
 }

@@ -10,6 +10,8 @@ import com.app.builder.domain.usecase.building.BuildingGateway
 import com.app.builder.domain.usecase.building.BuildingUseCases
 import com.app.builder.domain.usecase.buildingequipment.BuildingEquipmentGateway
 import com.app.builder.domain.usecase.buildingequipment.BuildingEquipmentUseCases
+import com.app.builder.domain.usecase.buildingmaterial.BuildingMaterialGateway
+import com.app.builder.domain.usecase.buildingmaterial.BuildingMaterialUseCases
 import com.app.builder.domain.usecase.config.ConfigGateway
 import com.app.builder.domain.usecase.config.ConfigUseCases
 import com.app.builder.domain.usecase.connection.ConnectionGateway
@@ -20,6 +22,8 @@ import com.app.builder.domain.usecase.devicetoken.DeviceTokenGateway
 import com.app.builder.domain.usecase.devicetoken.DeviceTokenUseCases
 import com.app.builder.domain.usecase.equipment.EquipmentGateway
 import com.app.builder.domain.usecase.equipment.EquipmentUseCases
+import com.app.builder.domain.usecase.material.MaterialGateway
+import com.app.builder.domain.usecase.material.MaterialUseCases
 import com.app.builder.domain.usecase.notification.NotificationsGateway
 import com.app.builder.domain.usecase.notification.NotificationsUseCases
 import com.app.builder.domain.usecase.registry.RegistryGateway
@@ -55,4 +59,6 @@ class Gateways(
     override val equipmentUseCases: EquipmentUseCases = EquipmentGateway(database = database, notificationsUseCases = notificationsUseCases)
     override val buildingUseCases: BuildingUseCases = BuildingGateway(database = database, notificationsUseCases = notificationsUseCases)
     override val buildingEquipmentUseCases: BuildingEquipmentUseCases = BuildingEquipmentGateway(database = database, notificationsUseCases = notificationsUseCases)
+    override val materialUseCases: MaterialUseCases = MaterialGateway(database = database, notificationsUseCases = notificationsUseCases)
+    override val buildingMaterialUseCases: BuildingMaterialUseCases = BuildingMaterialGateway(database = database, notificationsUseCases = notificationsUseCases)
 }

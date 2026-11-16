@@ -9,9 +9,11 @@ import database.Account
 import database.AppDatabase
 import database.Building
 import database.BuildingEquipment
+import database.BuildingMaterial
 import database.DeviceLocation
 import database.Equipment
 import database.Job
+import database.Material
 import database.Registry
 import database.Session
 import database.Task
@@ -86,6 +88,19 @@ class DatabaseFactory(driver: SqlDriver) {
             deletedAtAdapter = InstantColumnAdapter,
             buildingUuidAdapter = UuidColumnAdapter,
             equipmentUuidAdapter = UuidColumnAdapter,
+        ),
+        MaterialAdapter = Material.Adapter(
+            uuidAdapter = UuidColumnAdapter,
+            modifiedAtAdapter = InstantColumnAdapter,
+            deletedAtAdapter = InstantColumnAdapter,
+        ),
+        BuildingMaterialAdapter = BuildingMaterial.Adapter(
+            uuidAdapter = UuidColumnAdapter,
+            modifiedAtAdapter = InstantColumnAdapter,
+            deletedAtAdapter = InstantColumnAdapter,
+            buildingUuidAdapter = UuidColumnAdapter,
+            materialUuidAdapter = UuidColumnAdapter,
+            quantityAdapter = IntColumnAdapter,
         ),
         UserAdapter = User.Adapter(
             uuidAdapter = UuidColumnAdapter,

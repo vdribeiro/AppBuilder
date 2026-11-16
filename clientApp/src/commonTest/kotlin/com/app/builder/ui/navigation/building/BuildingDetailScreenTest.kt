@@ -689,7 +689,7 @@ class BuildingDetailScreenTest: TestCase() {
         onNode(matcher = hasTestTag(testTag = "action_save") and hasAnyAncestor(matcher = hasTestTag(testTag = "material_picker"))).performClick()
         waitUntil { !store.state.materialPickerOpen && store.state.materials.isNotEmpty() }
         assertEquals(expected = listOf(element = MaterialLink(material = FakeData.material, quantity = "1")), actual = store.state.materials)
-        onNodeWithTag(testTag = "building_materials_quantity_${FakeData.material.uuid}").performScrollTo().performTextReplacement(text = "5")
+        onNodeWithTag(testTag = "building_materials_extra_${FakeData.material.uuid}").performScrollTo().performTextReplacement(text = "5")
         waitUntil { store.state.materials.single().quantity == "5" }
         onNodeWithTag(testTag = "action_save").performClick()
         waitUntil { !store.state.editing }
@@ -765,7 +765,7 @@ class BuildingDetailScreenTest: TestCase() {
 
         waitUntil { store.state.materials.isNotEmpty() && sessionStore.state.user?.name == FakeData.user.name }
         onNodeWithText(text = FakeData.material.name).assertIsDisplayed()
-        onNodeWithTag(testTag = "building_materials_quantity_${FakeData.material.uuid}", useUnmergedTree = true).assertTextEquals(FakeData.buildingMaterial.quantity.toString())
+        onNodeWithTag(testTag = "building_materials_extra_${FakeData.material.uuid}", useUnmergedTree = true).assertTextEquals(FakeData.buildingMaterial.quantity.toString())
         onNodeWithTag(testTag = "building_materials_remove_${FakeData.material.uuid}").assertDoesNotExist()
         onNodeWithTag(testTag = "action_edit").assertDoesNotExist()
     }
