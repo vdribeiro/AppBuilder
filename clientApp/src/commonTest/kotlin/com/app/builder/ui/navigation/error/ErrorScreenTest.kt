@@ -4,10 +4,12 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.navigation3.runtime.NavKey
 import com.app.builder.core.config.ClientFlags
+import com.app.builder.core.telemetry.Console
 import com.app.builder.test.TestCase
 import com.app.builder.ui.AppState
 import com.app.builder.ui.LocalAppState
@@ -27,7 +29,7 @@ class ErrorScreenTest: TestCase() {
         router.navigate(screen = Screen.TaskList)
         router.navigate(screen = Screen.Error(error = error))
 
-        setUI(compositionValues = listOf(LocalAppState provides appState)) { ErrorScreen(error = error) }
+        setUI(compositionValues = listOf(LocalAppState provides appState)) { ErrorScreen(store = ErrorScreenStore(state = ErrorScreenState(error = error))) }
 
         onNodeWithTag(testTag = "action_bar").assertIsDisplayed()
         onNodeWithTag(testTag = "action_back").assertIsDisplayed().performClick()
@@ -68,5 +70,19 @@ class ErrorScreenTest: TestCase() {
     @Test
     fun backFromErrorToHome() = runUITest {
         assertEquals(expected = listOf(Screen.Home), actual = navigateBack(error = true, appState = AppState.AUTHENTICATED))
+    }
+
+    /** Verifies that the console logs show while the console client flag is on and disappear when it turns off. */
+    @Test
+    fun logsFollowTheConsoleFlag() = runUITest {
+        Console.feedback(message = "console_marker")
+
+        setUI { ErrorScreen(store = ErrorScreenStore(state = ErrorScreenState())) }
+
+        waitUntil { onAllNodesWithText(text = "console_marker", substring = true).fetchSemanticsNodes().isNotEmpty() }
+
+        ClientFlags.set { it.copy(console = false) }
+
+        waitUntil { onAllNodesWithText(text = "console_marker", substring = true).fetchSemanticsNodes().isEmpty() }
     }
 }

@@ -1,19 +1,11 @@
 package com.app.builder.ui.navigation.error
 
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.isActive
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.app.builder.core.config.ClientFlags
-import com.app.builder.core.telemetry.Console
 import com.app.builder.ui.AppState
 import com.app.builder.ui.LocalAppState
 import com.app.builder.ui.Preview
@@ -26,17 +18,19 @@ import com.app.builder.ui.navigation.authenticatedScreen
 import com.app.builder.ui.navigation.loadingScreen
 import com.app.builder.ui.navigation.unauthenticatedScreen
 import com.app.builder.ui.screen.Screen
+import com.app.builder.ui.store.Store
+import com.app.builder.ui.store.previewStore
 
 /**
  * The Error Screen.
  *
- * @param error true if the user was redirected to this screen because of an error, false if the user actively navigated to this screen.
+ * @param store Provides the error screen state.
  */
 @Composable
-fun ErrorScreen(error: Boolean) {
+fun ErrorScreen(store: Store<ErrorScreenState, Unit>) {
+    val state by store.stateFlow.collectAsStateWithLifecycle()
     val router = LocalRouter.current
     val appState = LocalAppState.current
-    val flags by ClientFlags.flow.collectAsStateWithLifecycle()
 
     Screen(
         modifier = Modifier.imePadding(),
@@ -45,7 +39,7 @@ fun ErrorScreen(error: Boolean) {
             TopActionBar(
                 title = "feedback",
                 onBackClick = {
-                    if (error) {
+                    if (state.error) {
                         val screen = when (appState) {
                             AppState.LOADING -> loadingScreen
                             AppState.UNAUTHENTICATED -> unauthenticatedScreen
@@ -57,17 +51,9 @@ fun ErrorScreen(error: Boolean) {
             )
         }
     ) {
-        var logs: String? by remember { mutableStateOf(value = null) }
-        if (flags.console) LaunchedEffect(key1 = Unit) {
-            while (isActive) {
-                logs = Console.getSnapshot().joinToString(separator = "\n").ifBlank { null }
-                delay(timeMillis = 1000)
-            }
-        }
-
         Feedback(
-            logs = logs,
-            error = error
+            logs = state.logs,
+            error = state.error
         )
     }
 }
@@ -75,5 +61,7 @@ fun ErrorScreen(error: Boolean) {
 @PreviewLightDark
 @Composable
 private fun ErrorScreenPreview() = Preview {
-    ErrorScreen(error = true)
+    ErrorScreen(
+        store = previewStore(initialState = ErrorScreenState(error = true, logs = "Some very interesting logs")),
+    )
 }

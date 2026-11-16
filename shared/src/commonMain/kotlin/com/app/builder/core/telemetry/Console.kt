@@ -2,10 +2,15 @@ package com.app.builder.core.telemetry
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import com.app.builder.core.config.ClientFlags
 import com.app.builder.core.telemetry.Console.CONSOLE_SIZE
 import com.app.builder.core.telemetry.Console.dispatcher
 
@@ -24,17 +29,25 @@ object Console: TelemetryEngine {
     /** Internal scope for asynchronous logging operations, using a [SupervisorJob] to ensure that a failure in one log operation doesn't cancel the console entirely. */
     private val scope = CoroutineScope(context = dispatcher + SupervisorJob())
     /** Non-thread-safe collection used to store log lines. Access is restricted to the [dispatcher] for safety. */
-    private val logs = ArrayDeque<String>(initialCapacity = CONSOLE_SIZE)
+    private val buffer = ArrayDeque<String>(initialCapacity = CONSOLE_SIZE)
 
-    /**
-     * Returns a point-in-time snapshot of the current logs.
-     *
-     * This function switches to the internal synchronization context to safely copy the [ArrayDeque] into an immutable [List].
-     *
-     * @return A list of log lines, ordered from oldest to newest.
-     */
-    suspend fun getSnapshot(): List<String> =
-        withContext(context = dispatcher) { logs.toList() }
+    /** Backing state for [logs]. */
+    private val _logs: MutableStateFlow<List<String>> = MutableStateFlow(value = emptyList())
+    /** The retained log lines, ordered from oldest to newest. */
+    val logs: StateFlow<List<String>> = _logs.asStateFlow()
+
+    init {
+        scope.launch {
+            ClientFlags.flow
+                .map { it.console }
+                .distinctUntilChanged()
+                .filter { !it }
+                .collect {
+                    buffer.clear()
+                    _logs.value = emptyList()
+                }
+        }
+    }
 
     /**
      * Asynchronously adds a log message to the buffer.
@@ -42,14 +55,18 @@ object Console: TelemetryEngine {
      * The message is split by line breaks, and each non-empty line is appended. If the buffer exceeds [CONSOLE_SIZE], the oldest entries are discarded.
      *
      * @param log The raw log string to be added.
-     * @return A [Job] representing the asynchronous background operation.
      */
-    private fun log(log: String): Job = scope.launch {
-        log.splitToSequence("\n").forEach { line ->
-            if (line.isNotEmpty()) {
-                if (logs.size >= CONSOLE_SIZE) logs.removeFirstOrNull()
-                logs.addLast(element = line)
+    private fun log(log: String) {
+        if (!ClientFlags.value.console) return
+        scope.launch {
+            if (!ClientFlags.value.console) return@launch
+            log.splitToSequence("\n").forEach { line ->
+                if (line.isNotEmpty()) {
+                    if (buffer.size >= CONSOLE_SIZE) buffer.removeFirstOrNull()
+                    buffer.addLast(element = line)
+                }
             }
+            _logs.value = buffer.toList()
         }
     }
 

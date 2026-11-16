@@ -104,7 +104,7 @@ object Application {
                 )
                 add(element = sentryLogger)
             }
-            if (ClientFlags.value.console) add(element = Console)
+            add(element = Console)
         }
         Telemetry.info(tag = TAG, message = "Telemetry set")
     }
