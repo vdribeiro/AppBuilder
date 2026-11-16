@@ -54,6 +54,10 @@ data class ClientFlags(
     val buildings: Boolean,
     /** Toggles the building equipment sections of the building and equipment screens and whether building equipment entities are queued for background sync. When false, the sections are hidden and building equipment data is excluded from sync even if the user has permission to read it. */
     val buildingEquipments: Boolean,
+    /** Toggles the material screens and whether material entities are queued for background sync. When false, material screens fall back to the error screen and material data is excluded from sync even if the user has permission to read it. */
+    val materials: Boolean,
+    /** Toggles the building material sections of the building and material screens and whether building material entities are queued for background sync. When false, the sections are hidden and building material data is excluded from sync even if the user has permission to read it. */
+    val buildingMaterials: Boolean,
 ) {
     /** Holds the client feature flags. */
     companion object: StateHolder<ClientFlags>(
@@ -82,6 +86,8 @@ data class ClientFlags(
             equipments = true,
             buildings = true,
             buildingEquipments = true,
+            materials = true,
+            buildingMaterials = true,
         )
     )
 }
