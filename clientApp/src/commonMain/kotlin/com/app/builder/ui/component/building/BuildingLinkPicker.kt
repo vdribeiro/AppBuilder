@@ -1,14 +1,18 @@
 package com.app.builder.ui.component.building
 
 import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import com.app.builder.data.storage.AppFile
 import com.app.builder.domain.Building
 import com.app.builder.domain.gateway.building.BuildingUseCases
+import com.app.builder.ui.InjectTranslations
+import com.app.builder.ui.Preview
 import com.app.builder.ui.component.filters.FiltersAction
 import com.app.builder.ui.component.filters.FiltersState
 import com.app.builder.ui.component.link.Link
@@ -19,6 +23,7 @@ import com.app.builder.ui.component.link.LinkPickerStore
 import com.app.builder.ui.component.list.BuildingItem
 import com.app.builder.ui.component.list.BuildingList
 import com.app.builder.ui.store.Store
+import com.app.builder.ui.store.previewStore
 
 /**
  * Creates the store of a building picker, picking from every building that is not deleted, with the building list filters.
@@ -62,4 +67,20 @@ fun BuildingLinkPicker(
     ) { items, onClick ->
         BuildingList(items = items, onClick = { onClick(it.uuid) })
     }
+}
+
+@PreviewLightDark
+@Composable
+private fun BuildingLinkPickerPreview() = Preview {
+    InjectTranslations(translations = mapOf("equipment_link_buildings" to "Link buildings"))
+    BuildingLinkPicker(
+        store = previewStore(
+            initialState = LinkPickerState(
+                open = true,
+                items = persistentListOf(BuildingItem(name = "Headquarters", checked = true), BuildingItem(name = "Warehouse", checked = false)),
+            )
+        ),
+        filtersStore = previewStore(initialState = FiltersState()),
+        title = "equipment_link_buildings",
+    )
 }

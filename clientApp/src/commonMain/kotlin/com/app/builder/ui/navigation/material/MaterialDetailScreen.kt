@@ -30,6 +30,7 @@ import com.app.builder.ui.component.filters.FiltersAction
 import com.app.builder.ui.component.filters.FiltersState
 import com.app.builder.ui.component.link.LinkPickerAction
 import com.app.builder.ui.component.link.LinkPickerState
+import com.app.builder.ui.component.link.linkPermissions
 import com.app.builder.ui.component.link.toLinkItem
 import com.app.builder.ui.component.list.BuildingItem
 import com.app.builder.ui.component.navigation.Navigation
@@ -64,9 +65,7 @@ fun MaterialDetailScreen(
     val flags by ClientFlags.flow.collectAsStateWithLifecycle()
     val account = session.account
     val canEditMaterial = account?.hasPermission(entityType = EntityType.MATERIAL, permission = Permission.WRITE) == true
-    val canReadBuildings = account?.hasPermission(entityType = EntityType.BUILDING, permission = Permission.READ) == true
-    val canReadLinks = flags.buildingMaterials && canReadBuildings && account.hasPermission(entityType = EntityType.BUILDING_MATERIAL, permission = Permission.READ)
-    val canEditLinks = flags.buildingMaterials && canReadBuildings && account.hasPermission(entityType = EntityType.BUILDING_MATERIAL, permission = Permission.WRITE)
+    val buildingLinks = account.linkPermissions(enabled = flags.buildingMaterials, linked = EntityType.BUILDING, link = EntityType.BUILDING_MATERIAL)
     val material = state.material
     val deleted = material?.deletedAt != null
 
@@ -80,7 +79,7 @@ fun MaterialDetailScreen(
                 sessionStore = sessionStore,
                 filtersStore = filtersStore.takeIf { splitScreen },
                 entityType = EntityType.MATERIAL,
-                editEntityTypes = if (canEditLinks) setOf(EntityType.BUILDING_MATERIAL) else emptySet(),
+                editEntityTypes = if (buildingLinks.canEdit) setOf(EntityType.BUILDING_MATERIAL) else emptySet(),
                 deleted = deleted,
                 onAddClick = if (splitScreen && !state.editing) {
                     { router.navigate(screen = Screen.MaterialDetail(uuid = uuid().toString(), new = true), option = Router.NavOption.REPLACE_LAST) }
@@ -112,11 +111,11 @@ fun MaterialDetailScreen(
                 description = material?.description,
                 onDescriptionChange = { store.send(action = MaterialDetailScreenAction.ChangeDescription(description = it)) },
                 links = {
-                    if (material != null && canReadLinks) LinkSection(
+                    if (material != null && buildingLinks.canRead) LinkSection(
                         tag = "material_buildings",
                         label = "material_buildings",
                         items = state.buildings.map { it.toLinkItem() }.toImmutableList(),
-                        editing = state.editing && canEditLinks,
+                        editing = state.editing && buildingLinks.canEdit,
                         linkLabel = "material_link_buildings",
                         onLinkClick = { buildingPickerStore.send(action = LinkPickerAction.Open(picked = state.buildings.map { it.uuid }.toSet())) },
                         onRemove = { item -> item.uuid.toUuid()?.let { store.send(action = MaterialDetailScreenAction.RemoveBuilding(buildingUuid = it)) } },

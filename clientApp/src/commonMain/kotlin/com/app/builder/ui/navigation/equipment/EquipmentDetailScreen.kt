@@ -29,6 +29,7 @@ import com.app.builder.ui.component.filters.FiltersAction
 import com.app.builder.ui.component.filters.FiltersState
 import com.app.builder.ui.component.link.LinkPickerAction
 import com.app.builder.ui.component.link.LinkPickerState
+import com.app.builder.ui.component.link.linkPermissions
 import com.app.builder.ui.component.link.toLinkItem
 import com.app.builder.ui.component.list.BuildingItem
 import com.app.builder.ui.component.navigation.Navigation
@@ -63,9 +64,7 @@ fun EquipmentDetailScreen(
     val flags by ClientFlags.flow.collectAsStateWithLifecycle()
     val account = session.account
     val canEditEquipment = account?.hasPermission(entityType = EntityType.EQUIPMENT, permission = Permission.WRITE) == true
-    val canReadBuildings = account?.hasPermission(entityType = EntityType.BUILDING, permission = Permission.READ) == true
-    val canReadLinks = flags.buildingEquipments && canReadBuildings && account.hasPermission(entityType = EntityType.BUILDING_EQUIPMENT, permission = Permission.READ)
-    val canEditLinks = flags.buildingEquipments && canReadBuildings && account.hasPermission(entityType = EntityType.BUILDING_EQUIPMENT, permission = Permission.WRITE)
+    val buildingLinks = account.linkPermissions(enabled = flags.buildingEquipments, linked = EntityType.BUILDING, link = EntityType.BUILDING_EQUIPMENT)
     val equipment = state.equipment
     val deleted = equipment?.deletedAt != null
 
@@ -79,7 +78,7 @@ fun EquipmentDetailScreen(
                 sessionStore = sessionStore,
                 filtersStore = filtersStore.takeIf { splitScreen },
                 entityType = EntityType.EQUIPMENT,
-                editEntityTypes = if (canEditLinks) setOf(EntityType.BUILDING_EQUIPMENT) else emptySet(),
+                editEntityTypes = if (buildingLinks.canEdit) setOf(EntityType.BUILDING_EQUIPMENT) else emptySet(),
                 deleted = deleted,
                 onAddClick = if (splitScreen && !state.editing) {
                     { router.navigate(screen = Screen.EquipmentDetail(uuid = uuid().toString(), new = true), option = Router.NavOption.REPLACE_LAST) }
@@ -114,11 +113,11 @@ fun EquipmentDetailScreen(
                 statuses = state.statuses,
                 onStatusChange = { key -> Equipment.Status.entries.firstOrNull { it.translationKey == key }?.let { store.send(action = EquipmentDetailScreenAction.ChangeStatus(status = it)) } },
                 links = {
-                    if (equipment != null && canReadLinks) LinkSection(
+                    if (equipment != null && buildingLinks.canRead) LinkSection(
                         tag = "equipment_buildings",
                         label = "equipment_buildings",
                         items = state.buildings.map { it.toLinkItem() }.toImmutableList(),
-                        editing = state.editing && canEditLinks,
+                        editing = state.editing && buildingLinks.canEdit,
                         linkLabel = "equipment_link_buildings",
                         onLinkClick = { buildingPickerStore.send(action = LinkPickerAction.Open(picked = state.buildings.map { it.uuid }.toSet())) },
                         onRemove = { item -> item.uuid.toUuid()?.let { store.send(action = EquipmentDetailScreenAction.RemoveBuilding(buildingUuid = it)) } },

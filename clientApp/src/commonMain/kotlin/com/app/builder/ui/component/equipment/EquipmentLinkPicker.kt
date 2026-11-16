@@ -1,14 +1,18 @@
 package com.app.builder.ui.component.equipment
 
 import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import com.app.builder.data.storage.AppFile
 import com.app.builder.domain.Equipment
 import com.app.builder.domain.gateway.equipment.EquipmentUseCases
+import com.app.builder.ui.InjectTranslations
+import com.app.builder.ui.Preview
 import com.app.builder.ui.component.filters.FiltersAction
 import com.app.builder.ui.component.filters.FiltersState
 import com.app.builder.ui.component.link.Link
@@ -19,6 +23,7 @@ import com.app.builder.ui.component.link.LinkPickerStore
 import com.app.builder.ui.component.list.EquipmentItem
 import com.app.builder.ui.component.list.EquipmentList
 import com.app.builder.ui.store.Store
+import com.app.builder.ui.store.previewStore
 
 /**
  * Creates the store of a equipment picker, picking from every equipment that is not deleted, with the equipment list filters.
@@ -62,4 +67,20 @@ fun EquipmentLinkPicker(
     ) { items, onClick ->
         EquipmentList(items = items, onClick = { onClick(it.uuid) })
     }
+}
+
+@PreviewLightDark
+@Composable
+private fun EquipmentLinkPickerPreview() = Preview {
+    InjectTranslations(translations = mapOf("building_link_equipments" to "Link equipments"))
+    EquipmentLinkPicker(
+        store = previewStore(
+            initialState = LinkPickerState(
+                open = true,
+                items = persistentListOf(EquipmentItem(name = "Air Compressor", checked = true), EquipmentItem(name = "Freight Elevator", checked = false)),
+            )
+        ),
+        filtersStore = previewStore(initialState = FiltersState()),
+        title = "building_link_equipments",
+    )
 }
