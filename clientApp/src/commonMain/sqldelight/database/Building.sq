@@ -12,12 +12,6 @@ CREATE TABLE IF NOT EXISTS Building (
     longitude REAL
 );
 
-deleteBuilding:
-UPDATE Building
-SET modifiedAt = :utc,
-    deletedAt = :utc
-WHERE uuid = :buildingUuid;
-
 upsertBuilding:
 INSERT OR REPLACE INTO Building VALUES ?;
 

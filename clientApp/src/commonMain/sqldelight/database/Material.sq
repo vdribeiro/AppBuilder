@@ -9,12 +9,6 @@ CREATE TABLE IF NOT EXISTS Material (
     description TEXT NOT NULL
 );
 
-deleteMaterial:
-UPDATE Material
-SET modifiedAt = :utc,
-    deletedAt = :utc
-WHERE uuid = :materialUuid;
-
 upsertMaterial:
 INSERT OR REPLACE INTO Material VALUES ?;
 

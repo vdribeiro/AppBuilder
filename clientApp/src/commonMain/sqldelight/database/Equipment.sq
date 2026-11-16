@@ -11,12 +11,6 @@ CREATE TABLE IF NOT EXISTS Equipment (
     status TEXT AS Equipment.Status NOT NULL
 );
 
-deleteEquipment:
-UPDATE Equipment
-SET modifiedAt = :utc,
-    deletedAt = :utc
-WHERE uuid = :equipmentUuid;
-
 upsertEquipment:
 INSERT OR REPLACE INTO Equipment VALUES ?;
 
