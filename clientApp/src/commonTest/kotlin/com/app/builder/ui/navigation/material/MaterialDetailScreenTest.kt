@@ -358,7 +358,7 @@ class MaterialDetailScreenTest: TestCase() {
 
         waitUntil { store.state.buildings.isNotEmpty() && sessionStore.state.account != null }
         onNodeWithTag(testTag = "material_buildings").assertIsDisplayed()
-        onNodeWithTag(testTag = "material_buildings_quantity_${FakeData.building.uuid}", useUnmergedTree = true).assertTextEquals(FakeData.buildingMaterial.quantity.toString())
+        onNodeWithTag(testTag = "material_buildings_extra_${FakeData.building.uuid}", useUnmergedTree = true).assertTextEquals(FakeData.buildingMaterial.quantity.toString())
         onNodeWithTag(testTag = "material_buildings_${FakeData.building.uuid}").performClick()
 
         waitUntil { router.backStack.lastOrNull() == Screen.BuildingDetail(uuid = FakeData.building.uuid.toString()) }
@@ -400,7 +400,7 @@ class MaterialDetailScreenTest: TestCase() {
         onNode(matcher = hasTestTag(testTag = "action_save") and hasAnyAncestor(matcher = hasTestTag(testTag = "building_picker"))).performClick()
         waitUntil { !store.state.buildingPickerOpen && store.state.buildings.isNotEmpty() }
         assertEquals(expected = listOf(element = BuildingLink(building = FakeData.building, quantity = "1")), actual = store.state.buildings)
-        onNodeWithTag(testTag = "material_buildings_quantity_${FakeData.building.uuid}").performTextReplacement(text = "5")
+        onNodeWithTag(testTag = "material_buildings_extra_${FakeData.building.uuid}").performTextReplacement(text = "5")
         waitUntil { store.state.buildings.single().quantity == "5" }
         onNodeWithTag(testTag = "action_save").performClick()
         waitUntil { !store.state.editing }

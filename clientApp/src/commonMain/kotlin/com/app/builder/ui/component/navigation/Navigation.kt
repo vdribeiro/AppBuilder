@@ -17,6 +17,7 @@ import androidx.compose.material.icons.filled.FontDownload
 import androidx.compose.material.icons.filled.FormatShapes
 import androidx.compose.material.icons.filled.GpsFixed
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Inventory2
 import androidx.compose.material.icons.filled.MusicNote
 import androidx.compose.material.icons.filled.Nfc
 import androidx.compose.material.icons.filled.Notifications
@@ -142,6 +143,7 @@ private val NavigationRoute.text: String
         NavigationRoute.HOME -> "home"
         NavigationRoute.TASK -> "task"
         NavigationRoute.EQUIPMENT -> "equipment"
+        NavigationRoute.MATERIAL -> "material"
         NavigationRoute.BUILDING -> "building"
         NavigationRoute.USER -> "user"
         NavigationRoute.REGISTRY -> "registry"
@@ -165,6 +167,7 @@ private val NavigationRoute.icon: ImageVector
         NavigationRoute.HOME -> Icons.Filled.Home
         NavigationRoute.TASK -> Icons.Filled.Task
         NavigationRoute.EQUIPMENT -> Icons.Filled.Build
+        NavigationRoute.MATERIAL -> Icons.Filled.Inventory2
         NavigationRoute.BUILDING -> Icons.Filled.Apartment
         NavigationRoute.USER -> Icons.Filled.AccountCircle
         NavigationRoute.REGISTRY -> Icons.Filled.AppRegistration
@@ -188,6 +191,7 @@ private val NavigationRoute.screen: Screen
         NavigationRoute.HOME -> Screen.Home
         NavigationRoute.TASK -> Screen.TaskList
         NavigationRoute.EQUIPMENT -> Screen.EquipmentList
+        NavigationRoute.MATERIAL -> Screen.MaterialList
         NavigationRoute.BUILDING -> Screen.BuildingList
         NavigationRoute.USER -> Screen.UserList
         NavigationRoute.REGISTRY -> Screen.RegistryList
