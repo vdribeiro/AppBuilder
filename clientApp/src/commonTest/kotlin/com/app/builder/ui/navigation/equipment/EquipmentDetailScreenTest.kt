@@ -159,7 +159,7 @@ class EquipmentDetailScreenTest: TestCase() {
     fun readOnlyEquipment() = runUITest {
         val (store, sessionStore) = setEquipmentDetailScreen(useCases = storedEquipmentUseCases(credentials = FakeData.credentials))
 
-        waitUntil { store.state.equipment != null && sessionStore.state.user?.name == FakeData.user.name }
+        waitUntil { store.state.equipment != null && sessionStore.state.user?.name == FakeData.user.name && store.state.buildingLinks.canRead }
         onNodeWithText(text = FakeData.equipment.name).assert(matcher = !hasSetTextAction())
         onNodeWithText(text = FakeData.equipment.description).assert(matcher = !hasSetTextAction())
         onNodeWithTag(testTag = "action_edit").assertDoesNotExist()
@@ -296,7 +296,7 @@ class EquipmentDetailScreenTest: TestCase() {
         val useCases = storedEquipmentUseCases()
         val (store, sessionStore) = setEquipmentDetailScreen(useCases = useCases, equipmentUuid = uuid())
 
-        waitUntil { sessionStore.state.account != null }
+        waitUntil { sessionStore.state.account != null && store.state.writable }
         waitForIdle()
         assertNull(actual = store.state.equipment)
         onNodeWithTag(testTag = "action_edit").assertDoesNotExist()
@@ -310,7 +310,7 @@ class EquipmentDetailScreenTest: TestCase() {
         val equipmentUuid = uuid()
         val (store, _) = setEquipmentDetailScreen(useCases = useCases, equipmentUuid = equipmentUuid, new = true)
 
-        waitUntil { store.state.equipment != null }
+        waitUntil { store.state.equipment != null && store.state.writable }
         assertTrue(actual = store.state.editing)
         assertTrue(actual = store.state.new)
         assertEquals(expected = equipmentUuid, actual = store.state.equipment?.uuid)
@@ -329,7 +329,7 @@ class EquipmentDetailScreenTest: TestCase() {
         val equipmentUuid = uuid()
         val (store, _) = setEquipmentDetailScreen(useCases = useCases, equipmentUuid = equipmentUuid, new = true)
 
-        waitUntil { store.state.equipment != null }
+        waitUntil { store.state.equipment != null && store.state.writable }
         onAllNodes(matcher = hasSetTextAction()).onFirst().performTextReplacement(text = "New title")
         waitUntil { store.state.equipment?.name == "New title" }
         onNodeWithTag(testTag = "action_save").performClick()
@@ -353,7 +353,7 @@ class EquipmentDetailScreenTest: TestCase() {
 
         val (store, _) = setEquipmentDetailScreen(useCases = useCases, equipmentUuid = equipmentUuid, new = true)
 
-        waitUntil { store.state.equipment != null }
+        waitUntil { store.state.equipment != null && store.state.writable }
         onNodeWithTag(testTag = "action_cancel").performClick()
         waitUntil { router.backStack.size == 1 }
 
@@ -391,7 +391,7 @@ class EquipmentDetailScreenTest: TestCase() {
         useCases.buildingEquipmentUseCases.upsertBuildingEquipment(buildingEquipment = FakeData.buildingEquipment)
         val (store, sessionStore) = setEquipmentDetailScreen(useCases = useCases)
 
-        waitUntil { store.state.buildings.isNotEmpty() && sessionStore.state.account != null }
+        waitUntil { store.state.buildings.isNotEmpty() && sessionStore.state.account != null && store.state.writable }
         onNodeWithTag(testTag = "equipment_buildings").assertIsDisplayed()
         onNodeWithTag(testTag = "equipment_buildings_${FakeData.building.uuid}").performClick()
 
@@ -420,7 +420,7 @@ class EquipmentDetailScreenTest: TestCase() {
         useCases.buildingUseCases.upsertBuilding(building = FakeData.building)
         val (store, sessionStore, buildingPickerStore) = setEquipmentDetailScreen(useCases = useCases)
 
-        waitUntil { store.state.equipment != null && buildingPickerStore.state.candidates.isNotEmpty() && sessionStore.state.account != null }
+        waitUntil { store.state.equipment != null && buildingPickerStore.state.candidates.isNotEmpty() && sessionStore.state.account != null && store.state.writable }
         onNodeWithTag(testTag = "equipment_buildings_link").assertDoesNotExist()
         onNodeWithTag(testTag = "action_edit").performClick()
         waitUntil { store.state.editing }

@@ -193,7 +193,7 @@ class BuildingDetailScreenTest: TestCase() {
     fun readOnlyBuilding() = runUITest {
         val (store, sessionStore) = setBuildingDetailScreen(useCases = storedBuildingUseCases(credentials = FakeData.credentials))
 
-        waitUntil { store.state.building != null && sessionStore.state.user?.name == FakeData.user.name }
+        waitUntil { store.state.building != null && sessionStore.state.user?.name == FakeData.user.name && store.state.equipmentLinks.canRead }
         onNodeWithText(text = FakeData.building.name).assert(matcher = !hasSetTextAction())
         onNodeWithText(text = FakeData.building.description).assert(matcher = !hasSetTextAction())
         onNodeWithTag(testTag = "action_edit").assertDoesNotExist()
@@ -330,7 +330,7 @@ class BuildingDetailScreenTest: TestCase() {
         val useCases = storedBuildingUseCases()
         val (store, sessionStore) = setBuildingDetailScreen(useCases = useCases, buildingUuid = uuid())
 
-        waitUntil { sessionStore.state.account != null }
+        waitUntil { sessionStore.state.account != null && store.state.writable }
         waitForIdle()
         assertNull(actual = store.state.building)
         onNodeWithTag(testTag = "action_edit").assertDoesNotExist()
@@ -344,7 +344,7 @@ class BuildingDetailScreenTest: TestCase() {
         val buildingUuid = uuid()
         val (store, _) = setBuildingDetailScreen(useCases = useCases, buildingUuid = buildingUuid, new = true)
 
-        waitUntil { store.state.building != null }
+        waitUntil { store.state.building != null && store.state.writable }
         assertTrue(actual = store.state.editing)
         assertTrue(actual = store.state.new)
         assertEquals(expected = buildingUuid, actual = store.state.building?.uuid)
@@ -363,7 +363,7 @@ class BuildingDetailScreenTest: TestCase() {
         val buildingUuid = uuid()
         val (store, _) = setBuildingDetailScreen(useCases = useCases, buildingUuid = buildingUuid, new = true)
 
-        waitUntil { store.state.building != null }
+        waitUntil { store.state.building != null && store.state.writable }
         onAllNodes(matcher = hasSetTextAction()).onFirst().performTextReplacement(text = "New title")
         waitUntil { store.state.building?.name == "New title" }
         onNodeWithTag(testTag = "action_save").performClick()
@@ -387,7 +387,7 @@ class BuildingDetailScreenTest: TestCase() {
 
         val (store, _) = setBuildingDetailScreen(useCases = useCases, buildingUuid = buildingUuid, new = true)
 
-        waitUntil { store.state.building != null }
+        waitUntil { store.state.building != null && store.state.writable }
         onNodeWithTag(testTag = "action_cancel").performClick()
         waitUntil { router.backStack.size == 1 }
 
@@ -530,7 +530,7 @@ class BuildingDetailScreenTest: TestCase() {
         useCases.equipmentUseCases.upsertEquipment(equipment = FakeData.equipment)
         val (store, sessionStore, equipmentPickerStore) = setBuildingDetailScreen(useCases = useCases)
 
-        waitUntil { store.state.building != null && equipmentPickerStore.state.candidates.isNotEmpty() && sessionStore.state.account != null }
+        waitUntil { store.state.building != null && equipmentPickerStore.state.candidates.isNotEmpty() && sessionStore.state.account != null && store.state.writable }
         onNodeWithTag(testTag = "building_equipments").assertIsDisplayed()
         onNodeWithTag(testTag = "building_equipments_link").assertDoesNotExist()
 
@@ -594,7 +594,7 @@ class BuildingDetailScreenTest: TestCase() {
         useCases.buildingEquipmentUseCases.upsertBuildingEquipment(buildingEquipment = FakeData.buildingEquipment)
         val (store, sessionStore) = setBuildingDetailScreen(useCases = useCases)
 
-        waitUntil { store.state.equipments.isNotEmpty() && sessionStore.state.user?.name == FakeData.user.name }
+        waitUntil { store.state.equipments.isNotEmpty() && sessionStore.state.user?.name == FakeData.user.name && store.state.equipmentLinks.canRead }
         onNodeWithText(text = FakeData.equipment.name).assertIsDisplayed()
         onNodeWithTag(testTag = "building_equipments_remove_${FakeData.equipment.uuid}").assertDoesNotExist()
         onNodeWithTag(testTag = "action_edit").assertDoesNotExist()
@@ -645,7 +645,7 @@ class BuildingDetailScreenTest: TestCase() {
         val useCases = storedBuildingUseCases()
         val (store, sessionStore) = setBuildingDetailScreen(useCases = useCases)
 
-        waitUntil { store.state.building != null && sessionStore.state.account != null }
+        waitUntil { store.state.building != null && sessionStore.state.account != null && store.state.writable }
         onNodeWithTag(testTag = "building_equipments").assertDoesNotExist()
     }
 
@@ -655,7 +655,7 @@ class BuildingDetailScreenTest: TestCase() {
         val useCases = storedBuildingUseCases()
         val (store, sessionStore) = setBuildingDetailScreen(useCases = useCases)
 
-        waitUntil { store.state.building != null && sessionStore.state.account != null }
+        waitUntil { store.state.building != null && sessionStore.state.account != null && store.state.writable }
         onNodeWithTag(testTag = "building_equipments").assertExists()
 
         ClientFlags.set { it.copy(buildingEquipments = false) }
@@ -674,7 +674,7 @@ class BuildingDetailScreenTest: TestCase() {
         useCases.materialUseCases.upsertMaterial(material = FakeData.material)
         val (store, sessionStore, _, materialPickerStore) = setBuildingDetailScreen(useCases = useCases)
 
-        waitUntil { store.state.building != null && materialPickerStore.state.candidates.isNotEmpty() && sessionStore.state.account != null }
+        waitUntil { store.state.building != null && materialPickerStore.state.candidates.isNotEmpty() && sessionStore.state.account != null && store.state.writable }
         onNodeWithTag(testTag = "building_materials").assertIsDisplayed()
         onNodeWithTag(testTag = "building_materials_link").assertDoesNotExist()
 
@@ -761,7 +761,7 @@ class BuildingDetailScreenTest: TestCase() {
         useCases.buildingMaterialUseCases.upsertBuildingMaterial(buildingMaterial = FakeData.buildingMaterial)
         val (store, sessionStore) = setBuildingDetailScreen(useCases = useCases)
 
-        waitUntil { store.state.materials.isNotEmpty() && sessionStore.state.user?.name == FakeData.user.name }
+        waitUntil { store.state.materials.isNotEmpty() && sessionStore.state.user?.name == FakeData.user.name && store.state.materialLinks.canRead }
         onNodeWithText(text = FakeData.material.name).assertIsDisplayed()
         onNodeWithTag(testTag = "building_materials_extra_${FakeData.material.uuid}", useUnmergedTree = true).assertTextEquals(FakeData.buildingMaterial.quantity.toString())
         onNodeWithTag(testTag = "building_materials_remove_${FakeData.material.uuid}").assertDoesNotExist()
@@ -795,7 +795,7 @@ class BuildingDetailScreenTest: TestCase() {
         val useCases = storedBuildingUseCases()
         val (store, sessionStore) = setBuildingDetailScreen(useCases = useCases)
 
-        waitUntil { store.state.building != null && sessionStore.state.account != null }
+        waitUntil { store.state.building != null && sessionStore.state.account != null && store.state.writable }
         onNodeWithTag(testTag = "building_equipments").assertExists()
         onNodeWithTag(testTag = "building_materials").assertDoesNotExist()
     }
