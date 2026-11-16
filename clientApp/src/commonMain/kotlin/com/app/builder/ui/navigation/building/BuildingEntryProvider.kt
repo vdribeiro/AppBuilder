@@ -4,12 +4,15 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
 import com.app.builder.domain.gateway.UseCases
+import com.app.builder.ui.component.building.buildingFiltersStore
+import com.app.builder.ui.component.equipment.equipmentFiltersStore
+import com.app.builder.ui.component.equipment.equipmentLinkPickerStore
+import com.app.builder.ui.component.material.materialFiltersStore
+import com.app.builder.ui.component.material.materialLinkPickerStore
 import com.app.builder.ui.component.session.SessionStore
 import com.app.builder.ui.lifecycle.hostViewModel
 import com.app.builder.ui.navigation.LocalRouter
 import com.app.builder.ui.navigation.Screen
-import com.app.builder.ui.navigation.equipment.equipmentFiltersStore
-import com.app.builder.ui.navigation.material.materialFiltersStore
 import com.app.builder.ui.navigation.scene.SplitSceneStrategy.Companion.split
 
 /**
@@ -32,16 +35,16 @@ fun EntryProviderScope<NavKey>.buildingProvider(useCases: UseCases) {
             sessionStore = hostViewModel(key = SessionStore.KEY) { SessionStore.get(useCases = useCases) },
             filtersStore = buildingFiltersStore(),
             equipmentFiltersStore = equipmentFiltersStore(),
+            equipmentPickerStore = viewModel(key = "equipment_picker") { equipmentLinkPickerStore(equipmentUseCases = useCases.equipmentUseCases) },
             materialFiltersStore = materialFiltersStore(),
+            materialPickerStore = viewModel(key = "material_picker") { materialLinkPickerStore(materialUseCases = useCases.materialUseCases) },
             store = viewModel {
                 BuildingDetailScreenStore(
                     state = BuildingDetailScreenState(),
                     router = router,
                     buildingUseCases = useCases.buildingUseCases,
                     buildingEquipmentUseCases = useCases.buildingEquipmentUseCases,
-                    equipmentUseCases = useCases.equipmentUseCases,
                     buildingMaterialUseCases = useCases.buildingMaterialUseCases,
-                    materialUseCases = useCases.materialUseCases,
                     buildingUuid = it.uuid,
                     new = it.new
                 )

@@ -17,24 +17,27 @@ import com.app.builder.core.locale.getLocalDateTime
 import com.app.builder.core.security.toUuid
 import com.app.builder.core.security.uuid
 import com.app.builder.domain.Building
+import com.app.builder.domain.Equipment
+import com.app.builder.domain.Material
 import com.app.builder.domain.EntityType
 import com.app.builder.ui.InjectTranslations
 import com.app.builder.ui.LocalSplitScreen
 import com.app.builder.ui.Preview
 import com.app.builder.ui.component.actionbar.ActionBar
 import com.app.builder.ui.component.card.BuildingCard
+import com.app.builder.ui.component.equipment.EquipmentLinkPicker
 import com.app.builder.ui.component.field.LinkExtra
-import com.app.builder.ui.component.field.LinkItem
 import com.app.builder.ui.component.field.LinkSection
 import com.app.builder.ui.component.filters.FiltersAction
 import com.app.builder.ui.component.filters.FiltersState
-import com.app.builder.ui.component.filters.StoreFilters
-import com.app.builder.ui.component.filters.StoreFiltersButton
-import com.app.builder.ui.component.list.EquipmentList
-import com.app.builder.ui.component.list.MaterialList
+import com.app.builder.ui.component.link.LinkPickerAction
+import com.app.builder.ui.component.link.LinkPickerState
+import com.app.builder.ui.component.link.toLinkItem
+import com.app.builder.ui.component.list.EquipmentItem
+import com.app.builder.ui.component.list.MaterialItem
+import com.app.builder.ui.component.material.MaterialLinkPicker
 import com.app.builder.ui.component.navigation.Navigation
 import com.app.builder.ui.component.navigation.NavigationRoute
-import com.app.builder.ui.component.overlay.PickerDialog
 import com.app.builder.ui.component.session.SessionState
 import com.app.builder.ui.devicelocation.LocalDeviceLocationProvider
 import com.app.builder.ui.navigation.LocalRouter
@@ -53,7 +56,9 @@ import com.app.builder.domain.Permission as DomainPermission
  * @param sessionStore The session store shared by every screen.
  * @param filtersStore The building filters shared by every building screen, shown when the building list is beside this screen.
  * @param equipmentFiltersStore The equipment list filters, shown in the equipment picker.
+ * @param equipmentPickerStore Provides the equipment picker state and receives its actions.
  * @param materialFiltersStore The material list filters, shown in the material picker.
+ * @param materialPickerStore Provides the material picker state and receives its actions.
  * @param store Provides the building detail state and receives its actions.
  */
 @Composable
@@ -61,7 +66,9 @@ fun BuildingDetailScreen(
     sessionStore: Store<SessionState, Unit>,
     filtersStore: Store<FiltersState, FiltersAction>,
     equipmentFiltersStore: Store<FiltersState, FiltersAction>,
+    equipmentPickerStore: Store<LinkPickerState<Equipment, EquipmentItem>, LinkPickerAction>,
     materialFiltersStore: Store<FiltersState, FiltersAction>,
+    materialPickerStore: Store<LinkPickerState<Material, MaterialItem>, LinkPickerAction>,
     store: Store<BuildingDetailScreenState, BuildingDetailScreenAction>,
 ) {
     val state by store.stateFlow.collectAsStateWithLifecycle()
@@ -143,20 +150,20 @@ fun BuildingDetailScreen(
                     if (building != null && canReadLinks) LinkSection(
                         tag = "building_equipments",
                         label = "building_equipments",
-                        items = state.equipments.map { LinkItem(uuid = it.uuid.toString(), name = it.name) }.toImmutableList(),
+                        items = state.equipments.map { it.toLinkItem() }.toImmutableList(),
                         editing = state.editing && canEditLinks,
                         linkLabel = "building_link_equipments",
-                        onLinkClick = { store.send(action = BuildingDetailScreenAction.OpenEquipmentPicker) },
+                        onLinkClick = { equipmentPickerStore.send(action = LinkPickerAction.Open(picked = state.equipments.map { it.uuid }.toSet())) },
                         onRemove = { item -> item.uuid.toUuid()?.let { store.send(action = BuildingDetailScreenAction.RemoveEquipment(equipmentUuid = it)) } },
                         onClick = { item -> router.navigate(screen = Screen.EquipmentDetail(uuid = item.uuid), option = Router.NavOption.ADD) }
                     )
                     if (building != null && canReadMaterialLinks) LinkSection(
                         tag = "building_materials",
                         label = "building_materials",
-                        items = state.materials.map { LinkItem(uuid = it.material.uuid.toString(), name = it.material.name, extra = LinkExtra.Number(value = it.quantity, error = it.quantityError)) }.toImmutableList(),
+                        items = state.materials.map { it.toLinkItem() }.toImmutableList(),
                         editing = state.editing && canEditMaterialLinks,
                         linkLabel = "building_link_materials",
-                        onLinkClick = { store.send(action = BuildingDetailScreenAction.OpenMaterialPicker) },
+                        onLinkClick = { materialPickerStore.send(action = LinkPickerAction.Open(picked = state.materials.map { it.uuid }.toSet())) },
                         onRemove = { item -> item.uuid.toUuid()?.let { store.send(action = BuildingDetailScreenAction.RemoveMaterial(materialUuid = it)) } },
                         onExtraChange = { item, extra ->
                             when (extra) {
@@ -170,43 +177,19 @@ fun BuildingDetailScreen(
         }
     }
 
-    if (state.equipmentPickerOpen) {
-        val equipmentFilters by equipmentFiltersStore.stateFlow.collectAsStateWithLifecycle()
-        PickerDialog(
-            tag = "equipment_picker",
-            title = "building_link_equipments",
-            onSave = { store.send(action = BuildingDetailScreenAction.SaveEquipmentPick) },
-            onDismiss = { store.send(action = BuildingDetailScreenAction.CloseEquipmentPicker) },
-            actions = { StoreFiltersButton(filtersStore = equipmentFiltersStore) },
-            secondaryActions = if (equipmentFilters.filtersExpanded) {
-                { StoreFilters(filtersStore = equipmentFiltersStore, showDeletedToggle = false) }
-            } else null,
-        ) {
-            EquipmentList(
-                items = state.equipmentPickerItems,
-                onClick = { item -> item.uuid.toUuid()?.let { store.send(action = BuildingDetailScreenAction.ToggleEquipmentPick(equipmentUuid = it)) } }
-            )
-        }
-    }
+    EquipmentLinkPicker(
+        store = equipmentPickerStore,
+        filtersStore = equipmentFiltersStore,
+        title = "building_link_equipments",
+        onConfirm = { store.send(action = BuildingDetailScreenAction.SetEquipments(equipments = it)) }
+    )
 
-    if (state.materialPickerOpen) {
-        val materialFilters by materialFiltersStore.stateFlow.collectAsStateWithLifecycle()
-        PickerDialog(
-            tag = "material_picker",
-            title = "building_link_materials",
-            onSave = { store.send(action = BuildingDetailScreenAction.SaveMaterialPick) },
-            onDismiss = { store.send(action = BuildingDetailScreenAction.CloseMaterialPicker) },
-            actions = { StoreFiltersButton(filtersStore = materialFiltersStore) },
-            secondaryActions = if (materialFilters.filtersExpanded) {
-                { StoreFilters(filtersStore = materialFiltersStore, showDeletedToggle = false) }
-            } else null,
-        ) {
-            MaterialList(
-                items = state.materialPickerItems,
-                onClick = { item -> item.uuid.toUuid()?.let { store.send(action = BuildingDetailScreenAction.ToggleMaterialPick(materialUuid = it)) } }
-            )
-        }
-    }
+    MaterialLinkPicker(
+        store = materialPickerStore,
+        filtersStore = materialFiltersStore,
+        title = "building_link_materials",
+        onConfirm = { store.send(action = BuildingDetailScreenAction.SetMaterials(materials = it)) }
+    )
 }
 
 @PreviewLightDark
@@ -228,7 +211,9 @@ private fun BuildingDetailScreenPreview() = Preview {
         sessionStore = previewStore(initialState = SessionState()),
         filtersStore = previewStore(initialState = FiltersState()),
         equipmentFiltersStore = previewStore(initialState = FiltersState()),
+        equipmentPickerStore = previewStore(initialState = LinkPickerState()),
         materialFiltersStore = previewStore(initialState = FiltersState()),
+        materialPickerStore = previewStore(initialState = LinkPickerState()),
         store = previewStore(
             initialState = BuildingDetailScreenState(
                 building = building,

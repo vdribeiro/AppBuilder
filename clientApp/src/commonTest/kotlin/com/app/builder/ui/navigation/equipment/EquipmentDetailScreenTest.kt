@@ -25,13 +25,18 @@ import androidx.compose.ui.test.performTextReplacement
 import com.app.builder.Dependency.getUserDependency
 import com.app.builder.core.locale.now
 import com.app.builder.core.security.uuid
+import com.app.builder.domain.Building
 import com.app.builder.domain.Equipment
 import com.app.builder.domain.UserCredentials
 import com.app.builder.domain.gateway.UseCases
 import com.app.builder.test.FakeData
 import com.app.builder.test.TestCase
+import com.app.builder.ui.component.building.buildingLinkPickerStore
 import com.app.builder.ui.component.filters.FiltersState
 import com.app.builder.ui.component.filters.FiltersStore
+import com.app.builder.ui.component.link.Link
+import com.app.builder.ui.component.link.LinkPickerStore
+import com.app.builder.ui.component.list.BuildingItem
 import com.app.builder.ui.component.session.SessionState
 import com.app.builder.ui.component.session.SessionStore
 import com.app.builder.ui.navigation.Router
@@ -61,32 +66,33 @@ class EquipmentDetailScreenTest: TestCase() {
      * @param useCases The use cases backing the stores.
      * @param equipmentUuid The uuid of the equipment to display.
      * @param new Whether the equipment is new and not stored yet.
-     * @return The [EquipmentDetailScreenStore] and the [SessionStore] rendered.
+     * @return The [EquipmentDetailScreenStore], the [SessionStore] and the building picker store rendered.
      */
-    private fun ComposeUiTest.setEquipmentDetailScreen(useCases: UseCases, equipmentUuid: Uuid = FakeData.equipment.uuid, new: Boolean = false): Pair<EquipmentDetailScreenStore, SessionStore> {
+    private fun ComposeUiTest.setEquipmentDetailScreen(useCases: UseCases, equipmentUuid: Uuid = FakeData.equipment.uuid, new: Boolean = false): Triple<EquipmentDetailScreenStore, SessionStore, LinkPickerStore<Building, BuildingItem>> {
         val store = EquipmentDetailScreenStore(
             state = EquipmentDetailScreenState(),
             router = router,
             equipmentUseCases = useCases.equipmentUseCases,
             buildingEquipmentUseCases = useCases.buildingEquipmentUseCases,
-            buildingUseCases = useCases.buildingUseCases,
             equipmentUuid = equipmentUuid.toString(),
             new = new
         )
         val sessionStore = SessionStore(state = SessionState(), authenticationUseCases = useCases.authenticationUseCases)
         val filtersStore = FiltersStore(state = FiltersState())
         val buildingFiltersStore = FiltersStore(state = FiltersState())
+        val buildingPickerStore = buildingLinkPickerStore(buildingUseCases = useCases.buildingUseCases)
 
         setUI {
             EquipmentDetailScreen(
                 sessionStore = sessionStore,
                 filtersStore = filtersStore,
                 buildingFiltersStore = buildingFiltersStore,
+                buildingPickerStore = buildingPickerStore,
                 store = store,
             )
         }
 
-        return store to sessionStore
+        return Triple(first = store, second = sessionStore, third = buildingPickerStore)
     }
 
     /** Verifies that the equipment detail screen displays the name and description of the loaded equipment. */
@@ -99,18 +105,19 @@ class EquipmentDetailScreenTest: TestCase() {
             router = router,
             equipmentUseCases = useCases.equipmentUseCases,
             buildingEquipmentUseCases = useCases.buildingEquipmentUseCases,
-            buildingUseCases = useCases.buildingUseCases,
             equipmentUuid = FakeData.equipment.uuid.toString()
         )
         val sessionStore = SessionStore(state = SessionState(), authenticationUseCases = useCases.authenticationUseCases)
         val filtersStore = FiltersStore(state = FiltersState())
         val buildingFiltersStore = FiltersStore(state = FiltersState())
+        val buildingPickerStore = buildingLinkPickerStore(buildingUseCases = useCases.buildingUseCases)
 
         setUI {
             EquipmentDetailScreen(
                 sessionStore = sessionStore,
                 filtersStore = filtersStore,
                 buildingFiltersStore = buildingFiltersStore,
+                buildingPickerStore = buildingPickerStore,
                 store = store,
             )
         }
@@ -398,7 +405,6 @@ class EquipmentDetailScreenTest: TestCase() {
         router = router,
         equipmentUseCases = useCases.equipmentUseCases,
         buildingEquipmentUseCases = useCases.buildingEquipmentUseCases,
-        buildingUseCases = useCases.buildingUseCases,
         equipmentUuid = FakeData.equipment.uuid.toString()
     )
 
@@ -407,18 +413,18 @@ class EquipmentDetailScreenTest: TestCase() {
     fun addBuilding() = runUITest {
         val useCases = storedEquipmentUseCases()
         useCases.buildingUseCases.upsertBuilding(building = FakeData.building)
-        val (store, sessionStore) = setEquipmentDetailScreen(useCases = useCases)
+        val (store, sessionStore, buildingPickerStore) = setEquipmentDetailScreen(useCases = useCases)
 
-        waitUntil { store.state.equipment != null && store.state.allBuildings.isNotEmpty() && sessionStore.state.account != null }
+        waitUntil { store.state.equipment != null && buildingPickerStore.state.candidates.isNotEmpty() && sessionStore.state.account != null }
         onNodeWithTag(testTag = "equipment_buildings_link").assertDoesNotExist()
         onNodeWithTag(testTag = "action_edit").performClick()
         waitUntil { store.state.editing }
         onNodeWithTag(testTag = "equipment_buildings_link").performClick()
-        waitUntil { store.state.buildingPickerOpen }
+        waitUntil { buildingPickerStore.state.open }
         onNodeWithTag(testTag = "building_row_0").performClick()
-        waitUntil { store.state.pickedBuildings.isNotEmpty() }
+        waitUntil { buildingPickerStore.state.picked.isNotEmpty() }
         onNode(matcher = hasTestTag(testTag = "action_save") and hasAnyAncestor(matcher = hasTestTag(testTag = "building_picker"))).performClick()
-        waitUntil { !store.state.buildingPickerOpen && store.state.buildings.isNotEmpty() }
+        waitUntil { !buildingPickerStore.state.open && store.state.buildings.isNotEmpty() }
         onNodeWithTag(testTag = "action_save").performClick()
         waitUntil { !store.state.editing }
 
@@ -438,7 +444,7 @@ class EquipmentDetailScreenTest: TestCase() {
         store.send(action = EquipmentDetailScreenAction.Edit)
         store.send(action = EquipmentDetailScreenAction.RemoveBuilding(buildingUuid = FakeData.building.uuid))
         store.send(action = EquipmentDetailScreenAction.Cancel)
-        assertEquals(expected = listOf(element = FakeData.building), actual = store.stateFlow.first { !it.editing }.buildings)
+        assertEquals(expected = listOf(element = Link(uuid = FakeData.building.uuid, name = FakeData.building.name)), actual = store.stateFlow.first { !it.editing }.buildings)
 
         store.send(action = EquipmentDetailScreenAction.Edit)
         store.send(action = EquipmentDetailScreenAction.RemoveBuilding(buildingUuid = FakeData.building.uuid))

@@ -1,4 +1,4 @@
-package com.app.builder.ui.navigation.building
+package com.app.builder.ui.component.building
 
 import kotlinx.collections.immutable.toImmutableMap
 import androidx.compose.runtime.Composable

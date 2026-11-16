@@ -12,6 +12,8 @@ import com.app.builder.core.flow.Dispatcher
 import com.app.builder.core.telemetry.Telemetry
 import com.app.builder.data.storage.AppFile
 import com.app.builder.domain.gateway.building.BuildingUseCases
+import com.app.builder.ui.component.building.filtered
+import com.app.builder.ui.component.building.toBuildingItem
 import com.app.builder.ui.navigation.Router
 import com.app.builder.ui.navigation.Screen
 import com.app.builder.ui.store.Store

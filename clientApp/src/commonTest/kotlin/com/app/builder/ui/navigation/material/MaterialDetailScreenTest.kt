@@ -7,6 +7,7 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlin.uuid.Uuid
+import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.flow.first
 import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.assert
@@ -24,13 +25,18 @@ import androidx.compose.ui.test.performTextReplacement
 import com.app.builder.Dependency.getUserDependency
 import com.app.builder.core.locale.now
 import com.app.builder.core.security.uuid
+import com.app.builder.domain.Building
 import com.app.builder.domain.UserCredentials
 import com.app.builder.domain.gateway.UseCases
 import com.app.builder.domain.gateway.buildingmaterial.BuildingOfMaterial
 import com.app.builder.test.FakeData
 import com.app.builder.test.TestCase
+import com.app.builder.ui.component.building.buildingLinkPickerStore
 import com.app.builder.ui.component.filters.FiltersState
 import com.app.builder.ui.component.filters.FiltersStore
+import com.app.builder.ui.component.link.Link
+import com.app.builder.ui.component.link.LinkPickerStore
+import com.app.builder.ui.component.list.BuildingItem
 import com.app.builder.ui.component.session.SessionState
 import com.app.builder.ui.component.session.SessionStore
 import com.app.builder.ui.navigation.Router
@@ -60,32 +66,33 @@ class MaterialDetailScreenTest: TestCase() {
      * @param useCases The use cases backing the stores.
      * @param materialUuid The uuid of the material to display.
      * @param new Whether the material is new and not stored yet.
-     * @return The [MaterialDetailScreenStore] and the [SessionStore] rendered.
+     * @return The [MaterialDetailScreenStore], the [SessionStore] and the building picker store rendered.
      */
-    private fun ComposeUiTest.setMaterialDetailScreen(useCases: UseCases, materialUuid: Uuid = FakeData.material.uuid, new: Boolean = false): Pair<MaterialDetailScreenStore, SessionStore> {
+    private fun ComposeUiTest.setMaterialDetailScreen(useCases: UseCases, materialUuid: Uuid = FakeData.material.uuid, new: Boolean = false): Triple<MaterialDetailScreenStore, SessionStore, LinkPickerStore<Building, BuildingItem>> {
         val store = MaterialDetailScreenStore(
             state = MaterialDetailScreenState(),
             router = router,
             materialUseCases = useCases.materialUseCases,
             buildingMaterialUseCases = useCases.buildingMaterialUseCases,
-            buildingUseCases = useCases.buildingUseCases,
             materialUuid = materialUuid.toString(),
             new = new
         )
         val sessionStore = SessionStore(state = SessionState(), authenticationUseCases = useCases.authenticationUseCases)
         val filtersStore = FiltersStore(state = FiltersState())
         val buildingFiltersStore = FiltersStore(state = FiltersState())
+        val buildingPickerStore = buildingLinkPickerStore(buildingUseCases = useCases.buildingUseCases)
 
         setUI {
             MaterialDetailScreen(
                 sessionStore = sessionStore,
                 filtersStore = filtersStore,
                 buildingFiltersStore = buildingFiltersStore,
+                buildingPickerStore = buildingPickerStore,
                 store = store,
             )
         }
 
-        return store to sessionStore
+        return Triple(first = store, second = sessionStore, third = buildingPickerStore)
     }
 
     /** Verifies that the material detail screen displays the name and description of the loaded material. */
@@ -98,18 +105,19 @@ class MaterialDetailScreenTest: TestCase() {
             router = router,
             materialUseCases = useCases.materialUseCases,
             buildingMaterialUseCases = useCases.buildingMaterialUseCases,
-            buildingUseCases = useCases.buildingUseCases,
             materialUuid = FakeData.material.uuid.toString()
         )
         val sessionStore = SessionStore(state = SessionState(), authenticationUseCases = useCases.authenticationUseCases)
         val filtersStore = FiltersStore(state = FiltersState())
         val buildingFiltersStore = FiltersStore(state = FiltersState())
+        val buildingPickerStore = buildingLinkPickerStore(buildingUseCases = useCases.buildingUseCases)
 
         setUI {
             MaterialDetailScreen(
                 sessionStore = sessionStore,
                 filtersStore = filtersStore,
                 buildingFiltersStore = buildingFiltersStore,
+                buildingPickerStore = buildingPickerStore,
                 store = store,
             )
         }
@@ -365,7 +373,7 @@ class MaterialDetailScreenTest: TestCase() {
     }
 
     /** [FakeData.building] as linked to [FakeData.material] by [FakeData.buildingMaterial]. */
-    private val storedLink = BuildingLink(building = FakeData.building, quantity = FakeData.buildingMaterial.quantity.toString())
+    private val storedLink = Link(uuid = FakeData.building.uuid, name = FakeData.building.name, quantity = FakeData.buildingMaterial.quantity.toString())
 
     /**
      * Builds the material detail store of [FakeData.material] with [useCases].
@@ -378,7 +386,6 @@ class MaterialDetailScreenTest: TestCase() {
         router = router,
         materialUseCases = useCases.materialUseCases,
         buildingMaterialUseCases = useCases.buildingMaterialUseCases,
-        buildingUseCases = useCases.buildingUseCases,
         materialUuid = FakeData.material.uuid.toString()
     )
 
@@ -387,19 +394,19 @@ class MaterialDetailScreenTest: TestCase() {
     fun addBuilding() = runUITest {
         val useCases = storedMaterialUseCases()
         useCases.buildingUseCases.upsertBuilding(building = FakeData.building)
-        val (store, sessionStore) = setMaterialDetailScreen(useCases = useCases)
+        val (store, sessionStore, buildingPickerStore) = setMaterialDetailScreen(useCases = useCases)
 
-        waitUntil { store.state.material != null && store.state.allBuildings.isNotEmpty() && sessionStore.state.account != null }
+        waitUntil { store.state.material != null && buildingPickerStore.state.candidates.isNotEmpty() && sessionStore.state.account != null }
         onNodeWithTag(testTag = "material_buildings_link").assertDoesNotExist()
         onNodeWithTag(testTag = "action_edit").performClick()
         waitUntil { store.state.editing }
         onNodeWithTag(testTag = "material_buildings_link").performClick()
-        waitUntil { store.state.buildingPickerOpen }
+        waitUntil { buildingPickerStore.state.open }
         onNodeWithTag(testTag = "building_row_0").performClick()
-        waitUntil { store.state.pickedBuildings.isNotEmpty() }
+        waitUntil { buildingPickerStore.state.picked.isNotEmpty() }
         onNode(matcher = hasTestTag(testTag = "action_save") and hasAnyAncestor(matcher = hasTestTag(testTag = "building_picker"))).performClick()
-        waitUntil { !store.state.buildingPickerOpen && store.state.buildings.isNotEmpty() }
-        assertEquals(expected = listOf(element = BuildingLink(building = FakeData.building, quantity = "1")), actual = store.state.buildings)
+        waitUntil { !buildingPickerStore.state.open && store.state.buildings.isNotEmpty() }
+        assertEquals(expected = listOf(element = storedLink.copy(quantity = "1")), actual = store.state.buildings)
         onNodeWithTag(testTag = "material_buildings_extra_${FakeData.building.uuid}").performTextReplacement(text = "5")
         waitUntil { store.state.buildings.single().quantity == "5" }
         onNodeWithTag(testTag = "action_save").performClick()
@@ -464,26 +471,21 @@ class MaterialDetailScreenTest: TestCase() {
         assertEquals(expected = FakeData.material, actual = useCases.materialUseCases.observeMaterial(uuid = FakeData.material.uuid).first())
     }
 
-    /** Verifies that confirming the picker keeps the quantity typed for a building that stays ticked, and links a newly ticked building with a quantity of one. */
+    /** Verifies that setting the linked buildings keeps the quantity typed for a building that stays linked, and links a new building with a quantity of one. */
     @Test
-    fun pickerKeepsTypedQuantities() = runUnitTest {
+    fun setBuildings() = runUnitTest {
         val useCases = storedMaterialUseCases()
-        val other = FakeData.building.copy(uuid = uuid(), name = "Other")
         useCases.buildingUseCases.upsertBuilding(building = FakeData.building)
-        useCases.buildingUseCases.upsertBuilding(building = other)
         useCases.buildingMaterialUseCases.upsertBuildingMaterial(buildingMaterial = FakeData.buildingMaterial)
         val store = materialStore(useCases = useCases)
+        val picked = Link(uuid = FakeData.building.uuid, name = FakeData.building.name)
+        val other = Link(uuid = uuid(), name = "Other")
 
-        store.stateFlow.first { it.buildings.isNotEmpty() && it.allBuildings.size == 2 }
+        store.stateFlow.first { it.buildings.isNotEmpty() }
         store.send(action = MaterialDetailScreenAction.Edit)
         store.send(action = MaterialDetailScreenAction.ChangeBuildingQuantity(buildingUuid = FakeData.building.uuid, quantity = "8"))
-        store.send(action = MaterialDetailScreenAction.OpenBuildingPicker)
-        store.send(action = MaterialDetailScreenAction.ToggleBuildingPick(buildingUuid = other.uuid))
-        store.send(action = MaterialDetailScreenAction.SaveBuildingPick)
+        store.send(action = MaterialDetailScreenAction.SetBuildings(buildings = persistentListOf(picked, other)))
 
-        assertEquals(
-            expected = setOf(BuildingLink(building = FakeData.building, quantity = "8"), BuildingLink(building = other, quantity = "1")),
-            actual = store.state.buildings.toSet()
-        )
+        assertEquals(expected = listOf(picked.copy(quantity = "8"), other.copy(quantity = "1")), actual = store.state.buildings)
     }
 }

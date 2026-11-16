@@ -4,11 +4,13 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
 import com.app.builder.domain.gateway.UseCases
+import com.app.builder.ui.component.building.buildingFiltersStore
+import com.app.builder.ui.component.building.buildingLinkPickerStore
+import com.app.builder.ui.component.material.materialFiltersStore
 import com.app.builder.ui.component.session.SessionStore
 import com.app.builder.ui.lifecycle.hostViewModel
 import com.app.builder.ui.navigation.LocalRouter
 import com.app.builder.ui.navigation.Screen
-import com.app.builder.ui.navigation.building.buildingFiltersStore
 import com.app.builder.ui.navigation.scene.SplitSceneStrategy.Companion.split
 
 /**
@@ -31,13 +33,13 @@ fun EntryProviderScope<NavKey>.materialProvider(useCases: UseCases) {
             sessionStore = hostViewModel(key = SessionStore.KEY) { SessionStore.get(useCases = useCases) },
             filtersStore = materialFiltersStore(),
             buildingFiltersStore = buildingFiltersStore(),
+            buildingPickerStore = viewModel(key = "building_picker") { buildingLinkPickerStore(buildingUseCases = useCases.buildingUseCases) },
             store = viewModel {
                 MaterialDetailScreenStore(
                     state = MaterialDetailScreenState(),
                     router = router,
                     materialUseCases = useCases.materialUseCases,
                     buildingMaterialUseCases = useCases.buildingMaterialUseCases,
-                    buildingUseCases = useCases.buildingUseCases,
                     materialUuid = it.uuid,
                     new = it.new
                 )

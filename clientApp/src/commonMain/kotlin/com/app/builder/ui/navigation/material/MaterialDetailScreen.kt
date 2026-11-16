@@ -14,6 +14,7 @@ import com.app.builder.core.config.ClientFlags
 import com.app.builder.core.locale.getLocalDateTime
 import com.app.builder.core.security.toUuid
 import com.app.builder.core.security.uuid
+import com.app.builder.domain.Building
 import com.app.builder.domain.EntityType
 import com.app.builder.domain.Material
 import com.app.builder.domain.Permission
@@ -21,18 +22,18 @@ import com.app.builder.ui.InjectTranslations
 import com.app.builder.ui.LocalSplitScreen
 import com.app.builder.ui.Preview
 import com.app.builder.ui.component.actionbar.ActionBar
+import com.app.builder.ui.component.building.BuildingLinkPicker
 import com.app.builder.ui.component.card.MaterialCard
 import com.app.builder.ui.component.field.LinkExtra
-import com.app.builder.ui.component.field.LinkItem
 import com.app.builder.ui.component.field.LinkSection
 import com.app.builder.ui.component.filters.FiltersAction
 import com.app.builder.ui.component.filters.FiltersState
-import com.app.builder.ui.component.filters.StoreFilters
-import com.app.builder.ui.component.filters.StoreFiltersButton
-import com.app.builder.ui.component.list.BuildingList
+import com.app.builder.ui.component.link.LinkPickerAction
+import com.app.builder.ui.component.link.LinkPickerState
+import com.app.builder.ui.component.link.toLinkItem
+import com.app.builder.ui.component.list.BuildingItem
 import com.app.builder.ui.component.navigation.Navigation
 import com.app.builder.ui.component.navigation.NavigationRoute
-import com.app.builder.ui.component.overlay.PickerDialog
 import com.app.builder.ui.component.session.SessionState
 import com.app.builder.ui.navigation.LocalRouter
 import com.app.builder.ui.navigation.Router
@@ -47,6 +48,7 @@ import com.app.builder.ui.store.previewStore
  * @param sessionStore The session store shared by every screen.
  * @param filtersStore The material filters shared by every material screen, shown when the material list is beside this screen.
  * @param buildingFiltersStore The building list filters, shown in the building picker.
+ * @param buildingPickerStore Provides the building picker state and receives its actions.
  * @param store Provides the material detail state and receives its actions.
  */
 @Composable
@@ -54,6 +56,7 @@ fun MaterialDetailScreen(
     sessionStore: Store<SessionState, Unit>,
     filtersStore: Store<FiltersState, FiltersAction>,
     buildingFiltersStore: Store<FiltersState, FiltersAction>,
+    buildingPickerStore: Store<LinkPickerState<Building, BuildingItem>, LinkPickerAction>,
     store: Store<MaterialDetailScreenState, MaterialDetailScreenAction>,
 ) {
     val state by store.stateFlow.collectAsStateWithLifecycle()
@@ -112,10 +115,10 @@ fun MaterialDetailScreen(
                     if (material != null && canReadLinks) LinkSection(
                         tag = "material_buildings",
                         label = "material_buildings",
-                        items = state.buildings.map { LinkItem(uuid = it.building.uuid.toString(), name = it.building.name, extra = LinkExtra.Number(value = it.quantity, error = it.quantityError)) }.toImmutableList(),
+                        items = state.buildings.map { it.toLinkItem() }.toImmutableList(),
                         editing = state.editing && canEditLinks,
                         linkLabel = "material_link_buildings",
-                        onLinkClick = { store.send(action = MaterialDetailScreenAction.OpenBuildingPicker) },
+                        onLinkClick = { buildingPickerStore.send(action = LinkPickerAction.Open(picked = state.buildings.map { it.uuid }.toSet())) },
                         onRemove = { item -> item.uuid.toUuid()?.let { store.send(action = MaterialDetailScreenAction.RemoveBuilding(buildingUuid = it)) } },
                         onExtraChange = { item, extra ->
                             when (extra) {
@@ -129,24 +132,12 @@ fun MaterialDetailScreen(
         }
     }
 
-    if (state.buildingPickerOpen) {
-        val buildingFilters by buildingFiltersStore.stateFlow.collectAsStateWithLifecycle()
-        PickerDialog(
-            tag = "building_picker",
-            title = "material_link_buildings",
-            onSave = { store.send(action = MaterialDetailScreenAction.SaveBuildingPick) },
-            onDismiss = { store.send(action = MaterialDetailScreenAction.CloseBuildingPicker) },
-            actions = { StoreFiltersButton(filtersStore = buildingFiltersStore) },
-            secondaryActions = if (buildingFilters.filtersExpanded) {
-                { StoreFilters(filtersStore = buildingFiltersStore, showDeletedToggle = false) }
-            } else null,
-        ) {
-            BuildingList(
-                items = state.buildingPickerItems,
-                onClick = { item -> item.uuid.toUuid()?.let { store.send(action = MaterialDetailScreenAction.ToggleBuildingPick(buildingUuid = it)) } }
-            )
-        }
-    }
+    BuildingLinkPicker(
+        store = buildingPickerStore,
+        filtersStore = buildingFiltersStore,
+        title = "material_link_buildings",
+        onConfirm = { store.send(action = MaterialDetailScreenAction.SetBuildings(buildings = it)) }
+    )
 }
 
 @PreviewLightDark
@@ -165,6 +156,7 @@ private fun MaterialDetailScreenPreview() = Preview {
         sessionStore = previewStore(initialState = SessionState()),
         filtersStore = previewStore(initialState = FiltersState()),
         buildingFiltersStore = previewStore(initialState = FiltersState()),
+        buildingPickerStore = previewStore(initialState = LinkPickerState()),
         store = previewStore(
             initialState = MaterialDetailScreenState(
                 material = material
