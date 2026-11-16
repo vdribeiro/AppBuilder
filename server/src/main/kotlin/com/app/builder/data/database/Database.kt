@@ -7,12 +7,14 @@ import org.jetbrains.exposed.v1.r2dbc.transactions.suspendTransaction
 import org.jetbrains.exposed.v1.r2dbc.transactions.transactionManager
 import com.app.builder.core.flow.runSuspendCatching
 import com.app.builder.data.database.table.BuildingEquipmentTable
+import com.app.builder.data.database.table.BuildingMaterialTable
 import com.app.builder.data.database.table.BuildingTable
 import com.app.builder.data.database.table.ConfigTable
 import com.app.builder.data.database.table.ConnectionTable
 import com.app.builder.data.database.table.DeviceLocationTable
 import com.app.builder.data.database.table.DeviceTokenTable
 import com.app.builder.data.database.table.EquipmentTable
+import com.app.builder.data.database.table.MaterialTable
 import com.app.builder.data.database.table.NotificationTable
 import com.app.builder.data.database.table.RegistryTable
 import com.app.builder.data.database.table.TaskTable
@@ -38,6 +40,8 @@ private val tables = listOf(
     EquipmentTable,
     BuildingTable,
     BuildingEquipmentTable,
+    MaterialTable,
+    BuildingMaterialTable,
 ).toTypedArray()
 
 /** Creates all the tables in the database. */

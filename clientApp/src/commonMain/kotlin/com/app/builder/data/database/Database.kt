@@ -9,9 +9,11 @@ import database.Account
 import database.AppDatabase
 import database.Building
 import database.BuildingEquipment
+import database.BuildingMaterial
 import database.DeviceLocation
 import database.Equipment
 import database.Job
+import database.Material
 import database.Registry
 import database.Session
 import database.Task
@@ -30,6 +32,8 @@ typealias TaskSchema = Task
 typealias EquipmentSchema = Equipment
 typealias BuildingSchema = Building
 typealias BuildingEquipmentSchema = BuildingEquipment
+typealias MaterialSchema = Material
+typealias BuildingMaterialSchema = BuildingMaterial
 
 /**
  * Drops every table in the database and creates them again from [AppDatabase.Schema], so a database left with an older schema is rebuilt too.
