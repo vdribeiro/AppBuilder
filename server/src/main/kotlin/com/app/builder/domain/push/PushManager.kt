@@ -129,11 +129,11 @@ class PushManager(
         notificationsUseCases.deleteNotification(notificationUuid = pushUuid)
     }
 
-    /** Launches the periodic heartbeat keeping this instance's presence rows alive, so other instances treat its connections as live. */
+    /** Launches the periodic heartbeat keeping this instance's presence rows alive while it holds connections, so other instances treat its connections as live. */
     private fun startHeartbeat() {
         if (heartbeatJob?.isActive != true) heartbeatJob = scope.launch(context = Dispatcher.IO) {
             while (isActive) {
-                connectionUseCases.touchConnections(instanceId = instanceId)
+                if (connections.isNotEmpty()) connectionUseCases.touchConnections(instanceId = instanceId)
                 delay(timeMillis = ServerConfigs.value.presenceHeartbeatInterval)
             }
         }

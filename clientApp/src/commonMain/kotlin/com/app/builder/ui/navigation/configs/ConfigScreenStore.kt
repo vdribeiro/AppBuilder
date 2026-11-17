@@ -49,6 +49,7 @@ class ConfigScreenStore(
 
     /**
      * Observes the current user's permissions and loads one section per config type they can read, editable only where they can write.
+     * Also observes the client flags and client configs, and refreshes their sections as they change.
      *
      * @return The [Job] representing this execution.
      */
@@ -71,6 +72,16 @@ class ConfigScreenStore(
             updateState { it.copy(sections = sections) }
 
             Telemetry.info(tag = TAG, message = "Loaded ${sections.size} sections")
+        }
+
+        ClientFlags.flow.observe(id = "client_flags") { flags ->
+            val items = flags.toConfigItems(map = Configs.clientFlags) { ConfigValue.Toggle(value = it.boolean) }
+            updateState { it.refreshItems(configType = ConfigType.CLIENT_FLAG, items = items) }
+        }
+
+        ClientConfigs.flow.observe(id = "client_configs") { configs ->
+            val items = configs.toConfigItems(map = Configs.clientConfigs) { ConfigValue.Form(value = it.content) }
+            updateState { it.refreshItems(configType = ConfigType.CLIENT_CONFIG, items = items) }
         }
 
         Telemetry.info(tag = TAG, message = "Setup complete")
@@ -144,6 +155,25 @@ class ConfigScreenStore(
      */
     private fun ConfigScreenState.withItems(configType: ConfigType, items: ImmutableList<ConfigItem>): ConfigScreenState =
         copy(sections = sections.map { if (it.configType == configType) it.copy(items = items) else it }.toPersistentList())
+
+    /**
+     * Sets the values of the [configType] section to those of [items], matched by name. Entries with a pending edit keep their value.
+     *
+     * @param configType The config type whose section is being refreshed.
+     * @param items The entries holding the new values.
+     * @return The updated state.
+     */
+    private fun ConfigScreenState.refreshItems(configType: ConfigType, items: List<ConfigItem>): ConfigScreenState {
+        val values = items.associate { it.name to it.value }
+        return copy(sections = sections.map { section ->
+            if (section.configType != configType) section else section.copy(
+                items = section.items.map { item ->
+                    val value = values[item.name]
+                    if (item.pending || value == null) item else item.copy(value = value)
+                }.toPersistentList()
+            )
+        }.toPersistentList())
+    }
 
     /**
      * Converts this serializable value into one [ConfigItem] per field, using [map] to look up each field's description and [toValue] to build its value.

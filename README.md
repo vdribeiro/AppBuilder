@@ -464,10 +464,15 @@ The server holds no state that only one instance can see, so it runs correctly b
 A ticket request and its WebSocket upgrade can land on different instances, and a notification can be sent from an instance holding none of the recipient's sockets.
 
 * **Connection tickets** (`TicketTable`): persisted, not held in memory, so a ticket minted by one instance is redeemable on any other. Consumption is atomic, so a ticket can never be redeemed twice.
-* **Connection presence** (`ConnectionTable`): which device is connected to which instance lives in the database. Each instance heartbeats its own rows and sweeps rows left by crashed instances, so the "skip FCM, it's connected" decision is correct globally.
+* **Connection presence** (`ConnectionTable`): which device is connected to which instance lives in the database. Each instance holding connections heartbeats its own rows and sweeps rows left by crashed instances, so the "skip FCM, it's connected" decision is correct globally.
 * **Cross-instance signaling** (`InstanceSignal`): a `notify`/`observe` abstraction that wakes the instance holding the socket. Production uses `PostgresSignal` (`LISTEN`/`NOTIFY`), with dedicated connections outside the regular pool: one self-healing connection per observed channel, shared by all of its observers, plus one for publishing; development uses the in-process `LocalSignal`. An instance delivers to its own SSE sessions directly and skips its own echo, so a signal failure never blacks out the sessions it holds.
 
 Signals are fire-and-forget. Anything that must survive a missed delivery, like the notification or connection presence, is already in the database.
+
+`SINGLE_INSTANCE=true` selects `LocalSignal` in production too, so the server holds no `LISTEN` connections and, with no client connected, makes no database calls.
+
+> [!WARNING]
+> Never set `SINGLE_INSTANCE` on a deployment with more than one instance: the server boots fine but loses the cross-instance capability.
 
 > [!IMPORTANT]
 > **Device ownership.** `deviceUuid` comes from a request header, so the client picks it. Every per-device table is therefore keyed on `(userUuid, deviceUuid)`, never on `deviceUuid` alone, or one account could claim another's row and hijack or kill its push delivery. New per-device tables must follow the same rule.
@@ -494,7 +499,7 @@ Postgres can be swapped for another engine supported by Exposed's R2DBC driver. 
 
 Not every engine has built-in pub/sub. Oracle has `DBMS_ALERT` and Advanced Queuing, and SQL Server has Service Broker, but MySQL and MariaDB have nothing equivalent.
 For those, poll a small signal table (at the cost of the poll interval in latency), or back `InstanceSignal` with an external broker such as Redis or NATS.
-A single-instance deployment can keep `LocalSignal`.
+A single-instance deployment can keep `LocalSignal`, which `SINGLE_INSTANCE=true` also selects on Postgres.
 
 # Development Guide
 
@@ -834,7 +839,7 @@ Every key falls back to an empty default, so a missing file costs you signed rel
 
 | Purpose       | Variables                                                                |
 |---------------|--------------------------------------------------------------------------|
-| Server        | `DEVELOPMENT`, `PORT`, `SENTRY_DSN`, `CORS_HOSTS`                        |
+| Server        | `DEVELOPMENT`, `SINGLE_INSTANCE`, `PORT`, `SENTRY_DSN`, `CORS_HOSTS`     |
 | Admin         | `ADMIN_UUID`, `ADMIN_USERNAME`, `ADMIN_PASSWORD`                         |
 | Database      | `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `DB_SSL_MODE` |
 | JWT           | `JWT_ISSUER`, `JWT_AUDIENCE`, `JWT_SECRET`                               |
@@ -867,7 +872,7 @@ The switch is `Env.developmentMode`, from the `DEVELOPMENT` variable.
 | Concern               | Development                           | Production                                         |
 |-----------------------|---------------------------------------|----------------------------------------------------|
 | Database              | In-memory H2, reset on restart        | Postgres                                           |
-| Signal                | `LocalSignal` (in-process)            | `PostgresSignal` (`LISTEN`/`NOTIFY`)               |
+| Signal                | `LocalSignal` (in-process)            | `PostgresSignal`, or `LocalSignal` if single       |
 | FCM                   | `NoOpFcmService`                      | `FcmManager`, when fully configured                |
 | JWT                   | HMAC512 with the injected secret      | HMAC512 with the real `JWT_SECRET`                 |
 | Telemetry             | Console `ServerLogger`                | Console, plus Sentry if `SENTRY_DSN` is set        |
@@ -879,7 +884,7 @@ The switch is `Env.developmentMode`, from the `DEVELOPMENT` variable.
 > [!NOTE]
 > FCM needs **all** of: production mode, the `firebase` server flag, Google Application Default Credentials, and `GCP_PROJECT_ID`.
 > If any is missing the server falls back to `NoOpFcmService` instead of failing to boot, so a misconfigured deployment silently delivers over WebSocket and SSE only.
-> The signal, by contrast, follows the database: a Postgres connection factory yields `PostgresSignal`, anything else `LocalSignal`. See [Using Another Database](#using-another-database).
+> The signal, by contrast, follows the database: a Postgres connection factory yields `PostgresSignal` unless `SINGLE_INSTANCE` is set, anything else `LocalSignal`. See [Using Another Database](#using-another-database).
 
 ## Firebase Setup
 

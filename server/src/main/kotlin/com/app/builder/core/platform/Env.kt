@@ -4,6 +4,8 @@ package com.app.builder.core.platform
 object Env {
     /** Indicates whether the server is running in development mode. */
     val developmentMode: Boolean = getEnv(name = "DEVELOPMENT") == "true"
+    /** Indicates whether the server runs as a single instance, signaling in-process instead of through the database. */
+    val singleInstance: Boolean = getEnv(name = "SINGLE_INSTANCE") == "true"
     /** Sentry Data Source Name used for error tracking and monitoring. */
     val sentryDsn: String? = getEnv(name = "SENTRY_DSN")
     /** The port number on which the application server will listen. */

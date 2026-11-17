@@ -14,6 +14,7 @@ import androidx.compose.ui.test.isToggleable
 import androidx.compose.ui.test.onNodeWithTag
 import com.app.builder.Dependency.getUserDependency
 import com.app.builder.core.config.ClientConfigs
+import com.app.builder.core.config.ClientFlags
 import com.app.builder.test.FakeData
 import com.app.builder.test.TestCase
 import com.app.builder.ui.component.list.ConfigItem
@@ -83,6 +84,18 @@ class ConfigsScreenTest: TestCase() {
 
         assertEquals(expected = ConfigValue.Toggle(value = false), actual = configScreenStore.item(configType = ConfigType.CLIENT_FLAG, name = "http").value)
         assertEquals(expected = others, actual = configScreenStore.state.sections.filterNot { it.configType == ConfigType.CLIENT_FLAG })
+    }
+
+    /** Verifies that the client flags section follows a flag changed outside the screen, keeping the entry's identity. */
+    @Test
+    fun clientFlagsFollowOutsideChanges() = runUITest {
+        val configScreenStore = setUpScreen()
+        val item = configScreenStore.item(configType = ConfigType.CLIENT_FLAG, name = "http")
+
+        ClientFlags.set { it.copy(http = !FakeData.clientFlags.http) }
+
+        waitUntil { configScreenStore.item(configType = ConfigType.CLIENT_FLAG, name = "http").value == ConfigValue.Toggle(value = !FakeData.clientFlags.http) }
+        assertEquals(expected = item.uuid, actual = configScreenStore.item(configType = ConfigType.CLIENT_FLAG, name = "http").uuid)
     }
 
     /** Verifies that the client configs section reflects a form value update. */

@@ -189,8 +189,8 @@ private suspend fun createDependency(): Dependency {
         Telemetry.error(tag = TAG, message = "Unable to initialize Firebase Manager, FCM push will be a no-op", throwable = it)
     }.getOrDefault(defaultValue = NoOpFcmService)
 
-    val instanceSignal = when (connectionFactory) {
-        is PostgresqlConnectionFactory -> PostgresSignal(connectionFactory = connectionFactory)
+    val instanceSignal = when {
+        !Env.singleInstance && connectionFactory is PostgresqlConnectionFactory -> PostgresSignal(connectionFactory = connectionFactory)
         else -> LocalSignal()
     }.also { Telemetry.info(tag = TAG, message = "Instance Signal created") }
 
