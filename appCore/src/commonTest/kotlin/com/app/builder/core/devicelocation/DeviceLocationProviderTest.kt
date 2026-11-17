@@ -92,6 +92,18 @@ class DeviceLocationProviderTest: TestCase() {
         assertEquals(expected = DeviceLocationProvider.State.Idle, actual = provider.state.value)
     }
 
+    /** Verifies that disabling the location capture feature flag stops the active update. */
+    @Test
+    fun disabledFlagStopsTheActiveUpdate() = runUnitTest {
+        val provider = testProvider()
+        provider.startUpdate()
+        assertEquals(expected = DeviceLocationProvider.State.Active, actual = provider.state.value)
+
+        ClientFlags.set { it.copy(locationCapture = false) }
+
+        assertEquals(expected = DeviceLocationProvider.State.Idle, actual = provider.state.value)
+    }
+
     /** Verifies that [DeviceLocationProvider.getLastKnownLocation] returns null while the provider is unavailable. */
     @Test
     fun getLastKnownLocationReturnsNullWhenUnavailable() = runUnitTest {

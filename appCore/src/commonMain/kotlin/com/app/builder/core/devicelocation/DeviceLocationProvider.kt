@@ -1,12 +1,19 @@
 package com.app.builder.core.devicelocation
 
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
 import com.app.builder.core.config.ClientConfigs
 import com.app.builder.core.config.ClientFlags
+import com.app.builder.core.flow.Dispatcher
 import com.app.builder.core.flow.runSuspendCatching
 import com.app.builder.core.telemetry.Telemetry
 
@@ -33,6 +40,19 @@ open class DeviceLocationProvider {
     private val _deviceLocation: MutableStateFlow<DeviceLocation?> = MutableStateFlow(value = null)
     /** The last location fix captured, or null if none has been captured yet. */
     val deviceLocation: StateFlow<DeviceLocation?> = _deviceLocation.asStateFlow()
+
+    /** Scope observing the locationCapture client feature flag on the main thread. */
+    private val flagScope = CoroutineScope(context = SupervisorJob() + Dispatcher.Main)
+
+    init {
+        flagScope.launch {
+            ClientFlags.flow
+                .map { it.locationCapture }
+                .distinctUntilChanged()
+                .filter { !it }
+                .collect { if (state.value != State.Idle) stopUpdate() }
+        }
+    }
 
     /**
      * Returns if the location provider is permitted on this device.
