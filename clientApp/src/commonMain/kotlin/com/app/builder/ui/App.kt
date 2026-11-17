@@ -11,6 +11,7 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import com.app.builder.Application
+import com.app.builder.core.config.ClientFlags
 import com.app.builder.core.media.AudioPlayer
 import com.app.builder.core.media.Camera
 import com.app.builder.core.nfc.NfcController
@@ -114,7 +115,8 @@ fun App(
                 AppState.UNAUTHENTICATED -> UnauthenticatedNavigation(modifier = modifier, useCases = dependency?.userGraph?.useCases)
                 AppState.AUTHENTICATED -> AuthenticatedNavigation(modifier = modifier, useCases = userDependency?.useCases).also {
                     val deviceLocationProvider = LocalDeviceLocationProvider.current
-                    LaunchedEffect(key1 = Unit) {
+                    val flags by ClientFlags.flow.collectAsState()
+                    LaunchedEffect(key1 = flags.locationCapture) {
                         if (permissionManager.grantPermission(permission = Permission.LOCATION)) {
                             deviceLocationProvider.startUpdate()
                         }
