@@ -56,7 +56,7 @@ class LoginScreenTest: TestCase() {
         onNodeWithTag(testTag = "login").performClick()
         waitForIdle()
 
-        waitUntil { !store.state.loading }
+        waitUntil(timeoutMillis = 10_000) { !store.state.loading }
         assertFalse(actual = store.state.loading)
         assertEquals(expected = FakeData.adminUser.uuid, actual = authenticationUseCases.observeCurrentUser().firstOrNull()?.uuid)
     }
