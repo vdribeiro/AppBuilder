@@ -106,7 +106,9 @@ fun App(
         AppCore {
             Application.RegisterLifecycles()
 
-            LaunchedEffect(key1 = Unit) {
+            val flags by ClientFlags.flow.collectAsState()
+
+            LaunchedEffect(key1 = flags.notifications) {
                 permissionManager.grantPermission(permission = Permission.NOTIFICATIONS)
             }
 
@@ -115,7 +117,6 @@ fun App(
                 AppState.UNAUTHENTICATED -> UnauthenticatedNavigation(modifier = modifier, useCases = dependency?.userGraph?.useCases)
                 AppState.AUTHENTICATED -> AuthenticatedNavigation(modifier = modifier, useCases = userDependency?.useCases).also {
                     val deviceLocationProvider = LocalDeviceLocationProvider.current
-                    val flags by ClientFlags.flow.collectAsState()
                     LaunchedEffect(key1 = flags.locationCapture) {
                         if (permissionManager.grantPermission(permission = Permission.LOCATION)) {
                             deviceLocationProvider.startUpdate()
