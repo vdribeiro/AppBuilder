@@ -15,7 +15,6 @@ import com.app.builder.domain.EntityType
 import com.app.builder.domain.Permission
 import com.app.builder.domain.User
 import com.app.builder.domain.UserCredentials
-import com.app.builder.domain.UserSession
 
 /**
  * Maps a [UserSchema] entity to a [User] domain model.

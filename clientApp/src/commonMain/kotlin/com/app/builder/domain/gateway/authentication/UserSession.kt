@@ -1,6 +1,7 @@
-package com.app.builder.domain
+package com.app.builder.domain.gateway.authentication
 
-import kotlinx.serialization.Serializable
+import com.app.builder.domain.Account
+import com.app.builder.domain.User
 
 /**
  * A user and its account, with a session verifier and tokens.
@@ -12,7 +13,6 @@ import kotlinx.serialization.Serializable
  * @property accessToken The JWT access token used for network authentication.
  * @property refreshToken The JWT refresh token used to renew the access token.
  */
-@Serializable
 data class UserSession(
     val user: User,
     val account: Account,
