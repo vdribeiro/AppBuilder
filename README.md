@@ -1033,6 +1033,8 @@ This is the layer [`StorageFile`](#persisted-storage) builds on to make encrypti
 **Offline login** uses `deriveKey`, a PBKDF2-HMAC-SHA256 derivation. The local `Session` table stores a `username`, a random per-session `salt` and a `verifier = deriveKey(password, salt)`.
 The username ties a match to one user, so two accounts with the same password can't log each other in; the per-session salt means identical passwords look different on disk and no precomputed table breaks every install.
 The verifier only authenticates the offline login and is never used as a key.
+An offline login is a local check only: the password is never stored or queued, and a match cancels the user's pending logout, so the session it already had carries on.
+It is tried only when the server gives no answer. Once the server answers, a refused login fails without the local check, whatever the status.
 The same row keeps the session's access and refresh tokens, encrypted with `encrypt`, and `expiredAt`, set once the server refuses the session (see [Tokens & Refresh](#tokens--refresh)).
 
 ## Persisted Storage
