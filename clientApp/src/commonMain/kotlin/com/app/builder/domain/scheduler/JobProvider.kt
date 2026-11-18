@@ -105,7 +105,6 @@ class JobProvider(
      */
     private suspend fun handlePost(job: Job): JobResult = appGraph.getRepositories(job = job)?.run {
         when (job.entityType) {
-            EntityType.ACCOUNT -> authenticationRepository.executeLogin(job = job)
             EntityType.USER -> userRepository.executeUpsertUser(job = job)
             EntityType.TASK -> taskRepository.executeUpsertTask(job = job)
             EntityType.EQUIPMENT -> equipmentRepository.executeUpsertEquipment(job = job)

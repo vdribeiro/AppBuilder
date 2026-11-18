@@ -25,9 +25,8 @@ import com.app.builder.data.http.HttpRequest
 import com.app.builder.data.http.HttpResult
 import com.app.builder.data.http.URL
 import com.app.builder.data.http.plugin.UnauthorizedException
+import com.app.builder.data.http.plugin.UnsuccessfulStatusException
 import com.app.builder.data.http.post
-import com.app.builder.data.serializer.decode
-import com.app.builder.data.serializer.encode
 import com.app.builder.data.storage.AppFile
 import com.app.builder.domain.Account
 import com.app.builder.domain.Authentication
@@ -121,14 +120,13 @@ class AuthenticationGateway(
         )) {
             is HttpResult.Error -> {
                 Telemetry.error(tag = TAG, message = "Unable to login", throwable = result.error)
-                null
+                // The offline login is only tried when the server gave no answer
+                if (result.error is UnauthorizedException || result.error is UnsuccessfulStatusException) return@withContext null
+                Telemetry.info(tag = TAG, message = "Trying offline login")
+                return@withContext loginOffline(credentials = credentials)
             }
 
             is HttpResult.Success -> result.data
-        }
-        if (result == null) {
-            Telemetry.info(tag = TAG, message = "Trying offline login")
-            return@withContext loginOffline(credentials = credentials)
         }
 
         Telemetry.info(tag = TAG, message = "Successfully logged in")
@@ -193,43 +191,6 @@ class AuthenticationGateway(
             Telemetry.error(tag = TAG, message = "Unable to update session verifier", throwable = it)
         }
         true
-    }
-
-    override suspend fun executeLogin(job: Job): JobResult = withContext(context = Dispatcher.IO) {
-        val credentials = job.payload?.let { decode<UserCredentials>(value = it) }
-        if (credentials == null) {
-            val throwable = Throwable(message = "Unable to decode credentials")
-            Telemetry.error(tag = TAG, message = "Invalid credentials payload", throwable = throwable)
-            return@withContext throwable.toJobResult()
-        }
-        when (val result = httpClient.post<UserCredentials, Authentication>(
-            request = HttpRequest(
-                url = URL.Login,
-                headerMap = job.toHeaderMap(),
-            ),
-            body = credentials
-        )) {
-            is HttpResult.Error -> {
-                Telemetry.error(tag = TAG, message = "Unable to post login", throwable = result.error)
-                result.error.toJobResult()
-            }
-
-            is HttpResult.Success -> {
-                val userSession = getUserSession(credentials = credentials, result = result.data) ?: run {
-                    val throwable = Throwable(message = "Error getting user session")
-                    Telemetry.error(tag = TAG, message = "Unable to get user session", throwable = throwable)
-                    return@withContext throwable.toJobResult()
-                }
-                database.safeTransaction {
-                    saveUserAndSession(userSession = userSession)
-                }.onFailure {
-                    Telemetry.error(tag = TAG, message = "Unable to save user and session", throwable = it)
-                    return@withContext it.toJobResult()
-                }
-                Telemetry.info(tag = TAG, message = "Successful login")
-                JobResult.Success
-            }
-        }
     }
 
     override suspend fun executeLogout(job: Job): JobResult = withContext(context = Dispatcher.IO) {
@@ -340,29 +301,29 @@ class AuthenticationGateway(
     }
 
     /**
-     * Enqueues a login on the [Scheduler] and performs a local identity verification lookup using a deterministic credential combination.
+     * Performs a local identity verification lookup using a deterministic credential combination.
      * Looks the session up by username and checks the password against the stored verifier.
-     * This isolates authentication validation locally, allowing cached user sessions to re-verify during offline connectivity gaps.
+     * A match cancels the user's pending logout on the [Scheduler], which keeps the stored session, and sets the user as the current one.
      *
      * @param credentials The user's login credentials to verify against the local database.
      * @return The cached [User] if a match is found, or null otherwise.
      */
     private suspend fun loginOffline(credentials: UserCredentials): User? {
-        val job = Job(
-            userUuid = Uuid.NIL,
-            entityType = EntityType.ACCOUNT,
-            type = Job.Type.POST,
-            conflictPolicy = Job.ConflictPolicy.REPLACE,
-            payload = encode(value = credentials)
-        )
-        scheduler.queue(job = job)
         val session = sessionDao.getSessionByUsername(username = credentials.username).awaitAsOneOrNull() ?: return null
         val verifier = credentials.deriveVerifier(salt = session.salt) ?: run {
             Telemetry.error(tag = TAG, message = "Unable to derive the credentials verifier")
             return null
         }
         if (verifier != session.verifier) return null
-        return getUserByUsername(username = credentials.username)?.also { user -> swapUser(userUuid = user.uuid.toString()) }
+        val user = getUserByUsername(username = credentials.username) ?: return null
+        val job = Job(
+            userUuid = user.uuid,
+            entityType = EntityType.ACCOUNT,
+            type = Job.Type.DELETE
+        )
+        scheduler.cancel(job = job)
+        swapUser(userUuid = user.uuid.toString())
+        return user
     }
 
     /**

@@ -6,16 +6,8 @@ import com.app.builder.domain.BearerToken
 import com.app.builder.domain.scheduler.Job
 import com.app.builder.domain.scheduler.JobResult
 
-/** Defines the contract for session login and logout. */
+/** Defines the contract for session logout and tokens. */
 interface AuthenticationRepository {
-
-    /**
-     * Attempts to log in.
-     *
-     * @param job The job configuration blueprint.
-     * @return The [JobResult].
-     */
-    suspend fun executeLogin(job: Job): JobResult
 
     /**
      * Logs out.

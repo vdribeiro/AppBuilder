@@ -8,11 +8,14 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlinx.coroutines.flow.firstOrNull
+import app.cash.sqldelight.async.coroutines.awaitAsList
 import app.cash.sqldelight.async.coroutines.awaitAsOneOrNull
 import com.app.builder.core.config.ClientFlags
 import com.app.builder.core.security.deriveKey
 import com.app.builder.core.security.uuid
 import com.app.builder.data.database.SessionSchema
+import com.app.builder.domain.UserCredentials
+import com.app.builder.domain.scheduler.Job
 import com.app.builder.test.FakeData
 import com.app.builder.test.TestCase
 
@@ -94,7 +97,81 @@ class AuthenticationUseCasesTest: TestCase() {
 
         assertEquals(expected = FakeData.adminUser.uuid, actual = authenticationUseCases.observeCurrentUser().firstOrNull()?.uuid)
         assertEquals(expected = FakeData.adminAccount, actual = authenticationUseCases.observeCurrentAccount().firstOrNull())
+        assertTrue(actual = queuedJobs().isEmpty())
     }
+
+    /** Verifies that an offline login queues no job, whether it matches or not, and that a match cancels the user's pending logout and keeps its session. */
+    @Test
+    fun loginOfflineCancelsPendingLogout() = runUnitTest {
+        val authenticationUseCases = dependency.get()
+            .userGraph
+            .useCases
+            .authenticationUseCases
+        val sessionDao = dependency.get()
+            .database
+            .sessionQueries
+
+        assertNotNull(actual = authenticationUseCases.login(credentials = FakeData.adminCredentials))
+        val session = assertNotNull(actual = sessionDao.getSession(userUuid = FakeData.adminUser.uuid).awaitAsOneOrNull())
+
+        ClientFlags.set { it.copy(http = false) }
+        authenticationUseCases.logout(userUuid = FakeData.adminUser.uuid)
+        val logout = queuedJobs().single()
+        assertEquals(expected = Job.Type.DELETE, actual = logout.type)
+        assertEquals(expected = Job.State.PENDING, actual = logout.state)
+
+        assertNull(actual = authenticationUseCases.login(credentials = UserCredentials(username = FakeData.adminCredentials.username, password = "wrong_password")))
+        assertNull(actual = authenticationUseCases.login(credentials = FakeData.credentials))
+        assertEquals(expected = listOf(logout), actual = queuedJobs())
+
+        assertEquals(expected = FakeData.adminUser, actual = authenticationUseCases.login(credentials = FakeData.adminCredentials))
+        assertEquals(expected = listOf(logout.copy(state = Job.State.CANCELED)), actual = queuedJobs())
+        assertEquals(expected = session, actual = sessionDao.getSession(userUuid = FakeData.adminUser.uuid).awaitAsOneOrNull())
+        assertEquals(expected = FakeData.adminUser.uuid, actual = authenticationUseCases.observeCurrentUser().firstOrNull()?.uuid)
+    }
+
+    /** Verifies that a login the server answers and refuses is not tried offline, even when the password matches the stored verifier, while the same login succeeds offline once the server can't be reached. */
+    @Test
+    fun loginRefusedByTheServerIsNotTriedOffline() = runUnitTest {
+        val authenticationUseCases = dependency.get()
+            .userGraph
+            .useCases
+            .authenticationUseCases
+        val credentials = UserCredentials(username = FakeData.adminCredentials.username, password = "old_password")
+
+        val salt = uuid().toString()
+        dependency.get().database.userQueries.upsertUser(User = FakeData.adminUser.toUserSchema())
+        dependency.get().database.accountQueries.upsertAccount(Account = FakeData.adminAccount.toAccountSchema())
+        val encryptedBearer = assertNotNull(actual = FakeData.adminBearerToken.encrypt())
+        dependency.get().database.sessionQueries.upsertSession(
+            SessionSchema(
+                userUuid = FakeData.adminUser.uuid,
+                username = credentials.username,
+                salt = salt,
+                verifier = deriveKey(password = credentials.password, salt = salt)!!,
+                accessToken = encryptedBearer.accessToken,
+                refreshToken = encryptedBearer.refreshToken,
+                expiredAt = null
+            )
+        )
+
+        assertNull(actual = authenticationUseCases.login(credentials = credentials))
+        assertNull(actual = authenticationUseCases.observeCurrentUser().firstOrNull())
+
+        ClientFlags.set { it.copy(http = false) }
+        assertEquals(expected = FakeData.adminUser, actual = authenticationUseCases.login(credentials = credentials))
+    }
+
+    /**
+     * Lists the jobs queued in the scheduler, in every state.
+     *
+     * @return The queued jobs, oldest first.
+     */
+    private suspend fun queuedJobs(): List<database.Job> = dependency.get()
+        .database
+        .jobQueries
+        .getJobsByState(states = Job.State.entries)
+        .awaitAsList()
 
     /** Verifies that changing the password with the current one replaces the session's salt and verifier with ones derived from the new password, keeping its tokens. */
     @Test

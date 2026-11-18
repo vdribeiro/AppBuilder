@@ -18,7 +18,6 @@ import com.app.builder.data.database.SessionSchema
 import com.app.builder.data.database.createMockSqlDriver
 import com.app.builder.data.http.TestEngine
 import com.app.builder.data.http.respondMock
-import com.app.builder.data.serializer.encode
 import com.app.builder.domain.EntityType
 import com.app.builder.domain.scheduler.Job
 import com.app.builder.domain.scheduler.JobResult
@@ -26,61 +25,6 @@ import com.app.builder.test.FakeData
 import com.app.builder.test.TestCase
 
 class AuthenticationRepositoryTest: TestCase() {
-
-    /** Verifies that executing a login job fails without a payload and succeeds once credentials are encoded into it. */
-    @Test
-    fun executeLogin() = runUnitTest {
-        val authenticationUseCases = dependency.get()
-            .userGraph
-            .useCases
-            .authenticationUseCases
-        val authenticationRepository = dependency.get()
-            .userGraph
-            .repositories
-            .authenticationRepository
-        val userDao = dependency.get()
-            .database
-            .userQueries
-        val sessionDao = dependency.get()
-            .database
-            .sessionQueries
-
-        val username = FakeData.adminCredentials.username
-
-        assertNull(actual = authenticationUseCases.observeCurrentUser().firstOrNull())
-        assertNull(actual = userDao.getUserByUsername(username = username).awaitAsOneOrNull())
-        assertNull(actual = sessionDao.getSession(userUuid = FakeData.adminUser.uuid).awaitAsOneOrNull())
-
-        val job = Job(userUuid = Uuid.NIL, entityType = EntityType.ACCOUNT, type = Job.Type.POST)
-        assertTrue(actual = authenticationRepository.executeLogin(job = job) is JobResult.Error)
-
-        val jobResult = authenticationRepository.executeLogin(job = job.copy(payload = encode(value = FakeData.adminCredentials)))
-        assertTrue(actual = jobResult is JobResult.Success)
-
-        assertEquals(expected = FakeData.adminUser, actual = userDao.getUserByUsername(username = username).awaitAsOneOrNull()?.toUser())
-        assertEquals(expected = FakeData.adminUser.uuid, actual = sessionDao.getSession(userUuid = FakeData.adminUser.uuid).awaitAsOneOrNull()?.userUuid)
-
-        assertNull(actual = authenticationUseCases.observeCurrentUser().firstOrNull())
-    }
-
-    /** Verifies that executing a login job with a valid payload fails when the http client flag is disabled. */
-    @Test
-    fun executeLoginOffline() = runUnitTest {
-        ClientFlags.set { it.copy(http = false) }
-        val authenticationRepository = dependency.get()
-            .userGraph
-            .repositories
-            .authenticationRepository
-
-        val job = Job(
-            userUuid = Uuid.NIL,
-            entityType = EntityType.ACCOUNT,
-            type = Job.Type.POST,
-            payload = encode(value = FakeData.adminCredentials)
-        )
-        val jobResult = authenticationRepository.executeLogin(job = job)
-        assertTrue(actual = jobResult is JobResult.Error)
-    }
 
     /** Verifies that executing a logout job fails without a payload and succeeds once the user uuid is set, removing the session. */
     @Test
