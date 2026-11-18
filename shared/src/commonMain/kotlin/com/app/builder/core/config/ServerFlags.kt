@@ -16,7 +16,7 @@ data class ServerFlags(
     val broadcast: Boolean,
     /** Toggles the push WebSocket ticket/connect routes and the server's push delivery service. When false, the routes return 404 and no push payloads are ever delivered. */
     val push: Boolean,
-    /** Toggles Firebase initialization. When false, Firebase services become no-ops. */
+    /** Toggles Firebase delivery. When false, Firebase services become no-ops. */
     val firebase: Boolean,
     /** Toggles user CRUD routes. When false, they return 404. */
     val users: Boolean,
