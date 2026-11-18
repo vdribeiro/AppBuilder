@@ -5,15 +5,18 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import com.app.builder.ui.InjectTranslations
 import com.app.builder.ui.LocalTypography
 import com.app.builder.ui.Preview
+import com.app.builder.ui.component.field.TextField
 import com.app.builder.ui.core.button.Button
 import com.app.builder.ui.core.text.Input
 import com.app.builder.ui.core.text.Text
@@ -54,7 +57,10 @@ fun Login(
         Spacer(modifier = Modifier.height(height = 32.dp))
 
         // Username Input
-        Column(verticalArrangement = Arrangement.spacedBy(space = 4.dp)) {
+        Column(
+            modifier = Modifier.padding(horizontal = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(space = 4.dp)
+        ) {
             Text(text = "username", style = typography.labelMedium)
             Input(
                 modifier = Modifier
@@ -69,15 +75,18 @@ fun Login(
 
         // Password Input
         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            Text(text = "password", style = typography.labelMedium)
-            Input(
-                modifier = Modifier
-                    .testTag(tag = "password")
-                    .fillMaxWidth(),
+            Text(
+                modifier = Modifier.padding(horizontal = 16.dp),
+                text = "password",
+                style = typography.labelMedium
+            )
+            TextField(
+                modifier = Modifier.testTag(tag = "password"),
                 value = password,
-                onValueChange = onPasswordValueChange,
+                editing = true,
+                keyboardType = KeyboardType.Password,
                 enabled = !loading,
-                maxLines = 1,
+                onValueChange = onPasswordValueChange,
             )
         }
 
@@ -87,7 +96,8 @@ fun Login(
         Button(
             modifier = Modifier
                 .testTag(tag = "login")
-                .fillMaxWidth(),
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp),
             text = "login",
             loading = loading,
             enabled = !loading && username.isNotBlank() && password.isNotBlank(),

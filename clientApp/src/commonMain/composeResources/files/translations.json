@@ -331,11 +331,6 @@
   },
   {
     "languageIso": "en",
-    "key": "wrong_current_password",
-    "value": "The current password is wrong"
-  },
-  {
-    "languageIso": "en",
     "key": "unable_to_change_password",
     "value": "Unable to change the password"
   },

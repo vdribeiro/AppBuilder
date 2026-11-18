@@ -5,7 +5,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
-import com.app.builder.domain.UserSession
 import com.app.builder.test.FakeData
 import com.app.builder.test.TestCase
 
