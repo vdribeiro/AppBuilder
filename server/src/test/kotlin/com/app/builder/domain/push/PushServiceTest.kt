@@ -237,6 +237,30 @@ class PushServiceTest: TestCase() {
         pushService.stop()
     }
 
+    /** Verifies that a started service stops dispatching saved notifications when the push flag turns off, and resumes when it turns back on. */
+    @Test
+    fun startedServiceFollowsItsFlag() = runServerTest {
+        val pushService = dependency.get().pushService
+        val signal = dependency.get().instanceSignal as LocalSignal
+        val session = FakeWebSocketSession()
+        pushService.start()
+
+        val ticket = pushService.generateTicket(userUuid = FakeData.adminUser.uuid)
+        assertNotNull(actual = ticket)
+        assertEquals(expected = FakeData.adminUser.uuid, actual = pushService.addConnection(ticketUuid = ticket, deviceUuid = uuid(), session = session))
+        awaitUntil { signal.subscriptions.value > 0 }
+
+        ServerFlags.set { it.copy(push = false) }
+        awaitUntil { signal.subscriptions.value == 0 }
+        assertTrue(actual = dependency.get().useCases.notificationsUseCases.saveNotification(notification = FakeData.entityNotification))
+        delay(timeMillis = 200)
+        assertFalse(actual = session.sent)
+
+        ServerFlags.set { it.copy(push = true) }
+        awaitUntil { session.sent }
+        pushService.stop()
+    }
+
     /**
      * Creates a second [PushManager] sharing this test's database, simulating another server instance.
      *

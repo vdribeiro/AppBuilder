@@ -137,6 +137,22 @@ class JobSchedulerTest: TestCase() {
         assertEquals(expected = 1, actual = jobStore.jobs.value.count { it.entityType == EntityType.TRANSLATION && it.state == Job.State.CANCELED })
     }
 
+    /** Verifies canceling a job cancels the pending jobs of the same blueprint and leaves the others pending. */
+    @Test
+    fun cancel() = runUnitTest {
+        val jobStore = LocalJobStore()
+        val scheduler = JobScheduler(jobStore = jobStore, jobFactory = FakeJobFactory(), clockService = FakeClockService())
+
+        val job = Job(userUuid = Uuid.NIL, entityType = EntityType.TRANSLATION, type = Job.Type.POST)
+        scheduler.queue(job = job)
+        scheduler.queue(job = job.copy(uuid = uuid(), type = Job.Type.DELETE))
+
+        scheduler.cancel(job = job.copy(uuid = uuid()))
+
+        assertEquals(expected = listOf(Job.Type.POST), actual = jobStore.jobs.value.filter { it.state == Job.State.CANCELED }.map { it.type })
+        assertEquals(expected = listOf(Job.Type.DELETE), actual = jobStore.jobs.value.filter { it.state == Job.State.PENDING }.map { it.type })
+    }
+
     /** Verifies a job queued while the scheduler is disabled is resolved immediately. */
     @Test
     fun queueWhenSchedulerDisabled() = runUnitTest {

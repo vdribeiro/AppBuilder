@@ -5,7 +5,9 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeout
 import io.ktor.http.HttpStatusCode
+import com.app.builder.core.config.ServerFlags
 import com.app.builder.data.http.HttpRequest
 import com.app.builder.data.http.URL
 import com.app.builder.data.http.post
@@ -56,6 +58,20 @@ class BroadcastTest: TestCase() {
             cancel()
         }
         assertTrue(actual = sseEventReceived)
+    }
+
+    /** Verifies that an open broadcast stream ends when the broadcast flag turns off. */
+    @Test
+    fun disabledFlagClosesTheStream() = runServerTest {
+        installRouting()
+        val client = createClient(token = null)
+
+        withTimeout(timeMillis = 5_000L) {
+            client.sse(
+                request = HttpRequest(url = URL.Broadcast),
+                onConnected = { ServerFlags.set { it.copy(broadcast = false) } }
+            ) {}
+        }
     }
 
     /** Verifies that subscribing a device token to the broadcast topic succeeds without authentication and rejects an invalid body. */

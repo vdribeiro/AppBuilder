@@ -1,7 +1,7 @@
 package com.app.builder.domain.route.provider
 
 import kotlin.time.Duration.Companion.milliseconds
-import kotlinx.coroutines.awaitCancellation
+import kotlinx.coroutines.flow.first
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.auth.authenticate
 import io.ktor.server.plugins.ratelimit.RateLimitName
@@ -11,6 +11,7 @@ import io.ktor.server.routing.post
 import io.ktor.server.sse.heartbeat
 import io.ktor.server.sse.sse
 import com.app.builder.core.config.ServerConfigs
+import com.app.builder.core.config.ServerFlags
 import com.app.builder.core.telemetry.Telemetry
 import com.app.builder.data.http.URL
 import com.app.builder.data.http.plugin.RATE_LIMIT_BROADCAST
@@ -50,7 +51,7 @@ fun Route.broadcastRoutes(
             if (!broadcastService.addConnection(session = this)) return@sse
             heartbeat { period = ServerConfigs.value.broadcastPingInterval.milliseconds }
             try {
-                awaitCancellation()
+                ServerFlags.flow.first { !it.broadcast }
             } finally {
                 broadcastService.removeConnection(session = this)
             }

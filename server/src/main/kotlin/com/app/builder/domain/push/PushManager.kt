@@ -7,6 +7,8 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
@@ -63,27 +65,32 @@ class PushManager(
     /** Keeps this instance's presence rows alive. */
     private var heartbeatJob: Job? = null
 
+    /** Tracks the observation of the push server feature flag. */
+    private var flagJob: Job? = null
+
     /** Flag to track service status. */
+    @Volatile
     private var isRunning = false
 
     override suspend fun stop() = withContext(context = Dispatcher.IO) {
         mutex.withLock {
-            heartbeatJob?.cancelAndJoin()
-            heartbeatJob = null
-            observationJobs.values.forEach { it.cancelAndJoin() }
-            observationJobs.clear()
-            isRunning = false
+            flagJob?.cancelAndJoin()
+            flagJob = null
+            stopJobs()
         }
     }
 
     override fun start() {
-        if (!ServerFlags.value.push) return
         if (!mutex.tryLock()) return
         try {
-            if (isRunning) return
-            isRunning = true
-            startHeartbeat()
-            connections.keys.forEach { userUuid -> startObservingForUser(userUuid = userUuid) }
+            if (flagJob?.isActive == true) return
+            if (ServerFlags.value.push) startJobs()
+            flagJob = scope.launch {
+                ServerFlags.flow
+                    .map { it.push }
+                    .distinctUntilChanged()
+                    .collect { enabled -> mutex.withLock { if (enabled) startJobs() else stopJobs() } }
+            }
         } finally {
             mutex.unlock()
         }
@@ -129,6 +136,26 @@ class PushManager(
         notificationsUseCases.deleteNotification(notificationUuid = pushUuid)
     }
 
+    /**
+     * Starts the heartbeat and the observation for all currently connected users.
+     * If they are already running, this is a no-op.
+     */
+    private fun startJobs() {
+        if (isRunning) return
+        isRunning = true
+        startHeartbeat()
+        connections.keys.forEach { userUuid -> startObservingForUser(userUuid = userUuid) }
+    }
+
+    /** Stops the heartbeat and all database observers. */
+    private suspend fun stopJobs() {
+        isRunning = false
+        heartbeatJob?.cancelAndJoin()
+        heartbeatJob = null
+        observationJobs.values.forEach { it.cancelAndJoin() }
+        observationJobs.clear()
+    }
+
     /** Launches the periodic heartbeat keeping this instance's presence rows alive while it holds connections, so other instances treat its connections as live. */
     private fun startHeartbeat() {
         if (heartbeatJob?.isActive != true) heartbeatJob = scope.launch(context = Dispatcher.IO) {
@@ -141,10 +168,11 @@ class PushManager(
 
     /** Launches an isolated coroutine to observe and dispatch a specific user's notifications. */
     private fun startObservingForUser(userUuid: Uuid) {
-        if (observationJobs.containsKey(userUuid)) return
-        observationJobs[userUuid] = scope.launch(context = Dispatcher.IO) {
-            notificationsUseCases.observeNotifications(userUuid = userUuid).collect { notifications ->
-                notifications.forEach { pushPayload -> sendNotification(pushPayload = pushPayload) }
+        observationJobs.computeIfAbsent(userUuid) {
+            scope.launch(context = Dispatcher.IO) {
+                notificationsUseCases.observeNotifications(userUuid = userUuid).collect { notifications ->
+                    notifications.forEach { pushPayload -> sendNotification(pushPayload = pushPayload) }
+                }
             }
         }
     }

@@ -29,6 +29,13 @@ interface Scheduler {
     suspend fun queue(job: Job)
 
     /**
+     * Cancels the pending jobs sharing the same blueprint as [job].
+     *
+     * @param job The job configuration blueprint.
+     */
+    suspend fun cancel(job: Job)
+
+    /**
      * Observes the jobs that are pending or running.
      *
      * @return A flow emitting the pending and running jobs, or an empty list when the job store fails.

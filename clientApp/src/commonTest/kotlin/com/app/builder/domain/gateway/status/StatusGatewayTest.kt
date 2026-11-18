@@ -24,6 +24,7 @@ class StatusGatewayTest: TestCase() {
         override suspend fun stop() {}
         override fun start() {}
         override suspend fun queue(job: Job) {}
+        override suspend fun cancel(job: Job) {}
         override fun observeActiveJobs(): Flow<List<Job>> = activeJobs
     }
 

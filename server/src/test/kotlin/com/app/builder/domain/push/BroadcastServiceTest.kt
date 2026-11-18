@@ -9,6 +9,7 @@ import kotlinx.coroutines.withTimeout
 import com.app.builder.core.config.ServerConfigs
 import com.app.builder.core.config.ServerFlags
 import com.app.builder.data.http.FakeSSESession
+import com.app.builder.data.signal.LocalSignal
 import com.app.builder.domain.PushPayload
 import com.app.builder.test.TestCase
 
@@ -121,6 +122,28 @@ class BroadcastServiceTest: TestCase() {
 
         delay(timeMillis = 200)
         assertFalse(actual = session.sent)
+        broadcastService.stop()
+    }
+
+    /** Verifies that a started service stops relaying broadcasts from other instances when the broadcast flag turns off, and resumes when it turns back on. */
+    @Test
+    fun startedServiceFollowsItsFlag() = runServerTest {
+        val broadcastService = dependency.get().broadcastService
+        val signal = dependency.get().instanceSignal as LocalSignal
+        val session = FakeSSESession()
+        broadcastService.start()
+        broadcastService.addConnection(session = session)
+        awaitUntil { signal.subscriptions.value > 0 }
+
+        ServerFlags.set { it.copy(broadcast = false) }
+        awaitUntil { signal.subscriptions.value == 0 }
+
+        ServerFlags.set { it.copy(broadcast = true) }
+        awaitUntil { signal.subscriptions.value > 0 }
+
+        val otherInstance = BroadcastManager(instanceSignal = signal, fcmService = NoOpFcmService)
+        otherInstance.broadcast(pushPayload = PushPayload.Flags())
+        awaitUntil { session.sent }
         broadcastService.stop()
     }
 }

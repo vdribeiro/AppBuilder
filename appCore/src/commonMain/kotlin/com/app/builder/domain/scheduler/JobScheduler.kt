@@ -150,6 +150,11 @@ class JobScheduler(
         }
     }
 
+    override suspend fun cancel(job: Job) = withContext(context = Dispatcher.IO) {
+        cancelPendingJobs(job = job)
+        Unit
+    }
+
     override fun observeActiveJobs(): Flow<List<Job>> =
         jobStore.observeActiveJobs()
             .flowOn(context = Dispatcher.IO)

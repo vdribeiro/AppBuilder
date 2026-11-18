@@ -10,6 +10,7 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.websocket.CloseReason
 import io.ktor.websocket.Frame
 import io.ktor.websocket.close
+import com.app.builder.core.config.ServerFlags
 import com.app.builder.core.locale.now
 import com.app.builder.core.security.uuid
 import com.app.builder.data.http.HttpRequest
@@ -149,6 +150,28 @@ class PushTest: TestCase() {
             }
         ) {}
         assertTrue(actual = connectionEstablished)
+    }
+
+    /** Verifies that an open push WebSocket is closed when the push flag turns off. */
+    @Test
+    fun disabledFlagClosesTheConnection() = runServerTest {
+        installRouting()
+        val client = createClient(token = null)
+        val authenticatedClient = createClient(token = bearerToken.accessToken)
+        val ticketUuid = authenticatedClient.post<Unit>(request = HttpRequest(url = URL.Tickets)).body<Uuid>()
+
+        var closeCode: CloseReason.Codes? = null
+        client.webSocket<Frame.Text>(
+            request = HttpRequest(
+                url = URL.Push,
+                queryMap = mapOf(Query.TicketUuid to ticketUuid.toString(), Query.DeviceUuid to uuid().toString())
+            ),
+            onConnected = {
+                ServerFlags.set { it.copy(push = false) }
+                closeCode = closeReason.await()?.knownReason
+            }
+        ) {}
+        assertEquals(expected = CloseReason.Codes.GOING_AWAY, actual = closeCode)
     }
 
     /** Verifies that sending a push notification rejects an invalid body. */

@@ -6,6 +6,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
@@ -47,18 +49,28 @@ class BroadcastManager(
     /** Tracks the signal observation delivering broadcasts to this instance's sessions. */
     private var listenJob: Job? = null
 
+    /** Tracks the observation of the broadcast server feature flag. */
+    private var flagJob: Job? = null
+
     override suspend fun stop() = withContext(context = Dispatcher.IO) {
         mutex.withLock {
-            listenJob?.cancelAndJoin()
-            listenJob = null
+            flagJob?.cancelAndJoin()
+            flagJob = null
+            stopListenJob()
         }
     }
 
     override fun start() {
-        if (!ServerFlags.value.broadcast) return
         if (!mutex.tryLock()) return
         try {
-            startListenJob()
+            if (flagJob?.isActive == true) return
+            if (ServerFlags.value.broadcast) startListenJob()
+            flagJob = scope.launch {
+                ServerFlags.flow
+                    .map { it.broadcast }
+                    .distinctUntilChanged()
+                    .collect { enabled -> mutex.withLock { if (enabled) startListenJob() else stopListenJob() } }
+            }
         } finally {
             mutex.unlock()
         }
@@ -97,6 +109,12 @@ class BroadcastManager(
                 sendToConnections(data = envelope.substringAfter(delimiter = ENVELOPE_SEPARATOR))
             }
         }
+    }
+
+    /** Stops observing other instances. */
+    private suspend fun stopListenJob() {
+        listenJob?.cancelAndJoin()
+        listenJob = null
     }
 
     /**
