@@ -75,6 +75,10 @@ sealed interface Screen: NavKey {
     @Serializable
     @SerialName(value = "screen_user_profile")
     data object UserProfile: Screen
+    /** The screen where the current user changes their password. */
+    @Serializable
+    @SerialName(value = "screen_change_password")
+    data object ChangePassword: Screen
     /** The help screen, explaining the status icons. */
     @Serializable
     @SerialName(value = "screen_help")

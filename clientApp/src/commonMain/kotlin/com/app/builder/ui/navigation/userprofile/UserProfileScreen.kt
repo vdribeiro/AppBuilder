@@ -48,7 +48,7 @@ fun UserProfileScreen(
             language = state.language,
             appVersion = state.appVersion,
             onEditProfileClick = { store.send(action = UserProfileScreenAction.EditProfile) },
-            onChangePasswordClick = { store.send(action = UserProfileScreenAction.ChangePassword) },
+            onChangePasswordClick = { router.navigate(screen = Screen.ChangePassword) },
             onNotificationsClick = { store.send(action = UserProfileScreenAction.Notifications) },
             onLogoutClick = { store.send(action = UserProfileScreenAction.Logout) },
             onResetClick = { store.send(action = UserProfileScreenAction.Reset) },

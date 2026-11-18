@@ -145,6 +145,7 @@ class NavigationTest: TestCase() {
             Screen.DesignShapes,
             Screen.DesignTypography,
             Screen.UserProfile,
+            Screen.ChangePassword,
             Screen.Help,
             Screen.UserList,
             Screen.DeviceLocation,

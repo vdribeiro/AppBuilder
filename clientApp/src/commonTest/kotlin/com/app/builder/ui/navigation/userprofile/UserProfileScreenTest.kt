@@ -73,6 +73,24 @@ class UserProfileScreenTest: TestCase() {
         assertEquals(expected = listOf(Screen.Help), actual = router.backStack.toList())
     }
 
+    /** Verifies that change password opens the change password screen for a logged in user. */
+    @Test
+    fun changePassword() = runUITest {
+        val authenticationUseCases = dependency.get()
+            .userGraph
+            .useCases
+            .authenticationUseCases
+        authenticationUseCases.login(credentials = FakeData.adminCredentials)
+
+        val store = UserProfileScreenStore(state = UserProfileScreenState(), authenticationUseCases = authenticationUseCases)
+
+        setUI { UserProfileScreen(store = store) }
+
+        waitUntil { !store.state.guest }
+        onNodeWithText(text = "change_password").performScrollTo().performClick()
+        assertEquals(expected = listOf(Screen.ChangePassword), actual = router.backStack.toList())
+    }
+
     /** Verifies that a logged in user sees their name and account settings, and that logging out turns the profile back into a guest one. */
     @Test
     fun logout() = runUITest {

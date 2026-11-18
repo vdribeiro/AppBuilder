@@ -8,8 +8,6 @@ import com.app.builder.ui.core.image.Image
 sealed interface UserProfileScreenAction {
     /** Requests to edit the current user's profile. */
     data object EditProfile: UserProfileScreenAction
-    /** Requests to change the current user's password. */
-    object ChangePassword: UserProfileScreenAction
     /** Requests to open notification settings. */
     object Notifications: UserProfileScreenAction
     /** Logs out the current user. */
