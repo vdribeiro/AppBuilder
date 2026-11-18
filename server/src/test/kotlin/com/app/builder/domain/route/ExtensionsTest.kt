@@ -237,7 +237,7 @@ class ExtensionsTest: TestCase() {
             expected = HttpStatusCode.OK,
             actual = client.post(urlString = "/test/deleted-write") { header(Header.RequestUtc.header, before) }.status
         )
-        // A write a route only guards with a read permission, like a user changing itself, drains the same way.
+        // A write a route only guards with a read permission drains the same way.
         assertEquals(
             expected = HttpStatusCode.OK,
             actual = client.post(urlString = "/test/deleted-read-write") { header(Header.RequestUtc.header, before) }.status

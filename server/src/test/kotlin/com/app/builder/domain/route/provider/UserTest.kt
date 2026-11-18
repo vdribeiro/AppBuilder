@@ -143,7 +143,7 @@ class UserTest: TestCase() {
         assertNotNull(actual = fetched.body<User>().deletedAt)
     }
 
-    /** Verifies that fetching a single user requires authentication, that reading users requires the user read permission, and that a user with only that permission can change itself but not others. */
+    /** Verifies that fetching a single user requires authentication, that reading users requires the user read permission, and that a user without the user write permission can change itself but not others. */
     @Test
     fun userRoutesRequireAuthenticationAndPermission() = runServerTest {
         installRouting()
@@ -155,7 +155,8 @@ class UserTest: TestCase() {
         val noUserPermissionClient = createClient(token = noUserPermissionAuth.bearer.accessToken)
         assertEquals(expected = HttpStatusCode.Forbidden, actual = noUserPermissionClient.get(request = HttpRequest(url = URL.Users)).status)
         assertEquals(expected = HttpStatusCode.Forbidden, actual = noUserPermissionClient.ktorGet(urlString = "${URL.Users.path}/${FakeData.user.uuid}").status)
-        assertEquals(expected = HttpStatusCode.Forbidden, actual = noUserPermissionClient.post(request = HttpRequest(url = URL.Users), body = noUserPermissionAuth.user.copy(name = "Renamed")).status)
+        assertEquals(expected = HttpStatusCode.OK, actual = noUserPermissionClient.post(request = HttpRequest(url = URL.Users), body = noUserPermissionAuth.user.copy(name = "Renamed")).status)
+        assertEquals(expected = HttpStatusCode.Forbidden, actual = noUserPermissionClient.post(request = HttpRequest(url = URL.Users), body = FakeData.user.copy(name = "Renamed")).status)
 
         val readOnlyAuth = seedUser(registrationForm = registrationForm(username = "read_only_user", permissions = mapOf(EntityType.USER to Permission.READ)))
         val readOnlyClient = createClient(token = readOnlyAuth.bearer.accessToken)

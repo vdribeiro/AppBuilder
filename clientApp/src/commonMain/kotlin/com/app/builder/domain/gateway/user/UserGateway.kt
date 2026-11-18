@@ -95,7 +95,7 @@ class UserGateway(
     }
 
     override suspend fun upsertUser(user: User) = withContext(context = Dispatcher.IO) {
-        account.validatePermission(tag = TAG, entityType = EntityType.USER, permission = upsertPermission(user = user))?.let { return@withContext }
+        validateUpsert(user = user)?.let { return@withContext }
 
         database.safeTransaction {
             upsertUserInDatabase(user = user)
@@ -209,7 +209,7 @@ class UserGateway(
             return@withContext throwable.toJobResult()
         }
 
-        account.validatePermission(tag = TAG, entityType = EntityType.USER, permission = upsertPermission(user = user))?.let { return@withContext it.toJobResult() }
+        validateUpsert(user = user)?.let { return@withContext it.toJobResult() }
 
         when (val result = httpClient.post<User, User>(
             request = HttpRequest(
@@ -237,14 +237,14 @@ class UserGateway(
     }
 
     /**
-     * Resolves the permission the current user needs to upsert the given [user].
-     * Upserting the current user requires [Permission.READ], while upserting any other user requires [Permission.WRITE].
+     * Validates that the current user can upsert the given [user].
+     * Upserting the current user requires no permission, while upserting any other user requires [Permission.WRITE].
      *
      * @param user The user to upsert.
-     * @return The permission required to upsert [user].
+     * @return The denial failure if the current user cannot upsert [user], `null` otherwise.
      */
-    private fun upsertPermission(user: User): Permission =
-        if (user.uuid == account.userUuid) Permission.READ else Permission.WRITE
+    private fun validateUpsert(user: User): Throwable? =
+        if (user.uuid == account.userUuid) null else account.validatePermission(tag = TAG, entityType = EntityType.USER, permission = Permission.WRITE)
 
     /**
      * Synchronizes a single remote user with the local database.

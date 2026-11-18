@@ -168,6 +168,24 @@ class UserRepositoryTest: TestCase() {
         assertTrue(actual = userRepository.executeSyncUser(job = job) is JobResult.Error)
     }
 
+    /** Verifies that a user without any permission can upsert itself, but not another user. */
+    @Test
+    fun upsertUserWithoutPermission() = runUnitTest {
+        val userDependency = dependency.get().getUserDependency(account = unauthorizedAccount)
+        val userUseCases = userDependency.useCases.userUseCases
+        val userRepository = userDependency.repositories.userRepository
+
+        userUseCases.upsertUser(user = FakeData.adminUser)
+        assertTrue(actual = queuedJobs().isEmpty())
+
+        userUseCases.upsertUser(user = FakeData.user)
+        assertEquals(expected = listOf(FakeData.user.uuid), actual = queuedJobs().filter { it.entityType == EntityType.USER && it.type == Job.Type.POST }.map { it.entityUuid })
+
+        val job = Job(userUuid = Uuid.NIL, entityType = EntityType.USER, type = Job.Type.POST)
+        assertTrue(actual = userRepository.executeUpsertUser(job = job.copy(payload = encode(value = FakeData.adminUser))) is JobResult.Error)
+        assertTrue(actual = userRepository.executeUpsertUser(job = job.copy(payload = encode(value = FakeData.user))) is JobResult.Success)
+    }
+
     /** Verifies that a users sync keeps a local user that is newer than the remote one, and replaces one that is older. */
     @Test
     fun executeSyncUsersResolvesConflictsByModificationTime() = runUnitTest {
