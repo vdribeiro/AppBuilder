@@ -3,6 +3,10 @@ package com.app.builder.domain.route
 import io.ktor.server.application.Application
 import io.ktor.server.http.content.staticResources
 import io.ktor.server.response.respondText
+import io.ktor.server.routing.Route
+import io.ktor.server.routing.RouteSelector
+import io.ktor.server.routing.RouteSelectorEvaluation
+import io.ktor.server.routing.RoutingResolveContext
 import io.ktor.server.routing.get
 import io.ktor.server.routing.routing
 import com.app.builder.Dependency
@@ -35,19 +39,42 @@ fun Application.installRouting(dependency: Dependency) {
         get(path = "/") { call.respondText(text = "Server running") }
         registryRoutes(permissionService = permissionService, registryUseCases = useCases.registryUseCases)
         configRoutes(permissionService = permissionService, configUseCases = useCases.configUseCases, registryUseCases = useCases.registryUseCases)
-        if (ServerFlags.value.resources) staticResources(remotePath = "/api/data", basePackage = "static")
-        if (ServerFlags.value.probe) probeRoutes()
-        if (ServerFlags.value.authentication) authenticationRoutes(permissionService = permissionService, authenticationUseCases = useCases.authenticationUseCases, registryUseCases = useCases.registryUseCases)
-        if (ServerFlags.value.broadcast) broadcastRoutes(permissionService = permissionService, broadcastService = dependency.broadcastService, fcmService = dependency.fcmService, registryUseCases = useCases.registryUseCases)
-        if (ServerFlags.value.push) pushRoutes(permissionService = permissionService, deviceTokenUseCases = useCases.deviceTokenUseCases, pushService = dependency.pushService, registryUseCases = useCases.registryUseCases)
-        if (ServerFlags.value.users) userRoutes(permissionService = permissionService, userUseCases = useCases.userUseCases, accountUseCases = useCases.accountUseCases, registryUseCases = useCases.registryUseCases)
-        if (ServerFlags.value.users) accountRoutes(permissionService = permissionService, accountUseCases = useCases.accountUseCases, registryUseCases = useCases.registryUseCases)
-        if (ServerFlags.value.deviceLocation) deviceLocationRoutes(permissionService = permissionService, deviceLocationUseCases = useCases.deviceLocationUseCases, registryUseCases = useCases.registryUseCases)
-        if (ServerFlags.value.tasks) taskRoutes(permissionService = permissionService, taskUseCases = useCases.taskUseCases, registryUseCases = useCases.registryUseCases)
-        if (ServerFlags.value.equipments) equipmentRoutes(permissionService = permissionService, equipmentUseCases = useCases.equipmentUseCases, registryUseCases = useCases.registryUseCases)
-        if (ServerFlags.value.buildings) buildingRoutes(permissionService = permissionService, buildingUseCases = useCases.buildingUseCases, registryUseCases = useCases.registryUseCases)
-        if (ServerFlags.value.buildingEquipments) buildingEquipmentRoutes(permissionService = permissionService, buildingEquipmentUseCases = useCases.buildingEquipmentUseCases, registryUseCases = useCases.registryUseCases)
-        if (ServerFlags.value.materials) materialRoutes(permissionService = permissionService, materialUseCases = useCases.materialUseCases, registryUseCases = useCases.registryUseCases)
-        if (ServerFlags.value.buildingMaterials) buildingMaterialRoutes(permissionService = permissionService, buildingMaterialUseCases = useCases.buildingMaterialUseCases, registryUseCases = useCases.registryUseCases)
+        flag(enabled = { it.resources }) { staticResources(remotePath = "/api/data", basePackage = "static") }
+        flag(enabled = { it.probe }) { probeRoutes() }
+        flag(enabled = { it.authentication }) { authenticationRoutes(permissionService = permissionService, authenticationUseCases = useCases.authenticationUseCases, registryUseCases = useCases.registryUseCases) }
+        flag(enabled = { it.broadcast }) { broadcastRoutes(permissionService = permissionService, broadcastService = dependency.broadcastService, fcmService = dependency.fcmService, registryUseCases = useCases.registryUseCases) }
+        flag(enabled = { it.push }) { pushRoutes(permissionService = permissionService, deviceTokenUseCases = useCases.deviceTokenUseCases, pushService = dependency.pushService, registryUseCases = useCases.registryUseCases) }
+        flag(enabled = { it.users }) { userRoutes(permissionService = permissionService, userUseCases = useCases.userUseCases, accountUseCases = useCases.accountUseCases, registryUseCases = useCases.registryUseCases) }
+        flag(enabled = { it.users }) { accountRoutes(permissionService = permissionService, accountUseCases = useCases.accountUseCases, registryUseCases = useCases.registryUseCases) }
+        flag(enabled = { it.deviceLocation }) { deviceLocationRoutes(permissionService = permissionService, deviceLocationUseCases = useCases.deviceLocationUseCases, registryUseCases = useCases.registryUseCases) }
+        flag(enabled = { it.tasks }) { taskRoutes(permissionService = permissionService, taskUseCases = useCases.taskUseCases, registryUseCases = useCases.registryUseCases) }
+        flag(enabled = { it.equipments }) { equipmentRoutes(permissionService = permissionService, equipmentUseCases = useCases.equipmentUseCases, registryUseCases = useCases.registryUseCases) }
+        flag(enabled = { it.buildings }) { buildingRoutes(permissionService = permissionService, buildingUseCases = useCases.buildingUseCases, registryUseCases = useCases.registryUseCases) }
+        flag(enabled = { it.buildingEquipments }) { buildingEquipmentRoutes(permissionService = permissionService, buildingEquipmentUseCases = useCases.buildingEquipmentUseCases, registryUseCases = useCases.registryUseCases) }
+        flag(enabled = { it.materials }) { materialRoutes(permissionService = permissionService, materialUseCases = useCases.materialUseCases, registryUseCases = useCases.registryUseCases) }
+        flag(enabled = { it.buildingMaterials }) { buildingMaterialRoutes(permissionService = permissionService, buildingMaterialUseCases = useCases.buildingMaterialUseCases, registryUseCases = useCases.registryUseCases) }
     }
+}
+
+/**
+ * Registers routes that match only while their server feature flag is on.
+ *
+ * @param enabled Returns if the routes are enabled for the given [ServerFlags].
+ * @param build Registers the routes.
+ */
+private fun Route.flag(enabled: (ServerFlags) -> Boolean, build: Route.() -> Unit) {
+    createChild(selector = FlagRouteSelector(enabled = enabled)).apply(block = build)
+}
+
+/**
+ * A [RouteSelector] that matches only while a server feature flag is on.
+ *
+ * @property enabled Returns if the routes are enabled for the given [ServerFlags].
+ */
+private class FlagRouteSelector(
+    private val enabled: (ServerFlags) -> Boolean
+): RouteSelector() {
+
+    override suspend fun evaluate(context: RoutingResolveContext, segmentIndex: Int): RouteSelectorEvaluation =
+        if (enabled(ServerFlags.value)) RouteSelectorEvaluation.Transparent else RouteSelectorEvaluation.Failed
 }
