@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import io.ktor.client.HttpClient
+import io.ktor.http.HttpStatusCode
 import app.cash.sqldelight.async.coroutines.awaitAsOneOrNull
 import com.app.builder.core.flow.Dispatcher
 import com.app.builder.core.locale.now
@@ -25,6 +26,7 @@ import com.app.builder.data.http.HttpRequest
 import com.app.builder.data.http.HttpResult
 import com.app.builder.data.http.URL
 import com.app.builder.data.http.plugin.UnauthorizedException
+import com.app.builder.data.http.plugin.UnsuccessfulStatusException
 import com.app.builder.data.http.post
 import com.app.builder.data.serializer.decode
 import com.app.builder.data.serializer.encode
@@ -33,9 +35,9 @@ import com.app.builder.domain.Account
 import com.app.builder.domain.Authentication
 import com.app.builder.domain.BearerToken
 import com.app.builder.domain.EntityType
+import com.app.builder.domain.PasswordChange
 import com.app.builder.domain.User
 import com.app.builder.domain.UserCredentials
-import com.app.builder.domain.UserSession
 import com.app.builder.domain.scheduler.Job
 import com.app.builder.domain.scheduler.JobResult
 import com.app.builder.domain.scheduler.JobResult.NoOp.toJobResult
@@ -152,6 +154,50 @@ class AuthenticationGateway(
             payload = swapUser(userUuid = null) ?: return@withContext
         )
         scheduler.queue(job = job)
+    }
+
+    override suspend fun changePassword(userUuid: Uuid, currentPassword: String, newPassword: String): PasswordChangeResult = withContext(context = Dispatcher.IO) {
+        val session = database.safeTransaction {
+            sessionDao.getSession(userUuid = userUuid).awaitAsOneOrNull()
+        }.getOrElse {
+            Telemetry.error(tag = TAG, message = "Unable to get session", throwable = it)
+            return@withContext PasswordChangeResult.FAILED
+        } ?: run {
+            Telemetry.error(tag = TAG, message = "No session found for user $userUuid")
+            return@withContext PasswordChangeResult.FAILED
+        }
+        val refreshToken = session.toBearerToken().decrypt()?.refreshToken ?: run {
+            Telemetry.error(tag = TAG, message = "Unable to decrypt tokens")
+            return@withContext PasswordChangeResult.FAILED
+        }
+
+        when (val result = httpClient.post<PasswordChange, String>(
+            request = HttpRequest(url = URL.ChangePassword),
+            body = PasswordChange(refreshToken = refreshToken, currentPassword = currentPassword, newPassword = newPassword)
+        )) {
+            is HttpResult.Error -> {
+                Telemetry.error(tag = TAG, message = "Unable to change password", throwable = result.error)
+                return@withContext when ((result.error as? UnsuccessfulStatusException)?.status) {
+                    HttpStatusCode.BadRequest -> PasswordChangeResult.WRONG_PASSWORD
+                    else -> PasswordChangeResult.FAILED
+                }
+            }
+
+            is HttpResult.Success -> Unit
+        }
+        Telemetry.info(tag = TAG, message = "Successfully changed the password of user $userUuid")
+
+        val salt = uuid().toString()
+        val verifier = UserCredentials(username = session.username, password = newPassword).deriveVerifier(salt = salt) ?: run {
+            Telemetry.error(tag = TAG, message = "Unable to derive the credentials verifier")
+            return@withContext PasswordChangeResult.CHANGED
+        }
+        database.safeTransaction {
+            sessionDao.updateSessionVerifier(salt = salt, verifier = verifier, userUuid = userUuid)
+        }.onFailure {
+            Telemetry.error(tag = TAG, message = "Unable to update session verifier", throwable = it)
+        }
+        PasswordChangeResult.CHANGED
     }
 
     override suspend fun executeLogin(job: Job): JobResult = withContext(context = Dispatcher.IO) {

@@ -8,6 +8,7 @@ import kotlinx.coroutines.withContext
 import org.jetbrains.exposed.v1.core.ResultRow
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.core.neq
 import org.jetbrains.exposed.v1.core.or
 import org.jetbrains.exposed.v1.r2dbc.R2dbcDatabase
 import org.jetbrains.exposed.v1.r2dbc.deleteWhere
@@ -33,6 +34,7 @@ import com.app.builder.domain.Account
 import com.app.builder.domain.Authentication
 import com.app.builder.domain.BearerToken
 import com.app.builder.domain.EntityType
+import com.app.builder.domain.PasswordChange
 import com.app.builder.domain.Permission
 import com.app.builder.domain.RegistrationForm
 import com.app.builder.domain.User
@@ -227,6 +229,44 @@ class AuthenticationGateway(
                 refreshToken = newRefreshToken
             )
         )
+    }
+
+    override suspend fun changePassword(passwordChange: PasswordChange): Outcome<Uuid> = withContext(context = Dispatcher.IO) {
+        val now = now()
+
+        val (session, account) = database.safeTransaction {
+            val session = findSession(refreshToken = passwordChange.refreshToken, now = now)
+                ?.takeIf { it[UserSessionTable.expiresAt] >= now }
+                ?: return@safeTransaction null
+            val account = UserAccountTable.selectAll()
+                .where { UserAccountTable.userUuid eq session[UserSessionTable.userUuid] }
+                .firstOrNull()
+                ?: return@safeTransaction null
+            session to account
+        }.getOrElse {
+            Telemetry.error(tag = TAG, message = "Unable to get session and account", throwable = it)
+            return@withContext Outcome.Error
+        } ?: return@withContext Outcome.Rejected
+
+        val sessionUuid = session[UserSessionTable.uuid]
+        val userUuid = session[UserSessionTable.userUuid]
+        if (account[UserAccountTable.deletedAt] != null) {
+            Telemetry.error(tag = TAG, message = "Rejected password change for disabled account of user $userUuid")
+            return@withContext Outcome.Rejected
+        }
+        if (passwordChange.newPassword.isBlank()) return@withContext Outcome.Invalid
+        if (!verifyPassword(password = passwordChange.currentPassword, hash = account[UserAccountTable.passwordHash])) return@withContext Outcome.Invalid
+        val password = hashPassword(password = passwordChange.newPassword) ?: return@withContext Outcome.Error
+
+        database.safeTransaction {
+            UserAccountTable.update(where = { UserAccountTable.userUuid eq userUuid }) {
+                it[UserAccountTable.passwordHash] = password
+            }
+            UserSessionTable.deleteWhere { (UserSessionTable.userUuid eq userUuid) and (UserSessionTable.uuid neq sessionUuid) }
+            Outcome.Success(data = userUuid)
+        }.onFailure {
+            Telemetry.error(tag = TAG, message = "Unable to change the password of user $userUuid", throwable = it)
+        }.getOrDefault(defaultValue = Outcome.Error)
     }
 
     /**

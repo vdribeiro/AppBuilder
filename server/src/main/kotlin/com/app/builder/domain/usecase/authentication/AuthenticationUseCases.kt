@@ -3,6 +3,7 @@ package com.app.builder.domain.usecase.authentication
 import kotlin.uuid.Uuid
 import com.app.builder.domain.Authentication
 import com.app.builder.domain.BearerToken
+import com.app.builder.domain.PasswordChange
 import com.app.builder.domain.RegistrationForm
 import com.app.builder.domain.UserCredentials
 import com.app.builder.domain.usecase.Outcome
@@ -41,4 +42,12 @@ interface AuthenticationUseCases {
      * @return [Outcome.Success] with a fresh [BearerToken] pair, [Outcome.Rejected] when the refresh token is unknown or expired, or [Outcome.Error] when the operation failed.
      */
     suspend fun refreshTokens(refreshToken: String): Outcome<BearerToken>
+
+    /**
+     * Changes the password of the account the session of a submitted [passwordChange] belongs to, and invalidates every other session of that account.
+     *
+     * @param passwordChange The refresh token of the session, the current password and the new one.
+     * @return [Outcome.Success] with the uuid of the user the account belongs to, [Outcome.Rejected] when no session matches, the session is expired or the account is disabled, [Outcome.Invalid] when the current password is wrong or the new one is blank, or [Outcome.Error] when the operation failed.
+     */
+    suspend fun changePassword(passwordChange: PasswordChange): Outcome<Uuid>
 }

@@ -3,6 +3,7 @@ package com.app.builder.domain.route.provider
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.uuid.Uuid
 import io.ktor.client.call.body
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpStatusCode
@@ -15,6 +16,7 @@ import com.app.builder.data.http.post
 import com.app.builder.domain.Account
 import com.app.builder.domain.Authentication
 import com.app.builder.domain.EntityType
+import com.app.builder.domain.PasswordChange
 import com.app.builder.domain.Permission
 import com.app.builder.domain.User
 import com.app.builder.domain.UserCredentials
@@ -165,6 +167,30 @@ class AuthenticationTest: TestCase() {
 
         assertEquals(expected = HttpStatusCode.OK, actual = client.post(request = HttpRequest(url = URL.Logout), body = refreshToken).status)
         assertEquals(expected = HttpStatusCode.Unauthorized, actual = client.post(request = HttpRequest(url = URL.RefreshTokens), body = refreshToken).status)
+    }
+
+    /** Verifies that changing the password rejects malformed requests, an invalid refresh token and a wrong current password, and succeeds with the session's refresh token and the current password, after which only the new password logs in. */
+    @Test
+    fun changePassword() = runServerTest {
+        installRouting()
+        val client = createClient(token = null)
+        val form = registrationForm(username = "change_password_user", permissions = emptyMap())
+        val session = seedUser(registrationForm = form)
+        val passwordChange = PasswordChange(refreshToken = session.bearer.refreshToken, currentPassword = form.password, newPassword = "new_password")
+
+        assertEquals(expected = HttpStatusCode.BadRequest, actual = client.post(request = HttpRequest(url = URL.ChangePassword), body = "No password change").status)
+        assertEquals(expected = HttpStatusCode.Unauthorized, actual = client.post(request = HttpRequest(url = URL.ChangePassword), body = passwordChange.copy(refreshToken = "invalid_refresh_token")).status)
+        assertEquals(expected = HttpStatusCode.BadRequest, actual = client.post(request = HttpRequest(url = URL.ChangePassword), body = passwordChange.copy(currentPassword = "wrong_password")).status)
+
+        val response = client.post(request = HttpRequest(url = URL.ChangePassword), body = passwordChange)
+        assertEquals(expected = HttpStatusCode.OK, actual = response.status)
+        assertEquals(expected = form.user.uuid, actual = response.body<Uuid>())
+
+        assertEquals(expected = HttpStatusCode.Unauthorized, actual = client.post(request = HttpRequest(url = URL.Login), body = form.credentials).status)
+        assertEquals(
+            expected = HttpStatusCode.OK,
+            actual = client.post(request = HttpRequest(url = URL.Login), body = UserCredentials(username = form.account.username, password = passwordChange.newPassword)).status
+        )
     }
 
     /** Verifies that registering requires authentication. */

@@ -46,4 +46,14 @@ interface AuthenticationUseCases {
      * @param userUuid The unique identifier of the user to log out.
      */
     suspend fun logout(userUuid: Uuid)
+
+    /**
+     * Changes the password of a user's account, which requires a connection, and ends the account's sessions on other devices.
+     *
+     * @param userUuid The unique identifier of the user whose password to change.
+     * @param currentPassword The current password of the account.
+     * @param newPassword The password to change to.
+     * @return The [PasswordChangeResult].
+     */
+    suspend fun changePassword(userUuid: Uuid, currentPassword: String, newPassword: String): PasswordChangeResult
 }

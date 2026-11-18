@@ -8,6 +8,7 @@ import com.app.builder.core.telemetry.Telemetry
 import com.app.builder.data.http.URL
 import com.app.builder.data.serializer.encode
 import com.app.builder.domain.EntityType
+import com.app.builder.domain.PasswordChange
 import com.app.builder.domain.Permission
 import com.app.builder.domain.RegistrationForm
 import com.app.builder.domain.UserCredentials
@@ -113,6 +114,27 @@ fun Route.authenticationRoutes(
 
         call.respondSafely(status = HttpStatusCode.OK, message = bearerToken)
         Telemetry.info(tag = TAG, message = "Successfully refreshed tokens")
+    }
+
+    post(path = URL.ChangePassword.path) {
+        val passwordChange = call.receive<PasswordChange>() ?: return@post
+
+        val userUuid = call.getOrRespond(
+            outcome = authenticationUseCases.changePassword(passwordChange = passwordChange),
+            invalid = "Invalid current or new password",
+            rejected = "Invalid or expired refresh token",
+            error = "Unable to change password"
+        ) ?: return@post
+
+        call.respondSafely(status = HttpStatusCode.OK, message = userUuid)
+        Telemetry.info(tag = TAG, message = "Successfully changed the password of user $userUuid")
+
+        call.toRegistry(
+            entityType = EntityType.ACCOUNT,
+            entityUuid = userUuid,
+            userUuid = userUuid,
+            payload = "change_password"
+        )?.let { registryUseCases.upsertRegistry(registry = it) }
     }
 }
 
