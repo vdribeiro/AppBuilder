@@ -2,6 +2,7 @@ package com.app.builder.domain.gateway.authentication
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNotEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlinx.coroutines.flow.firstOrNull
@@ -91,6 +92,66 @@ class AuthenticationUseCasesTest: TestCase() {
 
         assertEquals(expected = FakeData.adminUser.uuid, actual = authenticationUseCases.observeCurrentUser().firstOrNull()?.uuid)
         assertEquals(expected = FakeData.adminAccount, actual = authenticationUseCases.observeCurrentAccount().firstOrNull())
+    }
+
+    /** Verifies that changing the password with the current one replaces the session's salt and verifier with ones derived from the new password, keeping its tokens. */
+    @Test
+    fun changePassword() = runUnitTest {
+        val authenticationUseCases = dependency.get()
+            .userGraph
+            .useCases
+            .authenticationUseCases
+        val sessionDao = dependency.get()
+            .database
+            .sessionQueries
+        val userUuid = FakeData.adminUser.uuid
+
+        assertEquals(
+            expected = PasswordChangeResult.FAILED,
+            actual = authenticationUseCases.changePassword(userUuid = userUuid, currentPassword = FakeData.adminCredentials.password, newPassword = "new_password")
+        )
+
+        assertNotNull(actual = authenticationUseCases.login(credentials = FakeData.adminCredentials))
+        val session = assertNotNull(actual = sessionDao.getSession(userUuid = userUuid).awaitAsOneOrNull())
+
+        assertEquals(
+            expected = PasswordChangeResult.CHANGED,
+            actual = authenticationUseCases.changePassword(userUuid = userUuid, currentPassword = FakeData.adminCredentials.password, newPassword = "new_password")
+        )
+
+        val updatedSession = assertNotNull(actual = sessionDao.getSession(userUuid = userUuid).awaitAsOneOrNull())
+        assertNotEquals(illegal = session.salt, actual = updatedSession.salt)
+        assertEquals(expected = deriveKey(password = "new_password", salt = updatedSession.salt), actual = updatedSession.verifier)
+        assertEquals(expected = session.copy(salt = updatedSession.salt, verifier = updatedSession.verifier), actual = updatedSession)
+    }
+
+    /** Verifies that a password change the server refuses or that has no connection leaves the session's salt and verifier unchanged. */
+    @Test
+    fun changePasswordFailures() = runUnitTest {
+        val authenticationUseCases = dependency.get()
+            .userGraph
+            .useCases
+            .authenticationUseCases
+        val sessionDao = dependency.get()
+            .database
+            .sessionQueries
+        val userUuid = FakeData.adminUser.uuid
+
+        assertNotNull(actual = authenticationUseCases.login(credentials = FakeData.adminCredentials))
+        val session = assertNotNull(actual = sessionDao.getSession(userUuid = userUuid).awaitAsOneOrNull())
+
+        assertEquals(
+            expected = PasswordChangeResult.WRONG_PASSWORD,
+            actual = authenticationUseCases.changePassword(userUuid = userUuid, currentPassword = "wrong_password", newPassword = "new_password")
+        )
+
+        ClientFlags.set { it.copy(http = false) }
+        assertEquals(
+            expected = PasswordChangeResult.FAILED,
+            actual = authenticationUseCases.changePassword(userUuid = userUuid, currentPassword = FakeData.adminCredentials.password, newPassword = "new_password")
+        )
+
+        assertEquals(expected = session, actual = sessionDao.getSession(userUuid = userUuid).awaitAsOneOrNull())
     }
 
     /** Verifies that logging out clears the current observed user and account after a successful login. */

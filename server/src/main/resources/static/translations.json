@@ -321,6 +321,16 @@
   },
   {
     "languageIso": "en",
+    "key": "show_password",
+    "value": "Show password"
+  },
+  {
+    "languageIso": "en",
+    "key": "hide_password",
+    "value": "Hide password"
+  },
+  {
+    "languageIso": "en",
     "key": "wrong_current_password",
     "value": "The current password is wrong"
   },
