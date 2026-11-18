@@ -54,13 +54,13 @@ enum class NavigationRoute(val section: NavigationSection) {
 fun permittedRoutes(account: Account?, flags: ClientFlags): ImmutableList<NavigationRoute> {
     val permissions = account?.permissions ?: return persistentListOf()
     return buildList {
-        if (flags.home) add(NavigationRoute.HOME)
         if (flags.tasks && permissions[EntityType.TASK] != null) add(NavigationRoute.TASK)
         if (flags.buildings && permissions[EntityType.BUILDING] != null) add(NavigationRoute.BUILDING)
         if (flags.equipments && permissions[EntityType.EQUIPMENT] != null) add(NavigationRoute.EQUIPMENT)
         if (flags.materials && permissions[EntityType.MATERIAL] != null) add(NavigationRoute.MATERIAL)
         if (flags.users && permissions[EntityType.USER] != null) add(NavigationRoute.USER)
         if (flags.registries && permissions[EntityType.REGISTRY] != null) add(NavigationRoute.REGISTRY)
+        if (flags.home) add(NavigationRoute.HOME)
         if (listOf(
                 EntityType.CLIENT_FLAG,
                 EntityType.CLIENT_CONFIG,

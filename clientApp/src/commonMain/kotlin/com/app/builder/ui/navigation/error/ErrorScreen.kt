@@ -1,9 +1,7 @@
 package com.app.builder.ui.navigation.error
 
-import androidx.compose.foundation.layout.imePadding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.app.builder.ui.AppState
@@ -33,7 +31,6 @@ fun ErrorScreen(store: Store<ErrorScreenState, Unit>) {
     val appState = LocalAppState.current
 
     Screen(
-        modifier = Modifier.imePadding(),
         onBackClick = { router.navigate(screen = Screen.Home, option = Router.NavOption.CLEAR) },
         topBar = {
             TopActionBar(

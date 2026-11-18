@@ -52,7 +52,7 @@ fun UserProfileScreen(
             onNotificationsClick = { store.send(action = UserProfileScreenAction.Notifications) },
             onLogoutClick = { store.send(action = UserProfileScreenAction.Logout) },
             onResetClick = { store.send(action = UserProfileScreenAction.Reset) },
-            onHelpClick = if (flags.help) {
+            onHelpClick = if (flags.help && !state.guest) {
                 { router.navigate(screen = Screen.Help) }
             } else null,
             onSendFeedbackClick = { router.navigate(screen = Screen.Error(error = false)) },

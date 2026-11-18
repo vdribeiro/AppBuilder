@@ -5,6 +5,7 @@ import kotlinx.serialization.modules.polymorphic
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.ProvidableCompositionLocal
@@ -50,7 +51,9 @@ fun Navigation(
     val splitSceneStrategy = remember { SplitSceneStrategy<NavKey>() }
     val entryProvider = fallbackEntryProvider(router = router, fallbackScreen = fallbackScreen, entryProviderScope = entryProviderScope)
     NavDisplay(
-        modifier = modifier.navigationHandler(onBack = { router.back() }),
+        modifier = modifier
+            .navigationHandler(onBack = { router.back() })
+            .imePadding(),
         onBack = { router.back() },
         backStack = router.backStack,
         transitionSpec = { EnterTransition.None togetherWith ExitTransition.None },

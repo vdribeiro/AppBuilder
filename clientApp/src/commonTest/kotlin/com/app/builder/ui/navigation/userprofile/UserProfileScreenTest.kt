@@ -16,7 +16,7 @@ import com.app.builder.ui.navigation.Screen
 
 class UserProfileScreenTest: TestCase() {
 
-    /** Verifies that a guest only gets the about section, and that sending feedback opens the feedback screen. */
+    /** Verifies that a guest only gets the about section without help, and that sending feedback opens the feedback screen. */
     @Test
     fun guestProfile() = runUITest {
         val authenticationUseCases = dependency.get()
@@ -35,40 +35,49 @@ class UserProfileScreenTest: TestCase() {
         onNodeWithText(text = "account").assertDoesNotExist()
         onNodeWithText(text = "logout").assertDoesNotExist()
         onNodeWithText(text = "device").assertDoesNotExist()
+        onNodeWithText(text = "help").assertDoesNotExist()
 
         onNodeWithText(text = "send_feedback").performScrollTo().performClick()
         assertEquals(expected = listOf(Screen.Error(error = false)), actual = router.backStack.toList())
     }
 
-    /** Verifies that help is hidden while the help client flag is disabled. */
+    /** Verifies that help is hidden for a logged in user while the help client flag is disabled. */
     @Test
     fun helpHiddenWhenDisabled() = runUITest {
         val authenticationUseCases = dependency.get()
             .userGraph
             .useCases
             .authenticationUseCases
+        authenticationUseCases.login(credentials = FakeData.adminCredentials)
 
-        setUI { UserProfileScreen(store = UserProfileScreenStore(state = UserProfileScreenState(), authenticationUseCases = authenticationUseCases)) }
+        val store = UserProfileScreenStore(state = UserProfileScreenState(), authenticationUseCases = authenticationUseCases)
 
-        onNodeWithText(text = "help").assertIsDisplayed()
+        setUI { UserProfileScreen(store = store) }
+
+        waitUntil { !store.state.guest }
+        onNodeWithText(text = "help").performScrollTo().assertIsDisplayed()
 
         ClientFlags.set { it.copy(help = false) }
         waitForIdle()
 
         onNodeWithText(text = "help").assertDoesNotExist()
-        onNodeWithText(text = "send_feedback").assertIsDisplayed()
+        onNodeWithText(text = "send_feedback").performScrollTo().assertIsDisplayed()
     }
 
-    /** Verifies that help opens the help screen. */
+    /** Verifies that help opens the help screen for a logged in user. */
     @Test
     fun help() = runUITest {
         val authenticationUseCases = dependency.get()
             .userGraph
             .useCases
             .authenticationUseCases
+        authenticationUseCases.login(credentials = FakeData.adminCredentials)
 
-        setUI { UserProfileScreen(store = UserProfileScreenStore(state = UserProfileScreenState(), authenticationUseCases = authenticationUseCases)) }
+        val store = UserProfileScreenStore(state = UserProfileScreenState(), authenticationUseCases = authenticationUseCases)
 
+        setUI { UserProfileScreen(store = store) }
+
+        waitUntil { !store.state.guest }
         onNodeWithText(text = "help").performScrollTo().performClick()
         assertEquals(expected = listOf(Screen.Help), actual = router.backStack.toList())
     }

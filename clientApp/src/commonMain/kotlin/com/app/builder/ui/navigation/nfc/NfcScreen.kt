@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
@@ -93,7 +92,6 @@ fun NfcScreen(
     val canWrite = available && !entityUuidError
 
     Screen(
-        modifier = Modifier.imePadding(),
         onBackClick = { router.navigate(screen = Screen.Home, option = Router.NavOption.CLEAR) },
         topBar = { ActionBar(sessionStore = sessionStore) },
         bottomBar = { Navigation(sessionStore = sessionStore, selected = NavigationRoute.NFC) },

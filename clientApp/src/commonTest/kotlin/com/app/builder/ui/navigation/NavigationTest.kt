@@ -79,11 +79,10 @@ class NavigationTest: TestCase() {
         assertEquals(expected = listOf(Screen.TaskList), actual = router.backStack.toList())
     }
 
-    /** Verifies that navigating to the help screen while the help client flag is disabled falls back to the error screen. */
+    /** Verifies that navigating to the help screen within unauthenticated navigation falls back to the error screen. */
     @Test
-    fun helpFallsBackToErrorScreenWhenDisabled() = runUITest {
+    fun helpFallsBackToErrorScreenWhenUnauthenticated() = runUITest {
         val useCases = dependency.get().userGraph.useCases
-        ClientFlags.set { it.copy(help = false) }
         router.navigate(screen = Screen.Help)
 
         setUI {
@@ -94,14 +93,33 @@ class NavigationTest: TestCase() {
         assertEquals(expected = listOf(Screen.Error(error = true)), actual = router.backStack.toList())
     }
 
-    /** Verifies that disabling the client flag of the screen being shown falls back to the error screen. */
+    /** Verifies that navigating to the help screen while the help client flag is disabled falls back to the error screen. */
     @Test
-    fun fallBackToErrorScreenWhenFlagIsDisabledWhileShowing() = runUITest {
-        val useCases = dependency.get().userGraph.useCases
+    fun helpFallsBackToErrorScreenWhenDisabled() = runUITest {
+        val authenticatedUseCases = dependency.get()
+            .getUserDependency(account = FakeData.adminAccount)
+            .useCases
+        ClientFlags.set { it.copy(help = false) }
         router.navigate(screen = Screen.Help)
 
         setUI {
-            UnauthenticatedNavigation(useCases = useCases)
+            AuthenticatedNavigation(useCases = authenticatedUseCases)
+        }
+        waitForIdle()
+
+        assertEquals(expected = listOf(Screen.Error(error = true)), actual = router.backStack.toList())
+    }
+
+    /** Verifies that disabling the client flag of the screen being shown falls back to the error screen. */
+    @Test
+    fun fallBackToErrorScreenWhenFlagIsDisabledWhileShowing() = runUITest {
+        val authenticatedUseCases = dependency.get()
+            .getUserDependency(account = FakeData.adminAccount)
+            .useCases
+        router.navigate(screen = Screen.Help)
+
+        setUI {
+            AuthenticatedNavigation(useCases = authenticatedUseCases)
         }
         waitForIdle()
         assertEquals(expected = listOf(Screen.Help), actual = router.backStack.toList())

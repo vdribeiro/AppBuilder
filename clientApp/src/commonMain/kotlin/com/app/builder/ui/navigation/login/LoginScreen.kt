@@ -1,6 +1,5 @@
 package com.app.builder.ui.navigation.login
 
-import androidx.compose.foundation.layout.imePadding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -29,7 +28,6 @@ fun LoginScreen(store: Store<LoginScreenState, LoginScreenAction>) {
     val router = LocalRouter.current
 
     Screen(
-        modifier = Modifier.imePadding(),
         onBackClick = { router.back() },
         contentAlignment = Alignment.Center
     ) {

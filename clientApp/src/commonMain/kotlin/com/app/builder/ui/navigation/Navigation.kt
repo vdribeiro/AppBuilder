@@ -93,7 +93,6 @@ fun UnauthenticatedNavigation(
                 if (useCases == null) return@Navigation
                 if (flags.home) homeProvider(useCases = useCases)
                 if (flags.userProfile) userProfileProvider(useCases = useCases)
-                if (flags.help) helpProvider()
                 if (flags.login) authenticationProvider(useCases = useCases)
             }
         )

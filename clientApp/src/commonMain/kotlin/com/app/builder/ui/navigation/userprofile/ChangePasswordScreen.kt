@@ -1,6 +1,5 @@
 package com.app.builder.ui.navigation.userprofile
 
-import androidx.compose.foundation.layout.imePadding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -32,7 +31,6 @@ fun ChangePasswordScreen(store: Store<ChangePasswordScreenState, ChangePasswordS
     val router = LocalRouter.current
 
     Screen(
-        modifier = Modifier.imePadding(),
         onBackClick = { router.back() },
         topBar = {
             TopActionBar(
