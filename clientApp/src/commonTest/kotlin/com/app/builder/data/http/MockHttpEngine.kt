@@ -10,6 +10,7 @@ import io.ktor.http.content.TextContent
 import com.app.builder.data.serializer.decode
 import com.app.builder.data.serializer.encode
 import com.app.builder.domain.Account
+import com.app.builder.domain.PasswordChange
 import com.app.builder.domain.RegistrationForm
 import com.app.builder.domain.UserCredentials
 import com.app.builder.test.FakeData
@@ -90,6 +91,15 @@ fun createMockHttpEngine(): HttpClientEngine = TestEngine { request ->
                         FakeData.adminBearerToken.refreshToken -> respondMock(content = encode(value = FakeData.adminBearerToken))
                         FakeData.bearerToken.refreshToken -> respondMock(content = encode(value = FakeData.bearerToken))
                         else -> respondMock(status = HttpStatusCode.Unauthorized, content = encode(value = "Invalid or expired refresh token"))
+                    }
+                }
+
+                URL.ChangePassword.path -> {
+                    val passwordChange = request.decodeBody<PasswordChange>() ?: return@TestEngine badRequest(request = request)
+                    when (passwordChange.refreshToken to passwordChange.currentPassword) {
+                        FakeData.adminBearerToken.refreshToken to FakeData.adminCredentials.password -> respondMock(content = encode(value = FakeData.adminUser.uuid.toString()))
+                        FakeData.bearerToken.refreshToken to FakeData.credentials.password -> respondMock(content = encode(value = FakeData.user.uuid.toString()))
+                        else -> badRequest(request = request)
                     }
                 }
 
