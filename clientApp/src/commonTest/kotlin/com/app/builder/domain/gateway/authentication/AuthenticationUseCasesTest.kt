@@ -2,9 +2,11 @@ package com.app.builder.domain.gateway.authentication
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNotEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 import kotlinx.coroutines.flow.firstOrNull
 import app.cash.sqldelight.async.coroutines.awaitAsOneOrNull
 import com.app.builder.core.config.ClientFlags
@@ -106,18 +108,12 @@ class AuthenticationUseCasesTest: TestCase() {
             .sessionQueries
         val userUuid = FakeData.adminUser.uuid
 
-        assertEquals(
-            expected = PasswordChangeResult.FAILED,
-            actual = authenticationUseCases.changePassword(userUuid = userUuid, currentPassword = FakeData.adminCredentials.password, newPassword = "new_password")
-        )
+        assertFalse(actual = authenticationUseCases.changePassword(userUuid = userUuid, currentPassword = FakeData.adminCredentials.password, newPassword = "new_password"))
 
         assertNotNull(actual = authenticationUseCases.login(credentials = FakeData.adminCredentials))
         val session = assertNotNull(actual = sessionDao.getSession(userUuid = userUuid).awaitAsOneOrNull())
 
-        assertEquals(
-            expected = PasswordChangeResult.CHANGED,
-            actual = authenticationUseCases.changePassword(userUuid = userUuid, currentPassword = FakeData.adminCredentials.password, newPassword = "new_password")
-        )
+        assertTrue(actual = authenticationUseCases.changePassword(userUuid = userUuid, currentPassword = FakeData.adminCredentials.password, newPassword = "new_password"))
 
         val updatedSession = assertNotNull(actual = sessionDao.getSession(userUuid = userUuid).awaitAsOneOrNull())
         assertNotEquals(illegal = session.salt, actual = updatedSession.salt)
@@ -140,16 +136,10 @@ class AuthenticationUseCasesTest: TestCase() {
         assertNotNull(actual = authenticationUseCases.login(credentials = FakeData.adminCredentials))
         val session = assertNotNull(actual = sessionDao.getSession(userUuid = userUuid).awaitAsOneOrNull())
 
-        assertEquals(
-            expected = PasswordChangeResult.WRONG_PASSWORD,
-            actual = authenticationUseCases.changePassword(userUuid = userUuid, currentPassword = "wrong_password", newPassword = "new_password")
-        )
+        assertFalse(actual = authenticationUseCases.changePassword(userUuid = userUuid, currentPassword = "wrong_password", newPassword = "new_password"))
 
         ClientFlags.set { it.copy(http = false) }
-        assertEquals(
-            expected = PasswordChangeResult.FAILED,
-            actual = authenticationUseCases.changePassword(userUuid = userUuid, currentPassword = FakeData.adminCredentials.password, newPassword = "new_password")
-        )
+        assertFalse(actual = authenticationUseCases.changePassword(userUuid = userUuid, currentPassword = FakeData.adminCredentials.password, newPassword = "new_password"))
 
         assertEquals(expected = session, actual = sessionDao.getSession(userUuid = userUuid).awaitAsOneOrNull())
     }

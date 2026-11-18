@@ -35,6 +35,7 @@ import com.app.builder.ui.core.image.Icon
  * @param visualTransformation Transforms how the value is displayed, such as masking a password.
  * @param style Typography styling applied to the text field content. Defaults to [LocalTextStyle].
  * @param leadingIcon An optional composable slot rendering decorative action widgets or iconography assets at the front boundary of the input field.
+ * @param trailingIcon An optional composable slot rendering action widgets or iconography assets at the end boundary of the input field.
  * @param isError Controls whether the input is in an error state.
  */
 @Composable
@@ -49,6 +50,7 @@ fun Input(
     visualTransformation: VisualTransformation = VisualTransformation.None,
     style: TextStyle = LocalTextStyle.current,
     leadingIcon: (@Composable () -> Unit)? = null,
+    trailingIcon: (@Composable () -> Unit)? = null,
     isError: Boolean = false
 ) {
     OutlinedTextField(
@@ -63,6 +65,7 @@ fun Input(
         visualTransformation = visualTransformation,
         textStyle = style,
         leadingIcon = leadingIcon,
+        trailingIcon = trailingIcon,
         isError = isError
     )
 }

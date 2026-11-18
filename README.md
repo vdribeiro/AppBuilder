@@ -778,6 +778,7 @@ Authorization is per `EntityType`: each account carries a `READ`/`WRITE` permiss
 * `USER` covers people. `WRITE` creates, edits, deletes and restores any user; `READ` lists them and still lets you update your own name and avatar.
 * `ACCOUNT` covers logins. `WRITE` creates an account for a user, changes its username and permissions, and disables or re-enables it; `READ` lets you view them.
 * Creating an account sends a password, so it is an online call that opens no session.
+* A user changes their own password from the profile, giving the current one. It is an online call that ends the account's sessions on other devices, which show as expired until they log in again.
 * A user can't be deleted while its account is active: disable the account first.
 * User edit can be done with either `USER` or `ACCOUNT` `WRITE`, but each unlocks only the fields that permission covers. 
 * Adding a user still needs `USER` `WRITE`, and deleting one also needs `ACCOUNT` `READ`, so the app can tell its account isn't active.
@@ -1085,6 +1086,7 @@ Every route shares a global rate limit; those marked *rate-limited* have a stric
 | `POST /api/register`                                         | Create an account for a user                                | JWT, `ACCOUNT` `WRITE`                            | `authentication` |
 | `POST /api/login`                                            | Log in                                                      | —                                                 | `authentication` |
 | `POST /api/logout` · `/api/refresh-tokens`                   | Log out / rotate tokens                                     | Refresh token                                     | `authentication` |
+| `POST /api/change-password`                                  | Change the account's password                               | Refresh token, current password                   | `authentication` |
 | `GET (SSE) /api/broadcast` · `POST /api/broadcast/subscribe` | Broadcast stream / FCM topic subscribe                      | — (rate-limited)                                  | `broadcast`      |
 | `POST /api/broadcast`                                        | Send a broadcast                                            | JWT, `NOTIFICATION` `WRITE`                       | `broadcast`      |
 | `POST /api/device-tokens` · `/api/tickets`                   | Register an FCM token / mint a WebSocket ticket             | JWT, account not deleted                          | `push`           |
@@ -1229,7 +1231,7 @@ Declarations that resolve to a distinct implementation per source set:
 
 * `EntityType`: Every syncable entity. The offline engine, permission map and push payloads key off it.
 * `Permission`: `READ`/`WRITE` paired with an `EntityType` to form a permission map.
-* `User`, `Account`, `UserCredentials`, `UserSession`, `RegistrationForm`, `Authentication`, `BearerToken`: People, their accounts and permissions, login input and tokens.
+* `User`, `Account`, `UserCredentials`, `RegistrationForm`, `PasswordChange`, `Authentication`, `BearerToken`: People, their accounts and permissions, login and password change input and tokens.
 * `DeviceToken`: A registered FCM token.
 * `PushPayload`: The push envelope for WebSocket, SSE and FCM alike.
 * `Registry`: A request audit entry.

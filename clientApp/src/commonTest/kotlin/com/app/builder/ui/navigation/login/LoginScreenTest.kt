@@ -8,6 +8,8 @@ import kotlinx.coroutines.flow.firstOrNull
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.assertTextEquals
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -59,5 +61,26 @@ class LoginScreenTest: TestCase() {
         waitUntil(timeoutMillis = 10_000) { !store.state.loading }
         assertFalse(actual = store.state.loading)
         assertEquals(expected = FakeData.adminUser.uuid, actual = authenticationUseCases.observeCurrentUser().firstOrNull()?.uuid)
+    }
+
+    /** Verifies that the password is masked until its show button is clicked, and masked again once its hide button is clicked. */
+    @Test
+    fun showAndHidePassword() = runUITest {
+        val authenticationUseCases = dependency.get()
+            .userGraph
+            .useCases
+            .authenticationUseCases
+
+        setUI { LoginScreen(store = LoginScreenStore(state = LoginScreenState(), authenticationUseCases = authenticationUseCases)) }
+
+        onNodeWithTag(testTag = "password").performTextInput(text = "secret")
+        onNodeWithTag(testTag = "password").assertTextEquals("••••••")
+
+        onNodeWithContentDescription(label = "show_password").performClick()
+        onNodeWithTag(testTag = "password").assertTextEquals("secret")
+
+        onNodeWithContentDescription(label = "hide_password").performClick()
+        onNodeWithTag(testTag = "password").assertTextEquals("••••••")
+        onNodeWithContentDescription(label = "show_password").assertIsDisplayed()
     }
 }

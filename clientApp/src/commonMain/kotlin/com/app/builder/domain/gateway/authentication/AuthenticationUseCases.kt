@@ -53,7 +53,7 @@ interface AuthenticationUseCases {
      * @param userUuid The unique identifier of the user whose password to change.
      * @param currentPassword The current password of the account.
      * @param newPassword The password to change to.
-     * @return The [PasswordChangeResult].
+     * @return `true` when the password was changed, `false` otherwise.
      */
-    suspend fun changePassword(userUuid: Uuid, currentPassword: String, newPassword: String): PasswordChangeResult
+    suspend fun changePassword(userUuid: Uuid, currentPassword: String, newPassword: String): Boolean
 }
