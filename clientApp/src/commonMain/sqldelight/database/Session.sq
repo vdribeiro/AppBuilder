@@ -26,6 +26,12 @@ SET accessToken = :accessToken,
     refreshToken = :refreshToken
 WHERE userUuid = :userUuid;
 
+updateSessionVerifier:
+UPDATE Session
+SET salt = :salt,
+    verifier = :verifier
+WHERE userUuid = :userUuid;
+
 expireSession:
 UPDATE Session
 SET expiredAt = :expiredAt

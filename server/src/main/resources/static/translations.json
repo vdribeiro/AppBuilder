@@ -306,6 +306,31 @@
   },
   {
     "languageIso": "en",
+    "key": "current_password",
+    "value": "Current Password"
+  },
+  {
+    "languageIso": "en",
+    "key": "new_password",
+    "value": "New Password"
+  },
+  {
+    "languageIso": "en",
+    "key": "confirm_password",
+    "value": "Confirm Password"
+  },
+  {
+    "languageIso": "en",
+    "key": "wrong_current_password",
+    "value": "The current password is wrong"
+  },
+  {
+    "languageIso": "en",
+    "key": "unable_to_change_password",
+    "value": "Unable to change the password"
+  },
+  {
+    "languageIso": "en",
     "key": "notifications",
     "value": "Notifications"
   },

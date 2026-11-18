@@ -46,6 +46,8 @@ sealed class URL(val path: String) {
     data object Logout: URL(path = "/api/logout")
     /** Endpoint to exchange an expired access token for a renewed session token pair. */
     data object RefreshTokens: URL(path = "/api/refresh-tokens")
+    /** Endpoint to change the password of the account a session belongs to. */
+    data object ChangePassword: URL(path = "/api/change-password")
     /** Endpoint for accounts. */
     data object Accounts: URL(path = "/api/accounts")
     /** Endpoint for users. */
