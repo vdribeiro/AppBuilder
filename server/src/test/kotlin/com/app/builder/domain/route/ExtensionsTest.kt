@@ -256,6 +256,52 @@ class ExtensionsTest: TestCase() {
         assertEquals(expected = HttpStatusCode.Forbidden, actual = client.post(urlString = "/test/deleted-write").status)
     }
 
+    /** Verifies that validateActiveOrDraining() lets an active account through without any permission, and confines a deleted one to writes created before the deletion. */
+    @Test
+    fun validateActiveOrDraining() = runServerTest {
+        installRouting()
+        val permissionService = dependency.get().permissionService
+        application {
+            routing {
+                authenticate {
+                    get("/test/draining-read") {
+                        if (!call.validateActiveOrDraining(permissionService = permissionService)) return@get
+                        call.respondSafely(status = HttpStatusCode.OK, message = "authorized")
+                    }
+                    post("/test/draining-write") {
+                        if (!call.validateActiveOrDraining(permissionService = permissionService)) return@post
+                        call.respondSafely(status = HttpStatusCode.OK, message = "authorized")
+                    }
+                }
+            }
+        }
+
+        // The user has no permission at all, so only the deleted state can refuse it here.
+        permissionService.set(userUuid = FakeData.user.uuid, access = UserAccess(permissions = emptyMap(), deletedAt = null))
+        val client = createClient(token = bearerToken.accessToken)
+        assertEquals(expected = HttpStatusCode.OK, actual = client.get(urlString = "/test/draining-read").status)
+        assertEquals(expected = HttpStatusCode.OK, actual = client.post(urlString = "/test/draining-write").status)
+
+        val deletedAt = now()
+        permissionService.set(userUuid = FakeData.user.uuid, access = UserAccess(permissions = emptyMap(), deletedAt = deletedAt))
+        val before = (deletedAt - 60_000L.milliseconds).toString()
+        val after = (deletedAt + 60_000L.milliseconds).toString()
+
+        assertEquals(
+            expected = HttpStatusCode.OK,
+            actual = client.post(urlString = "/test/draining-write") { header(Header.RequestUtc.header, before) }.status
+        )
+        assertEquals(
+            expected = HttpStatusCode.Forbidden,
+            actual = client.post(urlString = "/test/draining-write") { header(Header.RequestUtc.header, after) }.status
+        )
+        assertEquals(
+            expected = HttpStatusCode.Forbidden,
+            actual = client.get(urlString = "/test/draining-read") { header(Header.RequestUtc.header, before) }.status
+        )
+        assertEquals(expected = HttpStatusCode.Forbidden, actual = client.post(urlString = "/test/draining-write").status)
+    }
+
     /** Verifies that validateTime() rejects missing or future timestamps with 400, accepts current ones, and is skipped in development mode. */
     @Test
     fun validateTime() = runServerTest {

@@ -775,7 +775,7 @@ When it already exists, the boot grants it write permission on every entity type
 Authorization is per `EntityType`: each account carries a `READ`/`WRITE` permission map, checked on every protected route instead of a fixed role.
 `USER` and `ACCOUNT` work like every other entity:
 
-* `USER` covers people. `WRITE` creates, edits, deletes and restores any user; `READ` lists them and still lets you update your own name and avatar.
+* `USER` covers people. `WRITE` creates, edits, deletes and restores any user; `READ` lists them. Updating your own name and avatar needs no `USER` permission.
 * `ACCOUNT` covers logins. `WRITE` creates an account for a user, changes its username and permissions, and disables or re-enables it; `READ` lets you view them.
 * Creating an account sends a password, so it is an online call that opens no session.
 * A user changes their own password from the profile, giving the current one. It is an online call that ends the account's sessions on other devices, which show as expired until they log in again.
@@ -804,7 +804,7 @@ Disabling an account is a soft delete: the account's `deletedAt` is set and the 
 
 * **cannot log in again**. The password still verifies, so this check is the only thing stopping a new session;
 * **keeps refreshing the session it already had**, with no deadline;
-* **may only write work created before the deletion**, judged by the request header's UTC. This covers every non-`GET` call, including updating its own user under `USER` `READ`;
+* **may only write work created before the deletion**, judged by the request header's UTC. This covers every non-`GET` call, including updating its own user, which needs no permission;
 * **cannot read anything** its permissions used to reach, register a device or open a push stream. Its device tokens are deleted.
 
 #### Why not revoke the session? 
@@ -1093,14 +1093,14 @@ Every route shares a global rate limit; those marked *rate-limited* have a stric
 | `WS /api/push`                                               | Push connection; inbound frames are acknowledgements        | Ticket                                            | `push`           |
 | `POST /api/push`                                             | Send a targeted push                                        | JWT, `NOTIFICATION` `WRITE`                       | `push`           |
 | `GET /api/users` · `/api/users/{uuid}`                       | Delta-sync users / fetch one                                | JWT, `USER` `READ`                                | `users`          |
-| `POST /api/users`                                            | Upsert a user (*1)                                          | JWT, `USER` `READ`                                | `users`          |
+| `POST /api/users`                                            | Upsert a user (*1)                                          | JWT, itself or `USER` `WRITE`                     | `users`          |
 | `GET /api/accounts/{userUuid}`                               | Fetch one account                                           | JWT, `ACCOUNT` `READ`                             | `users`          |
 | `POST /api/accounts`                                         | Update an account's username, permissions or disabled state | JWT, `ACCOUNT` `WRITE`                            | `users`          |
 | `POST /api/device-location`                                  | Report a device location fix                                | JWT, `DEVICE_LOCATION` `WRITE`                    | `deviceLocation` |
 | `GET /api/[entity]` · `/api/[entity]/{uuid}`                 | Delta-sync a entity / fetch one                             | JWT, `ENTITY` `READ`                              | Feature flag     |
 | `POST /api/[entity]`                                         | Upsert a feature entity                                     | JWT, `ENTITY` `WRITE`                             | Feature flag     |
 
-(*1) `USER` `WRITE` may upsert any user. `USER` `READ` may only update itself, keeping its stored `deletedAt`. Deleting a user with an active account is refused. Disabled accounts are narrowed further, see [Account Deletion](#account-deletion).
+(*1) `USER` `WRITE` may upsert any user. Any other user may only update itself, keeping its stored `deletedAt`. Deleting a user with an active account is refused. Disabled accounts are narrowed further, see [Account Deletion](#account-deletion).
 
 ## Platform Implementations
 
