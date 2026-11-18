@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
@@ -41,16 +42,23 @@ open class DeviceLocationProvider {
     /** The last location fix captured, or null if none has been captured yet. */
     val deviceLocation: StateFlow<DeviceLocation?> = _deviceLocation.asStateFlow()
 
-    /** Scope observing the locationCapture client feature flag on the main thread. */
-    private val flagScope = CoroutineScope(context = SupervisorJob() + Dispatcher.Main)
+    /** Scope observing the client feature flag and configs. */
+    private val scope = CoroutineScope(context = SupervisorJob() + Dispatcher.Main)
 
     init {
-        flagScope.launch {
+        scope.launch {
             ClientFlags.flow
                 .map { it.locationCapture }
                 .distinctUntilChanged()
                 .filter { !it }
                 .collect { if (state.value != State.Idle) stopUpdate() }
+        }
+        scope.launch {
+            ClientConfigs.flow
+                .map { it.locationIntervalMillis to it.locationDisplacementMeters }
+                .distinctUntilChanged()
+                .drop(count = 1)
+                .collect { if (state.value == State.Active) startUpdate() }
         }
     }
 

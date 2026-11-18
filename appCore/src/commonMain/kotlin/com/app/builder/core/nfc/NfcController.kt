@@ -35,11 +35,11 @@ open class NfcController {
     /** Observable state of the NFC session. */
     val state: StateFlow<State> = _state.asStateFlow()
 
-    /** Scope observing the nfc client feature flag. */
-    private val flagScope = CoroutineScope(context = SupervisorJob())
+    /** Scope observing the client feature flag. */
+    private val scope = CoroutineScope(context = SupervisorJob())
 
     init {
-        flagScope.launch {
+        scope.launch {
             ClientFlags.flow
                 .map { it.nfc }
                 .distinctUntilChanged()
@@ -50,7 +50,7 @@ open class NfcController {
 
     /** Stops any active session and releases nfc resources. */
     fun dispose() {
-        flagScope.cancel()
+        scope.cancel()
         stop()
         runCatching {
             platformDispose()

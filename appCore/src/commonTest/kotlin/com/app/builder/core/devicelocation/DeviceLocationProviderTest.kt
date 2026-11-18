@@ -104,6 +104,30 @@ class DeviceLocationProviderTest: TestCase() {
         assertEquals(expected = DeviceLocationProvider.State.Idle, actual = provider.state.value)
     }
 
+    /** Verifies that changing the location interval restarts an active update, while an idle provider and unrelated configs start nothing. */
+    @Test
+    fun changedLocationConfigsRestartTheActiveUpdate() = runUnitTest {
+        var starts = 0
+        val provider = object: DeviceLocationProvider() {
+            override val available: Boolean = true
+            override fun hasPermission(): Boolean = true
+            override fun platformStartUpdate() {
+                starts++
+            }
+        }
+
+        ClientConfigs.set { it.copy(locationIntervalMillis = it.locationIntervalMillis + 1) }
+        assertEquals(expected = 0, actual = starts)
+
+        provider.startUpdate()
+        ClientConfigs.set { it.copy(batchSize = it.batchSize + 1) }
+        assertEquals(expected = 1, actual = starts)
+
+        ClientConfigs.set { it.copy(locationIntervalMillis = it.locationIntervalMillis + 1) }
+        assertEquals(expected = 2, actual = starts)
+        assertEquals(expected = DeviceLocationProvider.State.Active, actual = provider.state.value)
+    }
+
     /** Verifies that [DeviceLocationProvider.getLastKnownLocation] returns null while the provider is unavailable. */
     @Test
     fun getLastKnownLocationReturnsNullWhenUnavailable() = runUnitTest {

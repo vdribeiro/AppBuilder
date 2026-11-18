@@ -42,11 +42,11 @@ open class AudioPlayer {
     /** Observable state of audio playback. */
     val state: StateFlow<State> = _state.asStateFlow()
 
-    /** Scope observing the music client feature flag on the main thread. */
-    private val flagScope = CoroutineScope(context = SupervisorJob() + Dispatcher.Main)
+    /** Scope observing the client feature flag. */
+    private val scope = CoroutineScope(context = SupervisorJob() + Dispatcher.Main)
 
     init {
-        flagScope.launch {
+        scope.launch {
             ClientFlags.flow
                 .map { it.music }
                 .distinctUntilChanged()
@@ -114,7 +114,7 @@ open class AudioPlayer {
 
     /** Stops playback and releases platform resources. */
     fun dispose() {
-        flagScope.cancel()
+        scope.cancel()
         stop()
         runCatching {
             platformDispose()
