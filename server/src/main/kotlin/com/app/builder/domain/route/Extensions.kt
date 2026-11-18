@@ -1,6 +1,7 @@
 package com.app.builder.domain.route
 
 import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Instant
 import kotlin.uuid.Uuid
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
@@ -210,20 +211,44 @@ suspend fun ApplicationCall.validatePermission(
     permission: Permission
 ): Boolean = runSuspendCatching {
     val access = getAccess(permissionService = permissionService)!!
-    val deletedAt = access.deletedAt
     val granted = access.permissions.grants(entityType = entityType, permission = permission)
-    when {
-        !granted -> false
-        deletedAt == null -> true
-        request.httpMethod == HttpMethod.Get -> false
-        else -> getHeaderMap()[Header.RequestUtc.header]?.toInstant()?.let { it <= deletedAt } == true
-    }.also {
+    (granted && isActiveOrDraining(deletedAt = access.deletedAt)).also {
         if (!it) respondSafely(status = HttpStatusCode.Forbidden, message = "Not authorized to $permission $entityType")
     }
 }.onFailure {
     Telemetry.error(tag = TAG, message = "Unable to check permissions", throwable = it)
     respondSafely(status = HttpStatusCode.Forbidden, message = "Not authorized to $permission $entityType")
 }.getOrDefault(defaultValue = false)
+
+/**
+ * Checks that the caller's account is active or draining what it already had, responding to the call when it is neither.
+ * A deleted account is draining when the call is not a `GET` and the action predates the deletion.
+ *
+ * @receiver [ApplicationCall] The context of the call.
+ * @param permissionService The permission service.
+ * @return `true` if the account is active or draining, `false` otherwise.
+ */
+suspend fun ApplicationCall.validateActiveOrDraining(permissionService: PermissionService): Boolean = runSuspendCatching {
+    isActiveOrDraining(deletedAt = getAccess(permissionService = permissionService)!!.deletedAt).also {
+        if (!it) respondSafely(status = HttpStatusCode.Forbidden, message = "Account is deleted")
+    }
+}.onFailure {
+    Telemetry.error(tag = TAG, message = "Unable to check the account state", throwable = it)
+    respondSafely(status = HttpStatusCode.Forbidden, message = "Account is deleted")
+}.getOrDefault(defaultValue = false)
+
+/**
+ * Checks if the call is one an account deleted at [deletedAt] can still make: `GET` calls never are, and any other call only when the action predates the deletion.
+ *
+ * @receiver [ApplicationCall] The context of the call.
+ * @param deletedAt When the account was deleted, or `null` while it is active.
+ * @return `true` if the account is active or the call predates its deletion, `false` otherwise.
+ */
+private fun ApplicationCall.isActiveOrDraining(deletedAt: Instant?): Boolean = when {
+    deletedAt == null -> true
+    request.httpMethod == HttpMethod.Get -> false
+    else -> getHeaderMap()[Header.RequestUtc.header]?.toInstant()?.let { it <= deletedAt } == true
+}
 
 /**
  * Checks that the caller's account has not been deleted, responding to the call when it has.

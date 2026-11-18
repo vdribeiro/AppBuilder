@@ -26,6 +26,7 @@ import com.app.builder.domain.route.getUserUuid
 import com.app.builder.domain.route.receive
 import com.app.builder.domain.route.respondSafely
 import com.app.builder.domain.route.toRegistry
+import com.app.builder.domain.route.validateActiveOrDraining
 import com.app.builder.domain.route.validatePermission
 import com.app.builder.domain.route.validateTime
 import com.app.builder.domain.usecase.Outcome
@@ -93,15 +94,15 @@ fun Route.userRoutes(
             post {
                 if (!call.validateTime()) return@post
                 val userUuid = call.getUserUuid() ?: return@post
-                if (!call.validatePermission(permissionService = permissionService, entityType = EntityType.USER, permission = Permission.READ)) return@post
                 val user = call.receive<User>() ?: return@post
 
-                // A user with write permission can change any user, while a user with read permission can only change itself
-                val hasPermission = call.getAccess(permissionService = permissionService)?.permissions?.get(EntityType.USER) == Permission.WRITE
-                if (user.uuid != userUuid && !hasPermission) {
-                    call.respondSafely(status = HttpStatusCode.Forbidden, message = "Not authorized to modify user ${user.uuid}")
-                    return@post
+                // A user with write permission can change any user, while any other user can only change itself
+                val authorized = when (user.uuid) {
+                    userUuid -> call.validateActiveOrDraining(permissionService = permissionService)
+                    else -> call.validatePermission(permissionService = permissionService, entityType = EntityType.USER, permission = Permission.WRITE)
                 }
+                if (!authorized) return@post
+                val hasPermission = call.getAccess(permissionService = permissionService)?.permissions?.get(EntityType.USER) == Permission.WRITE
                 val dbUser = when (val outcome = userUseCases.getUser(uuid = user.uuid)) {
                     is Outcome.Success -> outcome.data
                     Outcome.NotFound -> null
