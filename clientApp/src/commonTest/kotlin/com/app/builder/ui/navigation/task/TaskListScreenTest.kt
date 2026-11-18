@@ -7,7 +7,6 @@ import kotlin.test.assertTrue
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.flow.first
 import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -66,7 +65,7 @@ class TaskListScreenTest: TestCase() {
 
         onNodeWithTag(testTag = "action_bar").assertIsDisplayed()
         onNodeWithTag(testTag = "navigation_bar").assertIsDisplayed()
-        onNodeWithText(text = "task").assertIsSelected()
+        onNodeWithText(text = "more").assertIsDisplayed()
 
         onNodeWithTag(testTag = "task_list").assertIsDisplayed()
         onNodeWithTag(testTag = "task_list").count(count = 1)

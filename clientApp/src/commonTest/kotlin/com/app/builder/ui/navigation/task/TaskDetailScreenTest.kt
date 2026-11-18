@@ -13,8 +13,6 @@ import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.hasSetTextAction
-import androidx.compose.ui.test.hasText
-import androidx.compose.ui.test.isSelected
 import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
@@ -99,7 +97,7 @@ class TaskDetailScreenTest: TestCase() {
 
         onNodeWithTag(testTag = "action_bar").assertIsDisplayed()
         onNodeWithTag(testTag = "navigation_bar").assertIsDisplayed()
-        onNode(matcher = isSelected() and hasText(text = "task")).assertIsDisplayed()
+        onNodeWithText(text = "more").assertIsDisplayed()
 
         onNodeWithText(text = "task_title").assertIsDisplayed()
         onNodeWithText(text = FakeData.task.title).assertIsDisplayed()

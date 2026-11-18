@@ -75,6 +75,10 @@ sealed interface Screen: NavKey {
     @Serializable
     @SerialName(value = "screen_user_profile")
     data object UserProfile: Screen
+    /** The screen where the current user edits their profile. */
+    @Serializable
+    @SerialName(value = "screen_edit_profile")
+    data object EditProfile: Screen
     /** The screen where the current user changes their password. */
     @Serializable
     @SerialName(value = "screen_change_password")

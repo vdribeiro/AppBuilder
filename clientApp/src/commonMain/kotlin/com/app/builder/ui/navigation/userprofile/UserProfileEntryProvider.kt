@@ -18,6 +18,19 @@ fun EntryProviderScope<NavKey>.userProfileProvider(useCases: UseCases) {
             store = viewModel { UserProfileScreenStore(state = UserProfileScreenState(), authenticationUseCases = useCases.authenticationUseCases) },
         )
     }
+    entry<Screen.EditProfile> {
+        val router = LocalRouter.current
+        EditProfileScreen(
+            store = viewModel {
+                EditProfileScreenStore(
+                    state = EditProfileScreenState(),
+                    router = router,
+                    authenticationUseCases = useCases.authenticationUseCases,
+                    userUseCases = useCases.userUseCases
+                )
+            },
+        )
+    }
     entry<Screen.ChangePassword> {
         val router = LocalRouter.current
         ChangePasswordScreen(

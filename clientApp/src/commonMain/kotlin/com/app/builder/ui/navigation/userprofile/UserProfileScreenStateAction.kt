@@ -6,8 +6,6 @@ import com.app.builder.ui.core.image.Image
 
 /** The set of user-triggered intents available within the user profile. */
 sealed interface UserProfileScreenAction {
-    /** Requests to edit the current user's profile. */
-    data object EditProfile: UserProfileScreenAction
     /** Requests to open notification settings. */
     object Notifications: UserProfileScreenAction
     /** Logs out the current user. */

@@ -27,7 +27,6 @@ class UserProfileScreenStore(
     override fun reducer(state: UserProfileScreenState, action: UserProfileScreenAction) {
         super.reducer(state = state, action = action)
         when (action) {
-            UserProfileScreenAction.EditProfile -> {} // TODO
             UserProfileScreenAction.Notifications -> {} // TODO
             UserProfileScreenAction.Logout -> logout()
             UserProfileScreenAction.Reset -> reset()

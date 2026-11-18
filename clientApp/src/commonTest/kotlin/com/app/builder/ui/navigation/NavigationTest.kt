@@ -163,6 +163,7 @@ class NavigationTest: TestCase() {
             Screen.DesignShapes,
             Screen.DesignTypography,
             Screen.UserProfile,
+            Screen.EditProfile,
             Screen.ChangePassword,
             Screen.Help,
             Screen.UserList,

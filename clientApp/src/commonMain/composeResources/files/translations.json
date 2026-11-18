@@ -301,6 +301,16 @@
   },
   {
     "languageIso": "en",
+    "key": "save",
+    "value": "Save"
+  },
+  {
+    "languageIso": "en",
+    "key": "user_avatar",
+    "value": "Avatar URL"
+  },
+  {
+    "languageIso": "en",
     "key": "change_password",
     "value": "Change Password"
   },

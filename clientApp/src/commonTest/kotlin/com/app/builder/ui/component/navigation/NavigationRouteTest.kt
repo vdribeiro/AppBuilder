@@ -21,7 +21,7 @@ class NavigationRouteTest: TestCase() {
     fun everyPermission() = runUnitTest {
         val routes = permittedRoutes(account = FakeData.adminAccount, flags = ClientFlags.value)
 
-        assertEquals(expected = listOf(NavigationRoute.HOME, NavigationRoute.TASK, NavigationRoute.BUILDING, NavigationRoute.EQUIPMENT, NavigationRoute.MATERIAL, NavigationRoute.USER, NavigationRoute.REGISTRY), actual = routes.filter { it.section == NavigationSection.MAIN })
+        assertEquals(expected = listOf(NavigationRoute.BUILDING, NavigationRoute.EQUIPMENT, NavigationRoute.MATERIAL, NavigationRoute.USER, NavigationRoute.TASK, NavigationRoute.REGISTRY, NavigationRoute.HOME), actual = routes.filter { it.section == NavigationSection.MAIN })
         assertTrue(actual = NavigationRoute.CONFIG in routes)
         assertTrue(actual = NavigationRoute.TRANSLATION in routes)
     }

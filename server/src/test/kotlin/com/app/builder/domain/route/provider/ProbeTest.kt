@@ -30,6 +30,21 @@ class ProbeTest: TestCase() {
         assertEquals(expected = HttpStatusCode.NotFound, actual = client.head(urlString = URL.Probe.path).status)
     }
 
+    /** Verifies that the probe endpoint follows its flag while the server is running. */
+    @Test
+    fun probeFollowsItsFlag() = runServerTest {
+        installRouting()
+        val client = createClient(token = null)
+
+        assertEquals(expected = HttpStatusCode.OK, actual = client.head(urlString = URL.Probe.path).status)
+
+        ServerFlags.set { it.copy(probe = false) }
+        assertEquals(expected = HttpStatusCode.NotFound, actual = client.head(urlString = URL.Probe.path).status)
+
+        ServerFlags.set { it.copy(probe = true) }
+        assertEquals(expected = HttpStatusCode.OK, actual = client.head(urlString = URL.Probe.path).status)
+    }
+
     /** Verifies that the probe endpoint returns too many requests once the rate limit is exceeded. */
     @Test
     fun probeIsRateLimited() = runServerTest {

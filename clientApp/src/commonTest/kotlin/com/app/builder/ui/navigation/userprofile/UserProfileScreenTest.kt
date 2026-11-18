@@ -82,6 +82,24 @@ class UserProfileScreenTest: TestCase() {
         assertEquals(expected = listOf(Screen.Help), actual = router.backStack.toList())
     }
 
+    /** Verifies that edit profile opens the edit profile screen for a logged in user. */
+    @Test
+    fun editProfile() = runUITest {
+        val authenticationUseCases = dependency.get()
+            .userGraph
+            .useCases
+            .authenticationUseCases
+        authenticationUseCases.login(credentials = FakeData.adminCredentials)
+
+        val store = UserProfileScreenStore(state = UserProfileScreenState(), authenticationUseCases = authenticationUseCases)
+
+        setUI { UserProfileScreen(store = store) }
+
+        waitUntil { !store.state.guest }
+        onNodeWithText(text = "edit_profile").performScrollTo().performClick()
+        assertEquals(expected = listOf(Screen.EditProfile), actual = router.backStack.toList())
+    }
+
     /** Verifies that change password opens the change password screen for a logged in user. */
     @Test
     fun changePassword() = runUITest {
