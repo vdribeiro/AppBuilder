@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -47,7 +48,7 @@ class SplitSceneStrategy<T: Any>: SceneStrategy<T> {
     }
 
     /** A [Scene] that displays 2 panes side-by-side. */
-    private class SplitScene<T: Any>(
+    private data class SplitScene<T: Any>(
         override val key: Any,
         override val previousEntries: List<NavEntry<T>>,
         private val startEntry: NavEntry<T>,
@@ -94,7 +95,8 @@ private fun SplitContent(
     }
 
     var scaffoldState by remember { mutableStateOf(value = ScaffoldState()) }
-    val safeRatio = (ClientConfigs.value.splitPaneRatio / 100f).coerceIn(minimumValue = 0.01f, maximumValue = 0.99f)
+    val configs by ClientConfigs.flow.collectAsState()
+    val safeRatio = (configs.splitPaneRatio / 100f).coerceIn(minimumValue = 0.01f, maximumValue = 0.99f)
     Skeleton(
         onBackClick = scaffoldState.onBackClick,
         topBar = scaffoldState.topBar,

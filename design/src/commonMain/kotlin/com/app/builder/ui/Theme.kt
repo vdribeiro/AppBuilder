@@ -6,7 +6,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.ProvidedValue
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.compositionLocalOf
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -25,7 +27,8 @@ fun AppTheme(
     content: @Composable () -> Unit
 ) = BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
     RegisterImageLoader()
-    val splitScreen = maxWidth >= ClientConfigs.value.splitScreenMaximumWidth.dp
+    val configs by ClientConfigs.flow.collectAsState()
+    val splitScreen = maxWidth >= configs.splitScreenMaximumWidth.dp
     val translationMap = getTranslationState()
     val colorScheme = getColorScheme()
     val shapes = getShapes()
