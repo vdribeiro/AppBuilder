@@ -35,7 +35,7 @@ class HttpClientFactory(engine: HttpClientEngine, private val configurations: Co
         installLogging(logLevel = logLevel)
         installInterceptor()
         installAuth(loadTokens = loadTokens, refreshTokens = refreshTokens)
-        if (!devMode) installHttpTimeout(connectTimeoutMillis = connectTimeoutMillis, socketTimeoutMillis = socketTimeoutMillis, requestTimeoutMillis = requestTimeoutMillis)
+        if (!devMode) installHttpTimeout()
         installHttpCache()
         installContentNegotiation()
         installContentEncoding()
@@ -50,17 +50,11 @@ class HttpClientFactory(engine: HttpClientEngine, private val configurations: Co
  * @property logLevel The level of detail to be logged.
  * @property loadTokens A suspendable function to retrieve the current [BearerTokens].
  * @property refreshTokens A suspendable function invoked upon a 401 Unauthorized response to obtain a refreshed set of [BearerTokens]. Returns null if the session cannot be renewed.
- * @property connectTimeoutMillis The maximum time in milliseconds to establish a connection with the server.
- * @property socketTimeoutMillis The maximum time in milliseconds to read or write data from or to the server.
- * @property requestTimeoutMillis The maximum time in milliseconds to wait for a complete response from the server.
  * @property pingInterval The interval in milliseconds between ping frames sent to the server.
  */
 data class Configurations(
     val logLevel: LogLevel = LogLevel.HEADERS,
     val loadTokens: suspend () -> BearerTokens? = { null },
     val refreshTokens: suspend (BearerTokens?) -> BearerTokens? = { null },
-    val connectTimeoutMillis: Long = ClientConfigs.value.httpConnectTimeoutMillis,
-    val socketTimeoutMillis: Long = ClientConfigs.value.httpSocketTimeoutMillis,
-    val requestTimeoutMillis: Long = ClientConfigs.value.httpRequestTimeoutMillis,
     val pingInterval: Long = ClientConfigs.value.pushPingInterval
 )
