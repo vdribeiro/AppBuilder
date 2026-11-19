@@ -39,7 +39,7 @@ fun Application.installRouting(dependency: Dependency) {
         get(path = "/") { call.respondText(text = "Server running") }
         registryRoutes(permissionService = permissionService, registryUseCases = useCases.registryUseCases)
         configRoutes(permissionService = permissionService, configUseCases = useCases.configUseCases, registryUseCases = useCases.registryUseCases)
-        flag(enabled = { it.translations }) { translationRoutes(translationUseCases = useCases.translationUseCases) }
+        flag(enabled = { it.translations }) { translationRoutes(permissionService = permissionService, translationUseCases = useCases.translationUseCases, registryUseCases = useCases.registryUseCases) }
         flag(enabled = { it.probe }) { probeRoutes() }
         flag(enabled = { it.authentication }) { authenticationRoutes(permissionService = permissionService, authenticationUseCases = useCases.authenticationUseCases, registryUseCases = useCases.registryUseCases) }
         flag(enabled = { it.broadcast }) { broadcastRoutes(permissionService = permissionService, broadcastService = dependency.broadcastService, fcmService = dependency.fcmService, registryUseCases = useCases.registryUseCases) }

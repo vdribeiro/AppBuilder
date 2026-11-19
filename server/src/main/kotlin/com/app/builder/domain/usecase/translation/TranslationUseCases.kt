@@ -20,4 +20,12 @@ interface TranslationUseCases {
      * @return [Outcome.Success] with the translations sorted by language and key, or [Outcome.Error] when the operation failed.
      */
     suspend fun getTranslations(): Outcome<List<Translation>>
+
+    /**
+     * Updates the value and modification time of a stored translation, unless the stored translation was modified later.
+     *
+     * @param translation The translation to update, identified by its language and key.
+     * @return [Outcome.Success] with the stored translation, [Outcome.NotFound] when its language and key are not stored, or [Outcome.Error] when the operation failed.
+     */
+    suspend fun updateTranslation(translation: Translation): Outcome<Translation>
 }
