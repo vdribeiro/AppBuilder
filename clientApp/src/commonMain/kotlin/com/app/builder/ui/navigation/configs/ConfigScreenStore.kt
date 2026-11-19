@@ -128,7 +128,7 @@ class ConfigScreenStore(
 
         if (!persistable) return@launch Telemetry.info(tag = TAG, message = "Waiting for a numeric form value before persisting")
 
-        delay(timeMillis = DEBOUNCE_MILLIS)
+        delay(timeMillis = ClientConfigs.value.inputDebounceMillis)
 
         when (action.configType) {
             ConfigType.CLIENT_FLAG -> items.toConfig<ClientFlags>()?.let { configUseCases.updateFeatureFlags(flags = it) }
@@ -210,8 +210,5 @@ class ConfigScreenStore(
 
     companion object {
         private const val TAG = "ConfigScreenStore"
-
-        /** Delay before persisting a config value change, to debounce rapid successive edits. */
-        private const val DEBOUNCE_MILLIS = 1000L
     }
 }

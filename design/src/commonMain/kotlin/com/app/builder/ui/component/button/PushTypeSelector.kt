@@ -24,6 +24,7 @@ enum class PushPayloadType {
     NOTIFICATION,
     FLAGS,
     CONFIGS,
+    TRANSLATIONS,
     RESET;
 }
 

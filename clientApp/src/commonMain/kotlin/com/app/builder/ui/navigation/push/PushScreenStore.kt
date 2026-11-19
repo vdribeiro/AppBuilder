@@ -112,6 +112,7 @@ class PushScreenStore(
         PushPayloadType.NOTIFICATION -> PushPayload.Notification(userUuid = userUuid, title = notificationTitle, description = notificationDescription)
         PushPayloadType.FLAGS -> PushPayload.Flags(userUuid = userUuid)
         PushPayloadType.CONFIGS -> PushPayload.Configs(userUuid = userUuid)
+        PushPayloadType.TRANSLATIONS -> PushPayload.Translations(userUuid = userUuid)
         PushPayloadType.RESET -> PushPayload.Reset(userUuid = userUuid)
     }
 

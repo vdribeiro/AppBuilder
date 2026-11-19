@@ -80,6 +80,11 @@ class PushScreenTest: TestCase() {
         waitUntil { pushScreenStore.state.sent != null }
         assertEquals(expected = 1, actual = pushScreenStore.state.sent)
 
+        pushScreenStore.send(action = PushScreenAction.SelectType(type = PushPayloadType.TRANSLATIONS))
+        pushScreenStore.send(action = PushScreenAction.Send)
+        waitUntil { pushScreenStore.state.sent != null }
+        assertEquals(expected = 1, actual = pushScreenStore.state.sent)
+
         pushScreenStore.send(action = PushScreenAction.SelectType(type = PushPayloadType.RESET))
         pushScreenStore.send(action = PushScreenAction.Send)
         waitUntil { pushScreenStore.state.sent != null }

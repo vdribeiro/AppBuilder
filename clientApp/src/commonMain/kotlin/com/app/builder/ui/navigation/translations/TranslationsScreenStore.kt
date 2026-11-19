@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
+import com.app.builder.core.config.ClientConfigs
 import com.app.builder.core.flow.Dispatcher
 import com.app.builder.core.locale.DEFAULT_LANGUAGE
 import com.app.builder.core.locale.now
@@ -128,7 +129,7 @@ class TranslationsScreenStore(
     }
 
     /**
-     * Shows the new value on its listed translation as pending and, once no further change to it arrives for [DEBOUNCE_MILLIS], updates the translation in the language selected when the action was sent.
+     * Shows the new value on its listed translation as pending and, once no further change to it arrives, updates the translation in the language selected when the action was sent.
      * Does nothing when the current user can't edit translations.
      *
      * @param state State holding the selected language and whether translations are editable.
@@ -144,7 +145,7 @@ class TranslationsScreenStore(
         }
 
         return launch(id = "update-$languageIso-${action.key}") {
-            delay(timeMillis = DEBOUNCE_MILLIS)
+            delay(timeMillis = ClientConfigs.value.inputDebounceMillis)
 
             translationUseCases.updateTranslation(
                 translation = Translation(
@@ -213,8 +214,5 @@ class TranslationsScreenStore(
 
     companion object {
         private const val TAG = "TranslationsScreenStore"
-
-        /** How long a value must stay unchanged before it is saved, in milliseconds. */
-        private const val DEBOUNCE_MILLIS = 1000L
     }
 }

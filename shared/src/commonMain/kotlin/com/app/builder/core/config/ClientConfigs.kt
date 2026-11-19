@@ -10,6 +10,8 @@ data class ClientConfigs(
     val splitScreenMaximumWidth: Int,
     /** Default fraction of split-screen width given to the end pane versus the start pane from 1 to 99 percent. */
     val splitPaneRatio: Int,
+    /** Time in milliseconds an inline edit must stay unchanged before it is saved. */
+    val inputDebounceMillis: Long,
     /** Maximum time in milliseconds allowed to establish a connection with the server. */
     val httpConnectTimeoutMillis: Long,
     /** Maximum time in milliseconds of inactivity allowed between incoming data packets. */
@@ -54,6 +56,7 @@ data class ClientConfigs(
         initialValue = ClientConfigs(
             splitScreenMaximumWidth = 600,
             splitPaneRatio = 60,
+            inputDebounceMillis = 2_500L,
             httpConnectTimeoutMillis = 20_000L,
             httpSocketTimeoutMillis = 50_000L,
             httpRequestTimeoutMillis = 120_000L,
