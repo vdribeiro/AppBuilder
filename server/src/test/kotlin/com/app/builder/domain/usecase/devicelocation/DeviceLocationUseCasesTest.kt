@@ -7,6 +7,7 @@ import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Instant
 import com.app.builder.core.config.ServerConfigs
+import com.app.builder.core.locale.UNIX_EPOCH
 import com.app.builder.core.locale.now
 import com.app.builder.core.security.uuid
 import com.app.builder.data.database.reset
@@ -70,7 +71,7 @@ class DeviceLocationUseCasesTest: TestCase() {
 
         val firstPage = deviceLocationUseCases.getDeviceLocations(
             userUuid = FakeData.adminUser.uuid,
-            lastSyncUtc = Instant.fromEpochSeconds(epochSeconds = 0),
+            lastSyncUtc = Instant.UNIX_EPOCH,
             cursorUtc = null,
             cursorUuid = null,
             pageSize = 1
@@ -79,7 +80,7 @@ class DeviceLocationUseCasesTest: TestCase() {
 
         val secondPage = deviceLocationUseCases.getDeviceLocations(
             userUuid = FakeData.adminUser.uuid,
-            lastSyncUtc = Instant.fromEpochSeconds(epochSeconds = 0),
+            lastSyncUtc = Instant.UNIX_EPOCH,
             cursorUtc = firstPage.last().deviceTime,
             cursorUuid = firstPage.last().uuid,
             pageSize = 1
@@ -115,7 +116,7 @@ class DeviceLocationUseCasesTest: TestCase() {
         dependency.get().database.reset()
 
         listOf(
-            "getDeviceLocations" to deviceLocationUseCases.getDeviceLocations(userUuid = FakeData.adminUser.uuid, lastSyncUtc = Instant.fromEpochSeconds(epochSeconds = 0), cursorUtc = null, cursorUuid = null, pageSize = ServerConfigs.value.pageSize),
+            "getDeviceLocations" to deviceLocationUseCases.getDeviceLocations(userUuid = FakeData.adminUser.uuid, lastSyncUtc = Instant.UNIX_EPOCH, cursorUtc = null, cursorUuid = null, pageSize = ServerConfigs.value.pageSize),
             "upsertDeviceLocation" to deviceLocationUseCases.upsertDeviceLocation(userUuid = FakeData.adminUser.uuid, deviceLocation = FakeData.deviceLocation)
         ).forEach { (name, outcome) -> assertEquals(expected = Outcome.Error, actual = outcome, message = name) }
     }

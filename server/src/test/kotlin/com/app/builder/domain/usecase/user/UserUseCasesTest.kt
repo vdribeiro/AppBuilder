@@ -6,6 +6,7 @@ import kotlin.test.assertTrue
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Instant
 import com.app.builder.core.config.ServerConfigs
+import com.app.builder.core.locale.UNIX_EPOCH
 import com.app.builder.core.locale.now
 import com.app.builder.core.security.uuid
 import com.app.builder.data.database.create
@@ -46,7 +47,7 @@ class UserUseCasesTest: TestCase() {
             .useCases
             .userUseCases
 
-        assertTrue(actual = userUseCases.getUsers(lastSyncUtc = Instant.fromEpochSeconds(epochSeconds = 0), cursorUtc = null, cursorUuid = null, pageSize = ServerConfigs.value.pageSize).successData().isEmpty())
+        assertTrue(actual = userUseCases.getUsers(lastSyncUtc = Instant.UNIX_EPOCH, cursorUtc = null, cursorUuid = null, pageSize = ServerConfigs.value.pageSize).successData().isEmpty())
 
         val now = now()
         val old = FakeData.user.copy(uuid = uuid(), modifiedAt = now - 10.minutes, name = "Old")
@@ -55,7 +56,7 @@ class UserUseCasesTest: TestCase() {
         assertEquals(expected = Outcome.Success(data = Unit), actual = userUseCases.upsertUser(user = old))
         assertEquals(expected = Outcome.Success(data = Unit), actual = userUseCases.upsertUser(user = recent))
 
-        assertEquals(expected = 2, actual = userUseCases.getUsers(lastSyncUtc = Instant.fromEpochSeconds(epochSeconds = 0), cursorUtc = null, cursorUuid = null, pageSize = ServerConfigs.value.pageSize).successData().size)
+        assertEquals(expected = 2, actual = userUseCases.getUsers(lastSyncUtc = Instant.UNIX_EPOCH, cursorUtc = null, cursorUuid = null, pageSize = ServerConfigs.value.pageSize).successData().size)
         assertEquals(expected = listOf(recent), actual = userUseCases.getUsers(lastSyncUtc = now - 1.minutes, cursorUtc = null, cursorUuid = null, pageSize = ServerConfigs.value.pageSize).successData())
         assertTrue(actual = userUseCases.getUsers(lastSyncUtc = now + 1.minutes, cursorUtc = null, cursorUuid = null, pageSize = ServerConfigs.value.pageSize).successData().isEmpty())
     }
@@ -77,11 +78,11 @@ class UserUseCasesTest: TestCase() {
         assertEquals(expected = Outcome.Success(data = Unit), actual = userUseCases.upsertUser(user = old))
         assertEquals(expected = Outcome.Success(data = Unit), actual = userUseCases.upsertUser(user = recent))
 
-        val firstPage = userUseCases.getUsers(lastSyncUtc = Instant.fromEpochSeconds(epochSeconds = 0), cursorUtc = null, cursorUuid = null, pageSize = 1).successData()
+        val firstPage = userUseCases.getUsers(lastSyncUtc = Instant.UNIX_EPOCH, cursorUtc = null, cursorUuid = null, pageSize = 1).successData()
         assertEquals(expected = listOf(recent), actual = firstPage)
 
         val secondPage = userUseCases.getUsers(
-            lastSyncUtc = Instant.fromEpochSeconds(epochSeconds = 0),
+            lastSyncUtc = Instant.UNIX_EPOCH,
             cursorUtc = firstPage.last().modifiedAt,
             cursorUuid = firstPage.last().uuid,
             pageSize = 1
@@ -98,7 +99,7 @@ class UserUseCasesTest: TestCase() {
         dependency.get().database.reset()
 
         listOf(
-            "getUsers" to userUseCases.getUsers(lastSyncUtc = Instant.fromEpochSeconds(epochSeconds = 0), cursorUtc = null, cursorUuid = null, pageSize = ServerConfigs.value.pageSize),
+            "getUsers" to userUseCases.getUsers(lastSyncUtc = Instant.UNIX_EPOCH, cursorUtc = null, cursorUuid = null, pageSize = ServerConfigs.value.pageSize),
             "getUser" to userUseCases.getUser(uuid = FakeData.user.uuid),
             "upsertUser" to userUseCases.upsertUser(user = FakeData.user)
         ).forEach { (name, outcome) -> assertEquals(expected = Outcome.Error, actual = outcome, message = name) }

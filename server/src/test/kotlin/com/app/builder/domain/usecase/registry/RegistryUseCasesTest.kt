@@ -7,6 +7,7 @@ import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Instant
 import com.app.builder.core.config.ServerConfigs
+import com.app.builder.core.locale.UNIX_EPOCH
 import com.app.builder.core.locale.now
 import com.app.builder.core.security.uuid
 import com.app.builder.data.database.create
@@ -50,11 +51,11 @@ class RegistryUseCasesTest: TestCase() {
         assertEquals(expected = listOf(recent), actual = registryUseCases.getRegistries(lastSyncUtc = now - 1.minutes, cursorUtc = null, cursorUuid = null, pageSize = ServerConfigs.value.pageSize).successData())
         assertTrue(actual = registryUseCases.getRegistries(lastSyncUtc = now + 1.minutes, cursorUtc = null, cursorUuid = null, pageSize = ServerConfigs.value.pageSize).successData().isEmpty())
 
-        val firstPage = registryUseCases.getRegistries(lastSyncUtc = Instant.fromEpochSeconds(epochSeconds = 0), cursorUtc = null, cursorUuid = null, pageSize = 1).successData()
+        val firstPage = registryUseCases.getRegistries(lastSyncUtc = Instant.UNIX_EPOCH, cursorUtc = null, cursorUuid = null, pageSize = 1).successData()
         assertEquals(expected = listOf(recent), actual = firstPage)
 
         val secondPage = registryUseCases.getRegistries(
-            lastSyncUtc = Instant.fromEpochSeconds(epochSeconds = 0),
+            lastSyncUtc = Instant.UNIX_EPOCH,
             cursorUtc = firstPage.last().requestUtc,
             cursorUuid = firstPage.last().requestUuid,
             pageSize = 1
@@ -73,7 +74,7 @@ class RegistryUseCasesTest: TestCase() {
         val updated = FakeData.registry.copy(appVersion = "2.0.0")
         assertEquals(expected = Outcome.Success(data = Unit), actual = registryUseCases.upsertRegistry(registry = updated))
 
-        val registries = registryUseCases.getRegistries(lastSyncUtc = Instant.fromEpochSeconds(epochSeconds = 0), cursorUtc = null, cursorUuid = null, pageSize = ServerConfigs.value.pageSize).successData()
+        val registries = registryUseCases.getRegistries(lastSyncUtc = Instant.UNIX_EPOCH, cursorUtc = null, cursorUuid = null, pageSize = ServerConfigs.value.pageSize).successData()
         assertEquals(expected = listOf(updated), actual = registries)
     }
 
@@ -86,7 +87,7 @@ class RegistryUseCasesTest: TestCase() {
         dependency.get().database.reset()
 
         listOf(
-            "getRegistries" to registryUseCases.getRegistries(lastSyncUtc = Instant.fromEpochSeconds(epochSeconds = 0), cursorUtc = null, cursorUuid = null, pageSize = ServerConfigs.value.pageSize),
+            "getRegistries" to registryUseCases.getRegistries(lastSyncUtc = Instant.UNIX_EPOCH, cursorUtc = null, cursorUuid = null, pageSize = ServerConfigs.value.pageSize),
             "upsertRegistry" to registryUseCases.upsertRegistry(registry = FakeData.registry)
         ).forEach { (name, outcome) -> assertEquals(expected = Outcome.Error, actual = outcome, message = name) }
     }

@@ -9,6 +9,7 @@ import kotlin.time.Instant
 import kotlinx.coroutines.flow.firstOrNull
 import com.app.builder.core.config.ServerConfigs
 import com.app.builder.core.config.ServerFlags
+import com.app.builder.core.locale.UNIX_EPOCH
 import com.app.builder.core.locale.now
 import com.app.builder.core.security.uuid
 import com.app.builder.data.database.reset
@@ -57,7 +58,7 @@ class BuildingMaterialUseCasesTest: TestCase() {
         val relinked = link.copy(modifiedAt = link.modifiedAt + 2.seconds)
         buildingMaterialUseCases.upsertBuildingMaterial(buildingMaterial = relinked)
 
-        val links = buildingMaterialUseCases.getBuildingMaterials(lastSyncUtc = Instant.fromEpochSeconds(epochSeconds = 0), cursorUtc = null, cursorUuid = null, pageSize = ServerConfigs.value.pageSize).successData()
+        val links = buildingMaterialUseCases.getBuildingMaterials(lastSyncUtc = Instant.UNIX_EPOCH, cursorUtc = null, cursorUuid = null, pageSize = ServerConfigs.value.pageSize).successData()
         assertEquals(expected = listOf(element = relinked), actual = links)
     }
 
@@ -82,7 +83,7 @@ class BuildingMaterialUseCasesTest: TestCase() {
         dependency.get().database.reset()
 
         listOf(
-            "getBuildingMaterials" to buildingMaterialUseCases.getBuildingMaterials(lastSyncUtc = Instant.fromEpochSeconds(epochSeconds = 0), cursorUtc = null, cursorUuid = null, pageSize = ServerConfigs.value.pageSize),
+            "getBuildingMaterials" to buildingMaterialUseCases.getBuildingMaterials(lastSyncUtc = Instant.UNIX_EPOCH, cursorUtc = null, cursorUuid = null, pageSize = ServerConfigs.value.pageSize),
             "getBuildingMaterial" to buildingMaterialUseCases.getBuildingMaterial(uuid = FakeData.buildingMaterial.uuid),
             "upsertBuildingMaterial" to buildingMaterialUseCases.upsertBuildingMaterial(buildingMaterial = FakeData.buildingMaterial)
         ).forEach { (name, outcome) -> assertEquals(expected = Outcome.Error, actual = outcome, message = name) }

@@ -11,6 +11,12 @@ import com.app.builder.test.TestCase
 
 class DateTimeTest: TestCase() {
 
+    /** Verifies UNIX_EPOCH is the instant of the Unix epoch. */
+    @Test
+    fun unixEpoch() = runUnitTest {
+        assertEquals(expected = Instant.parse(input = "1970-01-01T00:00:00Z"), actual = Instant.UNIX_EPOCH)
+    }
+
     /** Verifies now reads whichever clock is installed rather than the system clock directly. */
     @Test
     fun nowReadsTheInstalledClock() = runUnitTest {

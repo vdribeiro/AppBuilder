@@ -9,6 +9,7 @@ import kotlin.time.Instant
 import kotlinx.coroutines.flow.firstOrNull
 import com.app.builder.core.config.ServerConfigs
 import com.app.builder.core.config.ServerFlags
+import com.app.builder.core.locale.UNIX_EPOCH
 import com.app.builder.core.locale.now
 import com.app.builder.core.security.uuid
 import com.app.builder.data.database.reset
@@ -57,7 +58,7 @@ class BuildingEquipmentUseCasesTest: TestCase() {
         val relinked = link.copy(modifiedAt = link.modifiedAt + 2.seconds)
         buildingEquipmentUseCases.upsertBuildingEquipment(buildingEquipment = relinked)
 
-        val links = buildingEquipmentUseCases.getBuildingEquipments(lastSyncUtc = Instant.fromEpochSeconds(epochSeconds = 0), cursorUtc = null, cursorUuid = null, pageSize = ServerConfigs.value.pageSize).successData()
+        val links = buildingEquipmentUseCases.getBuildingEquipments(lastSyncUtc = Instant.UNIX_EPOCH, cursorUtc = null, cursorUuid = null, pageSize = ServerConfigs.value.pageSize).successData()
         assertEquals(expected = listOf(element = relinked), actual = links)
     }
 
@@ -82,7 +83,7 @@ class BuildingEquipmentUseCasesTest: TestCase() {
         dependency.get().database.reset()
 
         listOf(
-            "getBuildingEquipments" to buildingEquipmentUseCases.getBuildingEquipments(lastSyncUtc = Instant.fromEpochSeconds(epochSeconds = 0), cursorUtc = null, cursorUuid = null, pageSize = ServerConfigs.value.pageSize),
+            "getBuildingEquipments" to buildingEquipmentUseCases.getBuildingEquipments(lastSyncUtc = Instant.UNIX_EPOCH, cursorUtc = null, cursorUuid = null, pageSize = ServerConfigs.value.pageSize),
             "getBuildingEquipment" to buildingEquipmentUseCases.getBuildingEquipment(uuid = FakeData.buildingEquipment.uuid),
             "upsertBuildingEquipment" to buildingEquipmentUseCases.upsertBuildingEquipment(buildingEquipment = FakeData.buildingEquipment)
         ).forEach { (name, outcome) -> assertEquals(expected = Outcome.Error, actual = outcome, message = name) }

@@ -8,6 +8,7 @@ import kotlin.time.Instant
 import kotlinx.coroutines.flow.firstOrNull
 import com.app.builder.core.config.ServerConfigs
 import com.app.builder.core.config.ServerFlags
+import com.app.builder.core.locale.UNIX_EPOCH
 import com.app.builder.core.locale.now
 import com.app.builder.core.security.uuid
 import com.app.builder.data.database.reset
@@ -61,7 +62,7 @@ class MaterialUseCasesTest: TestCase() {
         dependency.get().database.reset()
 
         listOf(
-            "getMaterials" to materialUseCases.getMaterials(lastSyncUtc = Instant.fromEpochSeconds(epochSeconds = 0), cursorUtc = null, cursorUuid = null, pageSize = ServerConfigs.value.pageSize),
+            "getMaterials" to materialUseCases.getMaterials(lastSyncUtc = Instant.UNIX_EPOCH, cursorUtc = null, cursorUuid = null, pageSize = ServerConfigs.value.pageSize),
             "getMaterial" to materialUseCases.getMaterial(uuid = FakeData.material.uuid),
             "upsertMaterial" to materialUseCases.upsertMaterial(material = FakeData.material)
         ).forEach { (name, outcome) -> assertEquals(expected = Outcome.Error, actual = outcome, message = name) }
