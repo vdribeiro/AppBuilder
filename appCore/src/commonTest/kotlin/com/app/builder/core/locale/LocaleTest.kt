@@ -43,6 +43,22 @@ class LocaleTest: TestCase() {
         assertTrue(actual = getLocalDateTime(utc = "2020-01-01T12:00:00+02:00").isNotEmpty())
     }
 
+    /** Verifies that [getLocalDateTime] formats with the conventions of the given language, and with those of [SelectedLanguage] when none is given. */
+    @Test
+    fun getLocalDateTimeFollowsLanguage() = runUnitTest {
+        val utc = "2020-01-31T12:00:00Z"
+        val english = getLocalDateTime(utc = utc, languageIso = "en")
+        val german = getLocalDateTime(utc = utc, languageIso = "de")
+        assertTrue(actual = english != german)
+
+        SelectedLanguage.set { "de" }
+        try {
+            assertEquals(expected = german, actual = getLocalDateTime(utc = utc))
+        } finally {
+            SelectedLanguage.reset()
+        }
+    }
+
     /** Verifies that [getLocalDateTime] returns the input unchanged for an empty string. */
     @Test
     fun getLocalDateTimeEmpty() = runUnitTest {
