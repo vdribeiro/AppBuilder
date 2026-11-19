@@ -40,8 +40,8 @@ class DeviceFilesScreenTest: TestCase() {
 
         waitUntil { store.state.files.any { it.name == AppFile.TaskPreferences.path } }
         val file = store.state.files.first { it.name == AppFile.TaskPreferences.path }
-        val description = assertNotNull(actual = file.description)
-        assertTrue(actual = Regex(pattern = """^\d+\.\d B( - .+)?$""").matches(input = description), message = description)
+        val size = assertNotNull(actual = file.size)
+        assertTrue(actual = Regex(pattern = """^\d+\.\d B$""").matches(input = size), message = size)
     }
 
     /** Verifies that failing to open a file reports it to the user, and that the report can be dismissed. */
