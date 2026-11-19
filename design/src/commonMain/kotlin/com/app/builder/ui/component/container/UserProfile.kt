@@ -31,7 +31,7 @@ import com.app.builder.ui.core.text.Text
  * @param appVersion The app version, shown as an informative label.
  * @param onEditProfileClick Callback invoked when edit profile is clicked.
  * @param onChangePasswordClick Callback invoked when change password is clicked.
- * @param onNotificationsClick Callback invoked when notifications is clicked.
+ * @param onNotificationsClick Callback invoked when notifications is clicked, or `null` to hide notifications.
  * @param onLogoutClick Callback invoked when logout is clicked.
  * @param onResetClick Callback invoked when reset is clicked.
  * @param onHelpClick Callback invoked when help is clicked, or `null` to hide help.
@@ -49,7 +49,7 @@ fun UserProfile(
     appVersion: String = "",
     onEditProfileClick: () -> Unit = {},
     onChangePasswordClick: () -> Unit = {},
-    onNotificationsClick: () -> Unit = {},
+    onNotificationsClick: (() -> Unit)? = null,
     onLogoutClick: () -> Unit = {},
     onResetClick: () -> Unit = {},
     onHelpClick: (() -> Unit)? = null,
@@ -86,11 +86,13 @@ fun UserProfile(
                     headlineText = "change_password",
                 )
                 Divider()
-                ListItem(
-                    modifier = Modifier.clickable { onNotificationsClick() },
-                    headlineText = "notifications",
-                )
-                Divider()
+                if (onNotificationsClick != null) {
+                    ListItem(
+                        modifier = Modifier.clickable { onNotificationsClick() },
+                        headlineText = "notifications",
+                    )
+                    Divider()
+                }
                 ListItem(
                     modifier = Modifier.clickable { onLogoutClick() },
                     headlineText = "logout",
