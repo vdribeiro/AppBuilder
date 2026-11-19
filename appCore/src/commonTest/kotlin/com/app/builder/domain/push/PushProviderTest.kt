@@ -102,7 +102,7 @@ class PushProviderTest: TestCase() {
         val received = mutableListOf<DeepLink>()
         backgroundScope.launch(context = Dispatcher.Default) { DeepLink.deepLinks.collect { received.add(element = it) } }
 
-        listOf(FakeData.notification, PushPayload.Flags(), PushPayload.Configs(), PushPayload.Reset()).forEach {
+        listOf(FakeData.notification, PushPayload.Flags(), PushPayload.Configs(), PushPayload.Translations(), PushPayload.Reset()).forEach {
             PushProvider.handleNotificationClick(pushPayload = it)
         }
         testScheduler.advanceUntilIdle()

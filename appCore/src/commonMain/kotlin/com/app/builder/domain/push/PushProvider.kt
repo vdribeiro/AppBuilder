@@ -104,6 +104,7 @@ object PushProvider {
         is PushPayload.Notification,
         is PushPayload.Flags,
         is PushPayload.Configs,
+        is PushPayload.Translations,
         is PushPayload.Reset -> null
     }
 }

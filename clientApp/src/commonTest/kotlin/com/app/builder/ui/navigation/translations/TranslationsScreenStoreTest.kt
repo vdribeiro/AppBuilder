@@ -163,16 +163,6 @@ class TranslationsScreenStoreTest: TestCase() {
         }
     }
 
-    /** Verifies that the listed items carry their value as text even when the value property is hidden. */
-    @Test
-    fun hiddenValueIsKeptAsText() = runUnitTest {
-        val store = store(preferences = AppFile.ActionBarData(visibleProperties = listOf(Property.KEY.name)))
-
-        val items = store.stateFlow.first { it.translations.size == 2 }.translations
-        assertTrue(actual = items.all { it.value == null })
-        assertEquals(expected = setOf("Yes", "No"), actual = items.map { it.text }.toSet())
-    }
-
     /** Verifies that translations are editable for a user with translation write permission, and not for a guest. */
     @Test
     fun editableFollowsWritePermission() = runUnitTest {
@@ -182,50 +172,83 @@ class TranslationsScreenStoreTest: TestCase() {
         assertTrue(actual = store.stateFlow.first { it.editable }.editable)
     }
 
-    /** Verifies that editing a translation opens the editor on its value, and that saving a changed value updates the listed translation and closes the editor. */
+    /** Verifies that updating a value shows it on the listed translation as pending at once, then stores it and clears the pending mark. */
     @Test
-    fun editAndSaveTranslation() = runUnitTest {
+    fun updateValue() = runUnitTest {
         val store = authenticatedStore()
         store.stateFlow.first { it.editable }
 
-        store.send(action = TranslationsScreenAction.EditTranslation(key = "yes"))
-        assertEquals(expected = TranslationEdit(key = "yes", value = "Yes"), actual = store.stateFlow.first { it.edit != null }.edit)
+        store.send(action = TranslationsScreenAction.UpdateValue(key = "yes", value = "Yep"))
 
-        store.send(action = TranslationsScreenAction.ChangeValue(value = "Yep"))
-        assertEquals(expected = TranslationEdit(key = "yes", value = "Yep"), actual = store.stateFlow.first { it.edit?.value == "Yep" }.edit)
+        val pending = store.state.translations.single { it.id == "yes" }
+        assertEquals(expected = "Yep", actual = pending.value)
+        assertTrue(actual = pending.pending)
 
-        store.send(action = TranslationsScreenAction.SaveTranslation)
-
-        val state = store.stateFlow.first { state -> state.edit == null && state.translations.any { it.text == "Yep" } }
-        assertEquals(expected = setOf("Yep", "No"), actual = state.translations.map { it.text }.toSet())
+        val state = store.stateFlow.first { state -> state.translations.none { it.pending } }
+        assertEquals(expected = setOf("Yep", "No"), actual = state.translations.map { it.value }.toSet())
+        assertEquals(expected = setOf("Yep", "No"), actual = storedValues(languageIso = "en"))
     }
 
-    /** Verifies that dismissing the editor closes it and keeps the listed translation unchanged. */
+    /** Verifies that values updated in quick succession on the same translation store only the last one. */
     @Test
-    fun dismissEdit() = runUnitTest {
+    fun updateValueStoresLastValue() = runUnitTest {
         val store = authenticatedStore()
         store.stateFlow.first { it.editable }
 
-        store.send(action = TranslationsScreenAction.EditTranslation(key = "yes"))
-        store.send(action = TranslationsScreenAction.ChangeValue(value = "Yep"))
-        store.stateFlow.first { it.edit?.value == "Yep" }
-        store.send(action = TranslationsScreenAction.DismissEdit)
+        store.send(action = TranslationsScreenAction.UpdateValue(key = "yes", value = "Yep"))
+        store.send(action = TranslationsScreenAction.UpdateValue(key = "yes", value = "Yeah"))
 
-        val state = store.stateFlow.first { it.edit == null }
-        assertEquals(expected = setOf("Yes", "No"), actual = state.translations.map { it.text }.toSet())
+        assertEquals(expected = setOf("Yes", "No"), actual = storedValues(languageIso = "en"))
+
+        store.stateFlow.first { state -> state.translations.none { it.pending } }
+        assertEquals(expected = setOf("Yeah", "No"), actual = storedValues(languageIso = "en"))
     }
 
-    /** Verifies that the editor does not open for a user without translation write permission. */
+    /** Verifies that a value updated before selecting another language is stored in the language it was updated in. */
     @Test
-    fun editRequiresWritePermission() = runUnitTest {
+    fun updateValueKeepsItsLanguage() = runUnitTest {
+        val store = authenticatedStore()
+        store.stateFlow.first { it.editable }
+
+        store.send(action = TranslationsScreenAction.UpdateValue(key = "yes", value = "Yep"))
+        store.send(action = TranslationsScreenAction.SelectLanguage(languageIso = "pt"))
+
+        val state = store.stateFlow.first { state -> state.selectedLanguage == "pt" && state.translations.map { it.value } == listOf("Sim") }
+        assertFalse(actual = state.translations.single().pending)
+
+        testScheduler.advanceUntilIdle()
+        assertEquals(expected = setOf("Yep", "No"), actual = storedValues(languageIso = "en"))
+        assertEquals(expected = setOf("Sim"), actual = storedValues(languageIso = "pt"))
+    }
+
+    /** Verifies that updating a value does nothing for a user without translation write permission. */
+    @Test
+    fun updateValueRequiresWritePermission() = runUnitTest {
         // FakeData.account only has TRANSLATION -> READ.
         val store = authenticatedStore(account = FakeData.account, credentials = FakeData.credentials)
 
-        store.send(action = TranslationsScreenAction.EditTranslation(key = "yes"))
-        store.send(action = TranslationsScreenAction.SelectLanguage(languageIso = "pt"))
+        store.send(action = TranslationsScreenAction.UpdateValue(key = "yes", value = "Yep"))
 
-        val state = store.stateFlow.first { it.selectedLanguage == "pt" }
-        assertFalse(actual = state.editable)
-        assertNull(actual = state.edit)
+        assertFalse(actual = store.state.editable)
+        assertEquals(expected = setOf("Yes", "No"), actual = store.state.translations.map { it.value }.toSet())
+        assertTrue(actual = store.state.translations.none { it.pending })
+
+        testScheduler.advanceUntilIdle()
+        assertEquals(expected = setOf("Yes", "No"), actual = storedValues(languageIso = "en"))
     }
+
+    /**
+     * Reads the stored values of a language.
+     *
+     * @param languageIso The ISO code of the language.
+     * @return The stored values.
+     */
+    private suspend fun storedValues(languageIso: String): Set<String> = dependency.get()
+        .userGraph
+        .useCases
+        .translationUseCases
+        .observeTranslations(languageIso = languageIso)
+        .first()
+        .map { it.value }
+        .toSet()
 }

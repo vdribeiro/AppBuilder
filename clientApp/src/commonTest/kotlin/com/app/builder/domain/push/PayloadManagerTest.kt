@@ -45,4 +45,15 @@ class PayloadManagerTest: TestCase() {
 
         assertNotNull(actual = jobs.find { it.entityType == EntityType.CLIENT_CONFIG && it.type == Job.Type.GET })
     }
+
+    /** Verifies that handling a [PushPayload.Translations] payload queues a GET job for translations. */
+    @Test
+    fun handleTranslationsPayload() = runUnitTest {
+        val jobDao = dependency.get().database.jobQueries
+
+        handlePushPayload(payload = PushPayload.Translations())
+        val jobs = jobDao.getJobsByState(states = Job.State.entries).awaitAsList()
+
+        assertNotNull(actual = jobs.find { it.entityType == EntityType.TRANSLATION && it.type == Job.Type.GET })
+    }
 }

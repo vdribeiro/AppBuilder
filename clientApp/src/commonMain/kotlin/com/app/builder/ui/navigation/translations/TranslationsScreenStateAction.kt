@@ -12,6 +12,14 @@ sealed interface TranslationsScreenAction {
      * @param languageIso ISO code of the selected language.
      */
     data class SelectLanguage(val languageIso: String): TranslationsScreenAction
+
+    /**
+     * Changes the value of a listed translation.
+     *
+     * @param key Key of the translation.
+     * @param value The new value.
+     */
+    data class UpdateValue(val key: String, val value: String): TranslationsScreenAction
 }
 
 /**
@@ -20,9 +28,11 @@ sealed interface TranslationsScreenAction {
  * @property languages ISO codes of the languages holding translations, in tab order.
  * @property selectedLanguage ISO code of the language whose translations are listed, or `null` while there are no languages.
  * @property translations Translations of [selectedLanguage] currently displayed.
+ * @property editable Whether the current user has write permission on translations.
  */
 data class TranslationsScreenState(
     val languages: ImmutableList<String> = persistentListOf(),
     val selectedLanguage: String? = null,
     val translations: ImmutableList<TranslationItem> = persistentListOf(),
+    val editable: Boolean = false,
 )

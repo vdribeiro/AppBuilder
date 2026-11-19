@@ -96,6 +96,23 @@ sealed interface PushPayload {
     ): PushPayload
 
     /**
+     * Indicative of a translations update.
+     *
+     * @property uuid The unique identifier for this notification.
+     * @property userUuid The unique identifier for the user associated with this notification.
+     * @property title The title of the notification.
+     * @property description The description of the notification.
+     */
+    @Serializable
+    @SerialName(value = "translations")
+    data class Translations(
+        override val uuid: Uuid = uuid(),
+        override val userUuid: Uuid? = null,
+        override val title: String = "translations",
+        override val description: String = "",
+    ): PushPayload
+
+    /**
      * Request a client reset.
      *
      * @property uuid The unique identifier for this notification.

@@ -21,6 +21,7 @@ class PushPayloadTest: TestCase() {
         FakeData.entityNotification to "entity_notification",
         PushPayload.Flags() to "flags",
         PushPayload.Configs() to "configs",
+        PushPayload.Translations() to "translations",
         PushPayload.Reset() to "reset",
     )
 
@@ -66,8 +67,9 @@ class PushPayloadTest: TestCase() {
     fun signalPayloadDefaults() = runUnitTest {
         assertEquals(expected = "flags", actual = PushPayload.Flags().title)
         assertEquals(expected = "configs", actual = PushPayload.Configs().title)
+        assertEquals(expected = "translations", actual = PushPayload.Translations().title)
         assertEquals(expected = "reset", actual = PushPayload.Reset().title)
-        listOf(PushPayload.Flags(), PushPayload.Configs(), PushPayload.Reset()).forEach { payload ->
+        listOf(PushPayload.Flags(), PushPayload.Configs(), PushPayload.Translations(), PushPayload.Reset()).forEach { payload ->
             assertEquals(expected = "", actual = payload.description)
             assertNull(actual = payload.userUuid)
         }

@@ -64,7 +64,11 @@ fun TranslationsScreen(
                     }.toPersistentList()
                 )
             }
-            TranslationList(items = state.translations)
+            TranslationList(
+                items = state.translations,
+                enabled = state.editable,
+                onValueChange = { item, value -> store.send(action = TranslationsScreenAction.UpdateValue(key = item.id, value = value)) }
+            )
         }
     }
 }

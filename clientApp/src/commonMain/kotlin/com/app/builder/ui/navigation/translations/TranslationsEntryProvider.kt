@@ -23,7 +23,7 @@ fun EntryProviderScope<NavKey>.translationsProvider(useCases: UseCases) {
         TranslationsScreen(
             sessionStore = hostViewModel(key = SessionStore.KEY) { SessionStore.get(useCases = useCases) },
             filtersStore = filtersStore(),
-            store = viewModel { TranslationsScreenStore(state = TranslationsScreenState(), translationUseCases = useCases.translationUseCases) },
+            store = viewModel { TranslationsScreenStore(state = TranslationsScreenState(), translationUseCases = useCases.translationUseCases, authenticationUseCases = useCases.authenticationUseCases) },
         )
     }
 }

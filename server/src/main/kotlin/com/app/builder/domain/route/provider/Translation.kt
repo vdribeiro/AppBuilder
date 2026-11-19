@@ -5,13 +5,16 @@ import io.ktor.server.auth.authenticate
 import io.ktor.server.routing.Route
 import io.ktor.server.routing.get
 import io.ktor.server.routing.post
+import com.app.builder.core.config.ServerFlags
 import com.app.builder.core.telemetry.Telemetry
 import com.app.builder.data.http.URL
 import com.app.builder.data.serializer.encode
 import com.app.builder.domain.EntityType
 import com.app.builder.domain.Permission
+import com.app.builder.domain.PushPayload
 import com.app.builder.domain.Translation
 import com.app.builder.domain.permission.PermissionService
+import com.app.builder.domain.push.BroadcastService
 import com.app.builder.domain.route.getOrRespond
 import com.app.builder.domain.route.getUserUuid
 import com.app.builder.domain.route.receive
@@ -27,11 +30,13 @@ import com.app.builder.domain.usecase.translation.TranslationUseCases
  *
  * @param permissionService The permission service.
  * @param translationUseCases The collection of use cases handling translation logic.
+ * @param broadcastService The service broadcasting a [PushPayload.Translations] after each update, while the broadcast server flag is on.
  * @param registryUseCases The registry use cases used to record request telemetry.
  */
 fun Route.translationRoutes(
     permissionService: PermissionService,
     translationUseCases: TranslationUseCases,
+    broadcastService: BroadcastService,
     registryUseCases: RegistryUseCases
 ) {
     get(path = URL.Translations.path) {
@@ -55,6 +60,8 @@ fun Route.translationRoutes(
 
             call.respondSafely(status = HttpStatusCode.OK, message = stored)
             Telemetry.info(tag = TAG, message = "Updated translation ${stored.languageIso}/${stored.key} for user $userUuid")
+
+            if (ServerFlags.value.broadcast) broadcastService.broadcast(pushPayload = PushPayload.Translations())
 
             call.toRegistry(
                 entityType = EntityType.TRANSLATION,

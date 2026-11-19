@@ -77,6 +77,7 @@ class PayloadManager(
                 is PushPayload.EntityNotification -> NotificationProvider.showNotification(notification = payload).also { sync(payload = payload) }
                 is PushPayload.Flags -> appGraph.getRepositories(payload = payload).configRepository.syncFeatureFlags()
                 is PushPayload.Configs -> appGraph.getRepositories(payload = payload).configRepository.syncConfigs()
+                is PushPayload.Translations -> appGraph.getRepositories(payload = payload).translationRepository.syncTranslations()
                 is PushPayload.Reset -> Application.reset()
             }
         }.onFailure {
