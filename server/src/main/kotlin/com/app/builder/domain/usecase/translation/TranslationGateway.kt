@@ -1,0 +1,80 @@
+package com.app.builder.domain.usecase.translation
+
+import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.withContext
+import org.jetbrains.exposed.v1.core.ResultRow
+import org.jetbrains.exposed.v1.core.SortOrder
+import org.jetbrains.exposed.v1.r2dbc.R2dbcDatabase
+import org.jetbrains.exposed.v1.r2dbc.batchInsert
+import org.jetbrains.exposed.v1.r2dbc.select
+import org.jetbrains.exposed.v1.r2dbc.selectAll
+import com.app.builder.core.flow.Dispatcher
+import com.app.builder.core.telemetry.Telemetry
+import com.app.builder.data.database.safeTransaction
+import com.app.builder.data.database.table.TranslationTable
+import com.app.builder.domain.Translation
+import com.app.builder.domain.usecase.Outcome
+
+/**
+ * Gateway implementation for translation use cases.
+ *
+ * @property database The database instance used to execute transactions.
+ */
+class TranslationGateway(
+    private val database: R2dbcDatabase
+): TranslationUseCases {
+
+    override suspend fun seedTranslations(translations: List<Translation>): Outcome<Unit> = withContext(context = Dispatcher.IO) {
+        database.safeTransaction {
+            val stored = TranslationTable
+                .select(TranslationTable.languageIso, TranslationTable.key)
+                .toList()
+                .map { it[TranslationTable.languageIso] to it[TranslationTable.key] }
+                .toSet()
+            val missing = translations
+                .distinctBy { it.languageIso to it.key }
+                .filter { (it.languageIso to it.key) !in stored }
+            TranslationTable.batchInsert(data = missing, shouldReturnGeneratedValues = false) { translation ->
+                this[TranslationTable.languageIso] = translation.languageIso
+                this[TranslationTable.key] = translation.key
+                this[TranslationTable.modifiedAt] = translation.modifiedAt
+                this[TranslationTable.value] = translation.value
+            }
+            Outcome.Success(data = Unit)
+        }.getOrElse {
+            Telemetry.error(tag = TAG, message = "Unable to seed translations", throwable = it)
+            Outcome.Error
+        }
+    }
+
+    override suspend fun getTranslations(): Outcome<List<Translation>> = withContext(context = Dispatcher.IO) {
+        database.safeTransaction {
+            TranslationTable
+                .selectAll()
+                .orderBy(TranslationTable.languageIso to SortOrder.ASC, TranslationTable.key to SortOrder.ASC)
+                .toList()
+                .map { it.toTranslation() }
+                .let { Outcome.Success(data = it) }
+        }.getOrElse {
+            Telemetry.error(tag = TAG, message = "Unable to get translations", throwable = it)
+            Outcome.Error
+        }
+    }
+
+    /**
+     * Maps a database row to a [Translation] domain model.
+     *
+     * @receiver A row from the [TranslationTable].
+     * @return The mapped [Translation].
+     */
+    private fun ResultRow.toTranslation(): Translation = Translation(
+        languageIso = this[TranslationTable.languageIso],
+        key = this[TranslationTable.key],
+        modifiedAt = this[TranslationTable.modifiedAt],
+        value = this[TranslationTable.value]
+    )
+
+    companion object {
+        private const val TAG = "TranslationGateway"
+    }
+}

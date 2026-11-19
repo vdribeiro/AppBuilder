@@ -32,6 +32,8 @@ import com.app.builder.domain.usecase.task.TaskGateway
 import com.app.builder.domain.usecase.task.TaskUseCases
 import com.app.builder.domain.usecase.ticket.TicketGateway
 import com.app.builder.domain.usecase.ticket.TicketUseCases
+import com.app.builder.domain.usecase.translation.TranslationGateway
+import com.app.builder.domain.usecase.translation.TranslationUseCases
 import com.app.builder.domain.usecase.user.UserGateway
 import com.app.builder.domain.usecase.user.UserUseCases
 
@@ -46,6 +48,7 @@ class Gateways(
     instanceSignal: InstanceSignal
 ): UseCases {
     override val configUseCases: ConfigUseCases = ConfigGateway(database = database, instanceSignal = instanceSignal)
+    override val translationUseCases: TranslationUseCases = TranslationGateway(database = database)
     override val authenticationUseCases: AuthenticationUseCases = AuthenticationGateway(database = database)
     override val registryUseCases: RegistryUseCases = RegistryGateway(database = database)
     override val deviceTokenUseCases: DeviceTokenUseCases = DeviceTokenGateway(database = database)

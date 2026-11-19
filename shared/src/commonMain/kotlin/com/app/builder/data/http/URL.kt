@@ -26,8 +26,8 @@ sealed class URL(val path: String) {
     data object Probe: URL(path = "/api/probe")
     /** Endpoint for registries. */
     data object Registries: URL(path = "/api/registry")
-    /** Endpoint to retrieve the static translation JSON payload. */
-    data object Translations: URL(path = "/api/data/translations.json")
+    /** Endpoint for translations. */
+    data object Translations: URL(path = "/api/translations")
     /** Endpoint to register a device's FCM token for push delivery. */
     data object DeviceTokens: URL(path = "/api/device-tokens")
     /** Endpoint to subscribe a device's FCM token to the broadcast topic. */

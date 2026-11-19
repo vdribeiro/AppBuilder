@@ -1,7 +1,6 @@
 package com.app.builder.domain.route
 
 import io.ktor.server.application.Application
-import io.ktor.server.http.content.staticResources
 import io.ktor.server.response.respondText
 import io.ktor.server.routing.Route
 import io.ktor.server.routing.RouteSelector
@@ -25,6 +24,7 @@ import com.app.builder.domain.route.provider.probeRoutes
 import com.app.builder.domain.route.provider.pushRoutes
 import com.app.builder.domain.route.provider.registryRoutes
 import com.app.builder.domain.route.provider.taskRoutes
+import com.app.builder.domain.route.provider.translationRoutes
 import com.app.builder.domain.route.provider.userRoutes
 
 /**
@@ -39,7 +39,7 @@ fun Application.installRouting(dependency: Dependency) {
         get(path = "/") { call.respondText(text = "Server running") }
         registryRoutes(permissionService = permissionService, registryUseCases = useCases.registryUseCases)
         configRoutes(permissionService = permissionService, configUseCases = useCases.configUseCases, registryUseCases = useCases.registryUseCases)
-        flag(enabled = { it.resources }) { staticResources(remotePath = "/api/data", basePackage = "static") }
+        flag(enabled = { it.translations }) { translationRoutes(translationUseCases = useCases.translationUseCases) }
         flag(enabled = { it.probe }) { probeRoutes() }
         flag(enabled = { it.authentication }) { authenticationRoutes(permissionService = permissionService, authenticationUseCases = useCases.authenticationUseCases, registryUseCases = useCases.registryUseCases) }
         flag(enabled = { it.broadcast }) { broadcastRoutes(permissionService = permissionService, broadcastService = dependency.broadcastService, fcmService = dependency.fcmService, registryUseCases = useCases.registryUseCases) }

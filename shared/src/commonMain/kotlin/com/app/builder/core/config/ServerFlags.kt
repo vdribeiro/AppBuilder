@@ -6,8 +6,8 @@ import com.app.builder.core.flow.StateHolder
 /** Centralized feature flag container to change system capabilities dynamically. */
 @Serializable
 data class ServerFlags(
-    /** Toggles the static file mount. When false, requests to it return a 404. */
-    val resources: Boolean,
+    /** Toggles the translations route. When false, it returns 404. */
+    val translations: Boolean,
     /** Toggles the health check endpoint. When false, the route is not registered and returns 404. */
     val probe: Boolean,
     /** Toggles session/credential routes. When false, all of these return 404. */
@@ -38,7 +38,7 @@ data class ServerFlags(
     /** Holds the server feature flags. */
     companion object: StateHolder<ServerFlags>(
         initialValue = ServerFlags(
-            resources = true,
+            translations = true,
             probe = true,
             authentication = true,
             broadcast = true,
@@ -61,7 +61,7 @@ data class ServerFlags(
          */
         fun off(): ServerFlags = set {
             ServerFlags(
-                resources = false,
+                translations = false,
                 probe = false,
                 authentication = false,
                 broadcast = false,

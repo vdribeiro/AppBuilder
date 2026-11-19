@@ -1,5 +1,6 @@
 package com.app.builder.domain
 
+import kotlin.time.Instant
 import kotlinx.serialization.Serializable
 
 /**
@@ -7,12 +8,14 @@ import kotlinx.serialization.Serializable
  *
  * @property languageIso The ISO language code defining the language context.
  * @property key The unique identifier matching the resource slot across localization maps.
+ * @property modifiedAt The timestamp indicating when this translation was last updated.
  * @property value The localized text string to be rendered in the user interface.
  */
 @Serializable
 data class Translation(
     val languageIso: String,
     val key: String,
+    val modifiedAt: Instant = Instant.fromEpochSeconds(epochSeconds = 0),
     val value: String
 ) {
     /**
