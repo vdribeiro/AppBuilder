@@ -165,7 +165,7 @@ private suspend fun createDependency(): Dependency {
     }.getOrThrow()
 
     val firebaseApp = runCatching {
-        if (!Env.developmentMode && ServerFlags.value.firebase) {
+        if (!Env.developmentMode) {
             FirebaseApp.getApps().firstOrNull() ?: FirebaseApp.initializeApp(
                 FirebaseOptions.builder()
                     .setCredentials(GoogleCredentials.getApplicationDefault())
