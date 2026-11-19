@@ -1,7 +1,9 @@
 package com.app.builder.domain.route.provider
 
 import kotlinx.coroutines.channels.consumeEach
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.auth.authenticate
@@ -12,6 +14,7 @@ import io.ktor.websocket.CloseReason
 import io.ktor.websocket.Frame
 import io.ktor.websocket.close
 import io.ktor.websocket.readText
+import com.app.builder.core.config.ServerConfigs
 import com.app.builder.core.config.ServerFlags
 import com.app.builder.core.security.toUuid
 import com.app.builder.core.telemetry.Telemetry
@@ -118,6 +121,15 @@ fun Route.pushRoutes(
             ServerFlags.flow.first { !it.push }
             close(reason = CloseReason(code = CloseReason.Codes.GOING_AWAY, message = "Push disabled"))
         }
+        val configJob = launch {
+            ServerConfigs.flow
+                .map { it.pushPingInterval to it.pushTimeout }
+                .distinctUntilChanged()
+                .collect { (pingInterval, timeout) ->
+                    pingIntervalMillis = pingInterval
+                    timeoutMillis = timeout
+                }
+        }
         try {
             incoming.consumeEach {
                 val uuid = (it as? Frame.Text)?.readText()?.toUuid() ?: return@consumeEach
@@ -127,6 +139,7 @@ fun Route.pushRoutes(
             Telemetry.error(tag = TAG, message = "WebSocket error for user $userUuid in device $deviceUuid: ${exception.localizedMessage}")
         } finally {
             flagJob.cancel()
+            configJob.cancel()
             pushService.removeConnection(userUuid = userUuid, deviceUuid = deviceUuid, session = this)
             Telemetry.info(tag = TAG, message = "Device $deviceUuid for user $userUuid disconnected")
         }

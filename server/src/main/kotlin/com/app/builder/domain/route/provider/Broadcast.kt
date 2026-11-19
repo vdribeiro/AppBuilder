@@ -1,15 +1,17 @@
 package com.app.builder.domain.route.provider
 
-import kotlin.time.Duration.Companion.milliseconds
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.auth.authenticate
 import io.ktor.server.plugins.ratelimit.RateLimitName
 import io.ktor.server.plugins.ratelimit.rateLimit
 import io.ktor.server.routing.Route
 import io.ktor.server.routing.post
-import io.ktor.server.sse.heartbeat
 import io.ktor.server.sse.sse
+import io.ktor.sse.ServerSentEvent
 import com.app.builder.core.config.ServerConfigs
 import com.app.builder.core.config.ServerFlags
 import com.app.builder.core.telemetry.Telemetry
@@ -49,10 +51,16 @@ fun Route.broadcastRoutes(
     rateLimit(configuration = RateLimitName(name = RATE_LIMIT_BROADCAST)) {
         sse(path = URL.Broadcast.path) {
             if (!broadcastService.addConnection(session = this)) return@sse
-            heartbeat { period = ServerConfigs.value.broadcastPingInterval.milliseconds }
+            val heartbeatJob = launch {
+                while (isActive) {
+                    send(event = ServerSentEvent(comments = "heartbeat"))
+                    delay(timeMillis = ServerConfigs.value.broadcastPingInterval)
+                }
+            }
             try {
                 ServerFlags.flow.first { !it.broadcast }
             } finally {
+                heartbeatJob.cancel()
                 broadcastService.removeConnection(session = this)
             }
         }
