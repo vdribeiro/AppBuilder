@@ -472,7 +472,7 @@ Signals are fire-and-forget. Anything that must survive a missed delivery, like 
 `SINGLE_INSTANCE=true` selects `LocalSignal` in production too, so the server holds no `LISTEN` connections and, with no client connected, makes no database calls.
 
 > [!WARNING]
-> Never set `SINGLE_INSTANCE` on a deployment with more than one instance: the server boots fine but loses the cross-instance capability.
+> Never enable `SINGLE_INSTANCE` on a multi-instance deployment. Although the server will boot successfully, it will lose cross-instance functionality.
 
 > [!IMPORTANT]
 > **Device ownership.** `deviceUuid` comes from a request header, so the client picks it. Every per-device table is therefore keyed on `(userUuid, deviceUuid)`, never on `deviceUuid` alone, or one account could claim another's row and hijack or kill its push delivery. New per-device tables must follow the same rule.
