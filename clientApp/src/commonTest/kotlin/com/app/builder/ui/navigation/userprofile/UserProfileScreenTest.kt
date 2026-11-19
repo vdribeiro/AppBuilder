@@ -6,10 +6,12 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlinx.coroutines.flow.firstOrNull
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import com.app.builder.core.config.ClientFlags
+import com.app.builder.domain.gateway.translation.toTranslationSchema
 import com.app.builder.test.FakeData
 import com.app.builder.test.TestCase
 import com.app.builder.ui.navigation.Screen
@@ -21,7 +23,7 @@ class UserProfileScreenTest: TestCase() {
         ClientFlags.set { it.copy(http = true, help = true) }
     }
 
-    /** Verifies that a guest only gets the about section without help, and that sending feedback opens the feedback screen. */
+    /** Verifies that a guest only gets the language row and the about section without help, and that sending feedback opens the feedback screen. */
     @Test
     fun guestProfile() = runUITest {
         val authenticationUseCases = dependency.get()
@@ -29,7 +31,7 @@ class UserProfileScreenTest: TestCase() {
             .useCases
             .authenticationUseCases
 
-        val store = UserProfileScreenStore(state = UserProfileScreenState(guest = false), authenticationUseCases = authenticationUseCases)
+        val store = UserProfileScreenStore(state = UserProfileScreenState(guest = false), authenticationUseCases = authenticationUseCases, translationUseCases = dependency.get().userGraph.useCases.translationUseCases)
 
         setUI { UserProfileScreen(store = store) }
 
@@ -39,7 +41,9 @@ class UserProfileScreenTest: TestCase() {
         onNodeWithText(text = "about").assertIsDisplayed()
         onNodeWithText(text = "account").assertDoesNotExist()
         onNodeWithText(text = "logout").assertDoesNotExist()
-        onNodeWithText(text = "device").assertDoesNotExist()
+        onNodeWithText(text = "device").assertIsDisplayed()
+        onNodeWithText(text = "language").assertIsDisplayed()
+        onNodeWithText(text = "reset").assertDoesNotExist()
         onNodeWithText(text = "help").assertDoesNotExist()
 
         onNodeWithText(text = "send_feedback").performScrollTo().performClick()
@@ -55,7 +59,7 @@ class UserProfileScreenTest: TestCase() {
             .authenticationUseCases
         authenticationUseCases.login(credentials = FakeData.adminCredentials)
 
-        val store = UserProfileScreenStore(state = UserProfileScreenState(), authenticationUseCases = authenticationUseCases)
+        val store = UserProfileScreenStore(state = UserProfileScreenState(), authenticationUseCases = authenticationUseCases, translationUseCases = dependency.get().userGraph.useCases.translationUseCases)
 
         setUI { UserProfileScreen(store = store) }
 
@@ -78,7 +82,7 @@ class UserProfileScreenTest: TestCase() {
             .authenticationUseCases
         authenticationUseCases.login(credentials = FakeData.adminCredentials)
 
-        val store = UserProfileScreenStore(state = UserProfileScreenState(), authenticationUseCases = authenticationUseCases)
+        val store = UserProfileScreenStore(state = UserProfileScreenState(), authenticationUseCases = authenticationUseCases, translationUseCases = dependency.get().userGraph.useCases.translationUseCases)
 
         setUI { UserProfileScreen(store = store) }
 
@@ -96,7 +100,7 @@ class UserProfileScreenTest: TestCase() {
             .authenticationUseCases
         authenticationUseCases.login(credentials = FakeData.adminCredentials)
 
-        val store = UserProfileScreenStore(state = UserProfileScreenState(), authenticationUseCases = authenticationUseCases)
+        val store = UserProfileScreenStore(state = UserProfileScreenState(), authenticationUseCases = authenticationUseCases, translationUseCases = dependency.get().userGraph.useCases.translationUseCases)
 
         setUI { UserProfileScreen(store = store) }
 
@@ -114,7 +118,7 @@ class UserProfileScreenTest: TestCase() {
             .authenticationUseCases
         authenticationUseCases.login(credentials = FakeData.adminCredentials)
 
-        val store = UserProfileScreenStore(state = UserProfileScreenState(), authenticationUseCases = authenticationUseCases)
+        val store = UserProfileScreenStore(state = UserProfileScreenState(), authenticationUseCases = authenticationUseCases, translationUseCases = dependency.get().userGraph.useCases.translationUseCases)
 
         setUI { UserProfileScreen(store = store) }
 
@@ -132,7 +136,7 @@ class UserProfileScreenTest: TestCase() {
             .authenticationUseCases
         authenticationUseCases.login(credentials = FakeData.adminCredentials)
 
-        val store = UserProfileScreenStore(state = UserProfileScreenState(), authenticationUseCases = authenticationUseCases)
+        val store = UserProfileScreenStore(state = UserProfileScreenState(), authenticationUseCases = authenticationUseCases, translationUseCases = dependency.get().userGraph.useCases.translationUseCases)
 
         setUI { UserProfileScreen(store = store) }
 
@@ -148,5 +152,38 @@ class UserProfileScreenTest: TestCase() {
         assertNull(actual = authenticationUseCases.observeCurrentUser().firstOrNull())
         onNodeWithText(text = "account").assertDoesNotExist()
         assertTrue(actual = router.backStack.isEmpty())
+    }
+
+    /** Verifies that the language row opens a dialog listing the languages holding translations, and that applying one selects it as the app language until the system entry is selected. */
+    @Test
+    fun selectLanguage() = runUITest {
+        val useCases = dependency.get()
+            .userGraph
+            .useCases
+        val translationDao = dependency.get()
+            .database
+            .translationQueries
+        useCases.authenticationUseCases.login(credentials = FakeData.adminCredentials)
+        FakeData.translations.forEach { translationDao.upsertTranslation(Translation = it.toTranslationSchema()) }
+
+        val store = UserProfileScreenStore(state = UserProfileScreenState(), authenticationUseCases = useCases.authenticationUseCases, translationUseCases = useCases.translationUseCases)
+
+        setUI { UserProfileScreen(store = store) }
+
+        waitUntil { !store.state.guest && store.state.languages == listOf("en", "pt") }
+        assertNull(actual = store.state.selectedLanguage)
+
+        // The row shows the app language, so the language picked is the other one.
+        val language = store.state.languages.first { it != store.state.language }
+        onNodeWithTag(testTag = "language").performScrollTo().performClick()
+        onNodeWithTag(testTag = "language_$language").performClick()
+        assertNull(actual = store.state.selectedLanguage)
+        onNodeWithText(text = "apply").performClick()
+
+        waitUntil { store.state.selectedLanguage == language && store.state.language == language }
+
+        store.send(action = UserProfileScreenAction.SelectLanguage(languageIso = null))
+
+        waitUntil { store.state.selectedLanguage == null }
     }
 }

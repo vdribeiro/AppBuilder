@@ -8,7 +8,7 @@ import kotlinx.serialization.builtins.serializer
 /** The index of every file in this module. */
 object CoreFile {
 
-    /** Device scoped identity and clock bookkeeping, written by the device, clock and networking infrastructure. */
+    /** Device scoped identity, clock bookkeeping and app language. */
     data object Device: StorageFile<Map<Device.Key, String>>(path = "device") {
 
         @Serializable
@@ -16,7 +16,9 @@ object CoreFile {
             /** The stable identifier generated once per installation. */
             UUID,
             /** The measured drift between the device clock and the server clock. */
-            CLOCK_OFFSET
+            CLOCK_OFFSET,
+            /** The ISO 639-1 code of the language selected for the app, absent while the app follows the device language. */
+            LANGUAGE
         }
 
         override val serializer: KSerializer<Map<Key, String>> = MapSerializer(keySerializer = Key.serializer(), valueSerializer = String.serializer())
