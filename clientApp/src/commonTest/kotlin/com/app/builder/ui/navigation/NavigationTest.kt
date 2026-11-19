@@ -153,8 +153,7 @@ class NavigationTest: TestCase() {
             .useCases
         authenticatedUseCases.authenticationUseCases.login(credentials = FakeData.adminCredentials)
         authenticatedUseCases.taskUseCases.upsertTask(task = FakeData.task)
-        // Location capture is off by default, which leaves its route unregistered.
-        ClientFlags.set { it.copy(locationCapture = true) }
+        ClientFlags.set { it.copy(locationCapture = true, notifications = true) }
         val screens = listOf(
             Screen.Configs,
             Screen.Home,

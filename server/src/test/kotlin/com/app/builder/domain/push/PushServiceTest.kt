@@ -21,6 +21,11 @@ import com.app.builder.test.TestCase
 
 class PushServiceTest: TestCase() {
 
+    override suspend fun beforeTest() {
+        super.beforeTest()
+        ServerFlags.set { it.copy(push = true) }
+    }
+
     /** Verifies that a connection can be added with a valid ticket and removed afterward. */
     @Test
     fun addConnection() = runServerTest {

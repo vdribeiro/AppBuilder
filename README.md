@@ -717,7 +717,7 @@ Adding a toggle is one field plus its default. No schema, no console, no third-p
 Every flag and config applies while the app and the server are running, with no restart and no release.
 
 * **Server**: an update is written to the database and signaled to every instance, which reloads the changed record.
-* **Client**: the fetched values replace the in-memory ones. A flag turning off stops whatever it gates, and turning on starts it again.
+* **Client**: the fetched values are saved into disk and replace the in-memory ones. A flag turning off stops whatever it gates, and turning on starts it again.
 
 ## Permissions
 

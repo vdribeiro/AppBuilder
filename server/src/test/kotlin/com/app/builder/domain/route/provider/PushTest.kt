@@ -26,6 +26,11 @@ import com.app.builder.test.TestCase
 
 class PushTest: TestCase() {
 
+    override suspend fun beforeTest() {
+        super.beforeTest()
+        ServerFlags.set { it.copy(push = true) }
+    }
+
     /** Verifies that generating a push ticket requires authentication and returns a ticket UUID. */
     @Test
     fun generateTicket() = runServerTest {

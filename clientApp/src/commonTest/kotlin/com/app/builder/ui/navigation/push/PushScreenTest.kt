@@ -9,6 +9,7 @@ import androidx.compose.ui.test.isSelected
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import com.app.builder.Dependency.getUserDependency
+import com.app.builder.core.config.ClientFlags
 import com.app.builder.test.FakeData
 import com.app.builder.test.TestCase
 import com.app.builder.ui.component.button.PushPayloadType
@@ -20,6 +21,7 @@ class PushScreenTest: TestCase() {
     /** Verifies sending push notifications as a broadcast, to a selected user, and for flags/configs/reset payload types. */
     @Test
     fun pushScreen() = runUITest {
+        ClientFlags.set { it.copy(notifications = true) }
         val authenticatedUseCases = dependency.get()
             .getUserDependency(account = FakeData.adminAccount)
             .useCases

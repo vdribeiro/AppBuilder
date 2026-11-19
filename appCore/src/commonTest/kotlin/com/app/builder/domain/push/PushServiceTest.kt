@@ -51,6 +51,11 @@ class PushServiceTest: TestCase() {
     /** The device token bodies received by the mock server, in order. */
     private val registeredTokens = MutableStateFlow(value = emptyList<DeviceToken>())
 
+    override suspend fun beforeTest() {
+        super.beforeTest()
+        ClientFlags.set { it.copy(push = true) }
+    }
+
     /**
      * Builds a [PushService] backed by a mock server that hands out [ticketUuid] and streams [FakeData.notification] on every push connection.
      *

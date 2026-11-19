@@ -7,6 +7,7 @@ import kotlin.test.assertTrue
 import io.ktor.client.call.body
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpStatusCode
+import com.app.builder.core.config.ServerFlags
 import com.app.builder.core.locale.now
 import com.app.builder.core.security.uuid
 import com.app.builder.data.http.HttpRequest
@@ -94,6 +95,7 @@ class AccountTest: TestCase() {
     /** Verifies that disabling an account purges its user's device tokens and refuses its session further reads. */
     @Test
     fun disablingAccountPurgesDeviceTokens() = runServerTest {
+        ServerFlags.set { it.copy(push = true) }
         installRouting()
         val deviceTokenUseCases = dependency.get().useCases.deviceTokenUseCases
 
