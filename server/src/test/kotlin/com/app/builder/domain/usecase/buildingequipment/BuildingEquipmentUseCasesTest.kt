@@ -8,6 +8,7 @@ import kotlin.time.Duration.Companion.seconds
 import kotlin.time.Instant
 import kotlinx.coroutines.flow.firstOrNull
 import com.app.builder.core.config.ServerConfigs
+import com.app.builder.core.config.ServerFlags
 import com.app.builder.core.locale.now
 import com.app.builder.core.security.uuid
 import com.app.builder.data.database.reset
@@ -16,6 +17,11 @@ import com.app.builder.test.FakeData
 import com.app.builder.test.TestCase
 
 class BuildingEquipmentUseCasesTest: TestCase() {
+
+    override suspend fun beforeTest() {
+        super.beforeTest()
+        ServerFlags.set { it.copy(push = true) }
+    }
 
     /** Verifies that upserting a building equipment makes it retrievable and triggers a notification for the users that can read building equipments. */
     @Test

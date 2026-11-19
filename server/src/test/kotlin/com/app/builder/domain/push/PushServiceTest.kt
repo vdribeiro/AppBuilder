@@ -227,6 +227,7 @@ class PushServiceTest: TestCase() {
     /** Verifies that starting the service is a no-op while the push flag is off, so saved notifications are not dispatched to connected sessions. */
     @Test
     fun startIsNoOpWhenPushIsDisabled() = runServerTest {
+        assertTrue(actual = dependency.get().useCases.notificationsUseCases.saveNotification(notification = FakeData.entityNotification))
         ServerFlags.set { it.copy(push = false) }
         val pushService = dependency.get().pushService
         val session = FakeWebSocketSession()
@@ -235,14 +236,13 @@ class PushServiceTest: TestCase() {
         val ticket = pushService.generateTicket(userUuid = FakeData.adminUser.uuid)
         assertNotNull(actual = ticket)
         assertEquals(expected = FakeData.adminUser.uuid, actual = pushService.addConnection(ticketUuid = ticket, deviceUuid = uuid(), session = session))
-        assertTrue(actual = dependency.get().useCases.notificationsUseCases.saveNotification(notification = FakeData.entityNotification))
 
         delay(timeMillis = 200)
         assertFalse(actual = session.sent)
         pushService.stop()
     }
 
-    /** Verifies that a started service stops dispatching saved notifications when the push flag turns off, and resumes when it turns back on. */
+    /** Verifies that a started service stops saving and dispatching notifications when the push flag turns off, and resumes when it turns back on. */
     @Test
     fun startedServiceFollowsItsFlag() = runServerTest {
         val pushService = dependency.get().pushService
@@ -257,11 +257,13 @@ class PushServiceTest: TestCase() {
 
         ServerFlags.set { it.copy(push = false) }
         awaitUntil { signal.subscriptions.value == 0 }
-        assertTrue(actual = dependency.get().useCases.notificationsUseCases.saveNotification(notification = FakeData.entityNotification))
+        assertFalse(actual = dependency.get().useCases.notificationsUseCases.saveNotification(notification = FakeData.entityNotification))
         delay(timeMillis = 200)
         assertFalse(actual = session.sent)
 
         ServerFlags.set { it.copy(push = true) }
+        awaitUntil { signal.subscriptions.value > 0 }
+        assertTrue(actual = dependency.get().useCases.notificationsUseCases.saveNotification(notification = FakeData.entityNotification))
         awaitUntil { session.sent }
         pushService.stop()
     }

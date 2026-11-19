@@ -7,6 +7,7 @@ import kotlin.time.Duration.Companion.days
 import kotlin.time.Instant
 import kotlinx.coroutines.flow.firstOrNull
 import com.app.builder.core.config.ServerConfigs
+import com.app.builder.core.config.ServerFlags
 import com.app.builder.core.locale.now
 import com.app.builder.core.security.uuid
 import com.app.builder.data.database.reset
@@ -15,6 +16,11 @@ import com.app.builder.test.FakeData
 import com.app.builder.test.TestCase
 
 class BuildingUseCasesTest: TestCase() {
+
+    override suspend fun beforeTest() {
+        super.beforeTest()
+        ServerFlags.set { it.copy(push = true) }
+    }
 
     /** Verifies that upserting a building makes it retrievable and triggers a notification for the users that can read buildings. */
     @Test
