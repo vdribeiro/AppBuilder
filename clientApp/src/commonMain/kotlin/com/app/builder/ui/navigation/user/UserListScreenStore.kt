@@ -9,8 +9,6 @@ import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.mapNotNull
 import androidx.compose.runtime.snapshotFlow
 import com.app.builder.core.flow.Dispatcher
-import com.app.builder.core.locale.SelectedLanguage
-import com.app.builder.core.locale.getLocalDateTime
 import com.app.builder.core.telemetry.Telemetry
 import com.app.builder.data.storage.AppFile
 import com.app.builder.domain.User
@@ -75,9 +73,8 @@ class UserListScreenStore(
 
         combine(
             flow = usersActionBarFlow,
-            flow2 = selectedUuidFlow,
-            flow3 = SelectedLanguage.flow
-        ) { (users, actionBar), selectedUuid, _ ->
+            flow2 = selectedUuidFlow
+        ) { (users, actionBar), selectedUuid ->
             users
                 .map { it.toUserItem(visibilityProperties = actionBar.visibleProperties, selectedUuid = selectedUuid) }
                 .toPersistentList()
@@ -149,8 +146,8 @@ class UserListScreenStore(
         selected = uuid.toString() == selectedUuid,
         deleted = deletedAt != null,
         uuidVisible = Property.UUID.name in visibilityProperties,
-        modifiedAt = modifiedAt.takeIf { Property.MODIFIED_AT.name in visibilityProperties }?.let { getLocalDateTime(utc = it.toString()) },
-        deletedAt = deletedAt.takeIf { Property.DELETED_AT.name in visibilityProperties }?.let { getLocalDateTime(utc = it.toString()) },
+        modifiedAt = modifiedAt.takeIf { Property.MODIFIED_AT.name in visibilityProperties }?.toString(),
+        deletedAt = deletedAt.takeIf { Property.DELETED_AT.name in visibilityProperties }?.toString(),
         name = name.takeIf { Property.NAME.name in visibilityProperties },
         avatar = avatar?.let { Image(url = it) }
     )

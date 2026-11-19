@@ -827,7 +827,8 @@ Disabling an account is a soft delete: the account's `deletedAt` is set and the 
 * **may only write work created before the deletion**, judged by the request header's UTC. This covers every non-`GET` call, including updating its own user, which needs no permission;
 * **cannot read anything** its permissions used to reach, register a device or open a push stream. Its device tokens are deleted.
 
-#### Why not revoke the session? 
+#### Why not revoke the session?
+
 A device that was offline at the moment of deletion would lose the field work it is holding. A deadline only moves the question to how long a device might stay offline.
 Keeping the session alive and judging each write by when it was created preserves that work. Request headers carry both when a job was created and when it was sent.
 
@@ -1202,6 +1203,7 @@ Declarations that resolve to a distinct implementation per source set:
 * **core**: Building blocks like `Text` or `Button`.
 * **component**: Composite components.
 * **lifecycle**: Platform-aware lifecycle observers.
+* **locale**: Localization composables.
 * **push**: Push composables.
 * **media**: Media composables.
 * **devicelocation**: Device location composables.
@@ -1309,6 +1311,7 @@ Declarations that resolve to a distinct implementation per source set:
 
 * `Colors`, `Typography`, `Shapes`: `LocalColorScheme` (light and dark), `LocalTypography`, `LocalShapes`.
 * `Translations`: Composable helpers over `TranslationCache`. Provides `LocalTranslationState`.
+* `DateTime`: Composable date-time formatting through `LocalDateTimeFormatter`, which the app provides.
 * `Theme`: The app theme. Also provides `LocalSplitScreen` and registers the image loader.
 * `Preview`: Applies the theme for accurate previews.
 * **core**, **component**, **showcase**: See [Design System & Showcase](#design-system--showcase).
@@ -1324,7 +1327,7 @@ Declarations that resolve to a distinct implementation per source set:
 * **devicelocation**: `DeviceLocationProvider`, `DeviceLocation`.
 * **nfc**: `NfcController`, `NfcTag`, `TagProvider`.
 * **locale**
-    * `Language`: Language listings.
+    * `Language`: The default language, the language selected for the app and a `Flow` of the app language.
     * `Locale`: System language, locale-aware formatting and a `Flow` of locale changes.
     * `Clock`: System clock change observer.
 * **platform**
@@ -1367,6 +1370,7 @@ Declarations that resolve to a distinct implementation per source set:
 
 * **devicelocation**, **media**, **nfc**: Composable providers with registered lifecycles, plus `CameraPreview`.
 * **lifecycle** `Lifecycle`: Foreground/background callbacks with an optional recomposition key.
+* **locale** `rememberDateTimeFormatter`: The date-time formatter in the selected language, provided to the design system.
 * **modifier**: `PointerListener` (taps and clicks), `KeyListener` (keys and key sequences).
 * **navigation**: `Router`, `Navigator`, `NoOpRouter`, `Routing` (provides `LocalRouter`), and **scene** strategies like `SplitScene`.
 * **push** `Push`: Lifecycle registers for the push and broadcast managers.
