@@ -11,6 +11,7 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performSemanticsAction
 import com.app.builder.Dependency.getUserDependency
+import com.app.builder.core.config.ClientFlags
 import com.app.builder.core.media.Camera
 import com.app.builder.core.platform.OS
 import com.app.builder.core.platform.platform
@@ -50,6 +51,11 @@ private class GrantingPermissionManager: PermissionManager() {
 }
 
 class CameraScreenTest: TestCase() {
+
+    override suspend fun beforeTest() {
+        super.beforeTest()
+        ClientFlags.set { it.copy(http = true) }
+    }
 
     /** Verifies that the camera screen renders its bars and that, on platforms with camera controls, the controls follow the camera's state. */
     @Test

@@ -9,6 +9,7 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import com.app.builder.Dependency.getUserDependency
+import com.app.builder.core.config.ClientFlags
 import com.app.builder.core.media.AudioPlayer
 import com.app.builder.test.FakeData
 import com.app.builder.test.TestCase
@@ -22,6 +23,11 @@ private class FakeAudioPlayer: AudioPlayer() {
 }
 
 class AudioScreenTest: TestCase() {
+
+    override suspend fun beforeTest() {
+        super.beforeTest()
+        ClientFlags.set { it.copy(http = true, music = true) }
+    }
 
     /** Verifies that the audio screen renders its bars and track list, and that its transport controls follow the player's state. */
     @Test

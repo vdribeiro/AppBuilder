@@ -43,6 +43,11 @@ import com.app.builder.ui.navigation.Screen
 
 class UserDetailScreenTest: TestCase() {
 
+    override suspend fun beforeTest() {
+        super.beforeTest()
+        ClientFlags.set { it.copy(http = true) }
+    }
+
     /**
      * Stores [FakeData.user] with its account [FakeData.account] as the admin, then logs in with [credentials].
      *

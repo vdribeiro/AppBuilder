@@ -27,6 +27,11 @@ import com.app.builder.ui.LocalSplitScreen
 
 class NavigationTest: TestCase() {
 
+    override suspend fun beforeTest() {
+        super.beforeTest()
+        ClientFlags.set { it.copy(http = true, home = true, login = true, userProfile = true, help = true, design = true, users = true, locationCapture = true, nfc = true, camera = true, deviceFiles = true, music = true, notifications = true, registries = true, tasks = true) }
+    }
+
     /** Verifies that navigating to an unhandled screen within splash navigation falls back to the error screen. */
     @Test
     fun fallback() = runUITest {

@@ -16,6 +16,11 @@ import com.app.builder.ui.navigation.Screen
 
 class UserProfileScreenTest: TestCase() {
 
+    override suspend fun beforeTest() {
+        super.beforeTest()
+        ClientFlags.set { it.copy(http = true, help = true) }
+    }
+
     /** Verifies that a guest only gets the about section without help, and that sending feedback opens the feedback screen. */
     @Test
     fun guestProfile() = runUITest {

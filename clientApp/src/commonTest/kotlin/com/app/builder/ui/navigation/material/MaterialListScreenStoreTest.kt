@@ -7,6 +7,7 @@ import kotlin.test.assertNull
 import kotlin.time.Instant
 import kotlinx.coroutines.flow.first
 import com.app.builder.Dependency.getUserDependency
+import com.app.builder.core.config.ClientFlags
 import com.app.builder.data.storage.AppFile
 import com.app.builder.domain.Material
 import com.app.builder.domain.Material.Property
@@ -15,6 +16,11 @@ import com.app.builder.test.TestCase
 import com.app.builder.ui.component.list.MaterialItem
 
 class MaterialListScreenStoreTest: TestCase() {
+
+    override suspend fun beforeTest() {
+        super.beforeTest()
+        ClientFlags.set { it.copy(http = true, scheduler = true) }
+    }
 
     /** A live material, modified in 2020. */
     private val alpha = Material(

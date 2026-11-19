@@ -8,6 +8,7 @@ import kotlin.test.assertTrue
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
 import com.app.builder.Dependency.getUserDependency
+import com.app.builder.core.config.ClientFlags
 import com.app.builder.data.storage.AppFile
 import com.app.builder.domain.Account
 import com.app.builder.domain.Translation
@@ -18,6 +19,11 @@ import com.app.builder.test.FakeData
 import com.app.builder.test.TestCase
 
 class TranslationsScreenStoreTest: TestCase() {
+
+    override suspend fun beforeTest() {
+        super.beforeTest()
+        ClientFlags.set { it.copy(http = true) }
+    }
 
     /** Translations stored in English and Portuguese. */
     private val translations = listOf(

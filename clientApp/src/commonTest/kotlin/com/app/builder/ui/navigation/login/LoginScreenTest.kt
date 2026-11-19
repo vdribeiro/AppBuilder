@@ -14,10 +14,16 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
+import com.app.builder.core.config.ClientFlags
 import com.app.builder.test.FakeData
 import com.app.builder.test.TestCase
 
 class LoginScreenTest: TestCase() {
+
+    override suspend fun beforeTest() {
+        super.beforeTest()
+        ClientFlags.set { it.copy(http = true) }
+    }
 
     /** Verifies that the login button stays disabled until both username and password are filled, then submits on click and logs the user in. */
     @Test

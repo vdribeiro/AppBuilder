@@ -7,6 +7,7 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import com.app.builder.core.config.ClientFlags
 import com.app.builder.test.FakeData
 import com.app.builder.test.TestCase
 import com.app.builder.ui.component.session.SessionState
@@ -14,6 +15,11 @@ import com.app.builder.ui.component.session.SessionStore
 import com.app.builder.ui.navigation.Screen
 
 class HomeScreenTest: TestCase() {
+
+    override suspend fun beforeTest() {
+        super.beforeTest()
+        ClientFlags.set { it.copy(http = true) }
+    }
 
     /** Verifies that a guest landing on the home screen is offered the login button, which opens the login screen. */
     @Test

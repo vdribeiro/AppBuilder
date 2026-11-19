@@ -22,7 +22,7 @@ class TagManagerTest: TestCase() {
 
     override suspend fun beforeTest() {
         super.beforeTest()
-        ClientFlags.set { it.copy(http = true) }
+        ClientFlags.set { it.copy(http = true, scheduler = true) }
     }
 
     /** The tag reads fed to the manager under test. */

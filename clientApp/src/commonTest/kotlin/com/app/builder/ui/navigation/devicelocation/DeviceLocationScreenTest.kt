@@ -10,6 +10,7 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import com.app.builder.Dependency.getUserDependency
+import com.app.builder.core.config.ClientFlags
 import com.app.builder.core.devicelocation.DeviceLocationProvider
 import com.app.builder.test.FakeData
 import com.app.builder.test.TestCase
@@ -28,6 +29,11 @@ private class FakeDeviceLocationProvider: DeviceLocationProvider() {
 }
 
 class DeviceLocationScreenTest: TestCase() {
+
+    override suspend fun beforeTest() {
+        super.beforeTest()
+        ClientFlags.set { it.copy(http = true) }
+    }
 
     /** Verifies that the device location screen renders its status, controls and empty history, and that Stop stops the location updates. */
     @Test

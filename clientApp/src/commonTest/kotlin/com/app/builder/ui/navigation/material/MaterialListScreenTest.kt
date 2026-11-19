@@ -10,6 +10,7 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import com.app.builder.Dependency.getUserDependency
+import com.app.builder.core.config.ClientFlags
 import com.app.builder.core.security.uuid
 import com.app.builder.data.storage.AppFile
 import com.app.builder.domain.Material
@@ -24,6 +25,11 @@ import com.app.builder.ui.navigation.Router
 import com.app.builder.ui.navigation.Screen
 
 class MaterialListScreenTest: TestCase() {
+
+    override suspend fun beforeTest() {
+        super.beforeTest()
+        ClientFlags.set { it.copy(http = true, scheduler = true) }
+    }
 
     /** Verifies that the material list displays a seeded material and that tapping its card navigates to its detail screen. */
     @Test

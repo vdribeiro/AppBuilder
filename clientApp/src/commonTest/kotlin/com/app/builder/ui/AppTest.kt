@@ -10,10 +10,16 @@ import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
 import com.app.builder.Application
 import com.app.builder.Dependency.getUserDependency
+import com.app.builder.core.config.ClientFlags
 import com.app.builder.test.FakeData
 import com.app.builder.test.TestCase
 
 class AppTest: TestCase() {
+
+    override suspend fun beforeTest() {
+        super.beforeTest()
+        ClientFlags.set { it.copy(http = true) }
+    }
 
     /** Verifies that, before the application has initialized its dependencies, the app shows the splash screen's progress indicator. */
     @Test

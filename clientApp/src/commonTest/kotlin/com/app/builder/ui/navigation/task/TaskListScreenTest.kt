@@ -11,6 +11,7 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import com.app.builder.Dependency.getUserDependency
+import com.app.builder.core.config.ClientFlags
 import com.app.builder.core.security.uuid
 import com.app.builder.data.storage.AppFile
 import com.app.builder.domain.Task
@@ -25,6 +26,11 @@ import com.app.builder.ui.navigation.Router
 import com.app.builder.ui.navigation.Screen
 
 class TaskListScreenTest: TestCase() {
+
+    override suspend fun beforeTest() {
+        super.beforeTest()
+        ClientFlags.set { it.copy(http = true, scheduler = true, tasks = true, buildings = true, equipments = true, materials = true, users = true) }
+    }
 
     /** Verifies that the task list displays a seeded task and that tapping its card navigates to its detail screen. */
     @Test

@@ -46,6 +46,11 @@ import com.app.builder.ui.navigation.Screen
 
 class EquipmentDetailScreenTest: TestCase() {
 
+    override suspend fun beforeTest() {
+        super.beforeTest()
+        ClientFlags.set { it.copy(http = true, scheduler = true, equipments = true, buildingEquipments = true) }
+    }
+
     /**
      * Stores [FakeData.equipment] as the admin, then logs in with [credentials].
      *

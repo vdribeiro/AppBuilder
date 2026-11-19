@@ -12,6 +12,7 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import com.app.builder.Dependency.getUserDependency
+import com.app.builder.core.config.ClientFlags
 import com.app.builder.core.security.uuid
 import com.app.builder.data.storage.AppFile
 import com.app.builder.domain.Building
@@ -26,6 +27,11 @@ import com.app.builder.ui.navigation.Router
 import com.app.builder.ui.navigation.Screen
 
 class BuildingListScreenTest: TestCase() {
+
+    override suspend fun beforeTest() {
+        super.beforeTest()
+        ClientFlags.set { it.copy(http = true, scheduler = true, buildings = true) }
+    }
 
     /** Verifies that the building list displays a seeded building and that tapping its card navigates to its detail screen. */
     @Test

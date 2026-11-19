@@ -46,6 +46,11 @@ import com.app.builder.ui.navigation.Screen
 
 class MaterialDetailScreenTest: TestCase() {
 
+    override suspend fun beforeTest() {
+        super.beforeTest()
+        ClientFlags.set { it.copy(http = true, scheduler = true, buildingMaterials = true) }
+    }
+
     /**
      * Stores [FakeData.material] as the admin, then logs in with [credentials].
      *

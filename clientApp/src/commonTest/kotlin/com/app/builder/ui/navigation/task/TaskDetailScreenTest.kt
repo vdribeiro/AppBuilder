@@ -19,6 +19,7 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextReplacement
 import com.app.builder.Dependency.getUserDependency
+import com.app.builder.core.config.ClientFlags
 import com.app.builder.core.locale.now
 import com.app.builder.core.security.uuid
 import com.app.builder.domain.Task
@@ -34,6 +35,11 @@ import com.app.builder.ui.navigation.Router
 import com.app.builder.ui.navigation.Screen
 
 class TaskDetailScreenTest: TestCase() {
+
+    override suspend fun beforeTest() {
+        super.beforeTest()
+        ClientFlags.set { it.copy(http = true, scheduler = true, tasks = true, buildings = true, equipments = true, materials = true, users = true) }
+    }
 
     /**
      * Stores [FakeData.task] as the admin, then logs in with [credentials].

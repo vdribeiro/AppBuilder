@@ -15,6 +15,7 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.navigation3.runtime.NavKey
+import com.app.builder.core.config.ClientFlags
 import com.app.builder.ui.navigation.Screen
 import com.app.builder.ui.navigation.authenticatedScreen
 import com.app.builder.ui.showcase.core.bar.TopBarShowcase
@@ -28,6 +29,11 @@ import com.app.builder.ui.showcase.core.progress.ProgressShowcase
 import com.app.builder.ui.showcase.core.text.TextShowcase
 
 class DesignComponentsScreenTest: DesignScreenTestCase() {
+
+    override suspend fun beforeTest() {
+        super.beforeTest()
+        ClientFlags.set { it.copy(design = true) }
+    }
 
     /** Verifies that the design screens show the action bar and the design section of the navigation bar, with every design route and the app item. */
     @Test

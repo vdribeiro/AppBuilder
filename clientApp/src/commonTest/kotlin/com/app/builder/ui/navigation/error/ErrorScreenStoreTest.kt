@@ -8,6 +8,11 @@ import com.app.builder.test.TestCase
 
 class ErrorScreenStoreTest: TestCase() {
 
+    override suspend fun beforeTest() {
+        super.beforeTest()
+        ClientFlags.set { it.copy(console = true) }
+    }
+
     /** Verifies that the state holds the console logs and drops them when the console client flag turns off. */
     @Test
     fun logsFollowTheConsole() = runUnitTest {

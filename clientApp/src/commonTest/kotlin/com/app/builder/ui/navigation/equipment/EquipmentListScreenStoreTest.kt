@@ -8,6 +8,7 @@ import kotlin.test.assertNull
 import kotlin.time.Instant
 import kotlinx.coroutines.flow.first
 import com.app.builder.Dependency.getUserDependency
+import com.app.builder.core.config.ClientFlags
 import com.app.builder.data.storage.AppFile
 import com.app.builder.domain.Equipment
 import com.app.builder.domain.Equipment.Property
@@ -16,6 +17,11 @@ import com.app.builder.test.TestCase
 import com.app.builder.ui.component.list.EquipmentItem
 
 class EquipmentListScreenStoreTest: TestCase() {
+
+    override suspend fun beforeTest() {
+        super.beforeTest()
+        ClientFlags.set { it.copy(http = true, scheduler = true) }
+    }
 
     /** A live equipment, modified in 2020. */
     private val alpha = Equipment(

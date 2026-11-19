@@ -10,6 +10,11 @@ import com.app.builder.test.TestCase
 
 class NavigationRouteTest: TestCase() {
 
+    override suspend fun beforeTest() {
+        super.beforeTest()
+        ClientFlags.set { it.copy(buildings = true, equipments = true, materials = true, users = true, tasks = true, registries = true, home = true, design = true) }
+    }
+
     /** Verifies that without an account there are no routes to open. */
     @Test
     fun noAccount() = runUnitTest {

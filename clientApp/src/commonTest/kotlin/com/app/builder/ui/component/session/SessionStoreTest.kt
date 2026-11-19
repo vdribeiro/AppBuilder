@@ -11,12 +11,18 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.TestScope
+import com.app.builder.core.config.ClientFlags
 import com.app.builder.domain.gateway.authentication.AuthenticationUseCases
 import com.app.builder.domain.gateway.status.StatusUseCases
 import com.app.builder.test.FakeData
 import com.app.builder.test.TestCase
 
 class SessionStoreTest: TestCase() {
+
+    override suspend fun beforeTest() {
+        super.beforeTest()
+        ClientFlags.set { it.copy(http = true) }
+    }
 
     /**
      * Resolves the authentication use cases of the guest graph, the ones that observe whoever is logged in.

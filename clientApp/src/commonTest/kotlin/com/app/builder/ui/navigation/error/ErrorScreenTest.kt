@@ -17,6 +17,11 @@ import com.app.builder.ui.navigation.Screen
 
 class ErrorScreenTest: TestCase() {
 
+    override suspend fun beforeTest() {
+        super.beforeTest()
+        ClientFlags.set { it.copy(console = true, home = true, login = true, userProfile = true) }
+    }
+
     /**
      * Renders the error screen on top of a back stack that already holds the home and task list screens, then taps its back button.
      *

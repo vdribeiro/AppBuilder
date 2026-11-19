@@ -4,6 +4,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlinx.coroutines.flow.first
 import com.app.builder.Dependency.getUserDependency
+import com.app.builder.core.config.ClientFlags
 import com.app.builder.core.locale.now
 import com.app.builder.core.security.uuid
 import com.app.builder.data.storage.AppFile
@@ -12,6 +13,11 @@ import com.app.builder.test.TestCase
 import com.app.builder.ui.component.link.LinkPickerAction
 
 class EquipmentLinkPickerTest: TestCase() {
+
+    override suspend fun beforeTest() {
+        super.beforeTest()
+        ClientFlags.set { it.copy(http = true) }
+    }
 
     /** Verifies that the picker applies the equipment list filters, searching and leaving out the deleted equipments, and ticks the picked equipments. */
     @Test

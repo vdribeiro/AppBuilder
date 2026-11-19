@@ -26,6 +26,11 @@ import com.app.builder.ui.component.session.SessionStore
 
 class ConfigsScreenTest: TestCase() {
 
+    override suspend fun beforeTest() {
+        super.beforeTest()
+        ClientFlags.set { it.copy(http = true) }
+    }
+
     /**
      * Logs an admin in and renders the config screen with every store it needs, waiting until every section has loaded.
      *

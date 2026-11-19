@@ -23,6 +23,11 @@ import com.app.builder.ui.navigation.Screen
 
 class ChangePasswordScreenTest: TestCase() {
 
+    override suspend fun beforeTest() {
+        super.beforeTest()
+        ClientFlags.set { it.copy(http = true) }
+    }
+
     /** Verifies that the change password button stays disabled until every password is filled and the confirmation matches the new password, then submits on click and leaves the screen. */
     @Test
     fun changePassword() = runUITest {

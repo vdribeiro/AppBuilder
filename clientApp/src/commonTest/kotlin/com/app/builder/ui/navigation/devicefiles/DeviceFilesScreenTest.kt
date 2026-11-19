@@ -8,6 +8,7 @@ import kotlin.test.assertTrue
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
+import com.app.builder.core.config.ClientFlags
 import com.app.builder.data.storage.AppFile
 import com.app.builder.test.FakeData
 import com.app.builder.test.TestCase
@@ -15,6 +16,11 @@ import com.app.builder.ui.component.session.SessionState
 import com.app.builder.ui.component.session.SessionStore
 
 class DeviceFilesScreenTest: TestCase() {
+
+    override suspend fun beforeTest() {
+        super.beforeTest()
+        ClientFlags.set { it.copy(http = true) }
+    }
 
     /** Verifies that a file written by the application is listed with a readable size once the screen refreshes. */
     @Test

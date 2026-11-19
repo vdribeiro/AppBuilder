@@ -18,6 +18,11 @@ import com.app.builder.ui.component.session.SessionStore
 
 class PushScreenTest: TestCase() {
 
+    override suspend fun beforeTest() {
+        super.beforeTest()
+        ClientFlags.set { it.copy(http = true, scheduler = true) }
+    }
+
     /** Verifies sending push notifications as a broadcast, to a selected user, and for flags/configs/reset payload types. */
     @Test
     fun pushScreen() = runUITest {

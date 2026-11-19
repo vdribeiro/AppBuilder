@@ -12,6 +12,7 @@ import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextReplacement
+import com.app.builder.core.config.ClientFlags
 import com.app.builder.core.nfc.NfcController
 import com.app.builder.core.nfc.NfcRecord
 import com.app.builder.domain.EntityType
@@ -37,6 +38,11 @@ private class FakeNfcController(override val available: Boolean): NfcController(
 }
 
 class NfcScreenTest: TestCase() {
+
+    override suspend fun beforeTest() {
+        super.beforeTest()
+        ClientFlags.set { it.copy(http = true, nfc = true) }
+    }
 
     /**
      * Logs in with [credentials] and renders the NFC screen backed by the given controller.
