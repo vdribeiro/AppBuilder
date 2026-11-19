@@ -13,6 +13,7 @@ import org.jetbrains.exposed.v1.r2dbc.R2dbcDatabase
 import org.jetbrains.exposed.v1.r2dbc.deleteWhere
 import org.jetbrains.exposed.v1.r2dbc.selectAll
 import org.jetbrains.exposed.v1.r2dbc.upsert
+import com.app.builder.core.config.ServerFlags
 import com.app.builder.core.flow.Dispatcher
 import com.app.builder.core.telemetry.Telemetry
 import com.app.builder.data.database.safeTransaction
@@ -41,6 +42,7 @@ class NotificationsGateway(
     }.flowOn(context = Dispatcher.IO)
 
     override suspend fun saveNotification(notification: PushPayload): Boolean = withContext(context = Dispatcher.IO) {
+        if (!ServerFlags.value.push) return@withContext false
         if (notification !is PushPayload.EntityNotification) {
             Telemetry.error(tag = TAG, message = "Unable to persist notification ${notification.uuid}. Only entity notifications can be persisted")
             return@withContext false
