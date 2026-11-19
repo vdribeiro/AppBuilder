@@ -67,4 +67,21 @@ class RateLimitTest: TestCase() {
         // A different forwarded address does not get a fresh bucket, because the header is not trusted.
         assertEquals(expected = HttpStatusCode.TooManyRequests, actual = client.get(urlString = "/test") { header(HttpHeaders.XForwardedFor, "2.2.2.2") }.status)
     }
+
+    /** Verifies that a limit changed after the limiter is installed applies to the buckets created afterward. */
+    @Test
+    fun newBucketsFollowTheConfiguredLimit() = runServerTest {
+        application {
+            installRateLimit()
+            routing { get(path = "/test") { call.respondText(text = "ok") } }
+        }
+        startApplication()
+        ServerConfigs.set { it.copy(rateLimiterLimit = 2) }
+        val client = createClient(token = null)
+
+        repeat(times = 2) {
+            assertEquals(expected = HttpStatusCode.OK, actual = client.get(urlString = "/test").status)
+        }
+        assertEquals(expected = HttpStatusCode.TooManyRequests, actual = client.get(urlString = "/test").status)
+    }
 }

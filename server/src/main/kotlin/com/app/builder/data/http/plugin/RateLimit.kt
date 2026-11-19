@@ -8,6 +8,7 @@ import io.ktor.server.application.install
 import io.ktor.server.plugins.origin
 import io.ktor.server.plugins.ratelimit.RateLimit
 import io.ktor.server.plugins.ratelimit.RateLimitName
+import io.ktor.server.plugins.ratelimit.RateLimiter
 import com.app.builder.core.config.ServerConfigs
 import com.app.builder.core.platform.Env
 import com.app.builder.core.telemetry.Telemetry
@@ -23,15 +24,30 @@ fun Application.installRateLimit() {
 
     install(plugin = RateLimit) {
         global {
-            rateLimiter(limit = ServerConfigs.value.rateLimiterLimit, refillPeriod = ServerConfigs.value.rateLimiterRefillPeriod.milliseconds)
+            rateLimiter { _, _ ->
+                RateLimiter.default(
+                    limit = ServerConfigs.value.rateLimiterLimit,
+                    refillPeriod = ServerConfigs.value.rateLimiterRefillPeriod.milliseconds
+                )
+            }
             requestKey { call -> call.getRequestKey(trustedProxyHops = trustedProxyHops) }
         }
         register(name = RateLimitName(name = RATE_LIMIT_PROBE)) {
-            rateLimiter(limit = ServerConfigs.value.rateLimiterProbeLimit, refillPeriod = ServerConfigs.value.rateLimiterProbeRefillPeriod.milliseconds)
+            rateLimiter { _, _ ->
+                RateLimiter.default(
+                    limit = ServerConfigs.value.rateLimiterProbeLimit,
+                    refillPeriod = ServerConfigs.value.rateLimiterProbeRefillPeriod.milliseconds
+                )
+            }
             requestKey { call -> call.getRequestKey(trustedProxyHops = trustedProxyHops) }
         }
         register(name = RateLimitName(name = RATE_LIMIT_BROADCAST)) {
-            rateLimiter(limit = ServerConfigs.value.rateLimiterBroadcastLimit, refillPeriod = ServerConfigs.value.rateLimiterBroadcastRefillPeriod.milliseconds)
+            rateLimiter { _, _ ->
+                RateLimiter.default(
+                    limit = ServerConfigs.value.rateLimiterBroadcastLimit,
+                    refillPeriod = ServerConfigs.value.rateLimiterBroadcastRefillPeriod.milliseconds
+                )
+            }
             requestKey { call -> call.getRequestKey(trustedProxyHops = trustedProxyHops) }
         }
     }
