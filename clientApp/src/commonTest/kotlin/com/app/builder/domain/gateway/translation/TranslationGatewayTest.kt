@@ -13,8 +13,10 @@ import app.cash.sqldelight.async.coroutines.awaitAsList
 import com.app.builder.Dependency.getUserDependency
 import com.app.builder.core.config.ClientFlags
 import com.app.builder.core.locale.DEFAULT_LANGUAGE
+import com.app.builder.core.locale.SelectedLanguage
 import com.app.builder.core.locale.now
 import com.app.builder.data.serializer.encode
+import com.app.builder.data.storage.CoreFile
 import com.app.builder.domain.EntityType
 import com.app.builder.domain.Translation
 import com.app.builder.domain.scheduler.Job
@@ -306,6 +308,27 @@ class TranslationGatewayTest: TestCase() {
             payload = encode(value = FakeData.translations.first())
         )
         assertTrue(actual = translationRepository.executeUpdateTranslation(job = job) is JobResult.Error)
+    }
+
+    /** Verifies that selecting a language saves it and sets it as the selected language, and that selecting none removes it and keeps the other device values. */
+    @Test
+    fun selectLanguage() = runUnitTest {
+        val translationUseCases = dependency.get()
+            .userGraph
+            .useCases
+            .translationUseCases
+        CoreFile.Device.save { it.orEmpty().plus(pair = (CoreFile.Device.Key.CLOCK_OFFSET to "1")) }
+
+        translationUseCases.selectLanguage(languageIso = "pt")
+
+        assertEquals(expected = "pt", actual = SelectedLanguage.value)
+        assertEquals(expected = "pt", actual = CoreFile.Device.load().orEmpty()[CoreFile.Device.Key.LANGUAGE])
+
+        translationUseCases.selectLanguage(languageIso = null)
+
+        assertNull(actual = SelectedLanguage.value)
+        assertNull(actual = CoreFile.Device.load().orEmpty()[CoreFile.Device.Key.LANGUAGE])
+        assertEquals(expected = "1", actual = CoreFile.Device.load().orEmpty()[CoreFile.Device.Key.CLOCK_OFFSET])
     }
 
     /**

@@ -10,6 +10,7 @@ import app.cash.sqldelight.async.coroutines.awaitAsList
 import app.cash.sqldelight.async.coroutines.awaitAsOneOrNull
 import com.app.builder.core.flow.Dispatcher
 import com.app.builder.core.flow.runSuspendCatching
+import com.app.builder.core.locale.SelectedLanguage
 import com.app.builder.core.telemetry.Telemetry
 import com.app.builder.data.database.asFlow
 import com.app.builder.data.database.safeTransaction
@@ -22,6 +23,7 @@ import com.app.builder.data.resource.JsonResource
 import com.app.builder.data.resource.loadResource
 import com.app.builder.data.serializer.decode
 import com.app.builder.data.serializer.encode
+import com.app.builder.data.storage.CoreFile
 import com.app.builder.domain.Account
 import com.app.builder.domain.EntityType
 import com.app.builder.domain.Permission
@@ -87,6 +89,19 @@ class TranslationGateway(
             payload = encode(value = translation)
         )
         scheduler.queue(job = job)
+    }
+
+    override suspend fun selectLanguage(languageIso: String?) = withContext(context = Dispatcher.IO) {
+        val saved = CoreFile.Device.save { device ->
+            when (languageIso) {
+                null -> device.orEmpty().minus(key = CoreFile.Device.Key.LANGUAGE)
+                else -> device.orEmpty().plus(pair = (CoreFile.Device.Key.LANGUAGE to languageIso))
+            }
+        }
+        if (!saved) return@withContext Telemetry.error(tag = TAG, message = "Unable to save language $languageIso")
+
+        SelectedLanguage.set { languageIso }
+        Unit
     }
 
     override suspend fun syncTranslations() = withContext(context = Dispatcher.IO) {

@@ -27,4 +27,11 @@ interface TranslationUseCases {
      * @param translation The translation to update, identified by its language and key.
      */
     suspend fun updateTranslation(translation: Translation)
+
+    /**
+     * Saves the language the app is shown in and sets it as the selected language.
+     *
+     * @param languageIso The ISO 639-1 code of the language, or `null` to follow the device language.
+     */
+    suspend fun selectLanguage(languageIso: String?)
 }
