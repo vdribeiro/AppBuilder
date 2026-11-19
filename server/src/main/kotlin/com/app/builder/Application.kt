@@ -32,12 +32,14 @@ import com.app.builder.data.database.DatabaseFactory.getInMemoryConnectionFactor
 import com.app.builder.data.database.DatabaseFactory.getPostgresConnectionFactory
 import com.app.builder.data.http.URL.Companion.DEV_PORT
 import com.app.builder.data.http.installHttpPlugins
+import com.app.builder.data.serializer.decode
 import com.app.builder.data.signal.LocalSignal
 import com.app.builder.data.signal.PostgresSignal
 import com.app.builder.domain.Account
 import com.app.builder.domain.EntityType
 import com.app.builder.domain.Permission
 import com.app.builder.domain.RegistrationForm
+import com.app.builder.domain.Translation
 import com.app.builder.domain.User
 import com.app.builder.domain.push.FcmManager
 import com.app.builder.domain.push.NoOpFcmService
@@ -214,6 +216,17 @@ private suspend fun createDependency(): Dependency {
  * @param dependency The application dependency graph.
  */
 private suspend fun seed(dependency: Dependency) {
+    seedSuperUser(dependency = dependency)
+    seedTranslations(dependency = dependency)
+}
+
+/**
+ * Registers the super user with write permission on every entity type, or restores those permissions when its account already exists.
+ *
+ * @param dependency The application dependency graph.
+ * @throws IllegalStateException If the admin uuid, username or password is missing from the environment.
+ */
+private suspend fun seedSuperUser(dependency: Dependency) {
     val uuid = Env.adminUuid?.toUuid()
     val username = Env.adminUsername
     val password = Env.adminPassword
@@ -257,7 +270,30 @@ private suspend fun seed(dependency: Dependency) {
     }
 }
 
+/**
+ * Seeds the translations of the [TRANSLATIONS_RESOURCE] file.
+ *
+ * @param dependency The application dependency graph.
+ */
+private suspend fun seedTranslations(dependency: Dependency) {
+    val translations = Dependency::class.java.classLoader.getResource(TRANSLATIONS_RESOURCE)
+        ?.readText()
+        ?.let { decode<List<Translation>>(value = it) }
+        ?: run {
+            Telemetry.error(tag = TAG, message = "Unable to load the translations file")
+            return
+        }
+
+    when (dependency.useCases.translationUseCases.seedTranslations(translations = translations)) {
+        is Outcome.Success -> Telemetry.info(tag = TAG, message = "Translations seeded")
+        else -> Telemetry.error(tag = TAG, message = "Unable to seed translations")
+    }
+}
+
 private const val TAG = "Server"
+
+/** Classpath location of the translations seeded into the database. */
+private const val TRANSLATIONS_RESOURCE = "static/translations.json"
 
 private val STARTUP_TIMEOUT = 120.seconds
 private val STOP_TIMEOUT = 15.seconds
