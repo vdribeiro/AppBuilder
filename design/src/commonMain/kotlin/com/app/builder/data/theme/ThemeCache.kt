@@ -3,7 +3,7 @@ package com.app.builder.data.theme
 import com.app.builder.core.flow.StateHolder
 
 /** In-memory cache for the theme's color and shape. */
-object ThemeCache: StateHolder<CustomTheme>(default = CustomTheme()) {
+object ThemeCache: StateHolder<CustomTheme>(initialValue = CustomTheme()) {
 
     /**
      * Replaces which color scheme the theme displays.

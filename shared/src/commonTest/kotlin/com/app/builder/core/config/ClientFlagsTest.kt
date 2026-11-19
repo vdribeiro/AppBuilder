@@ -27,12 +27,12 @@ class ClientFlagsTest: TestCase() {
         assertEquals(expected = true, actual = received?.tasks)
     }
 
-    /** Verifies reset restores and returns the default flags. */
+    /** Verifies reset restores and returns the initial flags. */
     @Test
     fun resetRestoresDefaults() = runUnitTest {
         ClientFlags.set { it.copy(tasks = true) }
-        assertEquals(expected = ClientFlags.default, actual = ClientFlags.reset())
-        assertEquals(expected = ClientFlags.default, actual = ClientFlags.value)
+        assertEquals(expected = ClientFlags.initialValue, actual = ClientFlags.reset())
+        assertEquals(expected = ClientFlags.initialValue, actual = ClientFlags.value)
     }
 
     /** Verifies off sets every flag to false and returns the updated flags. */

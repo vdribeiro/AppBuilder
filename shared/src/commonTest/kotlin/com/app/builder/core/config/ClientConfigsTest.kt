@@ -26,12 +26,12 @@ class ClientConfigsTest: TestCase() {
         assertEquals(expected = 1, actual = received?.batchSize)
     }
 
-    /** Verifies reset restores and returns the default configs. */
+    /** Verifies reset restores and returns the initial configs. */
     @Test
     fun resetRestoresDefaults() = runUnitTest {
         ClientConfigs.set { it.copy(batchSize = 1) }
-        assertEquals(expected = ClientConfigs.default, actual = ClientConfigs.reset())
-        assertEquals(expected = ClientConfigs.default, actual = ClientConfigs.value)
+        assertEquals(expected = ClientConfigs.initialValue, actual = ClientConfigs.reset())
+        assertEquals(expected = ClientConfigs.initialValue, actual = ClientConfigs.value)
     }
 
     /** Verifies the configs survive a JSON round trip. */

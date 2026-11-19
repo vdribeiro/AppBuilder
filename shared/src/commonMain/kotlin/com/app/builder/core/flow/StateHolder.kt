@@ -6,13 +6,13 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.updateAndGet
 
 /**
- * Holds a value that can be read synchronously, observed as a stream and mutated atomically, starting from and restorable to a [default].
+ * Holds a value that can be read synchronously, observed as a stream and mutated atomically, starting from and restorable to a [initialValue].
  *
- * @property default The initial value, restored by [reset].
+ * @property initialValue The initial value, restored by [reset].
  */
-open class StateHolder<T>(val default: T) {
+open class StateHolder<T>(val initialValue: T) {
     /** Backing state flow tracking value changes. */
-    private val _flow: MutableStateFlow<T> = MutableStateFlow(value = default)
+    private val _flow: MutableStateFlow<T> = MutableStateFlow(value = initialValue)
     /** Read only stream, emitting the current value on collection and every change after. */
     val flow: StateFlow<T> = _flow.asStateFlow()
     /** Current synchronous snapshot of the value. */
@@ -31,5 +31,5 @@ open class StateHolder<T>(val default: T) {
      *
      * @return The default value.
      */
-    fun reset(): T = set { default }
+    fun reset(): T = set { initialValue }
 }

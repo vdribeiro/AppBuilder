@@ -3,7 +3,7 @@ package com.app.builder.data.translation
 import com.app.builder.core.flow.StateHolder
 
 /** In-memory cache for localized strings, holding the map of localized keys and values. */
-object TranslationCache: StateHolder<Map<String, String>>(default = emptyMap()) {
+object TranslationCache: StateHolder<Map<String, String>>(initialValue = emptyMap()) {
 
     /**
      * Resolves a localized string matching the specified key.

@@ -61,7 +61,7 @@ data class ClientFlags(
 ) {
     /** Holds the client feature flags. */
     companion object: StateHolder<ClientFlags>(
-        default = ClientFlags(
+        initialValue = ClientFlags(
             console = true,
             http = true,
             scheduler = true,

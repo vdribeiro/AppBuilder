@@ -157,7 +157,7 @@ class ConfigsScreenTest: TestCase() {
         val updated = configScreenStore.item(configType = ConfigType.CLIENT_CONFIG, name = "httpConnectTimeoutMillis")
         assertEquals(expected = ConfigValue.Form(value = "12a"), actual = updated.value)
         assertFalse(actual = updated.pending)
-        assertEquals(expected = ClientConfigs.default, actual = ClientConfigs.value)
+        assertEquals(expected = ClientConfigs.initialValue, actual = ClientConfigs.value)
     }
 
     /** Verifies that a user only gets the sections they can read, and that read-only sections are disabled and ignore edits. */

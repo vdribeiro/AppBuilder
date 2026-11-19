@@ -26,12 +26,12 @@ class ServerConfigsTest: TestCase() {
         assertEquals(expected = 1, actual = received?.maxPageSize)
     }
 
-    /** Verifies reset restores and returns the default configs. */
+    /** Verifies reset restores and returns the initial configs. */
     @Test
     fun resetRestoresDefaults() = runUnitTest {
         ServerConfigs.set { it.copy(maxPageSize = 1) }
-        assertEquals(expected = ServerConfigs.default, actual = ServerConfigs.reset())
-        assertEquals(expected = ServerConfigs.default, actual = ServerConfigs.value)
+        assertEquals(expected = ServerConfigs.initialValue, actual = ServerConfigs.reset())
+        assertEquals(expected = ServerConfigs.initialValue, actual = ServerConfigs.value)
     }
 
     /** Verifies the configs survive a JSON round trip. */

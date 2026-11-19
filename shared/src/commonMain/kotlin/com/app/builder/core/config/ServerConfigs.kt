@@ -59,7 +59,7 @@ data class ServerConfigs(
 ) {
     /** Holds the server configs. */
     companion object: StateHolder<ServerConfigs>(
-        default = ServerConfigs(
+        initialValue = ServerConfigs(
             timestampFutureTolerance = 60_000L,
             accessTokenValidity = 3_600_000L,
             refreshTokenValidity = 2_592_000_000L,

@@ -27,12 +27,12 @@ class ServerFlagsTest: TestCase() {
         assertEquals(expected = true, actual = received?.tasks)
     }
 
-    /** Verifies reset restores and returns the default flags. */
+    /** Verifies reset restores and returns the initial flags. */
     @Test
     fun resetRestoresDefaults() = runUnitTest {
         ServerFlags.set { it.copy(tasks = true) }
-        assertEquals(expected = ServerFlags.default, actual = ServerFlags.reset())
-        assertEquals(expected = ServerFlags.default, actual = ServerFlags.value)
+        assertEquals(expected = ServerFlags.initialValue, actual = ServerFlags.reset())
+        assertEquals(expected = ServerFlags.initialValue, actual = ServerFlags.value)
     }
 
     /** Verifies off sets every flag to false and returns the updated flags. */

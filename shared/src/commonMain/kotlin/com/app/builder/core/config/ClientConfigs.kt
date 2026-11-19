@@ -51,7 +51,7 @@ data class ClientConfigs(
 ) {
     /** Holds the client configs. */
     companion object: StateHolder<ClientConfigs>(
-        default = ClientConfigs(
+        initialValue = ClientConfigs(
             splitScreenMaximumWidth = 600,
             splitPaneRatio = 60,
             httpConnectTimeoutMillis = 20_000L,

@@ -37,7 +37,7 @@ data class ServerFlags(
 ) {
     /** Holds the server feature flags. */
     companion object: StateHolder<ServerFlags>(
-        default = ServerFlags(
+        initialValue = ServerFlags(
             resources = true,
             probe = true,
             authentication = true,
