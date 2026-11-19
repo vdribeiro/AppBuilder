@@ -15,7 +15,7 @@ Everything is pre-wired, so you can skip the boilerplate and ship to every platf
 | **[Device hardware](#hardware-controllers)**         | Audio, Camera, NFC and Location controllers.                                                                                        |
 | **[Accounts and sessions](#accounts--sessions)**     | Accounts, sessions and per-entity permissions.                                                                                      |
 | **[Design system](#design-system--showcase)**        | A configurable design system with an in-app catalog of every component.                                                             |
-| **[Translations](#translations)**                    | Server-served translations that update live, with a bundled offline fallback.                                                       |
+| **[Translations](#translations)**                    | Server-stored editable translations, that update live, with a bundled offline fallback.                                             |
 | **[Feature flags](#feature-flags--remote-configs)**  | Typed flags and remote configs shared by client and server, with no third-party service.                                            |
 | **[Telemetry](#telemetry-hub)**                      | One logging API fanning out to pluggable engines, so any telemetry service can be added.                                            |
 | **[UI architecture](#ui-store--navigation)**         | An MVI Store plus Navigation scene strategies.                                                                                      |
@@ -591,7 +591,7 @@ Adding something is a compile-time change in one known place, and removing it br
 | Push payload type | `shared/domain/PushPayload`, then handle it in `clientApp/domain/push/PayloadManager`                                |
 | Feature toggle    | `ClientFlags` and `ServerFlags`                                                                                      |
 | Tunable value     | `ClientConfigs` and `ServerConfigs`                                                                                  |
-| Translation       | `main/resources/static/translations.json`, mirrored in `composeResources/files/translations.json`                    |
+| Translation       | A new key in `main/resources/static/translations.json`, mirrored in `composeResources/files/translations.json`       |
 | Persisted file    | A `StorageFile` in `CoreFile` (`appCore`) or `AppFile` (`clientApp`), plus that index's `all` list                   |
 | Screen            | `ui/navigation/Screen` with a stable `@SerialName`, an entry in `ui/navigation/{feature}` and the `Navigation` graph |
 | Background job    | `domain/scheduler/JobProvider`                                                                                       |
@@ -671,10 +671,11 @@ The colors and shapes showcases edit it in place, `DesignScreenStore` saves each
 
 ## Translations
 
-* **Source of truth**: the server's `main/resources/static/translations.json`, fetched at runtime by `TranslationService` and cached in `TranslationCache`.
-* **Offline fallback**: a mirror bundled in the client at `commonMain/composeResources/files/translations.json`, so a cold start with no network still renders text. Keeping it in sync is recommended.
+* **Source of truth**: the server's `translation` table, served by `GET /api/translations`, fetched at runtime by `TranslationService` and cached in `TranslationCache`.
+* **Seed**: the server's `main/resources/static/translations.json`. On every startup the server inserts the entries whose language and key are not stored yet and leaves the stored ones untouched, so a new key reaches an existing database without overwriting an edited value.
+* **Offline fallback**: a mirror of the seed bundled in the client at `commonMain/composeResources/files/translations.json`, so a cold start with no network still renders text. Keeping it in sync is recommended.
 
-Each entry is a `languageIso` / `key` / `value` triple, so a new language is the same keys repeated under a new ISO 639-1 code, not a new file:
+Each entry of both files is a `languageIso` / `key` / `value` triple, so a new language is the same keys repeated under a new ISO 639-1 code, not a new file:
 
 ```json
 [
@@ -694,12 +695,15 @@ getTranslation(key = "translation_with_arguments", args = *arrayOf("one", "two")
 Always go through `Translations` rather than `TranslationCache` directly: it resolves against the cache's *state*, so a language change or a fresh fetch recomposes every string with no restart.
 `InjectTranslations(translations)` seeds the cache directly, which is handy for previews and tests.
 
+Values can be edited by any account with `TRANSLATION` `WRITE` (also offline like any other entity). Keys and languages are not: they only come from the seed.
+After each update the server broadcasts a `PushPayload.Translations`, and every client that receives it syncs its translations again.
+
 ## Feature Flags & Remote Configs
 
 **Flags** are `Boolean` on/off switches; **configs** are tunable numbers. **Client** variants govern the app, **Server** variants govern the backend:
 
 * `ClientFlags`: features and screens, plus kill switches such as `http` and `scheduler`.
-* `ClientConfigs`: layout, HTTP timeouts, clock drift, scheduler retries, push and broadcast backoff, etc.
+* `ClientConfigs`: layout, inline edit debounce, HTTP timeouts, clock drift, scheduler retries, push and broadcast backoff, etc.
 * `ServerFlags`: route groups, which return 404 when off, plus the broadcast and push services and Firebase delivery.
 * `ServerConfigs`: token lifetimes, rate limits, connection caps, ping intervals, etc.
 
@@ -951,7 +955,7 @@ They follow the [platform convention](#platform-specific-code), which is why the
 | [Instance signaling](#multi-instance-scaling)     | `server/.../data/signal/`                                           | Cross-instance wake-ups over Postgres `LISTEN`/`NOTIFY`.                       |
 | [MVI Store](#store)                               | `appCore/.../ui/store/Store.kt`                                     | MVI in one file, with keyed jobs and subscription-aware collection.            |
 | [Router & scenes](#navigation)                    | `appCore/.../ui/navigation/`                                        | Named backstack strategies and adaptive split layouts.                         |
-| [Translation pipeline](#translations)             | `appCore/.../domain/translation/` · `design/.../ui/Translations.kt` | Server-served, reactive, with a bundled fallback.                              |
+| [Translation pipeline](#translations)             | `appCore/.../domain/translation/` · `design/.../ui/Translations.kt` | Server-stored, editable, reactive, with a bundled fallback.                    |
 | [Permission manager](#permissions)                | `appCore/.../ui/permission/`                                        | Flag-aware, deduplicated permission requests.                                  |
 | [Flags & configs](#feature-flags--remote-configs) | `shared/.../core/config/`                                           | Typed, shared, hot-reloaded toggles with no third-party service.               |
 | [Test harness](#testing)                          | `sharedTest/.../test/SharedTestCase.kt`                             | Unit, Compose UI and Ktor server tests from `commonTest`.                      |
@@ -1101,7 +1105,8 @@ Paths come from the shared `URL` registry.
 | `POST /api/clientflags` · `/api/clientconfigs`               | Update client flags/configs                                 | JWT, `CLIENT_FLAG`/`CLIENT_CONFIG` `WRITE`        | —                |
 | `GET`/`POST /api/serverflags` · `/api/serverconfigs`         | Read/update server flags/configs                            | JWT, `SERVER_FLAG`/`SERVER_CONFIG` `READ`/`WRITE` | —                |
 | `GET /api/registry`                                          | Delta-sync the request audit log                            | JWT, `REGISTRY` `READ`                            | —                |
-| `GET /api/data/*`                                            | Static resources                                            | —                                                 | `resources`      |
+| `GET /api/translations`                                      | Serve translations                                          | —                                                 | `translations`   |
+| `POST /api/translations`                                     | Update the value of a translation                           | JWT, `TRANSLATION` `WRITE`                        | `translations`   |
 | `POST /api/register`                                         | Create an account for a user                                | JWT, `ACCOUNT` `WRITE`                            | `authentication` |
 | `POST /api/login`                                            | Log in                                                      | —                                                 | `authentication` |
 | `POST /api/logout` · `/api/refresh-tokens`                   | Log out / rotate tokens                                     | Refresh token                                     | `authentication` |
@@ -1255,7 +1260,7 @@ Declarations that resolve to a distinct implementation per source set:
 * `PushPayload`: The push envelope for WebSocket, SSE and FCM alike.
 * `Registry`: A request audit entry.
 * `DeviceLocation`: A captured location fix.
-* `Translation`: A `languageIso`/`key`/`value` triple.
+* `Translation`: A `languageIso`/`key`/`value` triple with its `modifiedAt`.
 * Sample feature entities.
 
 **test**: Annotations that exclude code from coverage.
@@ -1417,7 +1422,7 @@ Declarations that resolve to a distinct implementation per source set:
 
 **core**
 
-* **platform**: `Env` (environment variables), `Property`.
+* **platform**: `Env` (environment variables), `Property`, `Resource` (classpath resource reader).
 * **security**: `Cryptography` (password hashing), `Access` (JWT and refresh tokens).
 * **telemetry** `ServerLogger`.
 
@@ -1479,7 +1484,8 @@ Call `grantPermission(permission)` from `LocalPermissionManager`. It checks the 
 
 ### How do I add a new translation or language?
 
-Add `languageIso`/`key`/`value` entries to the server's `translations.json` and mirror them into the client's bundled copy. A new language is the same keys under a new ISO code. See [Translations](#translations).
+Add `languageIso`/`key`/`value` entries to the server's `translations.json` and mirror them into the client's bundled copy. A new language is the same keys under a new ISO code.
+The server stores the new entries on its next start. You can change the value of an existing key. See [Translations](#translations).
 
 ### How do I turn a feature off?
 

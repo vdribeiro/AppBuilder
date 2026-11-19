@@ -54,7 +54,7 @@ class CameraScreenTest: TestCase() {
 
     override suspend fun beforeTest() {
         super.beforeTest()
-        ClientFlags.set { it.copy(http = true) }
+        ClientFlags.set { it.copy(http = true, camera = true) }
     }
 
     /** Verifies that the camera screen renders its bars and that, on platforms with camera controls, the controls follow the camera's state. */
