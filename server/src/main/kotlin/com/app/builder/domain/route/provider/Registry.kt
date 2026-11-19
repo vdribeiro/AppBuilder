@@ -7,6 +7,7 @@ import io.ktor.server.routing.Route
 import io.ktor.server.routing.get
 import io.ktor.server.routing.route
 import com.app.builder.core.config.ServerConfigs
+import com.app.builder.core.locale.UNIX_EPOCH
 import com.app.builder.core.locale.toInstant
 import com.app.builder.core.security.toUuid
 import com.app.builder.core.telemetry.Telemetry
@@ -43,7 +44,7 @@ fun Route.registryRoutes(
                 if (!call.validatePermission(permissionService = permissionService, entityType = EntityType.REGISTRY, permission = Permission.READ)) return@get
 
                 val queryMap = call.getQueryMap()
-                val lastSyncUtc = queryMap[Query.LastSyncUtc.parameter]?.toInstant() ?: Instant.fromEpochSeconds(epochSeconds = 0)
+                val lastSyncUtc = queryMap[Query.LastSyncUtc.parameter]?.toInstant() ?: Instant.UNIX_EPOCH
                 val cursorUtc = queryMap[Query.CursorUtc.parameter]?.toInstant()
                 val cursorUuid = queryMap[Query.CursorUuid.parameter]?.toUuid()
                 val pageSize = queryMap[Query.PageSize.parameter]?.toIntOrNull() ?: ServerConfigs.value.pageSize

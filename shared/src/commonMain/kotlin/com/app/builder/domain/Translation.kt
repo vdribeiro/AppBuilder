@@ -2,6 +2,7 @@ package com.app.builder.domain
 
 import kotlin.time.Instant
 import kotlinx.serialization.Serializable
+import com.app.builder.core.locale.UNIX_EPOCH
 
 /**
  * Represents a localized text asset used for internationalization.
@@ -15,7 +16,7 @@ import kotlinx.serialization.Serializable
 data class Translation(
     val languageIso: String,
     val key: String,
-    val modifiedAt: Instant = Instant.fromEpochSeconds(epochSeconds = 0),
+    val modifiedAt: Instant = Instant.UNIX_EPOCH,
     val value: String
 ) {
     /**

@@ -19,6 +19,10 @@ object DateTime {
     var timeSource: TimeSource = TimeSource.Monotonic
 }
 
+/** The [Instant] of the Unix epoch, `1970-01-01T00:00:00Z`. */
+val Instant.Companion.UNIX_EPOCH: Instant
+    get() = fromEpochSeconds(epochSeconds = 0)
+
 /**
  * Returns the current time [Instant].
  *
