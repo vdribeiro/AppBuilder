@@ -8,6 +8,8 @@ import kotlin.time.Instant
 import kotlinx.coroutines.flow.first
 import com.app.builder.Dependency.getUserDependency
 import com.app.builder.core.config.ClientFlags
+import com.app.builder.core.locale.SelectedLanguage
+import com.app.builder.core.locale.getLocalDateTime
 import com.app.builder.data.storage.AppFile
 import com.app.builder.domain.Material
 import com.app.builder.domain.Material.Property
@@ -163,5 +165,24 @@ class MaterialListScreenStoreTest: TestCase() {
         val items = listedMaterials(preferences = AppFile.ActionBarData(visibleProperties = allProperties), count = 2)
 
         assertEquals(expected = setOf("Alpha", "Beta"), actual = items.map { it.name }.toSet())
+    }
+
+    /** Verifies that the listed dates are formatted again when the selected language changes. */
+    @Test
+    fun reformatsDatesWhenLanguageChanges() = runUnitTest {
+        val authenticatedUseCases = dependency.get()
+            .getUserDependency(account = FakeData.adminAccount)
+            .useCases
+        authenticatedUseCases.authenticationUseCases.login(credentials = FakeData.adminCredentials)
+        authenticatedUseCases.materialUseCases.upsertMaterial(material = alpha)
+        AppFile.MaterialPreferences.save { AppFile.ActionBarData(visibleProperties = allProperties) }
+        val utc = alpha.modifiedAt.toString()
+
+        SelectedLanguage.set { "en" }
+        val store = MaterialListScreenStore(state = MaterialListScreenState(), router = router, materialUseCases = authenticatedUseCases.materialUseCases)
+        store.stateFlow.first { state -> state.materials.any { it.name == alpha.name && it.modifiedAt == getLocalDateTime(utc = utc, languageIso = "en") } }
+
+        SelectedLanguage.set { "de" }
+        store.stateFlow.first { state -> state.materials.any { it.name == alpha.name && it.modifiedAt == getLocalDateTime(utc = utc, languageIso = "de") } }
     }
 }

@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.mapNotNull
 import androidx.compose.runtime.snapshotFlow
 import com.app.builder.core.flow.Dispatcher
+import com.app.builder.core.locale.SelectedLanguage
 import com.app.builder.core.locale.getLocalDateTime
 import com.app.builder.core.telemetry.Telemetry
 import com.app.builder.data.storage.AppFile
@@ -72,8 +73,9 @@ class RegistryListScreenStore(
 
         combine(
             flow = registriesActionBarFlow,
-            flow2 = selectedUuidFlow
-        ) { (registries, actionBar), selectedUuid ->
+            flow2 = selectedUuidFlow,
+            flow3 = SelectedLanguage.flow
+        ) { (registries, actionBar), selectedUuid, _ ->
             registries
                 .map { it.toRegistryItem(visibilityProperties = actionBar.visibleProperties, selectedUuid = selectedUuid) }
                 .toPersistentList()
