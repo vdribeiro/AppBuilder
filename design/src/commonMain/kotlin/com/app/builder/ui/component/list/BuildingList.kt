@@ -14,6 +14,7 @@ import androidx.compose.ui.tooling.preview.PreviewLightDark
 import com.app.builder.core.security.uuid
 import com.app.builder.ui.Preview
 import com.app.builder.ui.core.list.LazyColumn
+import com.app.builder.ui.getDateTime
 
 /**
  * Building list.
@@ -44,7 +45,7 @@ fun BuildingList(
                 checked = item.checked,
                 headline = item.name,
                 supporting = listOfNotNull(item.address, item.description).filter { it.isNotBlank() }.joinToString(separator = " · "),
-                metadata = listOf(item.uuid.takeIf { item.uuidVisible }, item.modifiedAt, item.deletedAt)
+                metadata = listOf(item.uuid.takeIf { item.uuidVisible }, item.modifiedAt?.let { getDateTime(utc = it) }, item.deletedAt?.let { getDateTime(utc = it) })
             )
         }
     }
@@ -58,8 +59,8 @@ fun BuildingList(
  * @property deleted Whether the building is deleted.
  * @property checked Whether the building is ticked in a picker, or `null` outside a picker.
  * @property uuidVisible Whether the UUID is shown on the row.
- * @property modifiedAt The timestamp indicating when this building was last updated.
- * @property deletedAt The timestamp indicating when this building was last deleted.
+ * @property modifiedAt The timestamp indicating when this building was last updated, as a UTC ISO-8601 string shown as a localized date-time.
+ * @property deletedAt The timestamp indicating when this building was last deleted, as a UTC ISO-8601 string shown as a localized date-time.
  * @property name The name of the building. Defaults to `null`.
  * @property description The description of the building. Defaults to `null`.
  * @property address The postal address of the building, shown before the description. Defaults to `null`.

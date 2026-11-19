@@ -17,6 +17,7 @@ import com.app.builder.ui.Preview
 import com.app.builder.ui.core.image.Icon
 import com.app.builder.ui.core.list.LazyColumn
 import com.app.builder.ui.core.list.ListItem
+import com.app.builder.ui.getDateTime
 
 /**
  * File list.
@@ -43,7 +44,7 @@ fun DeviceFileList(
                     .testTag(tag = "file_item_$index")
                     .clickable { onClick(item) },
                 headlineText = item.name,
-                supportingText = item.description,
+                supportingText = listOfNotNull(item.size, item.modifiedAt?.let { getDateTime(utc = it) }).joinToString(separator = " - ").takeIf { it.isNotEmpty() },
                 leadingContent = { Icon(imageVector = Icons.AutoMirrored.Filled.InsertDriveFile) }
             )
         }
@@ -55,13 +56,15 @@ fun DeviceFileList(
  *
  * @property path The absolute path of the file, used as the item's identity.
  * @property name The file name shown as the headline.
- * @property description The already formatted size and modification date of the file. Defaults to `null`.
+ * @property size The already formatted size of the file. Defaults to `null`.
+ * @property modifiedAt When the file was last modified, as a UTC ISO-8601 string shown as a localized date-time. Defaults to `null`.
  */
 @Stable
 data class DeviceFileItem(
     val path: String,
     val name: String,
-    val description: String? = null
+    val size: String? = null,
+    val modifiedAt: String? = null
 )
 
 @PreviewLightDark
@@ -72,7 +75,8 @@ private fun DeviceFileListPreview() = Preview {
             DeviceFileItem(
                 path = "/cache/photo_1.jpg",
                 name = "photo_1.jpg",
-                description = "1.2 MB"
+                size = "1.2 MB",
+                modifiedAt = "2026-11-09T10:00:00Z"
             ),
             DeviceFileItem(
                 path = "/cache/video_1.mp4",

@@ -18,6 +18,7 @@ import com.app.builder.core.security.uuid
 import com.app.builder.ui.Preview
 import com.app.builder.ui.core.image.Icon
 import com.app.builder.ui.core.list.LazyColumn
+import com.app.builder.ui.getDateTime
 
 /**
  * Task list.
@@ -47,7 +48,7 @@ fun TaskList(
                 deleted = item.deleted,
                 headline = item.title,
                 supporting = item.description,
-                metadata = listOf(item.uuid.takeIf { item.uuidVisible }, item.modifiedAt, item.deletedAt),
+                metadata = listOf(item.uuid.takeIf { item.uuidVisible }, item.modifiedAt?.let { getDateTime(utc = it) }, item.deletedAt?.let { getDateTime(utc = it) }),
                 leadingContent = item.completed?.let { completed -> { Icon(imageVector = if (completed) Icons.Default.CheckCircle else Icons.Outlined.RadioButtonUnchecked) } }
             )
         }
@@ -61,8 +62,8 @@ fun TaskList(
  * @property selected Whether the task is the one currently open.
  * @property deleted Whether the task is deleted.
  * @property uuidVisible Whether the UUID is shown on the row.
- * @property modifiedAt The timestamp indicating when this task was last updated.
- * @property deletedAt The timestamp indicating when this task was last deleted.
+ * @property modifiedAt The timestamp indicating when this task was last updated, as a UTC ISO-8601 string shown as a localized date-time.
+ * @property deletedAt The timestamp indicating when this task was last deleted, as a UTC ISO-8601 string shown as a localized date-time.
  * @property title The title of the task. Defaults to `null`.
  * @property description The description of the task. Defaults to `null`.
  * @property completed Whether the task is complete, or `null` to hide its state. Defaults to `null`.

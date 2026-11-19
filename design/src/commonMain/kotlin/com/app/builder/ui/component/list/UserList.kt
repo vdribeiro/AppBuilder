@@ -16,6 +16,7 @@ import com.app.builder.ui.Preview
 import com.app.builder.ui.component.image.Avatar
 import com.app.builder.ui.core.image.Image
 import com.app.builder.ui.core.list.LazyColumn
+import com.app.builder.ui.getDateTime
 
 /**
  * User list.
@@ -44,7 +45,7 @@ fun UserList(
                 selected = item.selected,
                 deleted = item.deleted,
                 headline = item.name,
-                metadata = listOf(item.uuid.takeIf { item.uuidVisible }, item.modifiedAt, item.deletedAt),
+                metadata = listOf(item.uuid.takeIf { item.uuidVisible }, item.modifiedAt?.let { getDateTime(utc = it) }, item.deletedAt?.let { getDateTime(utc = it) }),
                 leadingContent = { Avatar(name = item.name, image = item.avatar, contentDescription = item.name) }
             )
         }
@@ -58,8 +59,8 @@ fun UserList(
  * @property selected Whether the user is the one currently open.
  * @property deleted Whether the user is deleted.
  * @property uuidVisible Whether the UUID is shown on the row.
- * @property modifiedAt The timestamp indicating when this user was last updated.
- * @property deletedAt The timestamp indicating when this user was last deleted.
+ * @property modifiedAt The timestamp indicating when this user was last updated, as a UTC ISO-8601 string shown as a localized date-time.
+ * @property deletedAt The timestamp indicating when this user was last deleted, as a UTC ISO-8601 string shown as a localized date-time.
  * @property name The name of the user. Defaults to `null`.
  * @property avatar The avatar image of the user. Defaults to `null`.
  */

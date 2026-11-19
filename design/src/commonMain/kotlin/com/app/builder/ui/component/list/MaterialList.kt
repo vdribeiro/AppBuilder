@@ -14,6 +14,7 @@ import androidx.compose.ui.tooling.preview.PreviewLightDark
 import com.app.builder.core.security.uuid
 import com.app.builder.ui.Preview
 import com.app.builder.ui.core.list.LazyColumn
+import com.app.builder.ui.getDateTime
 
 /**
  * Material list.
@@ -44,7 +45,7 @@ fun MaterialList(
                 checked = item.checked,
                 headline = item.name,
                 supporting = item.description,
-                metadata = listOf(item.uuid.takeIf { item.uuidVisible }, item.modifiedAt, item.deletedAt)
+                metadata = listOf(item.uuid.takeIf { item.uuidVisible }, item.modifiedAt?.let { getDateTime(utc = it) }, item.deletedAt?.let { getDateTime(utc = it) })
             )
         }
     }
@@ -58,8 +59,8 @@ fun MaterialList(
  * @property deleted Whether the material is deleted.
  * @property checked Whether the material is ticked in a picker, or `null` outside a picker.
  * @property uuidVisible Whether the UUID is shown on the row.
- * @property modifiedAt The timestamp indicating when this material was last updated.
- * @property deletedAt The timestamp indicating when this material was last deleted.
+ * @property modifiedAt The timestamp indicating when this material was last updated, as a UTC ISO-8601 string shown as a localized date-time.
+ * @property deletedAt The timestamp indicating when this material was last deleted, as a UTC ISO-8601 string shown as a localized date-time.
  * @property name The name of the material. Defaults to `null`.
  * @property description The description of the material. Defaults to `null`.
  */

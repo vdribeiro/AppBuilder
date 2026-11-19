@@ -18,6 +18,7 @@ import com.app.builder.core.security.uuid
 import com.app.builder.ui.Preview
 import com.app.builder.ui.core.image.Icon
 import com.app.builder.ui.core.list.LazyColumn
+import com.app.builder.ui.getDateTime
 
 /**
  * Equipment list.
@@ -48,7 +49,7 @@ fun EquipmentList(
                 checked = item.checked,
                 headline = item.name,
                 supporting = item.description,
-                metadata = listOf(item.uuid.takeIf { item.uuidVisible }, item.modifiedAt, item.deletedAt),
+                metadata = listOf(item.uuid.takeIf { item.uuidVisible }, item.modifiedAt?.let { getDateTime(utc = it) }, item.deletedAt?.let { getDateTime(utc = it) }),
                 leadingContent = item.malfunctioning?.let { malfunctioning -> { Icon(imageVector = if (malfunctioning) Icons.Default.Error else Icons.Default.CheckCircle) } }
             )
         }
@@ -63,8 +64,8 @@ fun EquipmentList(
  * @property deleted Whether the equipment is deleted.
  * @property checked Whether the equipment is ticked in a picker, or `null` outside a picker.
  * @property uuidVisible Whether the UUID is shown on the row.
- * @property modifiedAt The timestamp indicating when this equipment was last updated.
- * @property deletedAt The timestamp indicating when this equipment was last deleted.
+ * @property modifiedAt The timestamp indicating when this equipment was last updated, as a UTC ISO-8601 string shown as a localized date-time.
+ * @property deletedAt The timestamp indicating when this equipment was last deleted, as a UTC ISO-8601 string shown as a localized date-time.
  * @property name The name of the equipment. Defaults to `null`.
  * @property description The description of the equipment. Defaults to `null`.
  * @property malfunctioning Whether the equipment is malfunctioning, or `null` to hide its status. Defaults to `null`.

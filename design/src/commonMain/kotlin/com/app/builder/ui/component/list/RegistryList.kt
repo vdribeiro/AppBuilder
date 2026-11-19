@@ -21,6 +21,7 @@ import com.app.builder.core.security.uuid
 import com.app.builder.ui.Preview
 import com.app.builder.ui.core.image.Icon
 import com.app.builder.ui.core.list.LazyColumn
+import com.app.builder.ui.getDateTime
 
 /**
  * Registry list.
@@ -54,8 +55,8 @@ fun RegistryList(
                 ).joinToString(separator = "\n"),
                 metadata = listOf(
                     item.uuid.takeIf { item.uuidVisible },
-                    item.requestUtc,
-                    item.requestSentUtc,
+                    item.requestUtc?.let { getDateTime(utc = it) },
+                    item.requestSentUtc?.let { getDateTime(utc = it) },
                     item.userUuid,
                     item.deviceUuid,
                     item.entityUuid,
@@ -86,8 +87,8 @@ private fun requestIcon(requestType: String?): ImageVector = when (requestType?.
  * @property selected Whether the registry is the one currently open.
  * @property uuidVisible Whether the request UUID is shown on the row.
  * @property requestType The HTTP method of the request.
- * @property requestUtc When the request was made on the client.
- * @property requestSentUtc When the request was sent by the client.
+ * @property requestUtc When the request was made on the client, as a UTC ISO-8601 string shown as a localized date-time.
+ * @property requestSentUtc When the request was sent by the client, as a UTC ISO-8601 string shown as a localized date-time.
  * @property userUuid The UUID of the user that made the request.
  * @property appVersion The client application version.
  * @property os The operating system of the client device.
