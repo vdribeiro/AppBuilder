@@ -25,12 +25,13 @@ actual fun getLanguage(): String = runCatching {
     Telemetry.error(tag = TAG, message = "Unable to get language", throwable = it)
 }.getOrDefault(defaultValue = DEFAULT_LANGUAGE)
 
-actual fun getLocalDateTime(utc: String): String = runCatching {
+actual fun getLocalDateTime(utc: String, languageIso: String?): String = runCatching {
     val instant = Instant.parse(input = utc)
     val timeZone = TimeZone.currentSystemDefault()
     val formatter = NSDateFormatter().apply {
         dateStyle = NSDateFormatterShortStyle
         timeStyle = NSDateFormatterShortStyle
+        languageIso?.takeIf { it != getLanguage() }?.let { locale = NSLocale(localeIdentifier = it) }
     }
     val secondsFromGmt = timeZone.offsetAt(instant = instant).totalSeconds
     formatter.timeZone = NSTimeZone.timeZoneForSecondsFromGMT(seconds = secondsFromGmt.toLong())

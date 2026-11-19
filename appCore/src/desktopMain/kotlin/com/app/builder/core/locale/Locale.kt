@@ -19,9 +19,10 @@ actual fun getLanguage(): String = runCatching {
     Telemetry.error(tag = TAG, message = "Unable to get language", throwable = it)
 }.getOrDefault(defaultValue = DEFAULT_LANGUAGE)
 
-actual fun getLocalDateTime(utc: String): String = runCatching {
+actual fun getLocalDateTime(utc: String, languageIso: String?): String = runCatching {
     DateTimeFormatter
         .ofLocalizedDateTime(FormatStyle.SHORT)
+        .withLocale(languageIso?.takeIf { it != getLanguage() }?.let { Locale.forLanguageTag(it) } ?: Locale.getDefault(Locale.Category.FORMAT))
         .withZone(TimeZone.currentSystemDefault().toJavaZoneId())
         .format(Instant.parse(input = utc).toJavaInstant())
 }.onFailure {
