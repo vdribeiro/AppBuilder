@@ -15,12 +15,15 @@ import com.app.builder.domain.usecase.notification.NotificationsUseCases
 import com.app.builder.domain.usecase.registry.RegistryUseCases
 import com.app.builder.domain.usecase.task.TaskUseCases
 import com.app.builder.domain.usecase.ticket.TicketUseCases
+import com.app.builder.domain.usecase.translation.TranslationUseCases
 import com.app.builder.domain.usecase.user.UserUseCases
 
 /** A central interface that groups together all the use cases of the application. */
 interface UseCases {
     /** The feature flags and configs use cases. */
     val configUseCases: ConfigUseCases
+    /** The translation use cases. */
+    val translationUseCases: TranslationUseCases
     /** The user authentication, registration, and session use cases. */
     val authenticationUseCases: AuthenticationUseCases
     /** The request registry use cases. */
