@@ -22,7 +22,6 @@ import com.app.builder.ui.component.filters.FiltersState
 import com.app.builder.ui.component.navigation.Navigation
 import com.app.builder.ui.component.navigation.NavigationRoute
 import com.app.builder.ui.component.session.SessionState
-import com.app.builder.ui.getDateTime
 import com.app.builder.ui.navigation.LocalRouter
 import com.app.builder.ui.navigation.Router
 import com.app.builder.ui.navigation.Screen
@@ -81,8 +80,8 @@ fun TaskDetailScreen(
             TaskCard(
                 enabled = task != null && state.editing,
                 uuid = task?.uuid?.toString(),
-                modifiedAt = task?.modifiedAt?.let { getDateTime(utc = it.toString()) },
-                deletedAt = task?.deletedAt?.let { getDateTime(utc = it.toString()) },
+                modifiedAt = task?.modifiedAt?.toString(),
+                deletedAt = task?.deletedAt?.toString(),
                 title = task?.title,
                 onTitleChange = { store.send(action = TaskDetailScreenAction.ChangeTitle(title = it)) },
                 description = task?.description,

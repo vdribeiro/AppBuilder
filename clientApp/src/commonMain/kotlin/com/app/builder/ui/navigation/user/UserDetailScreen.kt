@@ -29,7 +29,6 @@ import com.app.builder.ui.component.navigation.Navigation
 import com.app.builder.ui.component.navigation.NavigationRoute
 import com.app.builder.ui.component.session.SessionState
 import com.app.builder.ui.core.image.Image
-import com.app.builder.ui.getDateTime
 import com.app.builder.ui.navigation.LocalRouter
 import com.app.builder.ui.navigation.Router
 import com.app.builder.ui.navigation.Screen
@@ -93,8 +92,8 @@ fun UserDetailScreen(
             UserCard(
                 enabled = user != null && state.editing && state.userWritable,
                 uuid = user?.uuid?.toString(),
-                modifiedAt = user?.modifiedAt?.let { getDateTime(utc = it.toString()) },
-                deletedAt = user?.deletedAt?.let { getDateTime(utc = it.toString()) },
+                modifiedAt = user?.modifiedAt?.toString(),
+                deletedAt = user?.deletedAt?.toString(),
                 name = user?.name,
                 onNameChange = { store.send(action = UserDetailScreenAction.ChangeName(name = it)) },
                 avatar = user?.avatar?.let { Image(url = it) },

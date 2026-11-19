@@ -24,7 +24,6 @@ import com.app.builder.ui.component.filters.FiltersState
 import com.app.builder.ui.component.navigation.Navigation
 import com.app.builder.ui.component.navigation.NavigationRoute
 import com.app.builder.ui.component.session.SessionState
-import com.app.builder.ui.getDateTime
 import com.app.builder.ui.navigation.LocalRouter
 import com.app.builder.ui.screen.Screen
 import com.app.builder.ui.store.Store
@@ -58,8 +57,8 @@ fun RegistryDetailScreen(
             RegistryCard(
                 requestUuid = registry?.requestUuid?.toString(),
                 requestType = registry?.requestType,
-                requestUtc = registry?.requestUtc?.let { getDateTime(utc = it.toString()) },
-                requestSentUtc = registry?.requestSentUtc?.let { getDateTime(utc = it.toString()) },
+                requestUtc = registry?.requestUtc?.toString(),
+                requestSentUtc = registry?.requestSentUtc?.toString(),
                 userUuid = registry?.userUuid?.toString(),
                 appVersion = registry?.appVersion,
                 os = registry?.os?.toString(),

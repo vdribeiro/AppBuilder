@@ -32,7 +32,6 @@ import com.app.builder.ui.component.list.BuildingItem
 import com.app.builder.ui.component.navigation.Navigation
 import com.app.builder.ui.component.navigation.NavigationRoute
 import com.app.builder.ui.component.session.SessionState
-import com.app.builder.ui.getDateTime
 import com.app.builder.ui.navigation.LocalRouter
 import com.app.builder.ui.navigation.Router
 import com.app.builder.ui.navigation.Screen
@@ -96,8 +95,8 @@ fun MaterialDetailScreen(
             MaterialCard(
                 enabled = material != null && state.editing && state.writable,
                 uuid = material?.uuid?.toString(),
-                modifiedAt = material?.modifiedAt?.let { getDateTime(utc = it.toString()) },
-                deletedAt = material?.deletedAt?.let { getDateTime(utc = it.toString()) },
+                modifiedAt = material?.modifiedAt?.toString(),
+                deletedAt = material?.deletedAt?.toString(),
                 name = material?.name,
                 onNameChange = { store.send(action = MaterialDetailScreenAction.ChangeName(name = it)) },
                 description = material?.description,

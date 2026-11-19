@@ -31,7 +31,6 @@ import com.app.builder.ui.component.list.BuildingItem
 import com.app.builder.ui.component.navigation.Navigation
 import com.app.builder.ui.component.navigation.NavigationRoute
 import com.app.builder.ui.component.session.SessionState
-import com.app.builder.ui.getDateTime
 import com.app.builder.ui.navigation.LocalRouter
 import com.app.builder.ui.navigation.Router
 import com.app.builder.ui.navigation.Screen
@@ -95,8 +94,8 @@ fun EquipmentDetailScreen(
             EquipmentCard(
                 enabled = equipment != null && state.editing && state.writable,
                 uuid = equipment?.uuid?.toString(),
-                modifiedAt = equipment?.modifiedAt?.let { getDateTime(utc = it.toString()) },
-                deletedAt = equipment?.deletedAt?.let { getDateTime(utc = it.toString()) },
+                modifiedAt = equipment?.modifiedAt?.toString(),
+                deletedAt = equipment?.deletedAt?.toString(),
                 name = equipment?.name,
                 onNameChange = { store.send(action = EquipmentDetailScreenAction.ChangeName(name = it)) },
                 description = equipment?.description,

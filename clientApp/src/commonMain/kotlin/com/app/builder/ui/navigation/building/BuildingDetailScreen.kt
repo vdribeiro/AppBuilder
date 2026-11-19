@@ -38,7 +38,6 @@ import com.app.builder.ui.component.navigation.Navigation
 import com.app.builder.ui.component.navigation.NavigationRoute
 import com.app.builder.ui.component.session.SessionState
 import com.app.builder.ui.devicelocation.LocalDeviceLocationProvider
-import com.app.builder.ui.getDateTime
 import com.app.builder.ui.navigation.LocalRouter
 import com.app.builder.ui.navigation.Router
 import com.app.builder.ui.navigation.Screen
@@ -111,8 +110,8 @@ fun BuildingDetailScreen(
             BuildingCard(
                 enabled = building != null && state.editing && state.writable,
                 uuid = building?.uuid?.toString(),
-                modifiedAt = building?.modifiedAt?.let { getDateTime(utc = it.toString()) },
-                deletedAt = building?.deletedAt?.let { getDateTime(utc = it.toString()) },
+                modifiedAt = building?.modifiedAt?.toString(),
+                deletedAt = building?.deletedAt?.toString(),
                 name = building?.name,
                 onNameChange = { store.send(action = BuildingDetailScreenAction.ChangeName(name = it)) },
                 description = building?.description,

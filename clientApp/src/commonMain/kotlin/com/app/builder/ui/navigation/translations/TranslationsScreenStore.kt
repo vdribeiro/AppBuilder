@@ -15,7 +15,7 @@ import com.app.builder.core.config.ClientConfigs
 import com.app.builder.core.flow.Dispatcher
 import com.app.builder.core.locale.DEFAULT_LANGUAGE
 import com.app.builder.core.locale.now
-import com.app.builder.core.locale.observeLocale
+import com.app.builder.core.locale.observeLanguage
 import com.app.builder.core.telemetry.Telemetry
 import com.app.builder.data.storage.AppFile
 import com.app.builder.domain.EntityType
@@ -33,13 +33,13 @@ import com.app.builder.ui.store.Store
  * @param state Initial translations state.
  * @property translationUseCases Use cases used to observe languages and translations and to update a translation.
  * @property authenticationUseCases Use cases used to observe the current user's permissions.
- * @property locale Emits the device's ISO 639-1 language code, selected first when it holds translations.
+ * @property languageFlow Emits the ISO 639-1 code of the app language, selected first when it holds translations.
  */
 class TranslationsScreenStore(
     state: TranslationsScreenState,
     private val translationUseCases: TranslationUseCases,
     private val authenticationUseCases: AuthenticationUseCases,
-    private val locale: Flow<String> = observeLocale()
+    private val languageFlow: Flow<String> = observeLanguage()
 ): Store<TranslationsScreenState, TranslationsScreenAction>(initialState = state) {
     init {
         setup()
@@ -68,7 +68,7 @@ class TranslationsScreenStore(
 
         combine(
             flow = translationUseCases.observeLanguages(),
-            flow2 = locale
+            flow2 = languageFlow
         ) { languages, locale ->
             languages to locale
         }.observe(id = "languages") { (languages, locale) ->

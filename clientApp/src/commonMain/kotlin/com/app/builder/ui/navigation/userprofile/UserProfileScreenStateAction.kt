@@ -3,7 +3,7 @@ package com.app.builder.ui.navigation.userprofile
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import com.app.builder.AppInfo
-import com.app.builder.core.locale.getLanguage
+import com.app.builder.core.locale.getDeviceLanguage
 import com.app.builder.ui.core.image.Image
 
 /** The set of user-triggered intents available within the user profile. */
@@ -45,7 +45,7 @@ data class UserProfileScreenState(
     val guest: Boolean = true,
     val name: String? = null,
     val image: Image? = null,
-    val language: String = getLanguage(),
+    val language: String = getDeviceLanguage(),
     val languages: ImmutableList<String> = persistentListOf(),
     val selectedLanguage: String? = null,
     val languageDialogOpen: Boolean = false,
