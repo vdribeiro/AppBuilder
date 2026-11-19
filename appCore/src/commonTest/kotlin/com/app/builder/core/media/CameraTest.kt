@@ -11,6 +11,11 @@ import com.app.builder.test.TestCase
 
 class CameraTest: TestCase() {
 
+    override suspend fun beforeTest() {
+        super.beforeTest()
+        ClientFlags.set { it.copy(camera = true) }
+    }
+
     /**
      * A [Camera] that reports itself as available and permitted, so the public lifecycle methods are not short-circuited by their guards.
      *

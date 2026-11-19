@@ -32,6 +32,11 @@ import com.app.builder.test.TestCase
 
 class InterceptorTest: TestCase() {
 
+    override suspend fun beforeTest() {
+        super.beforeTest()
+        ClientFlags.set { it.copy(http = true) }
+    }
+
     /** Verifies requests throw when the network flag is disabled. */
     @Test
     fun throwsWhenNetworkDisabled() = runUnitTest {

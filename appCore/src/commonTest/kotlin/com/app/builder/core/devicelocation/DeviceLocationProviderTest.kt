@@ -16,6 +16,11 @@ import com.app.builder.test.TestCase
 
 class DeviceLocationProviderTest: TestCase() {
 
+    override suspend fun beforeTest() {
+        super.beforeTest()
+        ClientFlags.set { it.copy(locationCapture = true) }
+    }
+
     /**
      * A fixture [DeviceLocation] used to exercise capture updates.
      *
@@ -72,7 +77,6 @@ class DeviceLocationProviderTest: TestCase() {
     /** Verifies that starting an update transitions to active once the location capture feature flag is enabled. */
     @Test
     fun startUpdateTransitionsToActiveWhenEnabled() = runUnitTest {
-        ClientFlags.set { it.copy(locationCapture = true) }
         val provider = testProvider()
 
         provider.startUpdate()
@@ -83,7 +87,6 @@ class DeviceLocationProviderTest: TestCase() {
     /** Verifies that stopping an update transitions the provider back to idle. */
     @Test
     fun stopUpdateTransitionsToIdle() = runUnitTest {
-        ClientFlags.set { it.copy(locationCapture = true) }
         val provider = testProvider()
         provider.startUpdate()
 
@@ -131,7 +134,6 @@ class DeviceLocationProviderTest: TestCase() {
     /** Verifies that [DeviceLocationProvider.getLastKnownLocation] returns null while the provider is unavailable. */
     @Test
     fun getLastKnownLocationReturnsNullWhenUnavailable() = runUnitTest {
-        ClientFlags.set { it.copy(locationCapture = true) }
         val provider = DeviceLocationProvider()
 
         assertNull(actual = provider.getLastKnownLocation())
@@ -140,7 +142,6 @@ class DeviceLocationProviderTest: TestCase() {
     /** Verifies that [DeviceLocationProvider.getLastKnownLocation] caches a platform-provided fix and falls back to it once the platform stops providing one. */
     @Test
     fun getLastKnownLocationFallsBackToLastCapturedFix() = runUnitTest {
-        ClientFlags.set { it.copy(locationCapture = true) }
         val fixture = fixtureLocation()
         var platformResult: DeviceLocation? = fixture
         val provider = object: DeviceLocationProvider() {
@@ -158,7 +159,6 @@ class DeviceLocationProviderTest: TestCase() {
     /** Verifies that a platform query which never returns is abandoned at the timeout and answered from the last captured fix instead of suspending the caller indefinitely. */
     @Test
     fun getLastKnownLocationTimesOutAndFallsBackToTheLastCapturedFix() = runUnitTest {
-        ClientFlags.set { it.copy(locationCapture = true) }
         val fixture = fixtureLocation()
         var returnedFixture = true
         val provider = object: DeviceLocationProvider() {
@@ -179,7 +179,6 @@ class DeviceLocationProviderTest: TestCase() {
     /** Verifies that a platform query which never returns yields null when no fix was ever captured, rather than hanging. */
     @Test
     fun getLastKnownLocationTimesOutToNullWithoutACapturedFix() = runUnitTest {
-        ClientFlags.set { it.copy(locationCapture = true) }
         val provider = object: DeviceLocationProvider() {
             override val available: Boolean = true
             override fun hasPermission(): Boolean = true
@@ -192,7 +191,6 @@ class DeviceLocationProviderTest: TestCase() {
     /** Verifies that [DeviceLocationProvider.getLastKnownLocation] rethrows the cancellation of the calling coroutine instead of answering from the last captured fix. */
     @Test
     fun getLastKnownLocationRethrowsTheCancellationOfTheCaller() = runUnitTest {
-        ClientFlags.set { it.copy(locationCapture = true) }
         val fixture = fixtureLocation()
         var returnedFixture = true
         val provider = object: DeviceLocationProvider() {
@@ -217,7 +215,6 @@ class DeviceLocationProviderTest: TestCase() {
     /** Verifies that a platform query which returns within the timeout is used as-is. */
     @Test
     fun getLastKnownLocationUsesASlowButTimelyPlatformAnswer() = runUnitTest {
-        ClientFlags.set { it.copy(locationCapture = true) }
         val fixture = fixtureLocation()
         val provider = object: DeviceLocationProvider() {
             override val available: Boolean = true
@@ -234,7 +231,6 @@ class DeviceLocationProviderTest: TestCase() {
     /** Verifies that starting an update is ignored while the provider is unavailable, even with the feature flag enabled. */
     @Test
     fun startUpdateIgnoredWhileUnavailable() = runUnitTest {
-        ClientFlags.set { it.copy(locationCapture = true) }
         val provider = object: DeviceLocationProvider() {
             override fun hasPermission(): Boolean = true
         }
@@ -247,7 +243,6 @@ class DeviceLocationProviderTest: TestCase() {
     /** Verifies that starting an update is ignored while location permission is not granted. */
     @Test
     fun startUpdateIgnoredWithoutPermission() = runUnitTest {
-        ClientFlags.set { it.copy(locationCapture = true) }
         val provider = object: DeviceLocationProvider() {
             override val available: Boolean = true
         }
@@ -260,7 +255,6 @@ class DeviceLocationProviderTest: TestCase() {
     /** Verifies that an exception thrown by the platform's start call is caught, stops the platform update, and leaves the provider idle. */
     @Test
     fun exceptionFromPlatformStartUpdateIsCaught() = runUnitTest {
-        ClientFlags.set { it.copy(locationCapture = true) }
         val events = mutableListOf<String>()
         val provider = object: DeviceLocationProvider() {
             override val available: Boolean = true
@@ -284,7 +278,6 @@ class DeviceLocationProviderTest: TestCase() {
     /** Verifies that a failed restart of an active provider transitions it back to idle, since the platform update was stopped. */
     @Test
     fun failedRestartTransitionsActiveProviderToIdle() = runUnitTest {
-        ClientFlags.set { it.copy(locationCapture = true) }
         var failStart = false
         val provider = object: DeviceLocationProvider() {
             override val available: Boolean = true
@@ -305,7 +298,6 @@ class DeviceLocationProviderTest: TestCase() {
     /** Verifies that starting an update whose platform stop call always throws is caught without escaping and leaves the provider idle. */
     @Test
     fun exceptionFromPlatformStopUpdateDuringStartIsCaught() = runUnitTest {
-        ClientFlags.set { it.copy(locationCapture = true) }
         val provider = object: DeviceLocationProvider() {
             override val available: Boolean = true
             override fun hasPermission(): Boolean = true
@@ -322,7 +314,6 @@ class DeviceLocationProviderTest: TestCase() {
     /** Verifies that an exception thrown by the platform's stop call is caught and the provider still transitions to idle. */
     @Test
     fun exceptionFromPlatformStopUpdateIsCaught() = runUnitTest {
-        ClientFlags.set { it.copy(locationCapture = true) }
         var failStop = false
         val provider = object: DeviceLocationProvider() {
             override val available: Boolean = true
@@ -342,7 +333,6 @@ class DeviceLocationProviderTest: TestCase() {
     /** Verifies that [DeviceLocationProvider.getLastKnownLocation] returns null and stops updates while the feature flag is disabled. */
     @Test
     fun getLastKnownLocationReturnsNullWhileFeatureFlagDisabled() = runUnitTest {
-        ClientFlags.set { it.copy(locationCapture = true) }
         val provider = testProvider()
         provider.startUpdate()
         ClientFlags.set { it.copy(locationCapture = false) }
@@ -354,7 +344,6 @@ class DeviceLocationProviderTest: TestCase() {
     /** Verifies that [DeviceLocationProvider.getLastKnownLocation] returns null while location permission is not granted. */
     @Test
     fun getLastKnownLocationReturnsNullWithoutPermission() = runUnitTest {
-        ClientFlags.set { it.copy(locationCapture = true) }
         val provider = object: DeviceLocationProvider() {
             override val available: Boolean = true
         }
@@ -365,7 +354,6 @@ class DeviceLocationProviderTest: TestCase() {
     /** Verifies that a provider relying on the default platform query, which supports no cached location, returns null. */
     @Test
     fun getLastKnownLocationReturnsNullWithDefaultPlatformQuery() = runUnitTest {
-        ClientFlags.set { it.copy(locationCapture = true) }
 
         assertNull(actual = testProvider().getLastKnownLocation())
     }
@@ -373,7 +361,6 @@ class DeviceLocationProviderTest: TestCase() {
     /** Verifies that an exception thrown by the platform query is caught and answered from the last captured fix. */
     @Test
     fun exceptionFromPlatformQueryFallsBackToTheLastCapturedFix() = runUnitTest {
-        ClientFlags.set { it.copy(locationCapture = true) }
         val fixture = fixtureLocation()
         var fail = false
         val provider = object: DeviceLocationProvider() {

@@ -10,6 +10,11 @@ import com.app.builder.test.TestCase
 
 class NfcControllerTest: TestCase() {
 
+    override suspend fun beforeTest() {
+        super.beforeTest()
+        ClientFlags.set { it.copy(nfc = true) }
+    }
+
     /** A filler [NfcRecord] used only to exercise the write path; its content is irrelevant to these tests. */
     private val fillerRecord = NfcRecord.Open(entityType = EntityType.TASK)
 

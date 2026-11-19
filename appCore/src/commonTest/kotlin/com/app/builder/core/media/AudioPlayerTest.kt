@@ -10,6 +10,11 @@ import com.app.builder.test.TestCase
 
 class AudioPlayerTest: TestCase() {
 
+    override suspend fun beforeTest() {
+        super.beforeTest()
+        ClientFlags.set { it.copy(music = true) }
+    }
+
     /** A test fixture [AudioPlayer] that records every invoked action as an event. */
     private class RecordingAudioPlayer: AudioPlayer() {
         /** The events recorded so far by this test fixture. */

@@ -8,10 +8,16 @@ import io.ktor.client.plugins.auth.providers.BearerTokens
 import io.ktor.client.request.get
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
+import com.app.builder.core.config.ClientFlags
 import com.app.builder.data.http.plugin.UnauthorizedException
 import com.app.builder.test.TestCase
 
 class HttpClientFactoryTest: TestCase() {
+
+    override suspend fun beforeTest() {
+        super.beforeTest()
+        ClientFlags.set { it.copy(http = true) }
+    }
 
     /**
      * Verifies that the built HTTP client completes a request and that plugin-installed effects are present:
