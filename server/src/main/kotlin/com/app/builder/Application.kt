@@ -1,6 +1,8 @@
 package com.app.builder
 
 import kotlin.time.Duration.Companion.seconds
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeoutOrNull
 import org.jetbrains.annotations.VisibleForTesting
@@ -84,7 +86,7 @@ internal suspend fun Application.module() {
     Telemetry.info(tag = TAG, message = "Setting routes")
     installRouting(dependency = dependency)
 
-    dependency.start()
+    dependency.start(scope = this)
     seed(dependency = dependency)
 
     stopOnShutdown(dependency = dependency)
@@ -109,10 +111,15 @@ private suspend fun Dependency.stop() {
     permissionService.stop()
 }
 
-/** Starts [Dependency] services. */
-private suspend fun Dependency.start() {
+/**
+ * Starts [Dependency] services.
+ *
+ * @param scope The scope to collect on.
+ */
+private suspend fun Dependency.start(scope: CoroutineScope) {
     Telemetry.info(tag = TAG, message = "Loading flags and configs")
     useCases.configUseCases.load()
+    scope.launch { useCases.configUseCases.observe() }
     Telemetry.info(tag = TAG, message = "Server Feature Flags: ${ServerFlags.value}")
     Telemetry.info(tag = TAG, message = "Server Configs: ${ServerConfigs.value}")
     Telemetry.info(tag = TAG, message = "Client Feature Flags: ${ClientFlags.value}")

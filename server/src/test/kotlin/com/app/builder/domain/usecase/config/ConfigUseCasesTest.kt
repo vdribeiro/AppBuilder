@@ -2,11 +2,16 @@ package com.app.builder.domain.usecase.config
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
 import com.app.builder.core.config.ClientConfigs
 import com.app.builder.core.config.ClientFlags
 import com.app.builder.core.config.ServerConfigs
 import com.app.builder.core.config.ServerFlags
 import com.app.builder.data.database.reset
+import com.app.builder.data.database.table.ConfigTable
+import com.app.builder.data.signal.LocalSignal
 import com.app.builder.domain.usecase.Outcome
 import com.app.builder.test.FakeData
 import com.app.builder.test.TestCase
@@ -72,5 +77,24 @@ class ConfigUseCasesTest: TestCase() {
             "updateServerFeatureFlags" to configUseCases.updateServerFeatureFlags(flags = ServerFlags.value),
             "updateServerConfigs" to configUseCases.updateServerConfigs(configs = ServerConfigs.value)
         ).forEach { (name, outcome) -> assertEquals(expected = Outcome.Error, actual = outcome, message = name) }
+    }
+
+    /** Verifies that a signaled update restores the persisted record while observing. */
+    @Test
+    fun observeRestoresSignaledUpdates() = runServerTest {
+        val configUseCases = dependency.get().useCases.configUseCases
+        val signal = dependency.get().instanceSignal as LocalSignal
+        val serverFlags = FakeData.serverFlags.copy(broadcast = !FakeData.serverFlags.broadcast)
+        assertEquals(expected = Outcome.Success(data = Unit), actual = configUseCases.updateServerFeatureFlags(flags = serverFlags))
+        ServerFlags.reset()
+
+        coroutineScope {
+            val job = launch { configUseCases.observe() }
+            awaitUntil { signal.subscriptions.value > 0 }
+            signal.notify(channel = ConfigGateway.CHANNEL, payload = ConfigTable.Key.SERVER_FLAG.name)
+
+            awaitUntil { ServerFlags.value == serverFlags }
+            job.cancelAndJoin()
+        }
     }
 }

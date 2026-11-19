@@ -45,7 +45,7 @@ class Gateways(
     database: R2dbcDatabase,
     instanceSignal: InstanceSignal
 ): UseCases {
-    override val configUseCases: ConfigUseCases = ConfigGateway(database = database)
+    override val configUseCases: ConfigUseCases = ConfigGateway(database = database, instanceSignal = instanceSignal)
     override val authenticationUseCases: AuthenticationUseCases = AuthenticationGateway(database = database)
     override val registryUseCases: RegistryUseCases = RegistryGateway(database = database)
     override val deviceTokenUseCases: DeviceTokenUseCases = DeviceTokenGateway(database = database)

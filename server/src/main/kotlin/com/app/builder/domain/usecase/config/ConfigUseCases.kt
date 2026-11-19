@@ -12,6 +12,9 @@ interface ConfigUseCases {
     /** Restores persisted config records from disk. */
     suspend fun load()
 
+    /** Restores a persisted config record whenever any server instance updates it. Never returns. */
+    suspend fun observe()
+
     /**
      * Updates the client feature flags.
      *
