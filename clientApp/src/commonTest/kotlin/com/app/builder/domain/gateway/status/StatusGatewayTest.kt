@@ -18,6 +18,11 @@ import com.app.builder.test.TestCase
 
 class StatusGatewayTest: TestCase() {
 
+    override suspend fun beforeTest() {
+        super.beforeTest()
+        ClientFlags.set { it.copy(http = true, scheduler = true) }
+    }
+
     /** [Scheduler] fixture exposing a settable list of active jobs. */
     private class FakeScheduler: Scheduler {
         val activeJobs = MutableStateFlow(value = emptyList<Job>())

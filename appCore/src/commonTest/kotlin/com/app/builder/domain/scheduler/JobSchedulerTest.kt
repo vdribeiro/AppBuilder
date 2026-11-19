@@ -24,6 +24,11 @@ import com.app.builder.test.TestCase
 
 class JobSchedulerTest: TestCase() {
 
+    override suspend fun beforeTest() {
+        super.beforeTest()
+        ClientFlags.set { it.copy(scheduler = true) }
+    }
+
     /** [JobFactory] fixture that resolves every job to a fixed result and records resolved jobs. */
     private class FakeJobFactory(private val result: JobResult = JobResult.Success): JobFactory {
         /** Jobs that have been resolved by this factory, in resolution order. */

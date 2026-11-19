@@ -15,6 +15,11 @@ import com.app.builder.test.TestCase
 
 class ConfigRepositoryTest: TestCase() {
 
+    override suspend fun beforeTest() {
+        super.beforeTest()
+        ClientFlags.set { it.copy(http = true, scheduler = true) }
+    }
+
     /** Verifies that loading configs restores the client flags and configs after they were locally mutated. */
     @Test
     fun load() = runUnitTest {

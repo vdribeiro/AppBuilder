@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.receiveAsFlow
 import com.app.builder.Dependency.getUserDependency
+import com.app.builder.core.config.ClientFlags
 import com.app.builder.core.nfc.NfcRecord
 import com.app.builder.core.nfc.NfcTag
 import com.app.builder.domain.EntityType
@@ -18,6 +19,11 @@ import com.app.builder.test.FakeData
 import com.app.builder.test.TestCase
 
 class TagManagerTest: TestCase() {
+
+    override suspend fun beforeTest() {
+        super.beforeTest()
+        ClientFlags.set { it.copy(http = true) }
+    }
 
     /** The tag reads fed to the manager under test. */
     private val tags = Channel<NfcTag>(capacity = Channel.BUFFERED)

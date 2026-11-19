@@ -19,6 +19,11 @@ import com.app.builder.test.TestCase
 
 class TranslationGatewayTest: TestCase() {
 
+    override suspend fun beforeTest() {
+        super.beforeTest()
+        ClientFlags.set { it.copy(http = true, scheduler = true) }
+    }
+
     /** Verifies that syncing translations populates the observable translations for the default language. */
     @Test
     fun syncAndObserveTranslations() = runUnitTest {

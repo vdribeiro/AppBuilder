@@ -19,6 +19,7 @@ import com.app.builder.data.database.table.NotificationTable
 import com.app.builder.data.database.table.RegistryTable
 import com.app.builder.data.database.table.TaskTable
 import com.app.builder.data.database.table.TicketTable
+import com.app.builder.data.database.table.TranslationTable
 import com.app.builder.data.database.table.UserAccountTable
 import com.app.builder.data.database.table.UserSessionTable
 import com.app.builder.data.database.table.UserTable
@@ -27,6 +28,7 @@ import io.r2dbc.spi.IsolationLevel
 /** A list of all the tables in the database. */
 private val tables = listOf(
     ConfigTable,
+    TranslationTable,
     UserTable,
     UserAccountTable,
     UserSessionTable,

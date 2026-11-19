@@ -20,6 +20,11 @@ import com.app.builder.test.TestCase
 
 class AccountGatewayTest: TestCase() {
 
+    override suspend fun beforeTest() {
+        super.beforeTest()
+        ClientFlags.set { it.copy(http = true, scheduler = true) }
+    }
+
     /** An account allowed to read accounts but not to create or update them. */
     private val readOnlyAccount: Account = FakeData.account.copy(permissions = mapOf(EntityType.ACCOUNT to Permission.READ))
 

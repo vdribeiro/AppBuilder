@@ -24,6 +24,11 @@ import com.app.builder.test.TestCase
 
 class BroadcastServiceTest: TestCase() {
 
+    override suspend fun beforeTest() {
+        super.beforeTest()
+        ClientFlags.set { it.copy(http = true, broadcast = true) }
+    }
+
     /** The broadcast payload fixture, addressed to no particular user. */
     private val broadcast = PushPayload.Flags()
 

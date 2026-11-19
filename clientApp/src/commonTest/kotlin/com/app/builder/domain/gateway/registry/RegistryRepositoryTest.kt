@@ -18,6 +18,11 @@ import com.app.builder.test.TestCase
 
 class RegistryRepositoryTest: TestCase() {
 
+    override suspend fun beforeTest() {
+        super.beforeTest()
+        ClientFlags.set { it.copy(http = true, scheduler = true) }
+    }
+
     /** Verifies that syncing registries queues a GET job for a user allowed to read them. */
     @Test
     fun syncRegistries() = runUnitTest {

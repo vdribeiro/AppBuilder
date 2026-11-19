@@ -22,6 +22,11 @@ import com.app.builder.test.TestCase
 
 class UserRepositoryTest: TestCase() {
 
+    override suspend fun beforeTest() {
+        super.beforeTest()
+        ClientFlags.set { it.copy(http = true, scheduler = true) }
+    }
+
     /** Verifies that executing a users sync job succeeds, records the last sync timestamp, and populates the user list. */
     @Test
     fun executeSyncUsers() = runUnitTest {

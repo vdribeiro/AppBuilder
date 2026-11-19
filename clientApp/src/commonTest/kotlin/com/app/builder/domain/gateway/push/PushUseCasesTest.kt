@@ -12,6 +12,11 @@ import com.app.builder.test.TestCase
 
 class PushUseCasesTest: TestCase() {
 
+    override suspend fun beforeTest() {
+        super.beforeTest()
+        ClientFlags.set { it.copy(http = true) }
+    }
+
     /** Verifies that pushing a notification to a specific user succeeds when online. */
     @Test
     fun pushToUser() = runUnitTest {

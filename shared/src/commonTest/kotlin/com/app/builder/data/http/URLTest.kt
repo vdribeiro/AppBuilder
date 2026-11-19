@@ -22,7 +22,7 @@ class URLTest: TestCase() {
         assertEquals(expected = "/api/clientconfigs", actual = URL.ClientConfigs.path)
         assertEquals(expected = "/api/probe", actual = URL.Probe.path)
         assertEquals(expected = "/api/registry", actual = URL.Registries.path)
-        assertEquals(expected = "/api/data/translations.json", actual = URL.Translations.path)
+        assertEquals(expected = "/api/translations", actual = URL.Translations.path)
         assertEquals(expected = "/api/device-tokens", actual = URL.DeviceTokens.path)
         assertEquals(expected = "/api/broadcast/subscribe", actual = URL.BroadcastSubscribe.path)
         assertEquals(expected = "/api/broadcast", actual = URL.Broadcast.path)

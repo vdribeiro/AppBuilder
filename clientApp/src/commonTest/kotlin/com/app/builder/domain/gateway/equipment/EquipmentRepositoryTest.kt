@@ -22,6 +22,11 @@ import com.app.builder.test.TestCase
 
 class EquipmentRepositoryTest: TestCase() {
 
+    override suspend fun beforeTest() {
+        super.beforeTest()
+        ClientFlags.set { it.copy(http = true, scheduler = true) }
+    }
+
     /** Verifies that executing a equipments sync job succeeds, records the last sync timestamp, and populates the equipment list. */
     @Test
     fun executeSyncEquipments() = runUnitTest {

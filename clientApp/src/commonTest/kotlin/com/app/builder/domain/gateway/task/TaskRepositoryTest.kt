@@ -22,6 +22,11 @@ import com.app.builder.test.TestCase
 
 class TaskRepositoryTest: TestCase() {
 
+    override suspend fun beforeTest() {
+        super.beforeTest()
+        ClientFlags.set { it.copy(http = true, scheduler = true) }
+    }
+
     /** Verifies that executing a tasks sync job succeeds, records the last sync timestamp, and populates the task list. */
     @Test
     fun executeSyncTasks() = runUnitTest {

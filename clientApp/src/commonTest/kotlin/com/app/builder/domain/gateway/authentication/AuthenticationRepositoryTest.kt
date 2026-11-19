@@ -26,6 +26,11 @@ import com.app.builder.test.TestCase
 
 class AuthenticationRepositoryTest: TestCase() {
 
+    override suspend fun beforeTest() {
+        super.beforeTest()
+        ClientFlags.set { it.copy(http = true) }
+    }
+
     /** Verifies that executing a logout job fails without a payload and succeeds once the user uuid is set, removing the session. */
     @Test
     fun executeLogout() = runUnitTest {

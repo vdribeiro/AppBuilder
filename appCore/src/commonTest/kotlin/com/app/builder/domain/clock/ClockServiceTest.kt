@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import com.app.builder.core.config.ClientConfigs
+import com.app.builder.core.config.ClientFlags
 import com.app.builder.data.http.HttpClientFactory
 import com.app.builder.data.http.TestEngine
 import com.app.builder.data.http.respondMock
@@ -16,6 +17,11 @@ import com.app.builder.data.storage.CoreFile
 import com.app.builder.test.TestCase
 
 class ClockServiceTest: TestCase() {
+
+    override suspend fun beforeTest() {
+        super.beforeTest()
+        ClientFlags.set { it.copy(http = true) }
+    }
 
     /**
      * Builds a [ClockService] backed by a mock HTTP engine for testing.

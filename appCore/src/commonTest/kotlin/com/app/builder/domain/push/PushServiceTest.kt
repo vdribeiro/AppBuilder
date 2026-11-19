@@ -53,7 +53,7 @@ class PushServiceTest: TestCase() {
 
     override suspend fun beforeTest() {
         super.beforeTest()
-        ClientFlags.set { it.copy(push = true) }
+        ClientFlags.set { it.copy(push = true, http = true) }
     }
 
     /**

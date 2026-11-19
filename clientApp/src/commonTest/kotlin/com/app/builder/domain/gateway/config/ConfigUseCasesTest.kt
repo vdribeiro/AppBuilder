@@ -13,6 +13,11 @@ import com.app.builder.test.TestCase
 
 class ConfigUseCasesTest: TestCase() {
 
+    override suspend fun beforeTest() {
+        super.beforeTest()
+        ClientFlags.set { it.copy(http = true) }
+    }
+
     /** Verifies that updating client feature flags remotely returns the updated flags. */
     @Test
     fun updateClientFeatureFlags() = runUnitTest {

@@ -10,6 +10,7 @@ import androidx.navigation3.runtime.NavBackStack
 import com.app.builder.App
 import com.app.builder.Application.reset
 import com.app.builder.Dependency
+import com.app.builder.core.config.ClientFlags
 import com.app.builder.core.flow.LazyData
 import com.app.builder.data.database.createMockSqlDriver
 import com.app.builder.data.http.createMockHttpEngine
@@ -43,6 +44,7 @@ abstract class TestCase: PlatformTestCase() {
 
     override suspend fun beforeTest() {
         resetData()
+        ClientFlags.off()
     }
 
     override suspend fun afterTest() {

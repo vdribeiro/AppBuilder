@@ -5,11 +5,17 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
 import kotlin.test.assertNotNull
 import kotlin.uuid.Uuid
+import com.app.builder.core.config.ClientFlags
 import com.app.builder.domain.EntityType
 import com.app.builder.test.FakeData
 import com.app.builder.test.TestCase
 
 class JobProviderTest: TestCase() {
+
+    override suspend fun beforeTest() {
+        super.beforeTest()
+        ClientFlags.set { it.copy(http = true) }
+    }
 
     /**
      * Resolves [job] through the app's job factory and runs it.

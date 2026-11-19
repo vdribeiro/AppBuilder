@@ -21,6 +21,11 @@ import com.app.builder.test.TestCase
 
 class AuthenticationUseCasesTest: TestCase() {
 
+    override suspend fun beforeTest() {
+        super.beforeTest()
+        ClientFlags.set { it.copy(http = true, scheduler = true) }
+    }
+
     /** Verifies that logging in persists the user, account and session and sets them as the current observed user and account. */
     @Test
     fun loginAndObserveCurrentUser() = runUnitTest {

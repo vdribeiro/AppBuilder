@@ -22,6 +22,11 @@ import com.app.builder.test.TestCase
 
 class BuildingRepositoryTest: TestCase() {
 
+    override suspend fun beforeTest() {
+        super.beforeTest()
+        ClientFlags.set { it.copy(http = true, scheduler = true) }
+    }
+
     /** Verifies that executing a buildings sync job succeeds, records the last sync timestamp, and populates the building list. */
     @Test
     fun executeSyncBuildings() = runUnitTest {

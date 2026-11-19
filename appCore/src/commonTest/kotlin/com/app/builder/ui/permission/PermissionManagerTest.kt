@@ -13,6 +13,11 @@ import com.app.builder.test.TestCase
 
 class PermissionManagerTest: TestCase() {
 
+    override suspend fun beforeTest() {
+        super.beforeTest()
+        ClientFlags.set { it.copy(notifications = true, camera = true) }
+    }
+
     /**
      * A [PermissionManager] fixture that records every check and request, answering requests once [gate] completes.
      *

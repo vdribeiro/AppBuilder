@@ -3,12 +3,18 @@ package com.app.builder.domain.push
 import kotlin.test.Test
 import kotlin.test.assertNotNull
 import app.cash.sqldelight.async.coroutines.awaitAsList
+import com.app.builder.core.config.ClientFlags
 import com.app.builder.domain.EntityType
 import com.app.builder.domain.PushPayload
 import com.app.builder.domain.scheduler.Job
 import com.app.builder.test.TestCase
 
 class PayloadManagerTest: TestCase() {
+
+    override suspend fun beforeTest() {
+        super.beforeTest()
+        ClientFlags.set { it.copy(http = true, scheduler = true) }
+    }
 
     /**
      * Hands a payload to the [PayloadManager] under test.
