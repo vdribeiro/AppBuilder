@@ -783,7 +783,7 @@ Authorization is per `EntityType`: each account carries a `READ`/`WRITE` permiss
 * User edit can be done with either `USER` or `ACCOUNT` `WRITE`, but each unlocks only the fields that permission covers. 
 * Adding a user still needs `USER` `WRITE`, and deleting one also needs `ACCOUNT` `READ`, so the app can tell its account isn't active.
 
-Offline login is covered in [Cryptography](#cryptography).
+Logging in without a connection is covered in [Offline Login](#offline-login).
 
 ### No Auth
 
@@ -797,6 +797,15 @@ Every refresh rotates the refresh token. If a rotation's response fails to arriv
 
 If the server refuses the refresh token, the session is marked **expired** rather than deleted, so no queued work is lost. A warning joins the status icons in the top bar, asking the user to log out and log in again.
 Until then, nothing that needs the session reaches the server: no refresh is attempted, the user's jobs wait without a request, and the push connection stays closed. Logging in again clears it and everything resumes.
+
+### Offline Login
+
+A user who logged out can log back in without a connection, as long as their session is still on the device. That is the case while the logout hasn't reached the server yet: logging out offline queues it, and the session is only deleted once it runs.
+
+* **It is a local check only.** The password is compared with the verifier stored with the session (see [Cryptography](#cryptography)). It is never stored or queued, so it only reaches the server in an online login.
+* **It is tried only when the server gives no answer**: no connection, the network disabled or a timeout. Once the server answers, a refused login fails without the local check, whatever the status, so a changed password or a server error can't be bypassed with what the device remembers.
+* **A match cancels the user's pending logout**, so the session they already had carries on and their queued work syncs when the connection returns.
+* **It opens no new session.** A session that is [expired](#tokens--refresh) stays expired until the user logs in online.
 
 ### Account Deletion
 
@@ -1030,11 +1039,9 @@ Without a secret store it falls back to the machine identity (`machine-id`, `Mac
 
 This is the layer [`StorageFile`](#persisted-storage) builds on to make encryption at rest a per-file boolean.
 
-**Offline login** uses `deriveKey`, a PBKDF2-HMAC-SHA256 derivation. The local `Session` table stores a `username`, a random per-session `salt` and a `verifier = deriveKey(password, salt)`.
+**[Offline login](#offline-login)** uses `deriveKey`, a PBKDF2-HMAC-SHA256 derivation. The local `Session` table stores a `username`, a random per-session `salt` and a `verifier = deriveKey(password, salt)`.
 The username ties a match to one user, so two accounts with the same password can't log each other in; the per-session salt means identical passwords look different on disk and no precomputed table breaks every install.
 The verifier only authenticates the offline login and is never used as a key.
-An offline login is a local check only: the password is never stored or queued, and a match cancels the user's pending logout, so the session it already had carries on.
-It is tried only when the server gives no answer. Once the server answers, a refused login fails without the local check, whatever the status.
 The same row keeps the session's access and refresh tokens, encrypted with `encrypt`, and `expiredAt`, set once the server refuses the session (see [Tokens & Refresh](#tokens--refresh)).
 
 ## Persisted Storage
