@@ -23,6 +23,7 @@ import com.app.builder.core.locale.now
 import com.app.builder.core.platform.Env
 import com.app.builder.core.platform.Property
 import com.app.builder.core.platform.platform
+import com.app.builder.core.platform.readResource
 import com.app.builder.core.security.toUuid
 import com.app.builder.core.telemetry.SentryLogger
 import com.app.builder.core.telemetry.ServerLogger
@@ -276,8 +277,7 @@ private suspend fun seedSuperUser(dependency: Dependency) {
  * @param dependency The application dependency graph.
  */
 private suspend fun seedTranslations(dependency: Dependency) {
-    val translations = Dependency::class.java.classLoader.getResource(TRANSLATIONS_RESOURCE)
-        ?.readText()
+    val translations = readResource(path = TRANSLATIONS_RESOURCE)
         ?.let { decode<List<Translation>>(value = it) }
         ?: run {
             Telemetry.error(tag = TAG, message = "Unable to load the translations file")
