@@ -1,6 +1,9 @@
+import kotlin.time.Instant;
+
 CREATE TABLE IF NOT EXISTS Translation (
     languageIso TEXT NOT NULL,
     key TEXT NOT NULL,
+    modifiedAt TEXT AS Instant NOT NULL,
     value TEXT NOT NULL,
     PRIMARY KEY(languageIso, key)
 );
@@ -14,13 +17,28 @@ DELETE FROM Translation;
 upsertTranslation:
 INSERT OR REPLACE INTO Translation VALUES ?;
 
-getTranslations:
-SELECT
-    Translation.languageIso,
-    Translation.key,
-    Translation.value
+updateTranslation:
+UPDATE Translation
+SET modifiedAt = :modifiedAt, value = :value
+WHERE languageIso = :languageIso AND key = :key;
+
+deleteTranslation:
+DELETE FROM Translation
+WHERE languageIso = :languageIso AND key = :key;
+
+getAllTranslations:
+SELECT *
+FROM Translation;
+
+getTranslation:
+SELECT *
 FROM Translation
-WHERE Translation.languageIso = :languageIso;
+WHERE languageIso = :languageIso AND key = :key;
+
+getTranslations:
+SELECT *
+FROM Translation
+WHERE languageIso = :languageIso;
 
 getLanguages:
 SELECT DISTINCT Translation.languageIso

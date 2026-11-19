@@ -68,6 +68,7 @@ class Gateways(
 ): UseCases, Repositories {
 
     private val translationGateway: TranslationGateway = TranslationGateway(
+        account = account,
         database = database,
         httpClient = httpClient,
         scheduler = scheduler

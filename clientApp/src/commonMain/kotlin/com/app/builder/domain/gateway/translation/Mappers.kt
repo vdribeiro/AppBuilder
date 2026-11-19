@@ -11,6 +11,7 @@ import com.app.builder.domain.Translation
 fun TranslationSchema.toTranslation(): Translation = Translation(
     languageIso = languageIso,
     key = key,
+    modifiedAt = modifiedAt,
     value = value_
 )
 
@@ -22,5 +23,6 @@ fun TranslationSchema.toTranslation(): Translation = Translation(
 fun Translation.toTranslationSchema(): TranslationSchema = TranslationSchema(
     languageIso = languageIso,
     key = key,
+    modifiedAt = modifiedAt,
     value_ = value
 )

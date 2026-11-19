@@ -29,6 +29,11 @@ import com.app.builder.test.TestCase
 
 class ApplicationTest: TestCase() {
 
+    override suspend fun beforeTest() {
+        super.beforeTest()
+        ClientFlags.set { it.copy(http = true) }
+    }
+
     /**
      * Starts the [Application] on the test graph, runs [block], and stops it afterwards.
      *

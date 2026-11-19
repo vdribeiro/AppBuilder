@@ -17,6 +17,7 @@ import database.Material
 import database.Registry
 import database.Session
 import database.Task
+import database.Translation
 import database.User
 
 /**
@@ -54,6 +55,9 @@ class DatabaseFactory(driver: SqlDriver) {
             deviceUuidAdapter = UuidColumnAdapter,
             entityUuidAdapter = UuidColumnAdapter,
             entityTypeAdapter = EnumColumnAdapter()
+        ),
+        TranslationAdapter = Translation.Adapter(
+            modifiedAtAdapter = InstantColumnAdapter
         ),
         DeviceLocationAdapter = DeviceLocation.Adapter(
             uuidAdapter = UuidColumnAdapter,

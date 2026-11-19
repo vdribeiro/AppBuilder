@@ -3,7 +3,7 @@ package com.app.builder.domain.gateway.translation
 import kotlinx.coroutines.flow.Flow
 import com.app.builder.domain.Translation
 
-/** Defines the business workflows for browsing the stored translations. */
+/** Defines the business workflows for browsing and editing the stored translations. */
 interface TranslationUseCases {
 
     /**
@@ -20,4 +20,11 @@ interface TranslationUseCases {
      * @return A [Flow] emitting the current list of translations for the specified language.
      */
     fun observeTranslations(languageIso: String): Flow<List<Translation>>
+
+    /**
+     * Updates the value and modification time of a stored translation and queues its upload.
+     *
+     * @param translation The translation to update, identified by its language and key.
+     */
+    suspend fun updateTranslation(translation: Translation)
 }

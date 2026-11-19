@@ -16,6 +16,7 @@ import com.app.builder.data.serializer.encode
 import com.app.builder.domain.Account
 import com.app.builder.domain.PasswordChange
 import com.app.builder.domain.RegistrationForm
+import com.app.builder.domain.Translation
 import com.app.builder.domain.UserCredentials
 import com.app.builder.test.FakeData
 
@@ -125,6 +126,11 @@ fun createMockHttpEngine(): HttpClientEngine = TestEngine { request ->
                 URL.ServerConfigs.path -> {
                     val serverConfigs = request.decodeBody<ServerConfigs>() ?: return@TestEngine badRequest(request = request)
                     respondMock(content = encode(value = serverConfigs))
+                }
+
+                URL.Translations.path -> {
+                    val translation = request.decodeBody<Translation>() ?: return@TestEngine badRequest(request = request)
+                    respondMock(content = encode(value = translation))
                 }
 
                 URL.Push.path -> respondMock(content = encode(value = "sent"))

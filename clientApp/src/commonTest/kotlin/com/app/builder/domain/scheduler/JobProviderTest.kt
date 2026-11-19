@@ -58,6 +58,7 @@ class JobProviderTest: TestCase() {
             guestJob(type = Job.Type.GET, entityType = EntityType.BUILDING_EQUIPMENT, entityUuid = Uuid.random()),
             guestJob(type = Job.Type.GET, entityType = EntityType.MATERIAL, entityUuid = Uuid.random()),
             guestJob(type = Job.Type.GET, entityType = EntityType.BUILDING_MATERIAL, entityUuid = Uuid.random()),
+            guestJob(type = Job.Type.POST, entityType = EntityType.TRANSLATION),
             guestJob(type = Job.Type.POST, entityType = EntityType.USER),
             guestJob(type = Job.Type.POST, entityType = EntityType.TASK),
             guestJob(type = Job.Type.POST, entityType = EntityType.EQUIPMENT),

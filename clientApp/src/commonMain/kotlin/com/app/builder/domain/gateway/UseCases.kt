@@ -43,6 +43,6 @@ interface UseCases {
     val materialUseCases: MaterialUseCases
     /** The use cases for managing building materials. */
     val buildingMaterialUseCases: BuildingMaterialUseCases
-    /** The use cases for browsing translations. */
+    /** The use cases for browsing and editing translations. */
     val translationUseCases: TranslationUseCases
 }
