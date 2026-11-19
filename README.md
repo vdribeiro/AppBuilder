@@ -700,7 +700,7 @@ Always go through `Translations` rather than `TranslationCache` directly: it res
 
 * `ClientFlags`: features and screens, plus kill switches such as `http` and `scheduler`.
 * `ClientConfigs`: layout, HTTP timeouts, clock drift, scheduler retries, push and broadcast backoff, etc.
-* `ServerFlags`: route groups, which return 404 when off.
+* `ServerFlags`: route groups, which return 404 when off, plus the broadcast and push services and Firebase delivery.
 * `ServerConfigs`: token lifetimes, rate limits, connection caps, ping intervals, etc.
 
 `ClientFlags`, `ServerFlags`, `ClientConfigs`, `ServerConfigs` are plain data classes whose companions extend `StateHolder`.
@@ -711,6 +711,13 @@ Always go through `Translations` rather than `TranslationCache` directly: it res
 * Tunable numbers live in the configs rather than as constants.
 
 Adding a toggle is one field plus its default. No schema, no console, no third-party service.
+
+### Runtime Changes
+
+Every flag and config applies while the app and the server are running, with no restart and no release.
+
+* **Server**: an update is written to the database and signaled to every instance, which reloads the changed record.
+* **Client**: the fetched values replace the in-memory ones. A flag turning off stops whatever it gates, and turning on starts it again.
 
 ## Permissions
 
@@ -892,8 +899,9 @@ The switch is `Env.developmentMode`, from the `DEVELOPMENT` variable.
 | Seeded account        | `admin`/`admin`                       | The `ADMIN_*` values                               |
 
 > [!NOTE]
-> FCM needs **all** of: production mode, the `firebase` server flag, Google Application Default Credentials, and `GCP_PROJECT_ID`.
+> FCM needs **all** of: production mode, Google Application Default Credentials, and `GCP_PROJECT_ID`.
 > If any is missing the server falls back to `NoOpFcmService` instead of failing to boot, so a misconfigured deployment silently delivers over WebSocket and SSE only.
+> The `firebase` server flag then switches delivery on and off while the server runs.
 > The signal, by contrast, follows the database: a Postgres connection factory yields `PostgresSignal` unless `SINGLE_INSTANCE` is set, anything else `LocalSignal`. See [Using Another Database](#using-another-database).
 
 ## Firebase Setup
@@ -1081,7 +1089,9 @@ Any component can report a failure without knowing where logs go, and tests capt
 
 ## API Routes
 
-Every route shares a global rate limit; those marked *rate-limited* have a stricter one. Most groups are also gated by a `ServerFlags` flag; the flags/configs and `Registry` routes are installed unconditionally. Paths come from the shared `URL` registry.
+Every route shares a global rate limit; those marked *rate-limited* have a stricter one.
+Most groups are also gated by a `ServerFlags` flag, checked on every request; the flags/configs and `Registry` routes are installed unconditionally.
+Paths come from the shared `URL` registry.
 
 | Method & Path                                                | Purpose                                                     | Auth                                              | Flag             |
 |--------------------------------------------------------------|-------------------------------------------------------------|---------------------------------------------------|------------------|
