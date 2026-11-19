@@ -14,13 +14,18 @@ sealed interface UserProfileScreenAction {
     object Logout: UserProfileScreenAction
     /** Resets the app's local data. */
     object Reset: UserProfileScreenAction
-
+    /** Opens the language dialog with the selected language picked. */
+    object OpenLanguageDialog: UserProfileScreenAction
     /**
-     * Selects the language the app is shown in.
+     * Picks a language in the language dialog.
      *
      * @param languageIso ISO code of the language, or `null` to follow the device language.
      */
-    data class SelectLanguage(val languageIso: String?): UserProfileScreenAction
+    data class PickLanguage(val languageIso: String?): UserProfileScreenAction
+    /** Selects the language picked in the language dialog as the language the app is shown in, and closes the dialog. */
+    object ApplyLanguage: UserProfileScreenAction
+    /** Closes the language dialog without selecting a language. */
+    object DismissLanguageDialog: UserProfileScreenAction
 }
 
 /**
@@ -32,6 +37,8 @@ sealed interface UserProfileScreenAction {
  * @property language ISO code of the language the app is shown in.
  * @property languages ISO codes of the languages holding translations.
  * @property selectedLanguage ISO code of the language selected for the app, or `null` while the app follows the device language.
+ * @property languageDialogOpen Whether the language dialog is open.
+ * @property pickedLanguage ISO code of the language picked in the language dialog, or `null` for the device language.
  * @property appVersion Current app version.
  */
 data class UserProfileScreenState(
@@ -41,5 +48,7 @@ data class UserProfileScreenState(
     val language: String = getLanguage(),
     val languages: ImmutableList<String> = persistentListOf(),
     val selectedLanguage: String? = null,
+    val languageDialogOpen: Boolean = false,
+    val pickedLanguage: String? = null,
     val appVersion: String = AppInfo.VERSION,
 )

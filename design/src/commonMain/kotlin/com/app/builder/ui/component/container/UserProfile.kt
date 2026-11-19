@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import com.app.builder.ui.LocalTypography
@@ -27,7 +28,8 @@ import com.app.builder.ui.core.text.Text
  * @param guest true if it is a guest account, false otherwise.
  * @param name The user's full name, shown below the avatar.
  * @param image The user's avatar image.
- * @param language The device language, shown as an informative label.
+ * @param language The ISO code of the language the app is shown in, shown translated.
+ * @param onLanguageClick Callback invoked when language is clicked, or `null` for a language row that can't be clicked.
  * @param appVersion The app version, shown as an informative label.
  * @param onEditProfileClick Callback invoked when edit profile is clicked.
  * @param onChangePasswordClick Callback invoked when change password is clicked.
@@ -46,6 +48,7 @@ fun UserProfile(
     name: String? = null,
     image: Image? = null,
     language: String = "",
+    onLanguageClick: (() -> Unit)? = null,
     appVersion: String = "",
     onEditProfileClick: () -> Unit = {},
     onChangePasswordClick: () -> Unit = {},
@@ -100,17 +103,22 @@ fun UserProfile(
             }
         }
 
-        if (!guest) item {
+        item {
             UserProfileSection(title = "device") {
                 ListItem(
+                    modifier = Modifier
+                        .testTag(tag = "language")
+                        .then(other = onLanguageClick?.let { Modifier.clickable { it() } } ?: Modifier),
                     headlineText = "language",
                     trailingContent = { Text(text = language, style = typography.bodyMedium) },
                 )
-                Divider()
-                ListItem(
-                    modifier = Modifier.clickable { onResetClick() },
-                    headlineText = "reset",
-                )
+                if (!guest) {
+                    Divider()
+                    ListItem(
+                        modifier = Modifier.clickable { onResetClick() },
+                        headlineText = "reset",
+                    )
+                }
             }
         }
 
@@ -176,7 +184,7 @@ private fun UserProfileSection(
 private fun UserProfilePreview() = Preview {
     UserProfile(
         name = "Vitor Ribeiro",
-        language = "Ingrish",
+        language = "en",
         appVersion = "1.0.0",
         onHelpClick = {},
     )

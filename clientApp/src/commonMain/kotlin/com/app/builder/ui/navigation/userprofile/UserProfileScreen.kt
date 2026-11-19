@@ -10,6 +10,7 @@ import com.app.builder.core.config.ClientFlags
 import com.app.builder.ui.Preview
 import com.app.builder.ui.component.bar.TopActionBar
 import com.app.builder.ui.component.container.UserProfile
+import com.app.builder.ui.component.overlay.LanguageDialog
 import com.app.builder.ui.navigation.LocalRouter
 import com.app.builder.ui.navigation.Screen
 import com.app.builder.ui.navigation.open
@@ -46,6 +47,9 @@ fun UserProfileScreen(
             name = state.name,
             image = state.image,
             language = state.language,
+            onLanguageClick = if (state.languages.isNotEmpty()) {
+                { store.send(action = UserProfileScreenAction.OpenLanguageDialog) }
+            } else null,
             appVersion = state.appVersion,
             onEditProfileClick = { router.navigate(screen = Screen.EditProfile) },
             onChangePasswordClick = { router.navigate(screen = Screen.ChangePassword) },
@@ -62,6 +66,14 @@ fun UserProfileScreen(
             onPrivacyPolicyClick = { uri.open(uri = AppInfo.PRIVACY_POLICY) },
         )
     }
+
+    if (state.languageDialogOpen) LanguageDialog(
+        languages = state.languages,
+        selectedLanguage = state.pickedLanguage,
+        onLanguageSelected = { store.send(action = UserProfileScreenAction.PickLanguage(languageIso = it)) },
+        onApply = { store.send(action = UserProfileScreenAction.ApplyLanguage) },
+        onDismiss = { store.send(action = UserProfileScreenAction.DismissLanguageDialog) },
+    )
 }
 
 @PreviewLightDark

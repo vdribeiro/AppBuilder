@@ -15,7 +15,7 @@ import com.app.builder.ui.navigation.Screen
 fun EntryProviderScope<NavKey>.userProfileProvider(useCases: UseCases) {
     entry<Screen.UserProfile> {
         UserProfileScreen(
-            store = viewModel { UserProfileScreenStore(state = UserProfileScreenState(), authenticationUseCases = useCases.authenticationUseCases) },
+            store = viewModel { UserProfileScreenStore(state = UserProfileScreenState(), authenticationUseCases = useCases.authenticationUseCases, translationUseCases = useCases.translationUseCases) },
         )
     }
     entry<Screen.EditProfile> {

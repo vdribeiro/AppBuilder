@@ -11,6 +11,7 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import com.app.builder.core.config.ClientFlags
+import com.app.builder.core.locale.SelectedLanguage
 import com.app.builder.domain.gateway.translation.toTranslationSchema
 import com.app.builder.test.FakeData
 import com.app.builder.test.TestCase
@@ -181,8 +182,13 @@ class UserProfileScreenTest: TestCase() {
         onNodeWithText(text = "apply").performClick()
 
         waitUntil { store.state.selectedLanguage == language && store.state.language == language }
+        assertEquals(expected = language, actual = SelectedLanguage.value)
 
-        store.send(action = UserProfileScreenAction.SelectLanguage(languageIso = null))
+        onNodeWithTag(testTag = "language_dialog").assertDoesNotExist()
+
+        onNodeWithTag(testTag = "language").performScrollTo().performClick()
+        onNodeWithTag(testTag = "language_system").performClick()
+        onNodeWithText(text = "apply").performClick()
 
         waitUntil { store.state.selectedLanguage == null }
     }

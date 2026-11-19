@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.mapNotNull
 import androidx.compose.runtime.snapshotFlow
 import com.app.builder.core.flow.Dispatcher
+import com.app.builder.core.locale.SelectedLanguage
 import com.app.builder.core.locale.getLocalDateTime
 import com.app.builder.core.telemetry.Telemetry
 import com.app.builder.data.storage.AppFile
@@ -74,8 +75,9 @@ class UserListScreenStore(
 
         combine(
             flow = usersActionBarFlow,
-            flow2 = selectedUuidFlow
-        ) { (users, actionBar), selectedUuid ->
+            flow2 = selectedUuidFlow,
+            flow3 = SelectedLanguage.flow
+        ) { (users, actionBar), selectedUuid, _ ->
             users
                 .map { it.toUserItem(visibilityProperties = actionBar.visibleProperties, selectedUuid = selectedUuid) }
                 .toPersistentList()
