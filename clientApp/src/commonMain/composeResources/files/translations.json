@@ -56,6 +56,16 @@
   },
   {
     "languageIso": "en",
+    "key": "en",
+    "value": "English"
+  },
+  {
+    "languageIso": "en",
+    "key": "pt",
+    "value": "Português"
+  },
+  {
+    "languageIso": "en",
     "key": "user",
     "value": "User"
   },
@@ -848,6 +858,16 @@
     "languageIso": "pt",
     "key": "translation_value",
     "value": "Valor"
+  },
+  {
+    "languageIso": "pt",
+    "key": "en",
+    "value": "English"
+  },
+  {
+    "languageIso": "pt",
+    "key": "pt",
+    "value": "Português"
   },
   {
     "languageIso": "pt",
