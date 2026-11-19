@@ -11,6 +11,11 @@ import com.app.builder.test.TestCase
 
 class ProbeTest: TestCase() {
 
+    override suspend fun beforeTest() {
+        super.beforeTest()
+        ServerFlags.set { it.copy(probe = true) }
+    }
+
     /** Verifies that the probe endpoint responds OK when enabled. */
     @Test
     fun probe() = runServerTest {

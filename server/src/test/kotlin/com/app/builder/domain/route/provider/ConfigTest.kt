@@ -12,7 +12,6 @@ import com.app.builder.data.http.HttpRequest
 import com.app.builder.data.http.URL
 import com.app.builder.data.http.get
 import com.app.builder.data.http.post
-import com.app.builder.test.FakeData
 import com.app.builder.test.TestCase
 
 class ConfigTest: TestCase() {
@@ -23,8 +22,8 @@ class ConfigTest: TestCase() {
         installRouting()
         val client = createClient(token = null)
 
-        assertEquals(expected = FakeData.clientFlags, actual = client.get(request = HttpRequest(url = URL.ClientFlags)).body<ClientFlags>())
-        assertEquals(expected = FakeData.clientConfigs, actual = client.get(request = HttpRequest(url = URL.ClientConfigs)).body<ClientConfigs>())
+        assertEquals(expected = ClientFlags.value, actual = client.get(request = HttpRequest(url = URL.ClientFlags)).body<ClientFlags>())
+        assertEquals(expected = ClientConfigs.value, actual = client.get(request = HttpRequest(url = URL.ClientConfigs)).body<ClientConfigs>())
     }
 
     /** Verifies that updating client flags and configs requires admin permission and persists valid values. */
@@ -33,20 +32,20 @@ class ConfigTest: TestCase() {
         installRouting()
         val client = createClient(token = bearerToken.accessToken)
 
-        assertEquals(expected = HttpStatusCode.Forbidden, actual = client.post(request = HttpRequest(url = URL.ClientFlags), body = FakeData.clientFlags).status)
-        assertEquals(expected = HttpStatusCode.Forbidden, actual = client.post(request = HttpRequest(url = URL.ClientConfigs), body = FakeData.clientConfigs).status)
+        assertEquals(expected = HttpStatusCode.Forbidden, actual = client.post(request = HttpRequest(url = URL.ClientFlags), body = ClientFlags.value).status)
+        assertEquals(expected = HttpStatusCode.Forbidden, actual = client.post(request = HttpRequest(url = URL.ClientConfigs), body = ClientConfigs.value).status)
 
         val adminClient = createClient(token = adminBearerToken.accessToken)
 
         assertEquals(expected = HttpStatusCode.BadRequest, actual = adminClient.post(request = HttpRequest(url = URL.ClientFlags), body = "not a flag").status)
 
-        val flags = FakeData.clientFlags.copy(http = !FakeData.clientFlags.scheduler)
+        val flags = ClientFlags.value.copy(http = !ClientFlags.value.scheduler)
         val flagsResponse = adminClient.post(request = HttpRequest(url = URL.ClientFlags), body = flags)
         assertEquals(expected = HttpStatusCode.OK, actual = flagsResponse.status)
         assertEquals(expected = flags, actual = flagsResponse.body<ClientFlags>())
         assertEquals(expected = flags, actual = ClientFlags.value)
 
-        val configs = FakeData.clientConfigs.copy(httpConnectTimeoutMillis = 1234L)
+        val configs = ClientConfigs.value.copy(httpConnectTimeoutMillis = 1234L)
         val configsResponse = adminClient.post(request = HttpRequest(url = URL.ClientConfigs), body = configs)
         assertEquals(expected = HttpStatusCode.OK, actual = configsResponse.status)
         assertEquals(expected = configs, actual = configsResponse.body<ClientConfigs>())
@@ -64,8 +63,8 @@ class ConfigTest: TestCase() {
 
         val adminClient = createClient(token = adminBearerToken.accessToken)
 
-        assertEquals(expected = FakeData.serverFlags, actual = adminClient.get(request = HttpRequest(url = URL.ServerFlags)).body<ServerFlags>())
-        assertEquals(expected = FakeData.serverConfigs, actual = adminClient.get(request = HttpRequest(url = URL.ServerConfigs)).body<ServerConfigs>())
+        assertEquals(expected = ServerFlags.value, actual = adminClient.get(request = HttpRequest(url = URL.ServerFlags)).body<ServerFlags>())
+        assertEquals(expected = ServerConfigs.value, actual = adminClient.get(request = HttpRequest(url = URL.ServerConfigs)).body<ServerConfigs>())
     }
 
     /** Verifies that updating server flags and configs requires admin permission and persists valid values. */
@@ -74,20 +73,20 @@ class ConfigTest: TestCase() {
         installRouting()
         val client = createClient(token = bearerToken.accessToken)
 
-        assertEquals(expected = HttpStatusCode.Forbidden, actual = client.post(request = HttpRequest(url = URL.ServerFlags), body = FakeData.serverFlags).status)
-        assertEquals(expected = HttpStatusCode.Forbidden, actual = client.post(request = HttpRequest(url = URL.ServerConfigs), body = FakeData.serverConfigs).status)
+        assertEquals(expected = HttpStatusCode.Forbidden, actual = client.post(request = HttpRequest(url = URL.ServerFlags), body = ServerFlags.value).status)
+        assertEquals(expected = HttpStatusCode.Forbidden, actual = client.post(request = HttpRequest(url = URL.ServerConfigs), body = ServerConfigs.value).status)
 
         val adminClient = createClient(token = adminBearerToken.accessToken)
 
         assertEquals(expected = HttpStatusCode.BadRequest, actual = adminClient.post(request = HttpRequest(url = URL.ServerConfigs), body = "not a config").status)
 
-        val flags = FakeData.serverFlags.copy(firebase = !FakeData.serverFlags.firebase)
+        val flags = ServerFlags.value.copy(firebase = !ServerFlags.value.firebase)
         val flagsResponse = adminClient.post(request = HttpRequest(url = URL.ServerFlags), body = flags)
         assertEquals(expected = HttpStatusCode.OK, actual = flagsResponse.status)
         assertEquals(expected = flags, actual = flagsResponse.body<ServerFlags>())
         assertEquals(expected = flags, actual = ServerFlags.value)
 
-        val configs = FakeData.serverConfigs.copy(accessTokenValidity = 4321L)
+        val configs = ServerConfigs.value.copy(accessTokenValidity = 4321L)
         val configsResponse = adminClient.post(request = HttpRequest(url = URL.ServerConfigs), body = configs)
         assertEquals(expected = HttpStatusCode.OK, actual = configsResponse.status)
         assertEquals(expected = configs, actual = configsResponse.body<ServerConfigs>())
@@ -102,8 +101,8 @@ class ConfigTest: TestCase() {
 
         assertEquals(expected = HttpStatusCode.Unauthorized, actual = client.get(request = HttpRequest(url = URL.ServerFlags)).status)
         assertEquals(expected = HttpStatusCode.Unauthorized, actual = client.get(request = HttpRequest(url = URL.ServerConfigs)).status)
-        assertEquals(expected = HttpStatusCode.Unauthorized, actual = client.post(request = HttpRequest(url = URL.ServerFlags), body = FakeData.serverFlags).status)
-        assertEquals(expected = HttpStatusCode.Unauthorized, actual = client.post(request = HttpRequest(url = URL.ServerConfigs), body = FakeData.serverConfigs).status)
+        assertEquals(expected = HttpStatusCode.Unauthorized, actual = client.post(request = HttpRequest(url = URL.ServerFlags), body = ServerFlags.value).status)
+        assertEquals(expected = HttpStatusCode.Unauthorized, actual = client.post(request = HttpRequest(url = URL.ServerConfigs), body = ServerConfigs.value).status)
     }
 
     /** Verifies that unauthenticated requests to update client flags and configs are rejected. */
@@ -112,7 +111,7 @@ class ConfigTest: TestCase() {
         installRouting()
         val client = createClient(token = null)
 
-        assertEquals(expected = HttpStatusCode.Unauthorized, actual = client.post(request = HttpRequest(url = URL.ClientFlags), body = FakeData.clientFlags).status)
-        assertEquals(expected = HttpStatusCode.Unauthorized, actual = client.post(request = HttpRequest(url = URL.ClientConfigs), body = FakeData.clientConfigs).status)
+        assertEquals(expected = HttpStatusCode.Unauthorized, actual = client.post(request = HttpRequest(url = URL.ClientFlags), body = ClientFlags.value).status)
+        assertEquals(expected = HttpStatusCode.Unauthorized, actual = client.post(request = HttpRequest(url = URL.ClientConfigs), body = ClientConfigs.value).status)
     }
 }

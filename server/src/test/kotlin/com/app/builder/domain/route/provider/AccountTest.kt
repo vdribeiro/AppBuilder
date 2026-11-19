@@ -24,6 +24,11 @@ import io.ktor.client.request.get as ktorGet
 
 class AccountTest: TestCase() {
 
+    override suspend fun beforeTest() {
+        super.beforeTest()
+        ServerFlags.set { it.copy(users = true) }
+    }
+
     /** Verifies fetching a single account by user uuid: requires authentication, returns the account without its password hash, 404s when missing, and 400s on a malformed uuid. */
     @Test
     fun getAccount() = runServerTest {

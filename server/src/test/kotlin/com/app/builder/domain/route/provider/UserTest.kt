@@ -7,6 +7,7 @@ import kotlin.test.assertNull
 import kotlin.time.Duration.Companion.milliseconds
 import io.ktor.client.call.body
 import io.ktor.http.HttpStatusCode
+import com.app.builder.core.config.ServerFlags
 import com.app.builder.core.locale.now
 import com.app.builder.core.security.uuid
 import com.app.builder.data.http.Header
@@ -23,6 +24,11 @@ import com.app.builder.test.TestCase
 import io.ktor.client.request.get as ktorGet
 
 class UserTest: TestCase() {
+
+    override suspend fun beforeTest() {
+        super.beforeTest()
+        ServerFlags.set { it.copy(users = true) }
+    }
 
     /** Verifies that fetching users requires authentication and supports pagination. */
     @Test

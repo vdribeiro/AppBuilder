@@ -89,5 +89,41 @@ data class ClientFlags(
             materials = true,
             buildingMaterials = true,
         )
-    )
+    ) {
+        /**
+         * Sets every flag to false.
+         *
+         * @return The flags with every value false.
+         */
+        fun off(): ClientFlags = set {
+            ClientFlags(
+                console = false,
+                http = false,
+                scheduler = false,
+                music = false,
+                camera = false,
+                nfc = false,
+                broadcast = false,
+                push = false,
+                pushSync = false,
+                locationCapture = false,
+                scrollBar = false,
+                design = false,
+                home = false,
+                login = false,
+                notifications = false,
+                deviceFiles = false,
+                userProfile = false,
+                help = false,
+                users = false,
+                registries = false,
+                tasks = false,
+                equipments = false,
+                buildings = false,
+                buildingEquipments = false,
+                materials = false,
+                buildingMaterials = false,
+            )
+        }
+    }
 }

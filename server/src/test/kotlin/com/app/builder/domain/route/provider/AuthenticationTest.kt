@@ -8,6 +8,7 @@ import io.ktor.client.call.body
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpStatusCode
 import com.app.builder.core.config.ServerConfigs
+import com.app.builder.core.config.ServerFlags
 import com.app.builder.core.locale.now
 import com.app.builder.core.security.uuid
 import com.app.builder.data.http.HttpRequest
@@ -25,6 +26,11 @@ import com.app.builder.test.TestCase
 import io.ktor.client.request.get as ktorGet
 
 class AuthenticationTest: TestCase() {
+
+    override suspend fun beforeTest() {
+        super.beforeTest()
+        ServerFlags.set { it.copy(authentication = true, users = true) }
+    }
 
     /** Verifies that registering with a valid form responds with the created account and no session tokens, and rejects malformed requests. */
     @Test

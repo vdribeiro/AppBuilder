@@ -13,7 +13,6 @@ import com.app.builder.data.database.reset
 import com.app.builder.data.database.table.ConfigTable
 import com.app.builder.data.signal.LocalSignal
 import com.app.builder.domain.usecase.Outcome
-import com.app.builder.test.FakeData
 import com.app.builder.test.TestCase
 
 class ConfigUseCasesTest: TestCase() {
@@ -25,12 +24,17 @@ class ConfigUseCasesTest: TestCase() {
             .useCases
             .configUseCases
 
+        val clientFlags = ClientFlags.value
+        val clientConfigs = ClientConfigs.value
+        val serverFlags = ServerFlags.value
+        val serverConfigs = ServerConfigs.value
+
         configUseCases.load()
 
-        assertEquals(expected = FakeData.clientFlags, actual = ClientFlags.value)
-        assertEquals(expected = FakeData.clientConfigs, actual = ClientConfigs.value)
-        assertEquals(expected = FakeData.serverFlags, actual = ServerFlags.value)
-        assertEquals(expected = FakeData.serverConfigs, actual = ServerConfigs.value)
+        assertEquals(expected = clientFlags, actual = ClientFlags.value)
+        assertEquals(expected = clientConfigs, actual = ClientConfigs.value)
+        assertEquals(expected = serverFlags, actual = ServerFlags.value)
+        assertEquals(expected = serverConfigs, actual = ServerConfigs.value)
     }
 
     /** Verifies that updating configs and flags persists the new values and reflects them after load. */
@@ -40,10 +44,10 @@ class ConfigUseCasesTest: TestCase() {
             .useCases
             .configUseCases
 
-        val clientFlags = FakeData.clientFlags.copy(scheduler = !FakeData.clientFlags.scheduler)
-        val clientConfigs = FakeData.clientConfigs.copy(clockDriftTolerance = 1234L)
-        val serverFlags = FakeData.serverFlags.copy(broadcast = !FakeData.serverFlags.broadcast)
-        val serverConfigs = FakeData.serverConfigs.copy(accessTokenValidity = 4321L)
+        val clientFlags = ClientFlags.value.copy(scheduler = !ClientFlags.value.scheduler)
+        val clientConfigs = ClientConfigs.value.copy(clockDriftTolerance = 1234L)
+        val serverFlags = ServerFlags.value.copy(broadcast = !ServerFlags.value.broadcast)
+        val serverConfigs = ServerConfigs.value.copy(accessTokenValidity = 4321L)
 
         assertEquals(expected = Outcome.Success(data = Unit), actual = configUseCases.updateClientFeatureFlags(flags = clientFlags))
         assertEquals(expected = Outcome.Success(data = Unit), actual = configUseCases.updateClientConfigs(configs = clientConfigs))
@@ -84,7 +88,7 @@ class ConfigUseCasesTest: TestCase() {
     fun observeRestoresSignaledUpdates() = runServerTest {
         val configUseCases = dependency.get().useCases.configUseCases
         val signal = dependency.get().instanceSignal as LocalSignal
-        val serverFlags = FakeData.serverFlags.copy(broadcast = !FakeData.serverFlags.broadcast)
+        val serverFlags = ServerFlags.value.copy(broadcast = !ServerFlags.value.broadcast)
         assertEquals(expected = Outcome.Success(data = Unit), actual = configUseCases.updateServerFeatureFlags(flags = serverFlags))
         ServerFlags.reset()
 

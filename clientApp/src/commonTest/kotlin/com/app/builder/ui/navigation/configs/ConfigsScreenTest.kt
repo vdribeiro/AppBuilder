@@ -15,6 +15,8 @@ import androidx.compose.ui.test.onNodeWithTag
 import com.app.builder.Dependency.getUserDependency
 import com.app.builder.core.config.ClientConfigs
 import com.app.builder.core.config.ClientFlags
+import com.app.builder.core.config.ServerConfigs
+import com.app.builder.core.config.ServerFlags
 import com.app.builder.test.FakeData
 import com.app.builder.test.TestCase
 import com.app.builder.ui.component.list.ConfigItem
@@ -75,7 +77,7 @@ class ConfigsScreenTest: TestCase() {
         val configScreenStore = setUpScreen()
 
         val item = configScreenStore.item(configType = ConfigType.CLIENT_FLAG, name = "http")
-        assertEquals(expected = ConfigValue.Toggle(value = FakeData.clientFlags.http), actual = item.value)
+        assertEquals(expected = ConfigValue.Toggle(value = ClientFlags.value.http), actual = item.value)
 
         val others = configScreenStore.state.sections.filterNot { it.configType == ConfigType.CLIENT_FLAG }
 
@@ -92,9 +94,11 @@ class ConfigsScreenTest: TestCase() {
         val configScreenStore = setUpScreen()
         val item = configScreenStore.item(configType = ConfigType.CLIENT_FLAG, name = "http")
 
-        ClientFlags.set { it.copy(http = !FakeData.clientFlags.http) }
+        val http = ClientFlags.value.http
 
-        waitUntil { configScreenStore.item(configType = ConfigType.CLIENT_FLAG, name = "http").value == ConfigValue.Toggle(value = !FakeData.clientFlags.http) }
+        ClientFlags.set { it.copy(http = !http) }
+
+        waitUntil { configScreenStore.item(configType = ConfigType.CLIENT_FLAG, name = "http").value == ConfigValue.Toggle(value = !http) }
         assertEquals(expected = item.uuid, actual = configScreenStore.item(configType = ConfigType.CLIENT_FLAG, name = "http").uuid)
     }
 
@@ -104,7 +108,7 @@ class ConfigsScreenTest: TestCase() {
         val configScreenStore = setUpScreen()
 
         val item = configScreenStore.item(configType = ConfigType.CLIENT_CONFIG, name = "httpConnectTimeoutMillis")
-        assertEquals(expected = ConfigValue.Form(value = FakeData.clientConfigs.httpConnectTimeoutMillis.toString()), actual = item.value)
+        assertEquals(expected = ConfigValue.Form(value = ClientConfigs.value.httpConnectTimeoutMillis.toString()), actual = item.value)
 
         configScreenStore.send(action = ConfigScreenAction.UpdateValue(configType = ConfigType.CLIENT_CONFIG, item = item, value = ConfigValue.Form(value = "123")))
         waitForIdle()
@@ -118,12 +122,12 @@ class ConfigsScreenTest: TestCase() {
         val configScreenStore = setUpScreen()
 
         val item = configScreenStore.item(configType = ConfigType.SERVER_FLAG, name = "probe")
-        assertEquals(expected = ConfigValue.Toggle(value = FakeData.serverFlags.probe), actual = item.value)
+        assertEquals(expected = ConfigValue.Toggle(value = ServerFlags.value.probe), actual = item.value)
 
-        configScreenStore.send(action = ConfigScreenAction.UpdateValue(configType = ConfigType.SERVER_FLAG, item = item, value = ConfigValue.Toggle(value = false)))
+        configScreenStore.send(action = ConfigScreenAction.UpdateValue(configType = ConfigType.SERVER_FLAG, item = item, value = ConfigValue.Toggle(value = true)))
         waitForIdle()
 
-        assertEquals(expected = ConfigValue.Toggle(value = false), actual = configScreenStore.item(configType = ConfigType.SERVER_FLAG, name = "probe").value)
+        assertEquals(expected = ConfigValue.Toggle(value = true), actual = configScreenStore.item(configType = ConfigType.SERVER_FLAG, name = "probe").value)
     }
 
     /** Verifies that the server configs section reflects a form value update. */
@@ -132,7 +136,7 @@ class ConfigsScreenTest: TestCase() {
         val configScreenStore = setUpScreen()
 
         val item = configScreenStore.item(configType = ConfigType.SERVER_CONFIG, name = "accessTokenValidity")
-        assertEquals(expected = ConfigValue.Form(value = FakeData.serverConfigs.accessTokenValidity.toString()), actual = item.value)
+        assertEquals(expected = ConfigValue.Form(value = ServerConfigs.value.accessTokenValidity.toString()), actual = item.value)
 
         configScreenStore.send(action = ConfigScreenAction.UpdateValue(configType = ConfigType.SERVER_CONFIG, item = item, value = ConfigValue.Form(value = "123")))
         waitForIdle()
@@ -153,7 +157,7 @@ class ConfigsScreenTest: TestCase() {
         val updated = configScreenStore.item(configType = ConfigType.CLIENT_CONFIG, name = "httpConnectTimeoutMillis")
         assertEquals(expected = ConfigValue.Form(value = "12a"), actual = updated.value)
         assertFalse(actual = updated.pending)
-        assertEquals(expected = FakeData.clientConfigs, actual = ClientConfigs.value)
+        assertEquals(expected = ClientConfigs.default, actual = ClientConfigs.value)
     }
 
     /** Verifies that a user only gets the sections they can read, and that read-only sections are disabled and ignore edits. */
@@ -176,7 +180,7 @@ class ConfigsScreenTest: TestCase() {
         onAllNodes(matcher = isToggleable()).assertAll(matcher = isNotEnabled())
 
         val item = configScreenStore.item(configType = ConfigType.CLIENT_FLAG, name = "http")
-        configScreenStore.send(action = ConfigScreenAction.UpdateValue(configType = ConfigType.CLIENT_FLAG, item = item, value = ConfigValue.Toggle(value = !FakeData.clientFlags.http)))
+        configScreenStore.send(action = ConfigScreenAction.UpdateValue(configType = ConfigType.CLIENT_FLAG, item = item, value = ConfigValue.Toggle(value = !ClientFlags.value.http)))
         waitForIdle()
 
         assertEquals(expected = item, actual = configScreenStore.item(configType = ConfigType.CLIENT_FLAG, name = "http"))

@@ -5,7 +5,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import com.app.builder.data.serializer.decode
 import com.app.builder.data.serializer.encode
-import com.app.builder.test.FakeData
 import com.app.builder.test.TestCase
 
 class ServerConfigsTest: TestCase() {
@@ -31,8 +30,8 @@ class ServerConfigsTest: TestCase() {
     @Test
     fun resetRestoresDefaults() = runUnitTest {
         ServerConfigs.set { it.copy(maxPageSize = 1) }
-        assertEquals(expected = FakeData.serverConfigs, actual = ServerConfigs.reset())
-        assertEquals(expected = FakeData.serverConfigs, actual = ServerConfigs.value)
+        assertEquals(expected = ServerConfigs.default, actual = ServerConfigs.reset())
+        assertEquals(expected = ServerConfigs.default, actual = ServerConfigs.value)
     }
 
     /** Verifies the configs survive a JSON round trip. */

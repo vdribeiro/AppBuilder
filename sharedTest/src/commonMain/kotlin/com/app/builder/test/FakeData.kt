@@ -1,9 +1,5 @@
 package com.app.builder.test
 
-import com.app.builder.core.config.ClientConfigs
-import com.app.builder.core.config.ClientFlags
-import com.app.builder.core.config.ServerConfigs
-import com.app.builder.core.config.ServerFlags
 import com.app.builder.core.locale.now
 import com.app.builder.core.platform.OS
 import com.app.builder.core.security.uuid
@@ -38,14 +34,6 @@ object FakeData {
 
     /** The application version the test suites run under. */
     const val APP_VERSION = "0.0.0"
-
-    val clientFlags = ClientFlags.value.copy()
-
-    val clientConfigs = ClientConfigs.value.copy()
-
-    val serverFlags: ServerFlags = ServerFlags.value.copy()
-
-    val serverConfigs: ServerConfigs = ServerConfigs.value.copy()
 
     val translations: List<Translation> = listOf(
         Translation(

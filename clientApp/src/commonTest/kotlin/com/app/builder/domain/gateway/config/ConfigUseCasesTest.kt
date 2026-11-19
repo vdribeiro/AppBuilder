@@ -4,7 +4,10 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 import com.app.builder.Dependency.getUserDependency
+import com.app.builder.core.config.ClientConfigs
 import com.app.builder.core.config.ClientFlags
+import com.app.builder.core.config.ServerConfigs
+import com.app.builder.core.config.ServerFlags
 import com.app.builder.test.FakeData
 import com.app.builder.test.TestCase
 
@@ -18,7 +21,9 @@ class ConfigUseCasesTest: TestCase() {
             .useCases
             .configUseCases
 
-        assertEquals(expected = FakeData.clientFlags, actual = configUseCases.updateFeatureFlags(flags = FakeData.clientFlags))
+        val flags = ClientFlags.value.copy(music = !ClientFlags.value.music)
+
+        assertEquals(expected = flags, actual = configUseCases.updateFeatureFlags(flags = flags))
     }
 
     /** Verifies that updating client feature flags returns null when the http client flag is disabled. */
@@ -30,7 +35,7 @@ class ConfigUseCasesTest: TestCase() {
             .useCases
             .configUseCases
 
-        assertNull(actual = configUseCases.updateFeatureFlags(flags = FakeData.clientFlags))
+        assertNull(actual = configUseCases.updateFeatureFlags(flags = ClientFlags.value))
     }
 
     /** Verifies that updating client remote configs remotely returns the updated configs. */
@@ -41,7 +46,9 @@ class ConfigUseCasesTest: TestCase() {
             .useCases
             .configUseCases
 
-        assertEquals(expected = FakeData.clientConfigs, actual = configUseCases.updateConfigs(configs = FakeData.clientConfigs))
+        val configs = ClientConfigs.value.copy(httpConnectTimeoutMillis = 1234L)
+
+        assertEquals(expected = configs, actual = configUseCases.updateConfigs(configs = configs))
     }
 
     /** Verifies that updating client remote configs returns null when the http client flag is disabled. */
@@ -53,7 +60,7 @@ class ConfigUseCasesTest: TestCase() {
             .useCases
             .configUseCases
 
-        assertNull(actual = configUseCases.updateConfigs(configs = FakeData.clientConfigs))
+        assertNull(actual = configUseCases.updateConfigs(configs = ClientConfigs.value))
     }
 
     /** Verifies that fetching and updating server feature flags returns the expected flags. */
@@ -64,8 +71,9 @@ class ConfigUseCasesTest: TestCase() {
             .useCases
             .configUseCases
 
-        assertEquals(expected = FakeData.serverFlags, actual = configUseCases.getServerFeatureFlags())
-        assertEquals(expected = FakeData.serverFlags, actual = configUseCases.updateServerFeatureFlags(flags = FakeData.serverFlags))
+        assertEquals(expected = ServerFlags.value, actual = configUseCases.getServerFeatureFlags())
+        val flags = ServerFlags.value.copy(probe = !ServerFlags.value.probe)
+        assertEquals(expected = flags, actual = configUseCases.updateServerFeatureFlags(flags = flags))
     }
 
     /** Verifies that fetching and updating server feature flags both return null when the http client flag is disabled. */
@@ -78,7 +86,7 @@ class ConfigUseCasesTest: TestCase() {
             .configUseCases
 
         assertNull(actual = configUseCases.getServerFeatureFlags())
-        assertNull(actual = configUseCases.updateServerFeatureFlags(flags = FakeData.serverFlags))
+        assertNull(actual = configUseCases.updateServerFeatureFlags(flags = ServerFlags.value))
     }
 
     /** Verifies that fetching and updating server remote configs returns the expected configs. */
@@ -89,8 +97,9 @@ class ConfigUseCasesTest: TestCase() {
             .useCases
             .configUseCases
 
-        assertEquals(expected = FakeData.serverConfigs, actual = configUseCases.getServerConfigs())
-        assertEquals(expected = FakeData.serverConfigs, actual = configUseCases.updateServerConfigs(configs = FakeData.serverConfigs))
+        assertEquals(expected = ServerConfigs.value, actual = configUseCases.getServerConfigs())
+        val configs = ServerConfigs.value.copy(accessTokenValidity = 4321L)
+        assertEquals(expected = configs, actual = configUseCases.updateServerConfigs(configs = configs))
     }
 
     /** Verifies that fetching and updating server remote configs both return null when the http client flag is disabled. */
@@ -103,6 +112,6 @@ class ConfigUseCasesTest: TestCase() {
             .configUseCases
 
         assertNull(actual = configUseCases.getServerConfigs())
-        assertNull(actual = configUseCases.updateServerConfigs(configs = FakeData.serverConfigs))
+        assertNull(actual = configUseCases.updateServerConfigs(configs = ServerConfigs.value))
     }
 }

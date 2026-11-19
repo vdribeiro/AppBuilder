@@ -6,6 +6,7 @@ import kotlin.test.assertTrue
 import kotlin.time.Duration.Companion.seconds
 import io.ktor.client.call.body
 import io.ktor.http.HttpStatusCode
+import com.app.builder.core.config.ServerFlags
 import com.app.builder.core.locale.now
 import com.app.builder.core.security.uuid
 import com.app.builder.data.database.reset
@@ -22,6 +23,11 @@ import com.app.builder.test.TestCase
 import io.ktor.client.request.get as ktorGet
 
 class BuildingTest: TestCase() {
+
+    override suspend fun beforeTest() {
+        super.beforeTest()
+        ServerFlags.set { it.copy(buildings = true) }
+    }
 
     /** Verifies that fetching buildings requires authentication and reflects previously posted buildings. */
     @Test

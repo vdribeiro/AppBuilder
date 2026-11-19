@@ -5,6 +5,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import io.ktor.client.call.body
 import io.ktor.http.HttpStatusCode
+import com.app.builder.core.config.ServerFlags
 import com.app.builder.data.database.reset
 import com.app.builder.data.http.HttpRequest
 import com.app.builder.data.http.Query
@@ -19,6 +20,11 @@ import com.app.builder.test.TestCase
 import io.ktor.client.request.get as ktorGet
 
 class BuildingEquipmentTest: TestCase() {
+
+    override suspend fun beforeTest() {
+        super.beforeTest()
+        ServerFlags.set { it.copy(buildingEquipments = true) }
+    }
 
     /** Verifies that fetching building equipments requires authentication and returns the posted building equipments. */
     @Test

@@ -10,6 +10,11 @@ import com.app.builder.test.TestCase
 
 class ConsoleTest: TestCase() {
 
+    override suspend fun beforeTest() {
+        super.beforeTest()
+        ClientFlags.set { it.copy(console = true) }
+    }
+
     /** Verifies info, error, and feedback calls each append a formatted entry to the buffer. */
     @Test
     fun infoErrorFeedbackAppendEntries() = runUnitTest {

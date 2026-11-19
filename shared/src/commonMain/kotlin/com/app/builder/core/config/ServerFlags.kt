@@ -53,5 +53,29 @@ data class ServerFlags(
             materials = true,
             buildingMaterials = true
         )
-    )
+    ) {
+        /**
+         * Sets every flag to false.
+         *
+         * @return The flags with every value false.
+         */
+        fun off(): ServerFlags = set {
+            ServerFlags(
+                resources = false,
+                probe = false,
+                authentication = false,
+                broadcast = false,
+                push = false,
+                firebase = false,
+                users = false,
+                deviceLocation = false,
+                tasks = false,
+                equipments = false,
+                buildings = false,
+                buildingEquipments = false,
+                materials = false,
+                buildingMaterials = false
+            )
+        }
+    }
 }

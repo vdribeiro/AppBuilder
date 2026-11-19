@@ -32,14 +32,6 @@ import com.app.builder.core.telemetry.Telemetry
 /** Class for defining test cases. It provides the shared hermetic testing environment by handling feature flags, configs, telemetry, the clock and coroutine dispatchers. */
 abstract class SharedTestCase {
 
-    init {
-        // Snapshot FakeData flags and configs
-        FakeData.clientFlags
-        FakeData.clientConfigs
-        FakeData.serverFlags
-        FakeData.serverConfigs
-    }
-
     /** Invoked before each test. */
     protected abstract suspend fun beforeTest()
 
@@ -68,6 +60,8 @@ abstract class SharedTestCase {
         DateTime.timeSource = dispatcher.scheduler.timeSource
         Telemetry.engines = listOf(MockLogger())
         resetConfigs()
+        ServerFlags.off()
+        ClientFlags.off()
         beforeTest()
     }
 

@@ -756,7 +756,7 @@ Each module's `TestCase` (built on `SharedTestCase` and `PlatformTestCase`) prov
 * `runUITest { }`: Compose UI tests. `setUI { }` renders under `AppTheme` with a mock lifecycle and navigation.
 * `runServerTest { }`: Ktor routes end to end, against in-memory H2 with the same injected environment as `./gradlew :server:run`.
 
-All three point `Dispatcher.Main`, `Default` and `IO` at one `UnconfinedTestDispatcher`, reset every flag and config to its default, and swap telemetry for a `MockLogger`, so no test inherits state from another.
+All three point `Dispatcher.Main`, `Default` and `IO` at one `UnconfinedTestDispatcher`, turn every flag off, reset every config to its default, and swap telemetry for a `MockLogger`, so no test inherits state from another.
 Each runs `beforeTest()`, the test body, then `afterTest()`, cancelling the scope and restoring the dispatchers even when the test fails.
 
 `PlatformTestCase` is an `expect abstract class` between `SharedTestCase` and each module's `TestCase`. Its Android actual runs under `RobolectricTestRunner` and stubs connectivity, while the other targets are one-liners, which is what lets Android tests live in `commonTest` too.

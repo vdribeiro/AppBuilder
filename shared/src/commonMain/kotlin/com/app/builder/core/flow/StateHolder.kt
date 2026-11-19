@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.updateAndGet
  *
  * @property default The initial value, restored by [reset].
  */
-open class StateHolder<T>(private val default: T) {
+open class StateHolder<T>(val default: T) {
     /** Backing state flow tracking value changes. */
     private val _flow: MutableStateFlow<T> = MutableStateFlow(value = default)
     /** Read only stream, emitting the current value on collection and every change after. */

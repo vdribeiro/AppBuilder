@@ -15,6 +15,11 @@ import com.app.builder.test.TestCase
 
 class BroadcastServiceTest: TestCase() {
 
+    override suspend fun beforeTest() {
+        super.beforeTest()
+        ServerFlags.set { it.copy(broadcast = true) }
+    }
+
     /** Verifies that connections can be added and removed, respecting the configured connection limit. */
     @Test
     fun addRemoveConnection() = runServerTest {

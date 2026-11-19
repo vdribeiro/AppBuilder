@@ -3,6 +3,7 @@ package com.app.builder.domain.route.provider
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import io.ktor.http.HttpStatusCode
+import com.app.builder.core.config.ServerFlags
 import com.app.builder.core.security.uuid
 import com.app.builder.data.http.HttpRequest
 import com.app.builder.data.http.URL
@@ -13,6 +14,11 @@ import com.app.builder.test.FakeData
 import com.app.builder.test.TestCase
 
 class DeviceLocationTest: TestCase() {
+
+    override suspend fun beforeTest() {
+        super.beforeTest()
+        ServerFlags.set { it.copy(deviceLocation = true) }
+    }
 
     /** Verifies that reporting a device location requires authentication, rejects invalid bodies and out-of-range coordinates, and succeeds otherwise. */
     @Test

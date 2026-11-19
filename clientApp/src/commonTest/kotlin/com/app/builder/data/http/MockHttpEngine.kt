@@ -7,6 +7,10 @@ import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.URLProtocol
 import io.ktor.http.content.TextContent
+import com.app.builder.core.config.ClientConfigs
+import com.app.builder.core.config.ClientFlags
+import com.app.builder.core.config.ServerConfigs
+import com.app.builder.core.config.ServerFlags
 import com.app.builder.data.serializer.decode
 import com.app.builder.data.serializer.encode
 import com.app.builder.domain.Account
@@ -40,10 +44,10 @@ fun createMockHttpEngine(): HttpClientEngine = TestEngine { request ->
                 path == "${URL.Accounts.path}/${FakeData.adminAccount.userUuid}" -> respondMock(content = encode(value = FakeData.adminAccount))
                 path == "${URL.Accounts.path}/${FakeData.account.userUuid}" -> respondMock(content = encode(value = FakeData.account))
                 path == URL.Broadcast.path -> respondSse(pushPayload = FakeData.notification)
-                path == URL.ClientFlags.path -> respondMock(content = encode(value = FakeData.clientFlags))
-                path == URL.ClientConfigs.path -> respondMock(content = encode(value = FakeData.clientConfigs))
-                path == URL.ServerFlags.path -> respondMock(content = encode(value = FakeData.serverFlags))
-                path == URL.ServerConfigs.path -> respondMock(content = encode(value = FakeData.serverConfigs))
+                path == URL.ClientFlags.path -> respondMock(content = encode(value = ClientFlags.value))
+                path == URL.ClientConfigs.path -> respondMock(content = encode(value = ClientConfigs.value))
+                path == URL.ServerFlags.path -> respondMock(content = encode(value = ServerFlags.value))
+                path == URL.ServerConfigs.path -> respondMock(content = encode(value = ServerConfigs.value))
                 path == URL.Translations.path -> respondMock(content = encode(value = FakeData.translations))
                 path == URL.Registries.path -> respondMock(content = encode(value = listOf(FakeData.registry)))
                 path.isItemOf(url = URL.Users) -> respondMock(content = encode(value = FakeData.adminUser))
@@ -103,10 +107,26 @@ fun createMockHttpEngine(): HttpClientEngine = TestEngine { request ->
                     }
                 }
 
-                URL.ClientFlags.path -> respondMock(content = encode(value = FakeData.clientFlags))
-                URL.ClientConfigs.path -> respondMock(content = encode(value = FakeData.clientConfigs))
-                URL.ServerFlags.path -> respondMock(content = encode(value = FakeData.serverFlags))
-                URL.ServerConfigs.path -> respondMock(content = encode(value = FakeData.serverConfigs))
+                URL.ClientFlags.path -> {
+                    val clientFlags = request.decodeBody<ClientFlags>() ?: return@TestEngine badRequest(request = request)
+                    respondMock(content = encode(value = clientFlags))
+                }
+
+                URL.ClientConfigs.path -> {
+                    val clientConfigs = request.decodeBody<ClientConfigs>() ?: return@TestEngine badRequest(request = request)
+                    respondMock(content = encode(value = clientConfigs))
+                }
+
+                URL.ServerFlags.path -> {
+                    val serverFlags = request.decodeBody<ServerFlags>() ?: return@TestEngine badRequest(request = request)
+                    respondMock(content = encode(value = serverFlags))
+                }
+
+                URL.ServerConfigs.path -> {
+                    val serverConfigs = request.decodeBody<ServerConfigs>() ?: return@TestEngine badRequest(request = request)
+                    respondMock(content = encode(value = serverConfigs))
+                }
+
                 URL.Push.path -> respondMock(content = encode(value = "sent"))
                 URL.Broadcast.path -> respondMock(content = encode(value = "sent"))
                 URL.BroadcastSubscribe.path -> respondMock(content = encode(value = "sent"))

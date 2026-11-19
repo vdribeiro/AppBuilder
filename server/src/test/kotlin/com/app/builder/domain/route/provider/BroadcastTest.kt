@@ -18,6 +18,11 @@ import com.app.builder.test.TestCase
 
 class BroadcastTest: TestCase() {
 
+    override suspend fun beforeTest() {
+        super.beforeTest()
+        ServerFlags.set { it.copy(broadcast = true) }
+    }
+
     /** Verifies that broadcasting requires authentication and a valid payload, and reaches connected SSE clients. */
     @Test
     fun broadcast() = runServerTest {
