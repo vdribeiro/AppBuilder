@@ -33,6 +33,11 @@ import com.app.builder.test.TestCase
 
 class DependencyTest: TestCase() {
 
+    override suspend fun beforeTest() {
+        super.beforeTest()
+        ClientFlags.set { it.copy(http = true) }
+    }
+
     /** Verifies that a user graph retains the original app graph and carries the given user uuid. */
     @Test
     fun noOpDependency() = runUnitTest {

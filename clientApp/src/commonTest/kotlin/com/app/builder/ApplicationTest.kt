@@ -31,7 +31,7 @@ class ApplicationTest: TestCase() {
 
     override suspend fun beforeTest() {
         super.beforeTest()
-        ClientFlags.set { it.copy(http = true) }
+        ClientFlags.set { it.copy(http = true, scheduler = true, registries = true) }
     }
 
     /**

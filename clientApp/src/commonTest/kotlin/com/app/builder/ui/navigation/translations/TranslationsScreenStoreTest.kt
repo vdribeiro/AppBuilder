@@ -2,13 +2,19 @@ package com.app.builder.ui.navigation.translations
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
+import com.app.builder.Dependency.getUserDependency
 import com.app.builder.data.storage.AppFile
+import com.app.builder.domain.Account
 import com.app.builder.domain.Translation
 import com.app.builder.domain.Translation.Property
+import com.app.builder.domain.UserCredentials
 import com.app.builder.domain.gateway.translation.toTranslationSchema
+import com.app.builder.test.FakeData
 import com.app.builder.test.TestCase
 
 class TranslationsScreenStoreTest: TestCase() {
@@ -43,8 +49,36 @@ class TranslationsScreenStoreTest: TestCase() {
         return TranslationsScreenStore(
             state = TranslationsScreenState(),
             translationUseCases = dependency.get().userGraph.useCases.translationUseCases,
+            authenticationUseCases = dependency.get().userGraph.useCases.authenticationUseCases,
             locale = flowOf(value = locale)
         )
+    }
+
+    /**
+     * Seeds [translations], logs a user in and creates the store on that user's use cases, waiting until the English translations are listed.
+     *
+     * @param account The account of the user to log in.
+     * @param credentials The credentials of the user to log in.
+     * @return The [TranslationsScreenStore].
+     */
+    private suspend fun authenticatedStore(account: Account = FakeData.adminAccount, credentials: UserCredentials = FakeData.adminCredentials): TranslationsScreenStore {
+        val translationDao = dependency.get()
+            .database
+            .translationQueries
+        translations.forEach { translationDao.upsertTranslation(Translation = it.toTranslationSchema()) }
+        AppFile.TranslationPreferences.save { AppFile.ActionBarData(searchableProperties = allProperties, visibleProperties = allProperties) }
+
+        val useCases = dependency.get()
+            .getUserDependency(account = account)
+            .useCases
+        useCases.authenticationUseCases.login(credentials = credentials)
+
+        return TranslationsScreenStore(
+            state = TranslationsScreenState(),
+            translationUseCases = useCases.translationUseCases,
+            authenticationUseCases = useCases.authenticationUseCases,
+            locale = flowOf(value = "en")
+        ).also { store -> store.listedValues(count = 2) }
     }
 
     /**
@@ -121,5 +155,71 @@ class TranslationsScreenStoreTest: TestCase() {
             assertNull(actual = item.key)
             assertEquals(expected = item.id == "yes", actual = item.value == "Yes")
         }
+    }
+
+    /** Verifies that the listed items carry their value as text even when the value property is hidden. */
+    @Test
+    fun hiddenValueIsKeptAsText() = runUnitTest {
+        val store = store(preferences = AppFile.ActionBarData(visibleProperties = listOf(Property.KEY.name)))
+
+        val items = store.stateFlow.first { it.translations.size == 2 }.translations
+        assertTrue(actual = items.all { it.value == null })
+        assertEquals(expected = setOf("Yes", "No"), actual = items.map { it.text }.toSet())
+    }
+
+    /** Verifies that translations are editable for a user with translation write permission, and not for a guest. */
+    @Test
+    fun editableFollowsWritePermission() = runUnitTest {
+        assertFalse(actual = store().also { it.listedValues(count = 2) }.state.editable)
+
+        val store = authenticatedStore()
+        assertTrue(actual = store.stateFlow.first { it.editable }.editable)
+    }
+
+    /** Verifies that editing a translation opens the editor on its value, and that saving a changed value updates the listed translation and closes the editor. */
+    @Test
+    fun editAndSaveTranslation() = runUnitTest {
+        val store = authenticatedStore()
+        store.stateFlow.first { it.editable }
+
+        store.send(action = TranslationsScreenAction.EditTranslation(key = "yes"))
+        assertEquals(expected = TranslationEdit(key = "yes", value = "Yes"), actual = store.stateFlow.first { it.edit != null }.edit)
+
+        store.send(action = TranslationsScreenAction.ChangeValue(value = "Yep"))
+        assertEquals(expected = TranslationEdit(key = "yes", value = "Yep"), actual = store.stateFlow.first { it.edit?.value == "Yep" }.edit)
+
+        store.send(action = TranslationsScreenAction.SaveTranslation)
+
+        val state = store.stateFlow.first { state -> state.edit == null && state.translations.any { it.text == "Yep" } }
+        assertEquals(expected = setOf("Yep", "No"), actual = state.translations.map { it.text }.toSet())
+    }
+
+    /** Verifies that dismissing the editor closes it and keeps the listed translation unchanged. */
+    @Test
+    fun dismissEdit() = runUnitTest {
+        val store = authenticatedStore()
+        store.stateFlow.first { it.editable }
+
+        store.send(action = TranslationsScreenAction.EditTranslation(key = "yes"))
+        store.send(action = TranslationsScreenAction.ChangeValue(value = "Yep"))
+        store.stateFlow.first { it.edit?.value == "Yep" }
+        store.send(action = TranslationsScreenAction.DismissEdit)
+
+        val state = store.stateFlow.first { it.edit == null }
+        assertEquals(expected = setOf("Yes", "No"), actual = state.translations.map { it.text }.toSet())
+    }
+
+    /** Verifies that the editor does not open for a user without translation write permission. */
+    @Test
+    fun editRequiresWritePermission() = runUnitTest {
+        // FakeData.account only has TRANSLATION -> READ.
+        val store = authenticatedStore(account = FakeData.account, credentials = FakeData.credentials)
+
+        store.send(action = TranslationsScreenAction.EditTranslation(key = "yes"))
+        store.send(action = TranslationsScreenAction.SelectLanguage(languageIso = "pt"))
+
+        val state = store.stateFlow.first { it.selectedLanguage == "pt" }
+        assertFalse(actual = state.editable)
+        assertNull(actual = state.edit)
     }
 }
