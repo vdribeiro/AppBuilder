@@ -3,7 +3,6 @@ package com.app.builder.ui.navigation.devicefiles
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.Job
 import com.app.builder.core.flow.Dispatcher
-import com.app.builder.core.locale.getLocalDateTime
 import com.app.builder.core.locale.toInstant
 import com.app.builder.core.platform.appCachePath
 import com.app.builder.core.platform.appDataPath
@@ -70,10 +69,8 @@ class DeviceFilesScreenStore(
     private fun DeviceFile.toDeviceFileItem(): DeviceFileItem = DeviceFileItem(
         path = path,
         name = name,
-        description = listOfNotNull(
-            size.toReadableSize(),
-            modifiedAt?.toInstant()?.let { getLocalDateTime(utc = it.toString()) }
-        ).joinToString(separator = " - ")
+        size = size.toReadableSize(),
+        modifiedAt = modifiedAt?.toInstant()?.toString()
     )
 
     /**

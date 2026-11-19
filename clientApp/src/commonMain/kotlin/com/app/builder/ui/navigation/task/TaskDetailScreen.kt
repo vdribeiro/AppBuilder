@@ -9,7 +9,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.app.builder.core.locale.getLocalDateTime
 import com.app.builder.core.security.uuid
 import com.app.builder.domain.EntityType
 import com.app.builder.domain.Task
@@ -23,6 +22,7 @@ import com.app.builder.ui.component.filters.FiltersState
 import com.app.builder.ui.component.navigation.Navigation
 import com.app.builder.ui.component.navigation.NavigationRoute
 import com.app.builder.ui.component.session.SessionState
+import com.app.builder.ui.getDateTime
 import com.app.builder.ui.navigation.LocalRouter
 import com.app.builder.ui.navigation.Router
 import com.app.builder.ui.navigation.Screen
@@ -81,8 +81,8 @@ fun TaskDetailScreen(
             TaskCard(
                 enabled = task != null && state.editing,
                 uuid = task?.uuid?.toString(),
-                modifiedAt = task?.modifiedAt?.let { getLocalDateTime(utc = it.toString()) },
-                deletedAt = task?.deletedAt?.let { getLocalDateTime(utc = it.toString()) },
+                modifiedAt = task?.modifiedAt?.let { getDateTime(utc = it.toString()) },
+                deletedAt = task?.deletedAt?.let { getDateTime(utc = it.toString()) },
                 title = task?.title,
                 onTitleChange = { store.send(action = TaskDetailScreenAction.ChangeTitle(title = it)) },
                 description = task?.description,

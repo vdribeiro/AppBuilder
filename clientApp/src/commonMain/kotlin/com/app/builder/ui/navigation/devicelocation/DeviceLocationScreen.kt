@@ -27,7 +27,6 @@ import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import com.app.builder.core.devicelocation.DeviceLocation
 import com.app.builder.core.devicelocation.DeviceLocationProvider
-import com.app.builder.core.locale.getLocalDateTime
 import com.app.builder.core.locale.toInstant
 import com.app.builder.ui.LocalColorScheme
 import com.app.builder.ui.Preview
@@ -46,6 +45,7 @@ import com.app.builder.ui.core.list.ListItem
 import com.app.builder.ui.core.progress.ProgressIndicator
 import com.app.builder.ui.core.text.Text
 import com.app.builder.ui.devicelocation.LocalDeviceLocationProvider
+import com.app.builder.ui.getDateTime
 import com.app.builder.ui.navigation.LocalRouter
 import com.app.builder.ui.permission.LocalPermissionManager
 import com.app.builder.ui.permission.Permission
@@ -176,7 +176,7 @@ fun DeviceLocationScreen(
                         fix.altitude?.let { "altitude: ${it.roundTo(decimals = 1)}m" },
                         fix.bearing?.let { "bearing: ${it.roundTo(decimals = 0).toInt()}°" },
                         fix.speed?.let { "speed: ${it.roundTo(decimals = 1)}m/s" },
-                        fix.fixTime.toInstant()?.toString()?.let { "time: ${getLocalDateTime(utc = it)}" },
+                        fix.fixTime.toInstant()?.toString()?.let { "time: ${getDateTime(utc = it)}" },
                     )
                     ListItem(
                         leadingContent = { Icon(imageVector = Icons.Default.LocationOn) },

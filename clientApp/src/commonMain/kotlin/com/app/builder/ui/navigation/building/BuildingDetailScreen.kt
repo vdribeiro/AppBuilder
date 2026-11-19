@@ -12,13 +12,12 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.app.builder.core.locale.getLocalDateTime
 import com.app.builder.core.security.toUuid
 import com.app.builder.core.security.uuid
 import com.app.builder.domain.Building
+import com.app.builder.domain.EntityType
 import com.app.builder.domain.Equipment
 import com.app.builder.domain.Material
-import com.app.builder.domain.EntityType
 import com.app.builder.ui.InjectTranslations
 import com.app.builder.ui.LocalSplitScreen
 import com.app.builder.ui.Preview
@@ -39,6 +38,7 @@ import com.app.builder.ui.component.navigation.Navigation
 import com.app.builder.ui.component.navigation.NavigationRoute
 import com.app.builder.ui.component.session.SessionState
 import com.app.builder.ui.devicelocation.LocalDeviceLocationProvider
+import com.app.builder.ui.getDateTime
 import com.app.builder.ui.navigation.LocalRouter
 import com.app.builder.ui.navigation.Router
 import com.app.builder.ui.navigation.Screen
@@ -111,8 +111,8 @@ fun BuildingDetailScreen(
             BuildingCard(
                 enabled = building != null && state.editing && state.writable,
                 uuid = building?.uuid?.toString(),
-                modifiedAt = building?.modifiedAt?.let { getLocalDateTime(utc = it.toString()) },
-                deletedAt = building?.deletedAt?.let { getLocalDateTime(utc = it.toString()) },
+                modifiedAt = building?.modifiedAt?.let { getDateTime(utc = it.toString()) },
+                deletedAt = building?.deletedAt?.let { getDateTime(utc = it.toString()) },
                 name = building?.name,
                 onNameChange = { store.send(action = BuildingDetailScreenAction.ChangeName(name = it)) },
                 description = building?.description,

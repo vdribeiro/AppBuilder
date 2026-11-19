@@ -10,7 +10,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.app.builder.core.locale.getLocalDateTime
 import com.app.builder.core.security.toUuid
 import com.app.builder.core.security.uuid
 import com.app.builder.domain.Building
@@ -33,6 +32,7 @@ import com.app.builder.ui.component.list.BuildingItem
 import com.app.builder.ui.component.navigation.Navigation
 import com.app.builder.ui.component.navigation.NavigationRoute
 import com.app.builder.ui.component.session.SessionState
+import com.app.builder.ui.getDateTime
 import com.app.builder.ui.navigation.LocalRouter
 import com.app.builder.ui.navigation.Router
 import com.app.builder.ui.navigation.Screen
@@ -96,8 +96,8 @@ fun MaterialDetailScreen(
             MaterialCard(
                 enabled = material != null && state.editing && state.writable,
                 uuid = material?.uuid?.toString(),
-                modifiedAt = material?.modifiedAt?.let { getLocalDateTime(utc = it.toString()) },
-                deletedAt = material?.deletedAt?.let { getLocalDateTime(utc = it.toString()) },
+                modifiedAt = material?.modifiedAt?.let { getDateTime(utc = it.toString()) },
+                deletedAt = material?.deletedAt?.let { getDateTime(utc = it.toString()) },
                 name = material?.name,
                 onNameChange = { store.send(action = MaterialDetailScreenAction.ChangeName(name = it)) },
                 description = material?.description,

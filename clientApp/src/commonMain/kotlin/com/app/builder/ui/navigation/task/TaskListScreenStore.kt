@@ -9,7 +9,6 @@ import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.mapNotNull
 import androidx.compose.runtime.snapshotFlow
 import com.app.builder.core.flow.Dispatcher
-import com.app.builder.core.locale.getLocalDateTime
 import com.app.builder.core.telemetry.Telemetry
 import com.app.builder.data.storage.AppFile
 import com.app.builder.domain.Task
@@ -148,8 +147,8 @@ class TaskListScreenStore(
         selected = uuid.toString() == selectedUuid,
         deleted = deletedAt != null,
         uuidVisible = Property.UUID.name in visibilityProperties,
-        modifiedAt = modifiedAt.takeIf { Property.MODIFIED_AT.name in visibilityProperties }?.let { getLocalDateTime(utc = it.toString()) },
-        deletedAt = deletedAt.takeIf { Property.DELETED_AT.name in visibilityProperties }?.let { getLocalDateTime(utc = it.toString()) },
+        modifiedAt = modifiedAt.takeIf { Property.MODIFIED_AT.name in visibilityProperties }?.toString(),
+        deletedAt = deletedAt.takeIf { Property.DELETED_AT.name in visibilityProperties }?.toString(),
         title = title.takeIf { Property.TITLE.name in visibilityProperties },
         description = description.takeIf { Property.DESCRIPTION.name in visibilityProperties },
         completed = (state == Task.State.COMPLETE).takeIf { Property.STATE.name in visibilityProperties }

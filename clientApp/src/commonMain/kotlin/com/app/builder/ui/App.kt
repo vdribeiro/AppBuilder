@@ -16,6 +16,7 @@ import com.app.builder.core.media.AudioPlayer
 import com.app.builder.core.media.Camera
 import com.app.builder.core.nfc.NfcController
 import com.app.builder.ui.devicelocation.LocalDeviceLocationProvider
+import com.app.builder.ui.locale.rememberDateTimeFormatter
 import com.app.builder.ui.media.rememberAudioPlayer
 import com.app.builder.ui.media.rememberCamera
 import com.app.builder.ui.navigation.AuthenticatedNavigation
@@ -80,6 +81,7 @@ fun App(
         AppState.UNAUTHENTICATED -> rememberRouter(initialStack = listOf(element = unauthenticatedScreen))
         AppState.AUTHENTICATED -> rememberRouter(initialStack = listOf(element = authenticatedScreen))
     }
+    val dateTimeFormatter: (String) -> String = rememberDateTimeFormatter()
     val permissionManager: PermissionManager = rememberPermissionManager()
     val audioPlayer: AudioPlayer = rememberAudioPlayer()
     val camera: Camera = rememberCamera()
@@ -87,6 +89,7 @@ fun App(
     val providedValues = remember(
         compositionValues,
         router,
+        dateTimeFormatter,
         permissionManager,
         audioPlayer,
         camera,
@@ -95,6 +98,7 @@ fun App(
         compositionValues + listOf(
             LocalAppState provides appState,
             LocalRouter provides router,
+            LocalDateTimeFormatter provides dateTimeFormatter,
             LocalPermissionManager provides permissionManager,
             LocalAudioPlayer provides audioPlayer,
             LocalCamera provides camera,

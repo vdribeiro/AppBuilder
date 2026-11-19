@@ -9,7 +9,6 @@ import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.mapNotNull
 import androidx.compose.runtime.snapshotFlow
 import com.app.builder.core.flow.Dispatcher
-import com.app.builder.core.locale.SelectedLanguage
 import com.app.builder.core.telemetry.Telemetry
 import com.app.builder.data.storage.AppFile
 import com.app.builder.domain.gateway.building.BuildingUseCases
@@ -68,9 +67,8 @@ class BuildingListScreenStore(
 
         combine(
             flow = buildingsActionBarFlow,
-            flow2 = selectedUuidFlow,
-            flow3 = SelectedLanguage.flow
-        ) { (buildings, actionBar), selectedUuid, _ ->
+            flow2 = selectedUuidFlow
+        ) { (buildings, actionBar), selectedUuid ->
             buildings
                 .map { it.toBuildingItem(visibilityProperties = actionBar.visibleProperties, selectedUuid = selectedUuid) }
                 .toPersistentList()

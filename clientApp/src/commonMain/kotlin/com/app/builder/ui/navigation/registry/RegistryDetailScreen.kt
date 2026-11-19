@@ -9,7 +9,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.app.builder.core.locale.getLocalDateTime
 import com.app.builder.core.locale.now
 import com.app.builder.core.platform.OS
 import com.app.builder.core.security.uuid
@@ -25,6 +24,7 @@ import com.app.builder.ui.component.filters.FiltersState
 import com.app.builder.ui.component.navigation.Navigation
 import com.app.builder.ui.component.navigation.NavigationRoute
 import com.app.builder.ui.component.session.SessionState
+import com.app.builder.ui.getDateTime
 import com.app.builder.ui.navigation.LocalRouter
 import com.app.builder.ui.screen.Screen
 import com.app.builder.ui.store.Store
@@ -58,8 +58,8 @@ fun RegistryDetailScreen(
             RegistryCard(
                 requestUuid = registry?.requestUuid?.toString(),
                 requestType = registry?.requestType,
-                requestUtc = registry?.requestUtc?.let { getLocalDateTime(utc = it.toString()) },
-                requestSentUtc = registry?.requestSentUtc?.let { getLocalDateTime(utc = it.toString()) },
+                requestUtc = registry?.requestUtc?.let { getDateTime(utc = it.toString()) },
+                requestSentUtc = registry?.requestSentUtc?.let { getDateTime(utc = it.toString()) },
                 userUuid = registry?.userUuid?.toString(),
                 appVersion = registry?.appVersion,
                 os = registry?.os?.toString(),

@@ -9,8 +9,6 @@ import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.mapNotNull
 import androidx.compose.runtime.snapshotFlow
 import com.app.builder.core.flow.Dispatcher
-import com.app.builder.core.locale.SelectedLanguage
-import com.app.builder.core.locale.getLocalDateTime
 import com.app.builder.core.telemetry.Telemetry
 import com.app.builder.data.storage.AppFile
 import com.app.builder.domain.Registry
@@ -73,9 +71,8 @@ class RegistryListScreenStore(
 
         combine(
             flow = registriesActionBarFlow,
-            flow2 = selectedUuidFlow,
-            flow3 = SelectedLanguage.flow
-        ) { (registries, actionBar), selectedUuid, _ ->
+            flow2 = selectedUuidFlow
+        ) { (registries, actionBar), selectedUuid ->
             registries
                 .map { it.toRegistryItem(visibilityProperties = actionBar.visibleProperties, selectedUuid = selectedUuid) }
                 .toPersistentList()
@@ -166,8 +163,8 @@ class RegistryListScreenStore(
             selected = requestUuid.toString() == selectedUuid,
             uuidVisible = Property.REQUEST_UUID.name in visibilityProperties,
             requestType = visible(property = Property.REQUEST_TYPE),
-            requestUtc = visible(property = Property.REQUEST_UTC)?.let { getLocalDateTime(utc = it) },
-            requestSentUtc = visible(property = Property.REQUEST_SENT_UTC)?.let { getLocalDateTime(utc = it) },
+            requestUtc = visible(property = Property.REQUEST_UTC),
+            requestSentUtc = visible(property = Property.REQUEST_SENT_UTC),
             userUuid = visible(property = Property.USER_UUID),
             appVersion = visible(property = Property.APP_VERSION),
             os = visible(property = Property.OS),

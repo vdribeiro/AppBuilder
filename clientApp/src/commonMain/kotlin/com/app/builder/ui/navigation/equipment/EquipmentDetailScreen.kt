@@ -10,7 +10,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.app.builder.core.locale.getLocalDateTime
 import com.app.builder.core.security.toUuid
 import com.app.builder.core.security.uuid
 import com.app.builder.domain.Building
@@ -32,6 +31,7 @@ import com.app.builder.ui.component.list.BuildingItem
 import com.app.builder.ui.component.navigation.Navigation
 import com.app.builder.ui.component.navigation.NavigationRoute
 import com.app.builder.ui.component.session.SessionState
+import com.app.builder.ui.getDateTime
 import com.app.builder.ui.navigation.LocalRouter
 import com.app.builder.ui.navigation.Router
 import com.app.builder.ui.navigation.Screen
@@ -95,8 +95,8 @@ fun EquipmentDetailScreen(
             EquipmentCard(
                 enabled = equipment != null && state.editing && state.writable,
                 uuid = equipment?.uuid?.toString(),
-                modifiedAt = equipment?.modifiedAt?.let { getLocalDateTime(utc = it.toString()) },
-                deletedAt = equipment?.deletedAt?.let { getLocalDateTime(utc = it.toString()) },
+                modifiedAt = equipment?.modifiedAt?.let { getDateTime(utc = it.toString()) },
+                deletedAt = equipment?.deletedAt?.let { getDateTime(utc = it.toString()) },
                 name = equipment?.name,
                 onNameChange = { store.send(action = EquipmentDetailScreenAction.ChangeName(name = it)) },
                 description = equipment?.description,

@@ -2,7 +2,6 @@ package com.app.builder.ui.component.building
 
 import kotlinx.collections.immutable.toImmutableMap
 import androidx.compose.runtime.Composable
-import com.app.builder.core.locale.getLocalDateTime
 import com.app.builder.data.storage.AppFile
 import com.app.builder.domain.Building
 import com.app.builder.domain.Building.Property
@@ -114,8 +113,8 @@ internal fun Building.toBuildingItem(visibilityProperties: List<String>, selecte
     selected = uuid.toString() == selectedUuid,
     deleted = deletedAt != null,
     uuidVisible = Property.UUID.name in visibilityProperties,
-    modifiedAt = modifiedAt.takeIf { Property.MODIFIED_AT.name in visibilityProperties }?.let { getLocalDateTime(utc = it.toString()) },
-    deletedAt = deletedAt.takeIf { Property.DELETED_AT.name in visibilityProperties }?.let { getLocalDateTime(utc = it.toString()) },
+    modifiedAt = modifiedAt.takeIf { Property.MODIFIED_AT.name in visibilityProperties }?.toString(),
+    deletedAt = deletedAt.takeIf { Property.DELETED_AT.name in visibilityProperties }?.toString(),
     name = name.takeIf { Property.NAME.name in visibilityProperties },
     description = description.takeIf { Property.DESCRIPTION.name in visibilityProperties },
     address = address.takeIf { Property.ADDRESS.name in visibilityProperties }
