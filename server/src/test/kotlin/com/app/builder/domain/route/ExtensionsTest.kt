@@ -302,7 +302,7 @@ class ExtensionsTest: TestCase() {
         assertEquals(expected = HttpStatusCode.Forbidden, actual = client.post(urlString = "/test/draining-write").status)
     }
 
-    /** Verifies that validateTime() rejects missing or future timestamps with 400, accepts current ones, and is skipped in development mode. */
+    /** Verifies that validateTime() rejects missing or future timestamps with 400, accepts current ones under any header casing, and is skipped in development mode. */
     @Test
     fun validateTime() = runServerTest {
         installRouting()
@@ -347,6 +347,13 @@ class ExtensionsTest: TestCase() {
             actual = client.get(urlString = "/test/time") {
                 header(key = Header.RequestUtc.header, value = current)
                 header(key = Header.RequestSentUtc.header, value = current)
+            }.status
+        )
+        assertEquals(
+            expected = HttpStatusCode.OK,
+            actual = client.get(urlString = "/test/time") {
+                header(key = Header.RequestUtc.header.lowercase(), value = current)
+                header(key = Header.RequestSentUtc.header.lowercase(), value = current)
             }.status
         )
         assertEquals(expected = HttpStatusCode.OK, actual = client.get(urlString = "/test/time-development").status)

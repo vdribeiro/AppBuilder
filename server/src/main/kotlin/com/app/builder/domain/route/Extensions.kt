@@ -1,5 +1,6 @@
 package com.app.builder.domain.route
 
+import java.util.TreeMap
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Instant
 import kotlin.uuid.Uuid
@@ -125,10 +126,10 @@ fun ApplicationCall.getQueryMap(): Map<String, String> = runCatching {
  * Logs an error to telemetry if the process fails.
  *
  * @receiver [ApplicationCall] The context of the call.
- * @return A [Map] where each key is associated with its joined values.
+ * @return A [Map] with case-insensitive keys where each key is associated with its joined values.
  */
 fun ApplicationCall.getHeaderMap(): Map<String, String> = runCatching {
-    request.headers.entries().associate { (key, values) ->
+    request.headers.entries().associateTo(destination = TreeMap(String.CASE_INSENSITIVE_ORDER)) { (key, values) ->
         key to values.joinToString(separator = ",")
     }
 }.onFailure {
