@@ -697,6 +697,14 @@ In a composable, always call `getTranslation` rather than `TranslationCache.get`
 
 Date-times follow the same rule: in a composable, call `getDateTime` rather than `getLocalDateTime`. It formats through `LocalDateTimeFormatter`, and rebuilds when the selected language changes, so every date-time is reformatted with no restart. `getLocalDateTime` reads the selected language once and is meant for non-UI code.
 
+Call both as late as possible:
+
+* Stores and state hold keys and UTC timestamps, never the text made from them, which would stop following the language.
+* `core` components show their text as given.
+* The `component` composables and the screens resolve a key or a timestamp on the line that hands it to a `core` component, and build combined text from the resolved pieces.
+* A `String` parameter of a `component` composable is shown as given unless its KDoc says it is translated or shown as a date-time, in which case the caller passes the key or the timestamp as is.
+* User data, such as names, identifiers and typed values, is never resolved.
+
 Values can be edited by any account with `TRANSLATION` `WRITE` (also offline like any other entity). Keys and languages are not: they only come from the seed.
 After each update the server broadcasts a `PushPayload.Translations`, and every client that receives it syncs its translations again.
 
