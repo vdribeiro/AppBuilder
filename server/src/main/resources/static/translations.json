@@ -5,9 +5,19 @@
     "value": "App Builder"
   },
   {
+    "languageIso": "pt",
+    "key": "app_name",
+    "value": "App Builder"
+  },
+  {
     "languageIso": "en",
     "key": "yes",
     "value": "Yes"
+  },
+  {
+    "languageIso": "pt",
+    "key": "yes",
+    "value": "Sim"
   },
   {
     "languageIso": "en",
@@ -15,9 +25,19 @@
     "value": "No"
   },
   {
+    "languageIso": "pt",
+    "key": "no",
+    "value": "Não"
+  },
+  {
     "languageIso": "en",
     "key": "client_flag",
     "value": "Client Flag"
+  },
+  {
+    "languageIso": "pt",
+    "key": "client_flag",
+    "value": "Flag de Cliente"
   },
   {
     "languageIso": "en",
@@ -25,9 +45,19 @@
     "value": "Client Config"
   },
   {
+    "languageIso": "pt",
+    "key": "client_config",
+    "value": "Configuração de Cliente"
+  },
+  {
     "languageIso": "en",
     "key": "server_flag",
     "value": "Server Flag"
+  },
+  {
+    "languageIso": "pt",
+    "key": "server_flag",
+    "value": "Flag de Servidor"
   },
   {
     "languageIso": "en",
@@ -35,9 +65,19 @@
     "value": "Server Config"
   },
   {
+    "languageIso": "pt",
+    "key": "server_config",
+    "value": "Configuração de Servidor"
+  },
+  {
     "languageIso": "en",
     "key": "notification",
     "value": "Notification"
+  },
+  {
+    "languageIso": "pt",
+    "key": "notification",
+    "value": "Notificação"
   },
   {
     "languageIso": "en",
@@ -45,9 +85,19 @@
     "value": "Translation"
   },
   {
+    "languageIso": "pt",
+    "key": "translation",
+    "value": "Tradução"
+  },
+  {
     "languageIso": "en",
     "key": "translation_key",
     "value": "Key"
+  },
+  {
+    "languageIso": "pt",
+    "key": "translation_key",
+    "value": "Chave"
   },
   {
     "languageIso": "en",
@@ -55,12 +105,27 @@
     "value": "Value"
   },
   {
+    "languageIso": "pt",
+    "key": "translation_value",
+    "value": "Valor"
+  },
+  {
     "languageIso": "en",
     "key": "en",
     "value": "English"
   },
   {
+    "languageIso": "pt",
+    "key": "en",
+    "value": "English"
+  },
+  {
     "languageIso": "en",
+    "key": "pt",
+    "value": "Português"
+  },
+  {
+    "languageIso": "pt",
     "key": "pt",
     "value": "Português"
   },
@@ -70,9 +135,19 @@
     "value": "User"
   },
   {
+    "languageIso": "pt",
+    "key": "user",
+    "value": "Utilizador"
+  },
+  {
     "languageIso": "en",
     "key": "task",
     "value": "Task"
+  },
+  {
+    "languageIso": "pt",
+    "key": "task",
+    "value": "Tarefa"
   },
   {
     "languageIso": "en",
@@ -80,9 +155,19 @@
     "value": "Registry"
   },
   {
+    "languageIso": "pt",
+    "key": "registry",
+    "value": "Registo"
+  },
+  {
     "languageIso": "en",
     "key": "device_location",
     "value": "Device Location"
+  },
+  {
+    "languageIso": "pt",
+    "key": "device_location",
+    "value": "Localização do Dispositivo"
   },
   {
     "languageIso": "en",
@@ -90,7 +175,17 @@
     "value": "Files"
   },
   {
+    "languageIso": "pt",
+    "key": "device_file",
+    "value": "Ficheiros"
+  },
+  {
     "languageIso": "en",
+    "key": "design",
+    "value": "Design"
+  },
+  {
+    "languageIso": "pt",
     "key": "design",
     "value": "Design"
   },
@@ -100,9 +195,19 @@
     "value": "Components"
   },
   {
+    "languageIso": "pt",
+    "key": "design_components",
+    "value": "Componentes"
+  },
+  {
     "languageIso": "en",
     "key": "design_colors",
     "value": "Colors"
+  },
+  {
+    "languageIso": "pt",
+    "key": "design_colors",
+    "value": "Cores"
   },
   {
     "languageIso": "en",
@@ -110,9 +215,19 @@
     "value": "Shapes"
   },
   {
+    "languageIso": "pt",
+    "key": "design_shapes",
+    "value": "Formas"
+  },
+  {
     "languageIso": "en",
     "key": "design_typography",
     "value": "Typography"
+  },
+  {
+    "languageIso": "pt",
+    "key": "design_typography",
+    "value": "Tipografia"
   },
   {
     "languageIso": "en",
@@ -120,7 +235,17 @@
     "value": "System"
   },
   {
+    "languageIso": "pt",
+    "key": "system",
+    "value": "Sistema"
+  },
+  {
     "languageIso": "en",
+    "key": "app",
+    "value": "App"
+  },
+  {
+    "languageIso": "pt",
     "key": "app",
     "value": "App"
   },
@@ -130,9 +255,19 @@
     "value": "Home"
   },
   {
+    "languageIso": "pt",
+    "key": "home",
+    "value": "Início"
+  },
+  {
     "languageIso": "en",
     "key": "config",
     "value": "Config"
+  },
+  {
+    "languageIso": "pt",
+    "key": "config",
+    "value": "Configuração"
   },
   {
     "languageIso": "en",
@@ -140,7 +275,17 @@
     "value": "Camera"
   },
   {
+    "languageIso": "pt",
+    "key": "camera",
+    "value": "Câmara"
+  },
+  {
     "languageIso": "en",
+    "key": "nfc",
+    "value": "NFC"
+  },
+  {
+    "languageIso": "pt",
     "key": "nfc",
     "value": "NFC"
   },
@@ -150,9 +295,19 @@
     "value": "Audio"
   },
   {
+    "languageIso": "pt",
+    "key": "audio",
+    "value": "Áudio"
+  },
+  {
     "languageIso": "en",
     "key": "audio_unavailable",
     "value": "Audio playback is unavailable"
+  },
+  {
+    "languageIso": "pt",
+    "key": "audio_unavailable",
+    "value": "A reprodução de áudio não está disponível"
   },
   {
     "languageIso": "en",
@@ -160,9 +315,19 @@
     "value": "Tracks"
   },
   {
+    "languageIso": "pt",
+    "key": "audio_tracks",
+    "value": "Faixas"
+  },
+  {
     "languageIso": "en",
     "key": "audio_loop",
     "value": "Loop"
+  },
+  {
+    "languageIso": "pt",
+    "key": "audio_loop",
+    "value": "Repetir"
   },
   {
     "languageIso": "en",
@@ -170,7 +335,17 @@
     "value": "Shuffle"
   },
   {
+    "languageIso": "pt",
+    "key": "audio_shuffle",
+    "value": "Aleatório"
+  },
+  {
     "languageIso": "en",
+    "key": "feedback",
+    "value": "Feedback"
+  },
+  {
+    "languageIso": "pt",
     "key": "feedback",
     "value": "Feedback"
   },
@@ -180,9 +355,19 @@
     "value": "Title"
   },
   {
+    "languageIso": "pt",
+    "key": "title",
+    "value": "Título"
+  },
+  {
     "languageIso": "en",
     "key": "description",
     "value": "Description"
+  },
+  {
+    "languageIso": "pt",
+    "key": "description",
+    "value": "Descrição"
   },
   {
     "languageIso": "en",
@@ -190,9 +375,19 @@
     "value": "More"
   },
   {
+    "languageIso": "pt",
+    "key": "more",
+    "value": "Mais"
+  },
+  {
     "languageIso": "en",
     "key": "name",
     "value": "Name"
+  },
+  {
+    "languageIso": "pt",
+    "key": "name",
+    "value": "Nome"
   },
   {
     "languageIso": "en",
@@ -200,9 +395,19 @@
     "value": "Username"
   },
   {
+    "languageIso": "pt",
+    "key": "username",
+    "value": "Nome de utilizador"
+  },
+  {
     "languageIso": "en",
     "key": "password",
     "value": "Password"
+  },
+  {
+    "languageIso": "pt",
+    "key": "password",
+    "value": "Palavra-passe"
   },
   {
     "languageIso": "en",
@@ -210,9 +415,19 @@
     "value": "Login"
   },
   {
+    "languageIso": "pt",
+    "key": "login",
+    "value": "Iniciar sessão"
+  },
+  {
     "languageIso": "en",
     "key": "permissions",
     "value": "Permissions"
+  },
+  {
+    "languageIso": "pt",
+    "key": "permissions",
+    "value": "Permissões"
   },
   {
     "languageIso": "en",
@@ -220,12 +435,27 @@
     "value": "Read"
   },
   {
+    "languageIso": "pt",
+    "key": "read",
+    "value": "Leitura"
+  },
+  {
     "languageIso": "en",
     "key": "write",
     "value": "Write"
   },
   {
+    "languageIso": "pt",
+    "key": "write",
+    "value": "Escrita"
+  },
+  {
     "languageIso": "en",
+    "key": "push",
+    "value": "Push"
+  },
+  {
+    "languageIso": "pt",
     "key": "push",
     "value": "Push"
   },
@@ -235,9 +465,19 @@
     "value": "Type"
   },
   {
+    "languageIso": "pt",
+    "key": "push_field_type",
+    "value": "Tipo"
+  },
+  {
     "languageIso": "en",
     "key": "push_field_broadcast",
     "value": "Broadcast"
+  },
+  {
+    "languageIso": "pt",
+    "key": "push_field_broadcast",
+    "value": "Difusão"
   },
   {
     "languageIso": "en",
@@ -245,9 +485,19 @@
     "value": "Title"
   },
   {
+    "languageIso": "pt",
+    "key": "push_field_title",
+    "value": "Título"
+  },
+  {
     "languageIso": "en",
     "key": "push_field_description",
     "value": "Description"
+  },
+  {
+    "languageIso": "pt",
+    "key": "push_field_description",
+    "value": "Descrição"
   },
   {
     "languageIso": "en",
@@ -255,9 +505,19 @@
     "value": "Send"
   },
   {
+    "languageIso": "pt",
+    "key": "push_send",
+    "value": "Enviar"
+  },
+  {
     "languageIso": "en",
     "key": "push_sent",
     "value": "Sent %1$s"
+  },
+  {
+    "languageIso": "pt",
+    "key": "push_sent",
+    "value": "Enviadas: %1$s"
   },
   {
     "languageIso": "en",
@@ -265,7 +525,17 @@
     "value": "Task List"
   },
   {
+    "languageIso": "pt",
+    "key": "task_list",
+    "value": "Lista de Tarefas"
+  },
+  {
     "languageIso": "en",
+    "key": "stacktrace",
+    "value": "Stacktrace"
+  },
+  {
+    "languageIso": "pt",
     "key": "stacktrace",
     "value": "Stacktrace"
   },
@@ -275,9 +545,19 @@
     "value": "Checked"
   },
   {
+    "languageIso": "pt",
+    "key": "checked",
+    "value": "Selecionado"
+  },
+  {
     "languageIso": "en",
     "key": "not_supported",
     "value": "Not supported"
+  },
+  {
+    "languageIso": "pt",
+    "key": "not_supported",
+    "value": "Não suportado"
   },
   {
     "languageIso": "en",
@@ -285,9 +565,19 @@
     "value": "%1$s Users"
   },
   {
+    "languageIso": "pt",
+    "key": "users",
+    "value": "%1$s Utilizadores"
+  },
+  {
     "languageIso": "en",
     "key": "system_failure",
     "value": "An unexpected error occurred.\nPlease contact your system administrator."
+  },
+  {
+    "languageIso": "pt",
+    "key": "system_failure",
+    "value": "Ocorreu um erro inesperado.\nContacte o administrador do sistema."
   },
   {
     "languageIso": "en",
@@ -295,9 +585,19 @@
     "value": "Thank you for your feedback"
   },
   {
+    "languageIso": "pt",
+    "key": "thanks",
+    "value": "Obrigado pelo seu feedback"
+  },
+  {
     "languageIso": "en",
     "key": "send",
     "value": "Send"
+  },
+  {
+    "languageIso": "pt",
+    "key": "send",
+    "value": "Enviar"
   },
   {
     "languageIso": "en",
@@ -305,9 +605,19 @@
     "value": "Account"
   },
   {
+    "languageIso": "pt",
+    "key": "account",
+    "value": "Conta"
+  },
+  {
     "languageIso": "en",
     "key": "edit_profile",
     "value": "Edit Profile"
+  },
+  {
+    "languageIso": "pt",
+    "key": "edit_profile",
+    "value": "Editar Perfil"
   },
   {
     "languageIso": "en",
@@ -315,9 +625,19 @@
     "value": "Save"
   },
   {
+    "languageIso": "pt",
+    "key": "save",
+    "value": "Guardar"
+  },
+  {
     "languageIso": "en",
     "key": "user_avatar",
     "value": "Avatar URL"
+  },
+  {
+    "languageIso": "pt",
+    "key": "user_avatar",
+    "value": "URL do Avatar"
   },
   {
     "languageIso": "en",
@@ -325,9 +645,19 @@
     "value": "Change Password"
   },
   {
+    "languageIso": "pt",
+    "key": "change_password",
+    "value": "Alterar Palavra-passe"
+  },
+  {
     "languageIso": "en",
     "key": "current_password",
     "value": "Current Password"
+  },
+  {
+    "languageIso": "pt",
+    "key": "current_password",
+    "value": "Palavra-passe Atual"
   },
   {
     "languageIso": "en",
@@ -335,9 +665,19 @@
     "value": "New Password"
   },
   {
+    "languageIso": "pt",
+    "key": "new_password",
+    "value": "Nova Palavra-passe"
+  },
+  {
     "languageIso": "en",
     "key": "confirm_password",
     "value": "Confirm Password"
+  },
+  {
+    "languageIso": "pt",
+    "key": "confirm_password",
+    "value": "Confirmar Palavra-passe"
   },
   {
     "languageIso": "en",
@@ -345,9 +685,19 @@
     "value": "Show password"
   },
   {
+    "languageIso": "pt",
+    "key": "show_password",
+    "value": "Mostrar palavra-passe"
+  },
+  {
     "languageIso": "en",
     "key": "hide_password",
     "value": "Hide password"
+  },
+  {
+    "languageIso": "pt",
+    "key": "hide_password",
+    "value": "Ocultar palavra-passe"
   },
   {
     "languageIso": "en",
@@ -355,9 +705,19 @@
     "value": "Unable to change the password"
   },
   {
+    "languageIso": "pt",
+    "key": "unable_to_change_password",
+    "value": "Não foi possível alterar a palavra-passe"
+  },
+  {
     "languageIso": "en",
     "key": "notifications",
     "value": "Notifications"
+  },
+  {
+    "languageIso": "pt",
+    "key": "notifications",
+    "value": "Notificações"
   },
   {
     "languageIso": "en",
@@ -365,9 +725,19 @@
     "value": "Logout"
   },
   {
+    "languageIso": "pt",
+    "key": "logout",
+    "value": "Terminar sessão"
+  },
+  {
     "languageIso": "en",
     "key": "device",
     "value": "Device"
+  },
+  {
+    "languageIso": "pt",
+    "key": "device",
+    "value": "Dispositivo"
   },
   {
     "languageIso": "en",
@@ -375,9 +745,19 @@
     "value": "Language"
   },
   {
+    "languageIso": "pt",
+    "key": "language",
+    "value": "Idioma"
+  },
+  {
     "languageIso": "en",
     "key": "reset",
     "value": "Reset"
+  },
+  {
+    "languageIso": "pt",
+    "key": "reset",
+    "value": "Repor"
   },
   {
     "languageIso": "en",
@@ -385,9 +765,19 @@
     "value": "Apply"
   },
   {
+    "languageIso": "pt",
+    "key": "apply",
+    "value": "Aplicar"
+  },
+  {
     "languageIso": "en",
     "key": "cancel",
     "value": "Cancel"
+  },
+  {
+    "languageIso": "pt",
+    "key": "cancel",
+    "value": "Cancelar"
   },
   {
     "languageIso": "en",
@@ -395,9 +785,19 @@
     "value": "About"
   },
   {
+    "languageIso": "pt",
+    "key": "about",
+    "value": "Sobre"
+  },
+  {
     "languageIso": "en",
     "key": "send_feedback",
     "value": "Send Feedback"
+  },
+  {
+    "languageIso": "pt",
+    "key": "send_feedback",
+    "value": "Enviar Feedback"
   },
   {
     "languageIso": "en",
@@ -405,9 +805,19 @@
     "value": "Copyright"
   },
   {
+    "languageIso": "pt",
+    "key": "copyright",
+    "value": "Direitos de Autor"
+  },
+  {
     "languageIso": "en",
     "key": "privacy_policy",
     "value": "Privacy Policy"
+  },
+  {
+    "languageIso": "pt",
+    "key": "privacy_policy",
+    "value": "Política de Privacidade"
   },
   {
     "languageIso": "en",
@@ -415,9 +825,19 @@
     "value": "App Version"
   },
   {
+    "languageIso": "pt",
+    "key": "app_version",
+    "value": "Versão da App"
+  },
+  {
     "languageIso": "en",
     "key": "task_title",
     "value": "Title"
+  },
+  {
+    "languageIso": "pt",
+    "key": "task_title",
+    "value": "Título"
   },
   {
     "languageIso": "en",
@@ -425,9 +845,19 @@
     "value": "Description"
   },
   {
+    "languageIso": "pt",
+    "key": "task_description",
+    "value": "Descrição"
+  },
+  {
     "languageIso": "en",
     "key": "task_modified_at",
     "value": "Modified At"
+  },
+  {
+    "languageIso": "pt",
+    "key": "task_modified_at",
+    "value": "Modificado em"
   },
   {
     "languageIso": "en",
@@ -435,9 +865,19 @@
     "value": "Deleted At"
   },
   {
+    "languageIso": "pt",
+    "key": "task_deleted_at",
+    "value": "Eliminado em"
+  },
+  {
     "languageIso": "en",
     "key": "task_state",
     "value": "State"
+  },
+  {
+    "languageIso": "pt",
+    "key": "task_state",
+    "value": "Estado"
   },
   {
     "languageIso": "en",
@@ -445,9 +885,19 @@
     "value": "To Do"
   },
   {
+    "languageIso": "pt",
+    "key": "task_state_todo",
+    "value": "Por Fazer"
+  },
+  {
     "languageIso": "en",
     "key": "task_state_complete",
     "value": "Complete"
+  },
+  {
+    "languageIso": "pt",
+    "key": "task_state_complete",
+    "value": "Concluída"
   },
   {
     "languageIso": "en",
@@ -455,9 +905,19 @@
     "value": "Active"
   },
   {
+    "languageIso": "pt",
+    "key": "account_active",
+    "value": "Ativa"
+  },
+  {
     "languageIso": "en",
     "key": "user_name",
     "value": "Name"
+  },
+  {
+    "languageIso": "pt",
+    "key": "user_name",
+    "value": "Nome"
   },
   {
     "languageIso": "en",
@@ -465,9 +925,19 @@
     "value": "Modified At"
   },
   {
+    "languageIso": "pt",
+    "key": "user_modified_at",
+    "value": "Modificado em"
+  },
+  {
     "languageIso": "en",
     "key": "user_deleted_at",
     "value": "Deleted At"
+  },
+  {
+    "languageIso": "pt",
+    "key": "user_deleted_at",
+    "value": "Eliminado em"
   },
   {
     "languageIso": "en",
@@ -475,7 +945,17 @@
     "value": "UUID"
   },
   {
+    "languageIso": "pt",
+    "key": "task_uuid",
+    "value": "UUID"
+  },
+  {
     "languageIso": "en",
+    "key": "user_uuid",
+    "value": "UUID"
+  },
+  {
+    "languageIso": "pt",
     "key": "user_uuid",
     "value": "UUID"
   },
@@ -485,9 +965,19 @@
     "value": "Request UUID"
   },
   {
+    "languageIso": "pt",
+    "key": "registry_request_uuid",
+    "value": "UUID do Pedido"
+  },
+  {
     "languageIso": "en",
     "key": "registry_request_type",
     "value": "Request Type"
+  },
+  {
+    "languageIso": "pt",
+    "key": "registry_request_type",
+    "value": "Tipo de Pedido"
   },
   {
     "languageIso": "en",
@@ -495,9 +985,19 @@
     "value": "Request At"
   },
   {
+    "languageIso": "pt",
+    "key": "registry_request_utc",
+    "value": "Pedido em"
+  },
+  {
     "languageIso": "en",
     "key": "registry_request_sent_utc",
     "value": "Sent At"
+  },
+  {
+    "languageIso": "pt",
+    "key": "registry_request_sent_utc",
+    "value": "Enviado em"
   },
   {
     "languageIso": "en",
@@ -505,9 +1005,19 @@
     "value": "User UUID"
   },
   {
+    "languageIso": "pt",
+    "key": "registry_user_uuid",
+    "value": "UUID do Utilizador"
+  },
+  {
     "languageIso": "en",
     "key": "registry_app_version",
     "value": "App Version"
+  },
+  {
+    "languageIso": "pt",
+    "key": "registry_app_version",
+    "value": "Versão da App"
   },
   {
     "languageIso": "en",
@@ -515,9 +1025,19 @@
     "value": "OS"
   },
   {
+    "languageIso": "pt",
+    "key": "registry_os",
+    "value": "SO"
+  },
+  {
     "languageIso": "en",
     "key": "registry_os_version",
     "value": "OS Version"
+  },
+  {
+    "languageIso": "pt",
+    "key": "registry_os_version",
+    "value": "Versão do SO"
   },
   {
     "languageIso": "en",
@@ -525,9 +1045,19 @@
     "value": "Brand"
   },
   {
+    "languageIso": "pt",
+    "key": "registry_brand",
+    "value": "Marca"
+  },
+  {
     "languageIso": "en",
     "key": "registry_model",
     "value": "Model"
+  },
+  {
+    "languageIso": "pt",
+    "key": "registry_model",
+    "value": "Modelo"
   },
   {
     "languageIso": "en",
@@ -535,9 +1065,19 @@
     "value": "Device UUID"
   },
   {
+    "languageIso": "pt",
+    "key": "registry_device_uuid",
+    "value": "UUID do Dispositivo"
+  },
+  {
     "languageIso": "en",
     "key": "registry_entity_uuid",
     "value": "Entity UUID"
+  },
+  {
+    "languageIso": "pt",
+    "key": "registry_entity_uuid",
+    "value": "UUID da Entidade"
   },
   {
     "languageIso": "en",
@@ -545,7 +1085,17 @@
     "value": "Entity Type"
   },
   {
+    "languageIso": "pt",
+    "key": "registry_entity_type",
+    "value": "Tipo de Entidade"
+  },
+  {
     "languageIso": "en",
+    "key": "registry_payload",
+    "value": "Payload"
+  },
+  {
+    "languageIso": "pt",
     "key": "registry_payload",
     "value": "Payload"
   },
@@ -555,9 +1105,19 @@
     "value": "Hold your device near an NFC tag."
   },
   {
+    "languageIso": "pt",
+    "key": "scan_nfc_tag",
+    "value": "Aproxime o dispositivo de uma tag NFC."
+  },
+  {
     "languageIso": "en",
     "key": "tag_read",
     "value": "Tag read."
+  },
+  {
+    "languageIso": "pt",
+    "key": "tag_read",
+    "value": "Tag lida."
   },
   {
     "languageIso": "en",
@@ -565,9 +1125,19 @@
     "value": "Tag written."
   },
   {
+    "languageIso": "pt",
+    "key": "tag_write",
+    "value": "Tag escrita."
+  },
+  {
     "languageIso": "en",
     "key": "unable_to_open_file",
     "value": "Unable to open this file"
+  },
+  {
+    "languageIso": "pt",
+    "key": "unable_to_open_file",
+    "value": "Não foi possível abrir este ficheiro"
   },
   {
     "languageIso": "en",
@@ -575,9 +1145,19 @@
     "value": "Your session expired. Log out and log in again to sync your changes."
   },
   {
+    "languageIso": "pt",
+    "key": "status_session_expired",
+    "value": "A sua sessão expirou. Termine a sessão e inicie-a novamente para sincronizar as suas alterações."
+  },
+  {
     "languageIso": "en",
     "key": "status_not_synced",
     "value": "Some changes are not synced yet."
+  },
+  {
+    "languageIso": "pt",
+    "key": "status_not_synced",
+    "value": "Algumas alterações ainda não foram sincronizadas."
   },
   {
     "languageIso": "en",
@@ -585,9 +1165,19 @@
     "value": "The device clock can't be trusted, so changes wait to sync."
   },
   {
+    "languageIso": "pt",
+    "key": "status_clock_untrusted",
+    "value": "O relógio do dispositivo não é fiável, pelo que as alterações aguardam para sincronizar."
+  },
+  {
     "languageIso": "en",
     "key": "help",
     "value": "Help"
+  },
+  {
+    "languageIso": "pt",
+    "key": "help",
+    "value": "Ajuda"
   },
   {
     "languageIso": "en",
@@ -595,9 +1185,19 @@
     "value": "Status icons"
   },
   {
+    "languageIso": "pt",
+    "key": "help_status_icons",
+    "value": "Ícones de estado"
+  },
+  {
     "languageIso": "en",
     "key": "help_session_expired",
     "value": "Session expired"
+  },
+  {
+    "languageIso": "pt",
+    "key": "help_session_expired",
+    "value": "Sessão expirada"
   },
   {
     "languageIso": "en",
@@ -605,9 +1205,19 @@
     "value": "The server no longer accepts your session, so nothing syncs. Log out and log in again to sync your changes."
   },
   {
+    "languageIso": "pt",
+    "key": "help_session_expired_description",
+    "value": "O servidor já não aceita a sua sessão, pelo que nada é sincronizado. Termine a sessão e inicie-a novamente para sincronizar as suas alterações."
+  },
+  {
     "languageIso": "en",
     "key": "help_not_synced",
     "value": "Not synced"
+  },
+  {
+    "languageIso": "pt",
+    "key": "help_not_synced",
+    "value": "Não sincronizado"
   },
   {
     "languageIso": "en",
@@ -615,9 +1225,19 @@
     "value": "Some changes are saved on this device and still waiting to sync. They sync on their own once the server can be reached."
   },
   {
+    "languageIso": "pt",
+    "key": "help_not_synced_description",
+    "value": "Algumas alterações estão guardadas neste dispositivo e ainda aguardam sincronização. São sincronizadas automaticamente assim que for possível contactar o servidor."
+  },
+  {
     "languageIso": "en",
     "key": "help_clock_untrusted",
     "value": "Clock not trusted"
+  },
+  {
+    "languageIso": "pt",
+    "key": "help_clock_untrusted",
+    "value": "Relógio não fiável"
   },
   {
     "languageIso": "en",
@@ -625,9 +1245,19 @@
     "value": "The device clock differs too much from the server clock, so changes wait to sync. Syncing resumes once the clock is confirmed."
   },
   {
+    "languageIso": "pt",
+    "key": "help_clock_untrusted_description",
+    "value": "O relógio do dispositivo difere demasiado do relógio do servidor, pelo que as alterações aguardam para sincronizar. A sincronização é retomada assim que o relógio for confirmado."
+  },
+  {
     "languageIso": "en",
     "key": "equipment",
     "value": "Equipment"
+  },
+  {
+    "languageIso": "pt",
+    "key": "equipment",
+    "value": "Equipamento"
   },
   {
     "languageIso": "en",
@@ -635,9 +1265,19 @@
     "value": "Equipment List"
   },
   {
+    "languageIso": "pt",
+    "key": "equipment_list",
+    "value": "Lista de Equipamentos"
+  },
+  {
     "languageIso": "en",
     "key": "equipment_name",
     "value": "Name"
+  },
+  {
+    "languageIso": "pt",
+    "key": "equipment_name",
+    "value": "Nome"
   },
   {
     "languageIso": "en",
@@ -645,9 +1285,19 @@
     "value": "Description"
   },
   {
+    "languageIso": "pt",
+    "key": "equipment_description",
+    "value": "Descrição"
+  },
+  {
     "languageIso": "en",
     "key": "equipment_modified_at",
     "value": "Modified At"
+  },
+  {
+    "languageIso": "pt",
+    "key": "equipment_modified_at",
+    "value": "Modificado em"
   },
   {
     "languageIso": "en",
@@ -655,9 +1305,19 @@
     "value": "Deleted At"
   },
   {
+    "languageIso": "pt",
+    "key": "equipment_deleted_at",
+    "value": "Eliminado em"
+  },
+  {
     "languageIso": "en",
     "key": "equipment_status",
     "value": "Status"
+  },
+  {
+    "languageIso": "pt",
+    "key": "equipment_status",
+    "value": "Estado"
   },
   {
     "languageIso": "en",
@@ -665,12 +1325,27 @@
     "value": "Working"
   },
   {
+    "languageIso": "pt",
+    "key": "equipment_status_working",
+    "value": "Em funcionamento"
+  },
+  {
     "languageIso": "en",
     "key": "equipment_status_malfunctioning",
     "value": "Malfunctioning"
   },
   {
+    "languageIso": "pt",
+    "key": "equipment_status_malfunctioning",
+    "value": "Avariado"
+  },
+  {
     "languageIso": "en",
+    "key": "equipment_uuid",
+    "value": "UUID"
+  },
+  {
+    "languageIso": "pt",
     "key": "equipment_uuid",
     "value": "UUID"
   },
@@ -680,9 +1355,19 @@
     "value": "Building"
   },
   {
+    "languageIso": "pt",
+    "key": "building",
+    "value": "Edifício"
+  },
+  {
     "languageIso": "en",
     "key": "building_list",
     "value": "Building List"
+  },
+  {
+    "languageIso": "pt",
+    "key": "building_list",
+    "value": "Lista de Edifícios"
   },
   {
     "languageIso": "en",
@@ -690,9 +1375,19 @@
     "value": "Name"
   },
   {
+    "languageIso": "pt",
+    "key": "building_name",
+    "value": "Nome"
+  },
+  {
     "languageIso": "en",
     "key": "building_description",
     "value": "Description"
+  },
+  {
+    "languageIso": "pt",
+    "key": "building_description",
+    "value": "Descrição"
   },
   {
     "languageIso": "en",
@@ -700,9 +1395,19 @@
     "value": "Modified At"
   },
   {
+    "languageIso": "pt",
+    "key": "building_modified_at",
+    "value": "Modificado em"
+  },
+  {
     "languageIso": "en",
     "key": "building_deleted_at",
     "value": "Deleted At"
+  },
+  {
+    "languageIso": "pt",
+    "key": "building_deleted_at",
+    "value": "Eliminado em"
   },
   {
     "languageIso": "en",
@@ -710,12 +1415,27 @@
     "value": "Address"
   },
   {
+    "languageIso": "pt",
+    "key": "building_address",
+    "value": "Morada"
+  },
+  {
     "languageIso": "en",
     "key": "building_latitude",
     "value": "Latitude"
   },
   {
+    "languageIso": "pt",
+    "key": "building_latitude",
+    "value": "Latitude"
+  },
+  {
     "languageIso": "en",
+    "key": "building_longitude",
+    "value": "Longitude"
+  },
+  {
+    "languageIso": "pt",
     "key": "building_longitude",
     "value": "Longitude"
   },
@@ -725,7 +1445,17 @@
     "value": "Use my location"
   },
   {
+    "languageIso": "pt",
+    "key": "building_use_location",
+    "value": "Usar a minha localização"
+  },
+  {
     "languageIso": "en",
+    "key": "building_uuid",
+    "value": "UUID"
+  },
+  {
+    "languageIso": "pt",
     "key": "building_uuid",
     "value": "UUID"
   },
@@ -735,9 +1465,19 @@
     "value": "Building Equipment"
   },
   {
+    "languageIso": "pt",
+    "key": "building_equipment",
+    "value": "Equipamento do Edifício"
+  },
+  {
     "languageIso": "en",
     "key": "building_equipments",
     "value": "Equipment"
+  },
+  {
+    "languageIso": "pt",
+    "key": "building_equipments",
+    "value": "Equipamentos"
   },
   {
     "languageIso": "en",
@@ -745,9 +1485,19 @@
     "value": "Link equipments"
   },
   {
+    "languageIso": "pt",
+    "key": "building_link_equipments",
+    "value": "Associar equipamentos"
+  },
+  {
     "languageIso": "en",
     "key": "equipment_buildings",
     "value": "Buildings"
+  },
+  {
+    "languageIso": "pt",
+    "key": "equipment_buildings",
+    "value": "Edifícios"
   },
   {
     "languageIso": "en",
@@ -755,7 +1505,17 @@
     "value": "Link buildings"
   },
   {
+    "languageIso": "pt",
+    "key": "equipment_link_buildings",
+    "value": "Associar edifícios"
+  },
+  {
     "languageIso": "en",
+    "key": "material",
+    "value": "Material"
+  },
+  {
+    "languageIso": "pt",
     "key": "material",
     "value": "Material"
   },
@@ -765,9 +1525,19 @@
     "value": "Material List"
   },
   {
+    "languageIso": "pt",
+    "key": "material_list",
+    "value": "Lista de Materiais"
+  },
+  {
     "languageIso": "en",
     "key": "material_name",
     "value": "Name"
+  },
+  {
+    "languageIso": "pt",
+    "key": "material_name",
+    "value": "Nome"
   },
   {
     "languageIso": "en",
@@ -775,9 +1545,19 @@
     "value": "Description"
   },
   {
+    "languageIso": "pt",
+    "key": "material_description",
+    "value": "Descrição"
+  },
+  {
     "languageIso": "en",
     "key": "material_modified_at",
     "value": "Modified At"
+  },
+  {
+    "languageIso": "pt",
+    "key": "material_modified_at",
+    "value": "Modificado em"
   },
   {
     "languageIso": "en",
@@ -785,7 +1565,17 @@
     "value": "Deleted At"
   },
   {
+    "languageIso": "pt",
+    "key": "material_deleted_at",
+    "value": "Eliminado em"
+  },
+  {
     "languageIso": "en",
+    "key": "material_uuid",
+    "value": "UUID"
+  },
+  {
+    "languageIso": "pt",
     "key": "material_uuid",
     "value": "UUID"
   },
@@ -795,869 +1585,14 @@
     "value": "Building Material"
   },
   {
-    "languageIso": "en",
-    "key": "building_materials",
-    "value": "Materials"
-  },
-  {
-    "languageIso": "en",
-    "key": "building_link_materials",
-    "value": "Link materials"
-  },
-  {
-    "languageIso": "en",
-    "key": "material_buildings",
-    "value": "Buildings"
-  },
-  {
-    "languageIso": "en",
-    "key": "material_link_buildings",
-    "value": "Link buildings"
-  },
-  {
-    "languageIso": "en",
-    "key": "building_user",
-    "value": "Building User"
-  },
-  {
-    "languageIso": "en",
-    "key": "building_users",
-    "value": "Users"
-  },
-  {
-    "languageIso": "en",
-    "key": "building_link_users",
-    "value": "Link users"
-  },
-  {
-    "languageIso": "en",
-    "key": "user_buildings",
-    "value": "Buildings"
-  },
-  {
-    "languageIso": "en",
-    "key": "user_link_buildings",
-    "value": "Link buildings"
-  },
-  {
-    "languageIso": "en",
-    "key": "equipment_user",
-    "value": "Equipment User"
-  },
-  {
-    "languageIso": "en",
-    "key": "equipment_users",
-    "value": "Users"
-  },
-  {
-    "languageIso": "en",
-    "key": "equipment_link_users",
-    "value": "Link users"
-  },
-  {
-    "languageIso": "en",
-    "key": "user_equipments",
-    "value": "Equipment"
-  },
-  {
-    "languageIso": "en",
-    "key": "user_link_equipments",
-    "value": "Link equipments"
-  },
-  {
-    "languageIso": "pt",
-    "key": "app_name",
-    "value": "App Builder"
-  },
-  {
-    "languageIso": "pt",
-    "key": "yes",
-    "value": "Sim"
-  },
-  {
-    "languageIso": "pt",
-    "key": "no",
-    "value": "Não"
-  },
-  {
-    "languageIso": "pt",
-    "key": "client_flag",
-    "value": "Flag de Cliente"
-  },
-  {
-    "languageIso": "pt",
-    "key": "client_config",
-    "value": "Configuração de Cliente"
-  },
-  {
-    "languageIso": "pt",
-    "key": "server_flag",
-    "value": "Flag de Servidor"
-  },
-  {
-    "languageIso": "pt",
-    "key": "server_config",
-    "value": "Configuração de Servidor"
-  },
-  {
-    "languageIso": "pt",
-    "key": "notification",
-    "value": "Notificação"
-  },
-  {
-    "languageIso": "pt",
-    "key": "translation",
-    "value": "Tradução"
-  },
-  {
-    "languageIso": "pt",
-    "key": "translation_key",
-    "value": "Chave"
-  },
-  {
-    "languageIso": "pt",
-    "key": "translation_value",
-    "value": "Valor"
-  },
-  {
-    "languageIso": "pt",
-    "key": "en",
-    "value": "English"
-  },
-  {
-    "languageIso": "pt",
-    "key": "pt",
-    "value": "Português"
-  },
-  {
-    "languageIso": "pt",
-    "key": "user",
-    "value": "Utilizador"
-  },
-  {
-    "languageIso": "pt",
-    "key": "task",
-    "value": "Tarefa"
-  },
-  {
-    "languageIso": "pt",
-    "key": "registry",
-    "value": "Registo"
-  },
-  {
-    "languageIso": "pt",
-    "key": "device_location",
-    "value": "Localização do Dispositivo"
-  },
-  {
-    "languageIso": "pt",
-    "key": "device_file",
-    "value": "Ficheiros"
-  },
-  {
-    "languageIso": "pt",
-    "key": "design",
-    "value": "Design"
-  },
-  {
-    "languageIso": "pt",
-    "key": "design_components",
-    "value": "Componentes"
-  },
-  {
-    "languageIso": "pt",
-    "key": "design_colors",
-    "value": "Cores"
-  },
-  {
-    "languageIso": "pt",
-    "key": "design_shapes",
-    "value": "Formas"
-  },
-  {
-    "languageIso": "pt",
-    "key": "design_typography",
-    "value": "Tipografia"
-  },
-  {
-    "languageIso": "pt",
-    "key": "system",
-    "value": "Sistema"
-  },
-  {
-    "languageIso": "pt",
-    "key": "app",
-    "value": "App"
-  },
-  {
-    "languageIso": "pt",
-    "key": "home",
-    "value": "Início"
-  },
-  {
-    "languageIso": "pt",
-    "key": "config",
-    "value": "Configuração"
-  },
-  {
-    "languageIso": "pt",
-    "key": "camera",
-    "value": "Câmara"
-  },
-  {
-    "languageIso": "pt",
-    "key": "nfc",
-    "value": "NFC"
-  },
-  {
-    "languageIso": "pt",
-    "key": "audio",
-    "value": "Áudio"
-  },
-  {
-    "languageIso": "pt",
-    "key": "audio_unavailable",
-    "value": "A reprodução de áudio não está disponível"
-  },
-  {
-    "languageIso": "pt",
-    "key": "audio_tracks",
-    "value": "Faixas"
-  },
-  {
-    "languageIso": "pt",
-    "key": "audio_loop",
-    "value": "Repetir"
-  },
-  {
-    "languageIso": "pt",
-    "key": "audio_shuffle",
-    "value": "Aleatório"
-  },
-  {
-    "languageIso": "pt",
-    "key": "feedback",
-    "value": "Feedback"
-  },
-  {
-    "languageIso": "pt",
-    "key": "title",
-    "value": "Título"
-  },
-  {
-    "languageIso": "pt",
-    "key": "description",
-    "value": "Descrição"
-  },
-  {
-    "languageIso": "pt",
-    "key": "more",
-    "value": "Mais"
-  },
-  {
-    "languageIso": "pt",
-    "key": "name",
-    "value": "Nome"
-  },
-  {
-    "languageIso": "pt",
-    "key": "username",
-    "value": "Nome de utilizador"
-  },
-  {
-    "languageIso": "pt",
-    "key": "password",
-    "value": "Palavra-passe"
-  },
-  {
-    "languageIso": "pt",
-    "key": "login",
-    "value": "Iniciar sessão"
-  },
-  {
-    "languageIso": "pt",
-    "key": "permissions",
-    "value": "Permissões"
-  },
-  {
-    "languageIso": "pt",
-    "key": "read",
-    "value": "Leitura"
-  },
-  {
-    "languageIso": "pt",
-    "key": "write",
-    "value": "Escrita"
-  },
-  {
-    "languageIso": "pt",
-    "key": "push",
-    "value": "Push"
-  },
-  {
-    "languageIso": "pt",
-    "key": "push_field_type",
-    "value": "Tipo"
-  },
-  {
-    "languageIso": "pt",
-    "key": "push_field_broadcast",
-    "value": "Difusão"
-  },
-  {
-    "languageIso": "pt",
-    "key": "push_field_title",
-    "value": "Título"
-  },
-  {
-    "languageIso": "pt",
-    "key": "push_field_description",
-    "value": "Descrição"
-  },
-  {
-    "languageIso": "pt",
-    "key": "push_send",
-    "value": "Enviar"
-  },
-  {
-    "languageIso": "pt",
-    "key": "push_sent",
-    "value": "Enviadas: %1$s"
-  },
-  {
-    "languageIso": "pt",
-    "key": "task_list",
-    "value": "Lista de Tarefas"
-  },
-  {
-    "languageIso": "pt",
-    "key": "stacktrace",
-    "value": "Stacktrace"
-  },
-  {
-    "languageIso": "pt",
-    "key": "checked",
-    "value": "Selecionado"
-  },
-  {
-    "languageIso": "pt",
-    "key": "not_supported",
-    "value": "Não suportado"
-  },
-  {
-    "languageIso": "pt",
-    "key": "users",
-    "value": "%1$s Utilizadores"
-  },
-  {
-    "languageIso": "pt",
-    "key": "system_failure",
-    "value": "Ocorreu um erro inesperado.\nContacte o administrador do sistema."
-  },
-  {
-    "languageIso": "pt",
-    "key": "thanks",
-    "value": "Obrigado pelo seu feedback"
-  },
-  {
-    "languageIso": "pt",
-    "key": "send",
-    "value": "Enviar"
-  },
-  {
-    "languageIso": "pt",
-    "key": "account",
-    "value": "Conta"
-  },
-  {
-    "languageIso": "pt",
-    "key": "edit_profile",
-    "value": "Editar Perfil"
-  },
-  {
-    "languageIso": "pt",
-    "key": "save",
-    "value": "Guardar"
-  },
-  {
-    "languageIso": "pt",
-    "key": "user_avatar",
-    "value": "URL do Avatar"
-  },
-  {
-    "languageIso": "pt",
-    "key": "change_password",
-    "value": "Alterar Palavra-passe"
-  },
-  {
-    "languageIso": "pt",
-    "key": "current_password",
-    "value": "Palavra-passe Atual"
-  },
-  {
-    "languageIso": "pt",
-    "key": "new_password",
-    "value": "Nova Palavra-passe"
-  },
-  {
-    "languageIso": "pt",
-    "key": "confirm_password",
-    "value": "Confirmar Palavra-passe"
-  },
-  {
-    "languageIso": "pt",
-    "key": "show_password",
-    "value": "Mostrar palavra-passe"
-  },
-  {
-    "languageIso": "pt",
-    "key": "hide_password",
-    "value": "Ocultar palavra-passe"
-  },
-  {
-    "languageIso": "pt",
-    "key": "unable_to_change_password",
-    "value": "Não foi possível alterar a palavra-passe"
-  },
-  {
-    "languageIso": "pt",
-    "key": "notifications",
-    "value": "Notificações"
-  },
-  {
-    "languageIso": "pt",
-    "key": "logout",
-    "value": "Terminar sessão"
-  },
-  {
-    "languageIso": "pt",
-    "key": "device",
-    "value": "Dispositivo"
-  },
-  {
-    "languageIso": "pt",
-    "key": "language",
-    "value": "Idioma"
-  },
-  {
-    "languageIso": "pt",
-    "key": "reset",
-    "value": "Repor"
-  },
-  {
-    "languageIso": "pt",
-    "key": "apply",
-    "value": "Aplicar"
-  },
-  {
-    "languageIso": "pt",
-    "key": "cancel",
-    "value": "Cancelar"
-  },
-  {
-    "languageIso": "pt",
-    "key": "about",
-    "value": "Sobre"
-  },
-  {
-    "languageIso": "pt",
-    "key": "send_feedback",
-    "value": "Enviar Feedback"
-  },
-  {
-    "languageIso": "pt",
-    "key": "copyright",
-    "value": "Direitos de Autor"
-  },
-  {
-    "languageIso": "pt",
-    "key": "privacy_policy",
-    "value": "Política de Privacidade"
-  },
-  {
-    "languageIso": "pt",
-    "key": "app_version",
-    "value": "Versão da App"
-  },
-  {
-    "languageIso": "pt",
-    "key": "task_title",
-    "value": "Título"
-  },
-  {
-    "languageIso": "pt",
-    "key": "task_description",
-    "value": "Descrição"
-  },
-  {
-    "languageIso": "pt",
-    "key": "task_modified_at",
-    "value": "Modificado em"
-  },
-  {
-    "languageIso": "pt",
-    "key": "task_deleted_at",
-    "value": "Eliminado em"
-  },
-  {
-    "languageIso": "pt",
-    "key": "task_state",
-    "value": "Estado"
-  },
-  {
-    "languageIso": "pt",
-    "key": "task_state_todo",
-    "value": "Por Fazer"
-  },
-  {
-    "languageIso": "pt",
-    "key": "task_state_complete",
-    "value": "Concluída"
-  },
-  {
-    "languageIso": "pt",
-    "key": "account_active",
-    "value": "Ativa"
-  },
-  {
-    "languageIso": "pt",
-    "key": "user_name",
-    "value": "Nome"
-  },
-  {
-    "languageIso": "pt",
-    "key": "user_modified_at",
-    "value": "Modificado em"
-  },
-  {
-    "languageIso": "pt",
-    "key": "user_deleted_at",
-    "value": "Eliminado em"
-  },
-  {
-    "languageIso": "pt",
-    "key": "task_uuid",
-    "value": "UUID"
-  },
-  {
-    "languageIso": "pt",
-    "key": "user_uuid",
-    "value": "UUID"
-  },
-  {
-    "languageIso": "pt",
-    "key": "registry_request_uuid",
-    "value": "UUID do Pedido"
-  },
-  {
-    "languageIso": "pt",
-    "key": "registry_request_type",
-    "value": "Tipo de Pedido"
-  },
-  {
-    "languageIso": "pt",
-    "key": "registry_request_utc",
-    "value": "Pedido em"
-  },
-  {
-    "languageIso": "pt",
-    "key": "registry_request_sent_utc",
-    "value": "Enviado em"
-  },
-  {
-    "languageIso": "pt",
-    "key": "registry_user_uuid",
-    "value": "UUID do Utilizador"
-  },
-  {
-    "languageIso": "pt",
-    "key": "registry_app_version",
-    "value": "Versão da App"
-  },
-  {
-    "languageIso": "pt",
-    "key": "registry_os",
-    "value": "SO"
-  },
-  {
-    "languageIso": "pt",
-    "key": "registry_os_version",
-    "value": "Versão do SO"
-  },
-  {
-    "languageIso": "pt",
-    "key": "registry_brand",
-    "value": "Marca"
-  },
-  {
-    "languageIso": "pt",
-    "key": "registry_model",
-    "value": "Modelo"
-  },
-  {
-    "languageIso": "pt",
-    "key": "registry_device_uuid",
-    "value": "UUID do Dispositivo"
-  },
-  {
-    "languageIso": "pt",
-    "key": "registry_entity_uuid",
-    "value": "UUID da Entidade"
-  },
-  {
-    "languageIso": "pt",
-    "key": "registry_entity_type",
-    "value": "Tipo de Entidade"
-  },
-  {
-    "languageIso": "pt",
-    "key": "registry_payload",
-    "value": "Payload"
-  },
-  {
-    "languageIso": "pt",
-    "key": "scan_nfc_tag",
-    "value": "Aproxime o dispositivo de uma tag NFC."
-  },
-  {
-    "languageIso": "pt",
-    "key": "tag_read",
-    "value": "Tag lida."
-  },
-  {
-    "languageIso": "pt",
-    "key": "tag_write",
-    "value": "Tag escrita."
-  },
-  {
-    "languageIso": "pt",
-    "key": "unable_to_open_file",
-    "value": "Não foi possível abrir este ficheiro"
-  },
-  {
-    "languageIso": "pt",
-    "key": "status_session_expired",
-    "value": "A sua sessão expirou. Termine a sessão e inicie-a novamente para sincronizar as suas alterações."
-  },
-  {
-    "languageIso": "pt",
-    "key": "status_not_synced",
-    "value": "Algumas alterações ainda não foram sincronizadas."
-  },
-  {
-    "languageIso": "pt",
-    "key": "status_clock_untrusted",
-    "value": "O relógio do dispositivo não é fiável, pelo que as alterações aguardam para sincronizar."
-  },
-  {
-    "languageIso": "pt",
-    "key": "help",
-    "value": "Ajuda"
-  },
-  {
-    "languageIso": "pt",
-    "key": "help_status_icons",
-    "value": "Ícones de estado"
-  },
-  {
-    "languageIso": "pt",
-    "key": "help_session_expired",
-    "value": "Sessão expirada"
-  },
-  {
-    "languageIso": "pt",
-    "key": "help_session_expired_description",
-    "value": "O servidor já não aceita a sua sessão, pelo que nada é sincronizado. Termine a sessão e inicie-a novamente para sincronizar as suas alterações."
-  },
-  {
-    "languageIso": "pt",
-    "key": "help_not_synced",
-    "value": "Não sincronizado"
-  },
-  {
-    "languageIso": "pt",
-    "key": "help_not_synced_description",
-    "value": "Algumas alterações estão guardadas neste dispositivo e ainda aguardam sincronização. São sincronizadas automaticamente assim que for possível contactar o servidor."
-  },
-  {
-    "languageIso": "pt",
-    "key": "help_clock_untrusted",
-    "value": "Relógio não fiável"
-  },
-  {
-    "languageIso": "pt",
-    "key": "help_clock_untrusted_description",
-    "value": "O relógio do dispositivo difere demasiado do relógio do servidor, pelo que as alterações aguardam para sincronizar. A sincronização é retomada assim que o relógio for confirmado."
-  },
-  {
-    "languageIso": "pt",
-    "key": "equipment",
-    "value": "Equipamento"
-  },
-  {
-    "languageIso": "pt",
-    "key": "equipment_list",
-    "value": "Lista de Equipamentos"
-  },
-  {
-    "languageIso": "pt",
-    "key": "equipment_name",
-    "value": "Nome"
-  },
-  {
-    "languageIso": "pt",
-    "key": "equipment_description",
-    "value": "Descrição"
-  },
-  {
-    "languageIso": "pt",
-    "key": "equipment_modified_at",
-    "value": "Modificado em"
-  },
-  {
-    "languageIso": "pt",
-    "key": "equipment_deleted_at",
-    "value": "Eliminado em"
-  },
-  {
-    "languageIso": "pt",
-    "key": "equipment_status",
-    "value": "Estado"
-  },
-  {
-    "languageIso": "pt",
-    "key": "equipment_status_working",
-    "value": "Em funcionamento"
-  },
-  {
-    "languageIso": "pt",
-    "key": "equipment_status_malfunctioning",
-    "value": "Avariado"
-  },
-  {
-    "languageIso": "pt",
-    "key": "equipment_uuid",
-    "value": "UUID"
-  },
-  {
-    "languageIso": "pt",
-    "key": "building",
-    "value": "Edifício"
-  },
-  {
-    "languageIso": "pt",
-    "key": "building_list",
-    "value": "Lista de Edifícios"
-  },
-  {
-    "languageIso": "pt",
-    "key": "building_name",
-    "value": "Nome"
-  },
-  {
-    "languageIso": "pt",
-    "key": "building_description",
-    "value": "Descrição"
-  },
-  {
-    "languageIso": "pt",
-    "key": "building_modified_at",
-    "value": "Modificado em"
-  },
-  {
-    "languageIso": "pt",
-    "key": "building_deleted_at",
-    "value": "Eliminado em"
-  },
-  {
-    "languageIso": "pt",
-    "key": "building_address",
-    "value": "Morada"
-  },
-  {
-    "languageIso": "pt",
-    "key": "building_latitude",
-    "value": "Latitude"
-  },
-  {
-    "languageIso": "pt",
-    "key": "building_longitude",
-    "value": "Longitude"
-  },
-  {
-    "languageIso": "pt",
-    "key": "building_use_location",
-    "value": "Usar a minha localização"
-  },
-  {
-    "languageIso": "pt",
-    "key": "building_uuid",
-    "value": "UUID"
-  },
-  {
-    "languageIso": "pt",
-    "key": "building_equipment",
-    "value": "Equipamento do Edifício"
-  },
-  {
-    "languageIso": "pt",
-    "key": "building_equipments",
-    "value": "Equipamentos"
-  },
-  {
-    "languageIso": "pt",
-    "key": "building_link_equipments",
-    "value": "Associar equipamentos"
-  },
-  {
-    "languageIso": "pt",
-    "key": "equipment_buildings",
-    "value": "Edifícios"
-  },
-  {
-    "languageIso": "pt",
-    "key": "equipment_link_buildings",
-    "value": "Associar edifícios"
-  },
-  {
-    "languageIso": "pt",
-    "key": "material",
-    "value": "Material"
-  },
-  {
-    "languageIso": "pt",
-    "key": "material_list",
-    "value": "Lista de Materiais"
-  },
-  {
-    "languageIso": "pt",
-    "key": "material_name",
-    "value": "Nome"
-  },
-  {
-    "languageIso": "pt",
-    "key": "material_description",
-    "value": "Descrição"
-  },
-  {
-    "languageIso": "pt",
-    "key": "material_modified_at",
-    "value": "Modificado em"
-  },
-  {
-    "languageIso": "pt",
-    "key": "material_deleted_at",
-    "value": "Eliminado em"
-  },
-  {
-    "languageIso": "pt",
-    "key": "material_uuid",
-    "value": "UUID"
-  },
-  {
     "languageIso": "pt",
     "key": "building_material",
     "value": "Material do Edifício"
+  },
+  {
+    "languageIso": "en",
+    "key": "building_materials",
+    "value": "Materials"
   },
   {
     "languageIso": "pt",
@@ -1665,9 +1600,19 @@
     "value": "Materiais"
   },
   {
+    "languageIso": "en",
+    "key": "building_link_materials",
+    "value": "Link materials"
+  },
+  {
     "languageIso": "pt",
     "key": "building_link_materials",
     "value": "Associar materiais"
+  },
+  {
+    "languageIso": "en",
+    "key": "material_buildings",
+    "value": "Buildings"
   },
   {
     "languageIso": "pt",
@@ -1675,9 +1620,19 @@
     "value": "Edifícios"
   },
   {
+    "languageIso": "en",
+    "key": "material_link_buildings",
+    "value": "Link buildings"
+  },
+  {
     "languageIso": "pt",
     "key": "material_link_buildings",
     "value": "Associar edifícios"
+  },
+  {
+    "languageIso": "en",
+    "key": "building_user",
+    "value": "Building User"
   },
   {
     "languageIso": "pt",
@@ -1685,9 +1640,19 @@
     "value": "Utilizador do Edifício"
   },
   {
+    "languageIso": "en",
+    "key": "building_users",
+    "value": "Users"
+  },
+  {
     "languageIso": "pt",
     "key": "building_users",
     "value": "Utilizadores"
+  },
+  {
+    "languageIso": "en",
+    "key": "building_link_users",
+    "value": "Link users"
   },
   {
     "languageIso": "pt",
@@ -1695,9 +1660,19 @@
     "value": "Associar utilizadores"
   },
   {
+    "languageIso": "en",
+    "key": "user_buildings",
+    "value": "Buildings"
+  },
+  {
     "languageIso": "pt",
     "key": "user_buildings",
     "value": "Edifícios"
+  },
+  {
+    "languageIso": "en",
+    "key": "user_link_buildings",
+    "value": "Link buildings"
   },
   {
     "languageIso": "pt",
@@ -1705,9 +1680,19 @@
     "value": "Associar edifícios"
   },
   {
+    "languageIso": "en",
+    "key": "equipment_user",
+    "value": "Equipment User"
+  },
+  {
     "languageIso": "pt",
     "key": "equipment_user",
     "value": "Utilizador do Equipamento"
+  },
+  {
+    "languageIso": "en",
+    "key": "equipment_users",
+    "value": "Users"
   },
   {
     "languageIso": "pt",
@@ -1715,14 +1700,29 @@
     "value": "Utilizadores"
   },
   {
+    "languageIso": "en",
+    "key": "equipment_link_users",
+    "value": "Link users"
+  },
+  {
     "languageIso": "pt",
     "key": "equipment_link_users",
     "value": "Associar utilizadores"
   },
   {
+    "languageIso": "en",
+    "key": "user_equipments",
+    "value": "Equipment"
+  },
+  {
     "languageIso": "pt",
     "key": "user_equipments",
     "value": "Equipamentos"
+  },
+  {
+    "languageIso": "en",
+    "key": "user_link_equipments",
+    "value": "Link equipments"
   },
   {
     "languageIso": "pt",
