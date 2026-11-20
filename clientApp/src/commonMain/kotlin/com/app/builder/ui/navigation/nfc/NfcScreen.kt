@@ -52,6 +52,7 @@ import com.app.builder.ui.core.overlay.Snackbar
 import com.app.builder.ui.core.progress.ProgressIndicator
 import com.app.builder.ui.core.text.Input
 import com.app.builder.ui.core.text.Text
+import com.app.builder.ui.core.text.TextValue
 import com.app.builder.ui.navigation.LocalRouter
 import com.app.builder.ui.navigation.Router
 import com.app.builder.ui.navigation.Screen
@@ -97,7 +98,7 @@ fun NfcScreen(
         bottomBar = { Navigation(sessionStore = sessionStore, selected = NavigationRoute.NFC) },
         snackbarHost = {
             snackbarMessage?.let {
-                Snackbar(message = it, onDismiss = { snackbarMessage = null })
+                Snackbar(message = TextValue.Plain(text = it), onDismiss = { snackbarMessage = null })
             }
         }
     ) {

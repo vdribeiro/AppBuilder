@@ -32,7 +32,6 @@ import com.app.builder.ui.LocalColorScheme
 import com.app.builder.ui.Preview
 import com.app.builder.ui.component.actionbar.ActionBar
 import com.app.builder.ui.component.list.EntityRow
-import com.app.builder.ui.component.list.EntityRowMetadata
 import com.app.builder.ui.component.navigation.Navigation
 import com.app.builder.ui.component.navigation.NavigationRoute
 import com.app.builder.ui.component.session.SessionState
@@ -45,6 +44,7 @@ import com.app.builder.ui.core.image.Icon
 import com.app.builder.ui.core.list.LazyColumn
 import com.app.builder.ui.core.progress.ProgressIndicator
 import com.app.builder.ui.core.text.Text
+import com.app.builder.ui.core.text.TextValue
 import com.app.builder.ui.devicelocation.LocalDeviceLocationProvider
 import com.app.builder.ui.navigation.LocalRouter
 import com.app.builder.ui.permission.LocalPermissionManager
@@ -180,7 +180,7 @@ fun DeviceLocationScreen(
                     EntityRow(
                         headline = "${fix.latitude.roundTo(decimals = 6)}, ${fix.longitude.roundTo(decimals = 6)}",
                         supporting = details.joinToString(separator = "\n"),
-                        metadata = listOf(EntityRowMetadata(text = fix.fixTime.toInstant()?.toString(), dateTime = true)),
+                        metadata = listOf(fix.fixTime.toInstant()?.toString()?.let { TextValue.DateTime(utc = it) }),
                         leadingContent = { Icon(imageVector = Icons.Default.LocationOn) }
                     )
                     if (index < locations.lastIndex) Divider()

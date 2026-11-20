@@ -23,6 +23,7 @@ import com.app.builder.ui.core.button.Button
 import com.app.builder.ui.core.button.ButtonStyle
 import com.app.builder.ui.core.image.Icon
 import com.app.builder.ui.core.text.Input
+import com.app.builder.ui.core.text.TextValue
 
 /**
  * A text property: an outlined input with a floating label while [editing], and a [FieldValue] otherwise.
@@ -81,7 +82,7 @@ fun TextField(
     ) else FieldValue(
         modifier = modifier,
         label = label.orEmpty(),
-        value = if (password) PASSWORD_MASK.takeIf { value.isNotEmpty() } else value
+        value = (if (password) PASSWORD_MASK.takeIf { value.isNotEmpty() } else value)?.let { TextValue.Plain(text = it) }
     )
 }
 

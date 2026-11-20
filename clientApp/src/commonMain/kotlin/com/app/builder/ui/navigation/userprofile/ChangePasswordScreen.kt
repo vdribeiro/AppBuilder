@@ -12,7 +12,7 @@ import com.app.builder.ui.Preview
 import com.app.builder.ui.component.bar.TopActionBar
 import com.app.builder.ui.component.container.ChangePassword
 import com.app.builder.ui.core.overlay.Snackbar
-import com.app.builder.ui.getTranslation
+import com.app.builder.ui.core.text.TextValue
 import com.app.builder.ui.modifier.onKeyPress
 import com.app.builder.ui.navigation.LocalRouter
 import com.app.builder.ui.screen.Screen
@@ -40,7 +40,7 @@ fun ChangePasswordScreen(store: Store<ChangePasswordScreenState, ChangePasswordS
         },
         snackbarHost = {
             state.message?.let {
-                Snackbar(message = getTranslation(key = it), onDismiss = { store.send(action = ChangePasswordScreenAction.DismissMessage) })
+                Snackbar(message = TextValue.Translation(key = it), onDismiss = { store.send(action = ChangePasswordScreenAction.DismissMessage) })
             }
         },
         contentAlignment = Alignment.Center

@@ -13,6 +13,7 @@ import com.app.builder.ui.component.navigation.Navigation
 import com.app.builder.ui.component.navigation.NavigationRoute
 import com.app.builder.ui.component.session.SessionState
 import com.app.builder.ui.core.overlay.Snackbar
+import com.app.builder.ui.core.text.TextValue
 import com.app.builder.ui.navigation.LocalRouter
 import com.app.builder.ui.navigation.Router
 import com.app.builder.ui.navigation.Screen
@@ -43,7 +44,7 @@ fun DeviceFilesScreen(
         bottomBar = { Navigation(sessionStore = sessionStore, selected = NavigationRoute.DEVICE_FILE) },
         snackbarHost = {
             state.message?.let {
-                Snackbar(message = it, onDismiss = { store.send(action = DeviceFilesScreenAction.DismissMessage) })
+                Snackbar(message = TextValue.Translation(key = it), onDismiss = { store.send(action = DeviceFilesScreenAction.DismissMessage) })
             }
         }
     ) {
