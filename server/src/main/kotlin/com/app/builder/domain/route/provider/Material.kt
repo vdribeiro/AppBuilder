@@ -63,8 +63,6 @@ fun Route.materialRoutes(
                 ) ?: return@get
                 call.respondSafely(status = HttpStatusCode.OK, message = materials)
                 Telemetry.info(tag = TAG, message = "Fetched ${materials.size} materials")
-
-                call.toRegistry(entityType = EntityType.MATERIAL)?.let { registryUseCases.upsertRegistry(registry = it) }
             }
 
             get(path = "/{uuid}") {
@@ -83,11 +81,6 @@ fun Route.materialRoutes(
                 ) ?: return@get
                 call.respondSafely(status = HttpStatusCode.OK, message = material)
                 Telemetry.info(tag = TAG, message = "Fetched material $uuid")
-
-                call.toRegistry(
-                    entityType = EntityType.MATERIAL,
-                    entityUuid = uuid
-                )?.let { registryUseCases.upsertRegistry(registry = it) }
             }
 
             post {

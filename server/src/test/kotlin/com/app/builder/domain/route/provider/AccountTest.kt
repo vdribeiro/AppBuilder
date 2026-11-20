@@ -5,6 +5,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 import io.ktor.client.call.body
+import io.ktor.client.request.header
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpStatusCode
 import com.app.builder.core.config.ServerFlags
@@ -56,6 +57,23 @@ class AccountTest: TestCase() {
         val client = createClient(token = noAccountAuth.bearer.accessToken)
 
         assertEquals(expected = HttpStatusCode.Forbidden, actual = client.ktorGet(urlString = "${URL.Accounts.path}/${FakeData.user.uuid}").status)
+    }
+
+    /** Verifies that reading the account of another user is recorded in the registry, while reading the caller's own account is not. */
+    @Test
+    fun getAccountRecordsOnlyOtherUsers() = runServerTest {
+        installRouting()
+        val client = createClient(token = bearerToken.accessToken)
+
+        assertEquals(expected = HttpStatusCode.OK, actual = client.ktorGet(urlString = "${URL.Accounts.path}/${FakeData.user.uuid}") { registryHeaders().forEach { header(key = it.key.header, value = it.value) } }.status)
+        assertEquals(expected = HttpStatusCode.OK, actual = client.ktorGet(urlString = "${URL.Accounts.path}/${FakeData.adminUser.uuid}") { registryHeaders().forEach { header(key = it.key.header, value = it.value) } }.status)
+
+        awaitUntil { registries().isNotEmpty() }
+        val registry = registries().single()
+        assertEquals(expected = "GET", actual = registry.requestType)
+        assertEquals(expected = EntityType.ACCOUNT, actual = registry.entityType)
+        assertEquals(expected = FakeData.adminUser.uuid, actual = registry.entityUuid)
+        assertEquals(expected = FakeData.user.uuid, actual = registry.userUuid)
     }
 
     /** Verifies that upserting an account requires authentication and the account write permission, 404s for a user without an account, 409s for a taken username, rejects invalid bodies, and stores the change. */

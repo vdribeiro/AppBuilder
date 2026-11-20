@@ -66,8 +66,6 @@ fun Route.userRoutes(
                 ) ?: return@get
                 call.respondSafely(status = HttpStatusCode.OK, message = users)
                 Telemetry.info(tag = TAG, message = "Fetched ${users.size} users")
-
-                call.toRegistry(entityType = EntityType.USER)?.let { registryUseCases.upsertRegistry(registry = it) }
             }
 
             get(path = "/{uuid}") {
@@ -85,11 +83,6 @@ fun Route.userRoutes(
                 ) ?: return@get
                 call.respondSafely(status = HttpStatusCode.OK, message = user)
                 Telemetry.info(tag = TAG, message = "Fetched user $uuid")
-
-                call.toRegistry(
-                    entityType = EntityType.USER,
-                    entityUuid = uuid
-                )?.let { registryUseCases.upsertRegistry(registry = it) }
             }
 
             post {

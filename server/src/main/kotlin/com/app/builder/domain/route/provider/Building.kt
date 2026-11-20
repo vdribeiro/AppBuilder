@@ -63,8 +63,6 @@ fun Route.buildingRoutes(
                 ) ?: return@get
                 call.respondSafely(status = HttpStatusCode.OK, message = buildings)
                 Telemetry.info(tag = TAG, message = "Fetched ${buildings.size} buildings")
-
-                call.toRegistry(entityType = EntityType.BUILDING)?.let { registryUseCases.upsertRegistry(registry = it) }
             }
 
             get(path = "/{uuid}") {
@@ -83,11 +81,6 @@ fun Route.buildingRoutes(
                 ) ?: return@get
                 call.respondSafely(status = HttpStatusCode.OK, message = building)
                 Telemetry.info(tag = TAG, message = "Fetched building $uuid")
-
-                call.toRegistry(
-                    entityType = EntityType.BUILDING,
-                    entityUuid = uuid
-                )?.let { registryUseCases.upsertRegistry(registry = it) }
             }
 
             post {

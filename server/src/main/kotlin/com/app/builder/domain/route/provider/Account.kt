@@ -17,6 +17,7 @@ import com.app.builder.domain.permission.PermissionService
 import com.app.builder.domain.permission.UserAccess
 import com.app.builder.domain.route.getOrRespond
 import com.app.builder.domain.route.getParameters
+import com.app.builder.domain.route.getUserUuid
 import com.app.builder.domain.route.receive
 import com.app.builder.domain.route.respondSafely
 import com.app.builder.domain.route.toRegistry
@@ -40,6 +41,7 @@ fun Route.accountRoutes(
     authenticate {
         route(path = URL.Accounts.path) {
             get(path = "/{uuid}") {
+                val userUuid = call.getUserUuid() ?: return@get
                 if (!call.validatePermission(permissionService = permissionService, entityType = EntityType.ACCOUNT, permission = Permission.READ)) return@get
 
                 val uuid = call.getParameters()["uuid"]?.toUuid() ?: run {
@@ -55,10 +57,12 @@ fun Route.accountRoutes(
                 call.respondSafely(status = HttpStatusCode.OK, message = account)
                 Telemetry.info(tag = TAG, message = "Fetched the account of user $uuid")
 
-                call.toRegistry(
-                    entityType = EntityType.ACCOUNT,
-                    entityUuid = uuid
-                )?.let { registryUseCases.upsertRegistry(registry = it) }
+                if (uuid != userUuid) {
+                    call.toRegistry(
+                        entityType = EntityType.ACCOUNT,
+                        entityUuid = uuid
+                    )?.let { registryUseCases.upsertRegistry(registry = it) }
+                }
             }
 
             post {

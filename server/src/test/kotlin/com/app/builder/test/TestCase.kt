@@ -3,6 +3,7 @@ package com.app.builder.test
 import kotlin.test.assertIs
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
+import kotlin.time.Instant
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withTimeout
 import io.ktor.client.HttpClient
@@ -16,10 +17,13 @@ import io.ktor.serialization.kotlinx.json.json
 import io.ktor.server.testing.ApplicationTestBuilder
 import com.app.builder.Dependency
 import com.app.builder.core.flow.LazyData
+import com.app.builder.core.locale.UNIX_EPOCH
+import com.app.builder.core.locale.now
 import com.app.builder.core.security.uuid
 import com.app.builder.data.database.DatabaseFactory
 import com.app.builder.data.database.create
 import com.app.builder.data.database.reset
+import com.app.builder.data.http.Header
 import com.app.builder.data.http.installHttpPlugins
 import com.app.builder.data.signal.LocalSignal
 import com.app.builder.domain.Authentication
@@ -27,6 +31,7 @@ import com.app.builder.domain.BearerToken
 import com.app.builder.domain.EntityType
 import com.app.builder.domain.Permission
 import com.app.builder.domain.RegistrationForm
+import com.app.builder.domain.Registry
 import com.app.builder.domain.push.NoOpFcmService
 import com.app.builder.domain.route.installRouting
 import com.app.builder.domain.usecase.Outcome
@@ -88,6 +93,32 @@ abstract class TestCase: SharedTestCase() {
             password = FakeData.credentials.password
         )
     }
+
+    /**
+     * Builds the headers a request needs to be recorded in the registry.
+     *
+     * @return The registry headers of a new request.
+     */
+    protected fun registryHeaders(): Map<Header, String> = mapOf(
+        Header.RequestUuid to uuid().toString(),
+        Header.RequestUtc to now().toString(),
+        Header.RequestSentUtc to now().toString(),
+        Header.AppVersion to "1.0.0",
+        Header.Os to "android",
+        Header.OsVersion to "14",
+        Header.Brand to "Google",
+        Header.Model to "Pixel 8",
+        Header.DeviceUuid to uuid().toString()
+    )
+
+    /**
+     * Gets every recorded registry.
+     *
+     * @return The list of [Registry].
+     */
+    protected suspend fun registries(): List<Registry> = dependency.get().useCases.registryUseCases
+        .getRegistries(lastSyncUtc = Instant.UNIX_EPOCH, cursorUtc = null, cursorUuid = null, pageSize = Int.MAX_VALUE)
+        .successData()
 
     /** Installs HTTP plugins and routing, and starts the broadcast and push service. */
     protected fun ApplicationTestBuilder.installRouting() {
