@@ -1,6 +1,7 @@
 package com.app.builder.ui.navigation.user
 
 import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.toImmutableList
 import kotlinx.collections.immutable.toPersistentList
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -12,19 +13,30 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.app.builder.core.security.toUuid
 import com.app.builder.core.security.uuid
 import com.app.builder.domain.Account
+import com.app.builder.domain.Building
 import com.app.builder.domain.EntityType
+import com.app.builder.domain.Equipment
 import com.app.builder.domain.Permission
 import com.app.builder.domain.User
 import com.app.builder.ui.InjectTranslations
 import com.app.builder.ui.LocalSplitScreen
 import com.app.builder.ui.Preview
 import com.app.builder.ui.component.actionbar.ActionBar
+import com.app.builder.ui.component.building.BuildingLinkPicker
 import com.app.builder.ui.component.button.PermissionItem
 import com.app.builder.ui.component.card.UserCard
+import com.app.builder.ui.component.equipment.EquipmentLinkPicker
+import com.app.builder.ui.component.field.LinkSection
 import com.app.builder.ui.component.filters.FiltersAction
 import com.app.builder.ui.component.filters.FiltersState
+import com.app.builder.ui.component.link.LinkPickerAction
+import com.app.builder.ui.component.link.LinkPickerState
+import com.app.builder.ui.component.link.toLinkItem
+import com.app.builder.ui.component.list.BuildingItem
+import com.app.builder.ui.component.list.EquipmentItem
 import com.app.builder.ui.component.navigation.Navigation
 import com.app.builder.ui.component.navigation.NavigationRoute
 import com.app.builder.ui.component.session.SessionState
@@ -41,12 +53,20 @@ import com.app.builder.ui.store.previewStore
  *
  * @param sessionStore The session store shared by every screen.
  * @param filtersStore The user filters shared by every user screen, shown when the user list is beside this screen.
+ * @param buildingFiltersStore The building list filters, shown in the building picker.
+ * @param buildingPickerStore Provides the building picker state and receives its actions.
+ * @param equipmentFiltersStore The equipment list filters, shown in the equipment picker.
+ * @param equipmentPickerStore Provides the equipment picker state and receives its actions.
  * @param store Provides the user detail state and receives its actions.
  */
 @Composable
 fun UserDetailScreen(
     sessionStore: Store<SessionState, Unit>,
     filtersStore: Store<FiltersState, FiltersAction>,
+    buildingFiltersStore: Store<FiltersState, FiltersAction>,
+    buildingPickerStore: Store<LinkPickerState<Building, BuildingItem>, LinkPickerAction>,
+    equipmentFiltersStore: Store<FiltersState, FiltersAction>,
+    equipmentPickerStore: Store<LinkPickerState<Equipment, EquipmentItem>, LinkPickerAction>,
     store: Store<UserDetailScreenState, UserDetailScreenAction>,
 ) {
     val state by store.stateFlow.collectAsStateWithLifecycle()
@@ -67,7 +87,7 @@ fun UserDetailScreen(
                 sessionStore = sessionStore,
                 filtersStore = filtersStore.takeIf { splitScreen },
                 entityType = EntityType.USER,
-                editEntityTypes = setOf(EntityType.ACCOUNT),
+                editEntityTypes = setOfNotNull(EntityType.ACCOUNT, EntityType.BUILDING_USER.takeIf { state.buildingLinks.canEdit }, EntityType.EQUIPMENT_USER.takeIf { state.equipmentLinks.canEdit }),
                 deleted = deleted,
                 onAddClick = if (splitScreen && !state.editing) {
                     { router.navigate(screen = Screen.UserDetail(uuid = uuid().toString(), new = true), option = Router.NavOption.REPLACE_LAST) }
@@ -106,9 +126,45 @@ fun UserDetailScreen(
                 onAccountActiveChange = { store.send(action = UserDetailScreenAction.ChangeAccountActive(active = it)) },
                 permissions = permissions,
                 onPermissionToggled = { store.send(action = UserDetailScreenAction.TogglePermission(permission = it)) },
+                links = {
+                    if (user != null && state.buildingLinks.canRead) LinkSection(
+                        tag = "user_buildings",
+                        label = "user_buildings",
+                        items = state.buildings.map { it.toLinkItem() }.toImmutableList(),
+                        editing = state.editing && state.buildingLinks.canEdit,
+                        linkLabel = "user_link_buildings",
+                        onLinkClick = { buildingPickerStore.send(action = LinkPickerAction.Open(picked = state.buildings.map { it.uuid }.toSet())) },
+                        onRemove = { item -> item.uuid.toUuid()?.let { store.send(action = UserDetailScreenAction.RemoveBuilding(buildingUuid = it)) } },
+                        onClick = { item -> router.navigate(screen = Screen.BuildingDetail(uuid = item.uuid), option = Router.NavOption.ADD) }
+                    )
+                    if (user != null && state.equipmentLinks.canRead) LinkSection(
+                        tag = "user_equipments",
+                        label = "user_equipments",
+                        items = state.equipments.map { it.toLinkItem() }.toImmutableList(),
+                        editing = state.editing && state.equipmentLinks.canEdit,
+                        linkLabel = "user_link_equipments",
+                        onLinkClick = { equipmentPickerStore.send(action = LinkPickerAction.Open(picked = state.equipments.map { it.uuid }.toSet())) },
+                        onRemove = { item -> item.uuid.toUuid()?.let { store.send(action = UserDetailScreenAction.RemoveEquipment(equipmentUuid = it)) } },
+                        onClick = { item -> router.navigate(screen = Screen.EquipmentDetail(uuid = item.uuid), option = Router.NavOption.ADD) }
+                    )
+                },
             )
         }
     }
+
+    BuildingLinkPicker(
+        store = buildingPickerStore,
+        filtersStore = buildingFiltersStore,
+        title = "user_link_buildings",
+        onConfirm = { store.send(action = UserDetailScreenAction.SetBuildings(buildings = it)) }
+    )
+
+    EquipmentLinkPicker(
+        store = equipmentPickerStore,
+        filtersStore = equipmentFiltersStore,
+        title = "user_link_equipments",
+        onConfirm = { store.send(action = UserDetailScreenAction.SetEquipments(equipments = it)) }
+    )
 }
 
 /**
@@ -137,6 +193,10 @@ private fun UserDetailScreenPreview() = Preview {
     UserDetailScreen(
         sessionStore = previewStore(initialState = SessionState()),
         filtersStore = previewStore(initialState = FiltersState()),
+        buildingFiltersStore = previewStore(initialState = FiltersState()),
+        buildingPickerStore = previewStore(initialState = LinkPickerState()),
+        equipmentFiltersStore = previewStore(initialState = FiltersState()),
+        equipmentPickerStore = previewStore(initialState = LinkPickerState()),
         store = previewStore(
             initialState = UserDetailScreenState(
                 user = user

@@ -44,6 +44,7 @@ fun UserList(
                     .clickable { onClick(item) },
                 selected = item.selected,
                 deleted = item.deleted,
+                checked = item.checked,
                 headline = item.name,
                 metadata = listOf(
                     item.uuid.takeIf { item.uuidVisible },
@@ -62,6 +63,7 @@ fun UserList(
  * @property uuid A unique identifier of the user. Defaults to a random UUID.
  * @property selected Whether the user is the one currently open.
  * @property deleted Whether the user is deleted.
+ * @property checked Whether the user is ticked in a picker, or `null` outside a picker.
  * @property uuidVisible Whether the UUID is shown on the row.
  * @property modifiedAt The timestamp indicating when this user was last updated, as a UTC ISO-8601 string shown as a localized date-time.
  * @property deletedAt The timestamp indicating when this user was last deleted, as a UTC ISO-8601 string shown as a localized date-time.
@@ -73,6 +75,7 @@ data class UserItem(
     val uuid: String = uuid().toString(),
     val selected: Boolean = false,
     val deleted: Boolean = false,
+    val checked: Boolean? = null,
     val uuidVisible: Boolean = false,
     val modifiedAt: String? = null,
     val deletedAt: String? = null,

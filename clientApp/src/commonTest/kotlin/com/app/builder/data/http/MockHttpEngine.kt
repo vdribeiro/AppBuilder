@@ -65,6 +65,10 @@ fun createMockHttpEngine(): HttpClientEngine = TestEngine { request ->
                 path == URL.Materials.path -> respondMock(content = encode(value = listOf(FakeData.material)))
                 path.isItemOf(url = URL.BuildingMaterials) -> respondMock(content = encode(value = FakeData.buildingMaterial))
                 path == URL.BuildingMaterials.path -> respondMock(content = encode(value = listOf(FakeData.buildingMaterial)))
+                path.isItemOf(url = URL.BuildingUsers) -> respondMock(content = encode(value = FakeData.buildingUser))
+                path == URL.BuildingUsers.path -> respondMock(content = encode(value = listOf(FakeData.buildingUser)))
+                path.isItemOf(url = URL.EquipmentUsers) -> respondMock(content = encode(value = FakeData.equipmentUser))
+                path == URL.EquipmentUsers.path -> respondMock(content = encode(value = listOf(FakeData.equipmentUser)))
                 else -> notFound(request = request)
             }
 
@@ -141,6 +145,8 @@ fun createMockHttpEngine(): HttpClientEngine = TestEngine { request ->
                 URL.BuildingEquipments.path -> respondMock(content = encode(value = FakeData.buildingEquipment))
                 URL.Materials.path -> respondMock(content = encode(value = FakeData.material))
                 URL.BuildingMaterials.path -> respondMock(content = encode(value = FakeData.buildingMaterial))
+                URL.BuildingUsers.path -> respondMock(content = encode(value = FakeData.buildingUser))
+                URL.EquipmentUsers.path -> respondMock(content = encode(value = FakeData.equipmentUser))
                 URL.Buildings.path -> respondMock(content = encode(value = FakeData.building))
                 URL.Users.path -> respondMock(content = encode(value = FakeData.adminUser))
                 else -> notFound(request = request)

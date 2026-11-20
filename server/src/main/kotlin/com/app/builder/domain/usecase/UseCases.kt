@@ -5,11 +5,13 @@ import com.app.builder.domain.usecase.authentication.AuthenticationUseCases
 import com.app.builder.domain.usecase.building.BuildingUseCases
 import com.app.builder.domain.usecase.buildingequipment.BuildingEquipmentUseCases
 import com.app.builder.domain.usecase.buildingmaterial.BuildingMaterialUseCases
+import com.app.builder.domain.usecase.buildinguser.BuildingUserUseCases
 import com.app.builder.domain.usecase.config.ConfigUseCases
 import com.app.builder.domain.usecase.connection.ConnectionUseCases
 import com.app.builder.domain.usecase.devicelocation.DeviceLocationUseCases
 import com.app.builder.domain.usecase.devicetoken.DeviceTokenUseCases
 import com.app.builder.domain.usecase.equipment.EquipmentUseCases
+import com.app.builder.domain.usecase.equipmentuser.EquipmentUserUseCases
 import com.app.builder.domain.usecase.material.MaterialUseCases
 import com.app.builder.domain.usecase.notification.NotificationsUseCases
 import com.app.builder.domain.usecase.registry.RegistryUseCases
@@ -54,4 +56,8 @@ interface UseCases {
     val materialUseCases: MaterialUseCases
     /** The building material use cases. */
     val buildingMaterialUseCases: BuildingMaterialUseCases
+    /** The building user use cases. */
+    val buildingUserUseCases: BuildingUserUseCases
+    /** The equipment user use cases. */
+    val equipmentUserUseCases: EquipmentUserUseCases
 }

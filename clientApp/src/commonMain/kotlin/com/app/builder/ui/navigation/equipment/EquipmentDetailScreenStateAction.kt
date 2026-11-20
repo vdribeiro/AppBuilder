@@ -40,6 +40,18 @@ sealed interface EquipmentDetailScreenAction {
      * @param buildings The buildings to link.
      */
     data class SetBuildings(val buildings: ImmutableList<Link>): EquipmentDetailScreenAction
+    /**
+     * Unlinks a user from the edited equipment.
+     *
+     * @param userUuid The unique identifier of the user.
+     */
+    data class RemoveUser(val userUuid: Uuid): EquipmentDetailScreenAction
+    /**
+     * Sets the users linked to the edited equipment.
+     *
+     * @param users The users to link.
+     */
+    data class SetUsers(val users: ImmutableList<Link>): EquipmentDetailScreenAction
     /** Start editing the current equipment. */
     data object Edit: EquipmentDetailScreenAction
     /** Save the edited equipment and stop editing it. */
@@ -62,8 +74,11 @@ sealed interface EquipmentDetailScreenAction {
  * @property statuses Every equipment status, in selection order.
  * @property buildings The buildings linked to the equipment, including the edits that are not saved yet.
  * @property storedBuildings The buildings linked to the equipment as stored.
+ * @property users The users linked to the equipment, including the edits that are not saved yet.
+ * @property storedUsers The users linked to the equipment as stored.
  * @property writable Whether the current user can edit, delete and restore the equipment.
  * @property buildingLinks What the current user can do with the links to the buildings of the equipment.
+ * @property userLinks What the current user can do with the links to the users of the equipment.
  */
 data class EquipmentDetailScreenState(
     val equipment: Equipment? = null,
@@ -73,6 +88,9 @@ data class EquipmentDetailScreenState(
     val statuses: ImmutableList<String> = Equipment.Status.entries.map { it.translationKey }.toPersistentList(),
     val buildings: ImmutableList<Link> = persistentListOf(),
     val storedBuildings: ImmutableList<Link> = persistentListOf(),
+    val users: ImmutableList<Link> = persistentListOf(),
+    val storedUsers: ImmutableList<Link> = persistentListOf(),
     val writable: Boolean = false,
     val buildingLinks: LinkPermissions = LinkPermissions(),
+    val userLinks: LinkPermissions = LinkPermissions(),
 )

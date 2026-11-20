@@ -12,6 +12,8 @@ import com.app.builder.domain.usecase.buildingequipment.BuildingEquipmentGateway
 import com.app.builder.domain.usecase.buildingequipment.BuildingEquipmentUseCases
 import com.app.builder.domain.usecase.buildingmaterial.BuildingMaterialGateway
 import com.app.builder.domain.usecase.buildingmaterial.BuildingMaterialUseCases
+import com.app.builder.domain.usecase.buildinguser.BuildingUserGateway
+import com.app.builder.domain.usecase.buildinguser.BuildingUserUseCases
 import com.app.builder.domain.usecase.config.ConfigGateway
 import com.app.builder.domain.usecase.config.ConfigUseCases
 import com.app.builder.domain.usecase.connection.ConnectionGateway
@@ -22,6 +24,8 @@ import com.app.builder.domain.usecase.devicetoken.DeviceTokenGateway
 import com.app.builder.domain.usecase.devicetoken.DeviceTokenUseCases
 import com.app.builder.domain.usecase.equipment.EquipmentGateway
 import com.app.builder.domain.usecase.equipment.EquipmentUseCases
+import com.app.builder.domain.usecase.equipmentuser.EquipmentUserGateway
+import com.app.builder.domain.usecase.equipmentuser.EquipmentUserUseCases
 import com.app.builder.domain.usecase.material.MaterialGateway
 import com.app.builder.domain.usecase.material.MaterialUseCases
 import com.app.builder.domain.usecase.notification.NotificationsGateway
@@ -64,4 +68,6 @@ class Gateways(
     override val buildingEquipmentUseCases: BuildingEquipmentUseCases = BuildingEquipmentGateway(database = database, notificationsUseCases = notificationsUseCases)
     override val materialUseCases: MaterialUseCases = MaterialGateway(database = database, notificationsUseCases = notificationsUseCases)
     override val buildingMaterialUseCases: BuildingMaterialUseCases = BuildingMaterialGateway(database = database, notificationsUseCases = notificationsUseCases)
+    override val buildingUserUseCases: BuildingUserUseCases = BuildingUserGateway(database = database, notificationsUseCases = notificationsUseCases)
+    override val equipmentUserUseCases: EquipmentUserUseCases = EquipmentUserGateway(database = database, notificationsUseCases = notificationsUseCases)
 }

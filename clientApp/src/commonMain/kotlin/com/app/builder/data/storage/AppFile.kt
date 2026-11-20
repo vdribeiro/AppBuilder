@@ -51,7 +51,11 @@ object AppFile {
             /** The UTC instant when materials were last synchronized. */
             MATERIALS_LAST_SYNC_UTC,
             /** The UTC instant when building materials were last synchronized. */
-            BUILDING_MATERIALS_LAST_SYNC_UTC
+            BUILDING_MATERIALS_LAST_SYNC_UTC,
+            /** The UTC instant when building users were last synchronized. */
+            BUILDING_USERS_LAST_SYNC_UTC,
+            /** The UTC instant when equipment users were last synchronized. */
+            EQUIPMENT_USERS_LAST_SYNC_UTC
         }
 
         override val serializer: KSerializer<Map<Key, String>> =

@@ -815,6 +815,56 @@
     "value": "Link buildings"
   },
   {
+    "languageIso": "en",
+    "key": "building_user",
+    "value": "Building User"
+  },
+  {
+    "languageIso": "en",
+    "key": "building_users",
+    "value": "Users"
+  },
+  {
+    "languageIso": "en",
+    "key": "building_link_users",
+    "value": "Link users"
+  },
+  {
+    "languageIso": "en",
+    "key": "user_buildings",
+    "value": "Buildings"
+  },
+  {
+    "languageIso": "en",
+    "key": "user_link_buildings",
+    "value": "Link buildings"
+  },
+  {
+    "languageIso": "en",
+    "key": "equipment_user",
+    "value": "Equipment User"
+  },
+  {
+    "languageIso": "en",
+    "key": "equipment_users",
+    "value": "Users"
+  },
+  {
+    "languageIso": "en",
+    "key": "equipment_link_users",
+    "value": "Link users"
+  },
+  {
+    "languageIso": "en",
+    "key": "user_equipments",
+    "value": "Equipment"
+  },
+  {
+    "languageIso": "en",
+    "key": "user_link_equipments",
+    "value": "Link equipments"
+  },
+  {
     "languageIso": "pt",
     "key": "app_name",
     "value": "App Builder"
@@ -1628,5 +1678,55 @@
     "languageIso": "pt",
     "key": "material_link_buildings",
     "value": "Associar edifícios"
+  },
+  {
+    "languageIso": "pt",
+    "key": "building_user",
+    "value": "Utilizador do Edifício"
+  },
+  {
+    "languageIso": "pt",
+    "key": "building_users",
+    "value": "Utilizadores"
+  },
+  {
+    "languageIso": "pt",
+    "key": "building_link_users",
+    "value": "Associar utilizadores"
+  },
+  {
+    "languageIso": "pt",
+    "key": "user_buildings",
+    "value": "Edifícios"
+  },
+  {
+    "languageIso": "pt",
+    "key": "user_link_buildings",
+    "value": "Associar edifícios"
+  },
+  {
+    "languageIso": "pt",
+    "key": "equipment_user",
+    "value": "Utilizador do Equipamento"
+  },
+  {
+    "languageIso": "pt",
+    "key": "equipment_users",
+    "value": "Utilizadores"
+  },
+  {
+    "languageIso": "pt",
+    "key": "equipment_link_users",
+    "value": "Associar utilizadores"
+  },
+  {
+    "languageIso": "pt",
+    "key": "user_equipments",
+    "value": "Equipamentos"
+  },
+  {
+    "languageIso": "pt",
+    "key": "user_link_equipments",
+    "value": "Associar equipamentos"
   }
 ]

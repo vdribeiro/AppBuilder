@@ -16,9 +16,11 @@ import com.app.builder.domain.route.provider.broadcastRoutes
 import com.app.builder.domain.route.provider.buildingEquipmentRoutes
 import com.app.builder.domain.route.provider.buildingMaterialRoutes
 import com.app.builder.domain.route.provider.buildingRoutes
+import com.app.builder.domain.route.provider.buildingUserRoutes
 import com.app.builder.domain.route.provider.configRoutes
 import com.app.builder.domain.route.provider.deviceLocationRoutes
 import com.app.builder.domain.route.provider.equipmentRoutes
+import com.app.builder.domain.route.provider.equipmentUserRoutes
 import com.app.builder.domain.route.provider.materialRoutes
 import com.app.builder.domain.route.provider.probeRoutes
 import com.app.builder.domain.route.provider.pushRoutes
@@ -53,6 +55,8 @@ fun Application.installRouting(dependency: Dependency) {
         flag(enabled = { it.buildingEquipments }) { buildingEquipmentRoutes(permissionService = permissionService, buildingEquipmentUseCases = useCases.buildingEquipmentUseCases, registryUseCases = useCases.registryUseCases) }
         flag(enabled = { it.materials }) { materialRoutes(permissionService = permissionService, materialUseCases = useCases.materialUseCases, registryUseCases = useCases.registryUseCases) }
         flag(enabled = { it.buildingMaterials }) { buildingMaterialRoutes(permissionService = permissionService, buildingMaterialUseCases = useCases.buildingMaterialUseCases, registryUseCases = useCases.registryUseCases) }
+        flag(enabled = { it.buildingUsers }) { buildingUserRoutes(permissionService = permissionService, buildingUserUseCases = useCases.buildingUserUseCases, registryUseCases = useCases.registryUseCases) }
+        flag(enabled = { it.equipmentUsers }) { equipmentUserRoutes(permissionService = permissionService, equipmentUserUseCases = useCases.equipmentUserUseCases, registryUseCases = useCases.registryUseCases) }
     }
 }
 

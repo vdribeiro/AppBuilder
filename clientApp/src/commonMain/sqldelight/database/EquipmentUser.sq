@@ -1,0 +1,39 @@
+import kotlin.time.Instant;
+import kotlin.uuid.Uuid;
+
+CREATE TABLE IF NOT EXISTS EquipmentUser (
+    uuid TEXT AS Uuid NOT NULL PRIMARY KEY,
+    modifiedAt TEXT AS Instant NOT NULL,
+    deletedAt TEXT AS Instant,
+    equipmentUuid TEXT AS Uuid NOT NULL,
+    userUuid TEXT AS Uuid NOT NULL
+);
+
+upsertEquipmentUser:
+INSERT OR REPLACE INTO EquipmentUser VALUES ?;
+
+getEquipmentUsersByUuids:
+SELECT *
+FROM EquipmentUser
+WHERE uuid IN :equipmentUserUuids;
+
+getEquipmentUser:
+SELECT *
+FROM EquipmentUser
+WHERE uuid = :equipmentUserUuid;
+
+getUsersOfEquipment:
+SELECT User.*
+FROM User
+JOIN EquipmentUser ON EquipmentUser.userUuid = User.uuid
+WHERE EquipmentUser.equipmentUuid = :equipmentUuid
+    AND EquipmentUser.deletedAt IS NULL
+    AND User.deletedAt IS NULL;
+
+getEquipmentsOfUser:
+SELECT Equipment.*
+FROM Equipment
+JOIN EquipmentUser ON EquipmentUser.equipmentUuid = Equipment.uuid
+WHERE EquipmentUser.userUuid = :userUuid
+    AND EquipmentUser.deletedAt IS NULL
+    AND Equipment.deletedAt IS NULL;

@@ -7,13 +7,15 @@ import com.app.builder.data.serializer.encode
 import com.app.builder.domain.Account
 import com.app.builder.domain.Authentication
 import com.app.builder.domain.BearerToken
+import com.app.builder.domain.Building
+import com.app.builder.domain.BuildingEquipment
+import com.app.builder.domain.BuildingMaterial
+import com.app.builder.domain.BuildingUser
 import com.app.builder.domain.DeviceLocation
 import com.app.builder.domain.EntityType
 import com.app.builder.domain.Material
 import com.app.builder.domain.Equipment
-import com.app.builder.domain.Building
-import com.app.builder.domain.BuildingEquipment
-import com.app.builder.domain.BuildingMaterial
+import com.app.builder.domain.EquipmentUser
 import com.app.builder.domain.Permission
 import com.app.builder.domain.PushPayload
 import com.app.builder.domain.RegistrationForm
@@ -90,6 +92,8 @@ object FakeData {
                 EntityType.BUILDING_EQUIPMENT -> Permission.READ
                 EntityType.MATERIAL -> Permission.READ
                 EntityType.BUILDING_MATERIAL -> Permission.READ
+                EntityType.BUILDING_USER -> Permission.READ
+                EntityType.EQUIPMENT_USER -> Permission.READ
             }?.let { type to it }
         }.toMap()
     )
@@ -205,6 +209,16 @@ object FakeData {
         buildingUuid = building.uuid,
         materialUuid = material.uuid,
         quantity = 3
+    )
+
+    val buildingUser: BuildingUser = BuildingUser(
+        buildingUuid = building.uuid,
+        userUuid = user.uuid
+    )
+
+    val equipmentUser: EquipmentUser = EquipmentUser(
+        equipmentUuid = equipment.uuid,
+        userUuid = user.uuid
     )
 
     val deviceLocation: DeviceLocation = DeviceLocation(

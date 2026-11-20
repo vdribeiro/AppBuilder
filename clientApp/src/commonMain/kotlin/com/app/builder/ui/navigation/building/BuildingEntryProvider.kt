@@ -10,6 +10,8 @@ import com.app.builder.ui.component.equipment.equipmentLinkPickerStore
 import com.app.builder.ui.component.material.materialFiltersStore
 import com.app.builder.ui.component.material.materialLinkPickerStore
 import com.app.builder.ui.component.session.SessionStore
+import com.app.builder.ui.component.user.userFiltersStore
+import com.app.builder.ui.component.user.userLinkPickerStore
 import com.app.builder.ui.lifecycle.hostViewModel
 import com.app.builder.ui.navigation.LocalRouter
 import com.app.builder.ui.navigation.Screen
@@ -38,6 +40,8 @@ fun EntryProviderScope<NavKey>.buildingProvider(useCases: UseCases) {
             equipmentPickerStore = viewModel(key = "equipment_picker") { equipmentLinkPickerStore(equipmentUseCases = useCases.equipmentUseCases) },
             materialFiltersStore = materialFiltersStore(),
             materialPickerStore = viewModel(key = "material_picker") { materialLinkPickerStore(materialUseCases = useCases.materialUseCases) },
+            userFiltersStore = userFiltersStore(),
+            userPickerStore = viewModel(key = "user_picker") { userLinkPickerStore(userUseCases = useCases.userUseCases) },
             store = viewModel {
                 BuildingDetailScreenStore(
                     state = BuildingDetailScreenState(),
@@ -45,6 +49,7 @@ fun EntryProviderScope<NavKey>.buildingProvider(useCases: UseCases) {
                     buildingUseCases = useCases.buildingUseCases,
                     buildingEquipmentUseCases = useCases.buildingEquipmentUseCases,
                     buildingMaterialUseCases = useCases.buildingMaterialUseCases,
+                    buildingUserUseCases = useCases.buildingUserUseCases,
                     authenticationUseCases = useCases.authenticationUseCases,
                     buildingUuid = it.uuid,
                     new = it.new

@@ -22,4 +22,6 @@ enum class EntityType {
     BUILDING_EQUIPMENT,
     MATERIAL,
     BUILDING_MATERIAL,
+    BUILDING_USER,
+    EQUIPMENT_USER,
 }

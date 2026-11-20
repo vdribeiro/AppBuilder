@@ -39,4 +39,26 @@ class PermissionTest: TestCase() {
         assertTrue(actual = linksOnly.grants(entityType = EntityType.BUILDING_MATERIAL, permission = Permission.WRITE))
         assertFalse(actual = linksOnly.grants(entityType = EntityType.BUILDING, permission = Permission.READ))
     }
+
+    /** Verifies the building user permission stands on its own, whatever the building and user permissions are. */
+    @Test
+    fun buildingUserIsItsOwnPermission() = runUnitTest {
+        val withoutLinks = mapOf(EntityType.BUILDING to Permission.WRITE, EntityType.USER to Permission.WRITE)
+        assertFalse(actual = withoutLinks.grants(entityType = EntityType.BUILDING_USER, permission = Permission.READ))
+
+        val linksOnly = mapOf(EntityType.BUILDING_USER to Permission.WRITE)
+        assertTrue(actual = linksOnly.grants(entityType = EntityType.BUILDING_USER, permission = Permission.WRITE))
+        assertFalse(actual = linksOnly.grants(entityType = EntityType.BUILDING, permission = Permission.READ))
+    }
+
+    /** Verifies the equipment user permission stands on its own, whatever the equipment and user permissions are. */
+    @Test
+    fun equipmentUserIsItsOwnPermission() = runUnitTest {
+        val withoutLinks = mapOf(EntityType.EQUIPMENT to Permission.WRITE, EntityType.USER to Permission.WRITE)
+        assertFalse(actual = withoutLinks.grants(entityType = EntityType.EQUIPMENT_USER, permission = Permission.READ))
+
+        val linksOnly = mapOf(EntityType.EQUIPMENT_USER to Permission.WRITE)
+        assertTrue(actual = linksOnly.grants(entityType = EntityType.EQUIPMENT_USER, permission = Permission.WRITE))
+        assertFalse(actual = linksOnly.grants(entityType = EntityType.EQUIPMENT, permission = Permission.READ))
+    }
 }

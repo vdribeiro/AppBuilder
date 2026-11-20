@@ -324,6 +324,8 @@ object Application {
         if (flags.buildingEquipments && previous?.buildingEquipments != true) repositories.buildingEquipmentRepository.syncBuildingEquipments()
         if (flags.materials && previous?.materials != true) repositories.materialRepository.syncMaterials()
         if (flags.buildingMaterials && previous?.buildingMaterials != true) repositories.buildingMaterialRepository.syncBuildingMaterials()
+        if (flags.buildingUsers && previous?.buildingUsers != true) repositories.buildingUserRepository.syncBuildingUsers()
+        if (flags.equipmentUsers && previous?.equipmentUsers != true) repositories.equipmentUserRepository.syncEquipmentUsers()
     }
 
     /** Register lifecycles of services. */

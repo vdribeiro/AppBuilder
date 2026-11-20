@@ -191,6 +191,8 @@ private fun setBackStack(
         EntityType.BUILDING_EQUIPMENT -> listOf(Screen.BuildingList)
         EntityType.MATERIAL -> buildList<Screen> { add(Screen.MaterialList); entityUuid?.let { add(Screen.MaterialDetail(uuid = it.toString())) } }
         EntityType.BUILDING_MATERIAL -> listOf(Screen.BuildingList)
+        EntityType.BUILDING_USER -> listOf(Screen.BuildingList)
+        EntityType.EQUIPMENT_USER -> listOf(Screen.EquipmentList)
     }
     if (backStack.isNotEmpty()) router.backStack.apply {
         clear()

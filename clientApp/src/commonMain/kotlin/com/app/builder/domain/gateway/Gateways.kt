@@ -18,6 +18,9 @@ import com.app.builder.domain.gateway.buildingequipment.BuildingEquipmentUseCase
 import com.app.builder.domain.gateway.buildingmaterial.BuildingMaterialGateway
 import com.app.builder.domain.gateway.buildingmaterial.BuildingMaterialRepository
 import com.app.builder.domain.gateway.buildingmaterial.BuildingMaterialUseCases
+import com.app.builder.domain.gateway.buildinguser.BuildingUserGateway
+import com.app.builder.domain.gateway.buildinguser.BuildingUserRepository
+import com.app.builder.domain.gateway.buildinguser.BuildingUserUseCases
 import com.app.builder.domain.gateway.config.ConfigGateway
 import com.app.builder.domain.gateway.config.ConfigRepository
 import com.app.builder.domain.gateway.config.ConfigUseCases
@@ -26,6 +29,9 @@ import com.app.builder.domain.gateway.devicelocation.DeviceLocationRepository
 import com.app.builder.domain.gateway.equipment.EquipmentGateway
 import com.app.builder.domain.gateway.equipment.EquipmentRepository
 import com.app.builder.domain.gateway.equipment.EquipmentUseCases
+import com.app.builder.domain.gateway.equipmentuser.EquipmentUserGateway
+import com.app.builder.domain.gateway.equipmentuser.EquipmentUserRepository
+import com.app.builder.domain.gateway.equipmentuser.EquipmentUserUseCases
 import com.app.builder.domain.gateway.material.MaterialGateway
 import com.app.builder.domain.gateway.material.MaterialRepository
 import com.app.builder.domain.gateway.material.MaterialUseCases
@@ -191,4 +197,22 @@ class Gateways(
     )
     override val buildingMaterialUseCases: BuildingMaterialUseCases = buildingMaterialGateway
     override val buildingMaterialRepository: BuildingMaterialRepository = buildingMaterialGateway
+
+    private val buildingUserGateway: BuildingUserGateway = BuildingUserGateway(
+        account = account,
+        database = database,
+        httpClient = httpClient,
+        scheduler = scheduler
+    )
+    override val buildingUserUseCases: BuildingUserUseCases = buildingUserGateway
+    override val buildingUserRepository: BuildingUserRepository = buildingUserGateway
+
+    private val equipmentUserGateway: EquipmentUserGateway = EquipmentUserGateway(
+        account = account,
+        database = database,
+        httpClient = httpClient,
+        scheduler = scheduler
+    )
+    override val equipmentUserUseCases: EquipmentUserUseCases = equipmentUserGateway
+    override val equipmentUserRepository: EquipmentUserRepository = equipmentUserGateway
 }

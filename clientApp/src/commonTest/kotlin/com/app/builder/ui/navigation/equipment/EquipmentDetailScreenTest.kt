@@ -21,6 +21,7 @@ import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextReplacement
 import com.app.builder.Dependency.getUserDependency
 import com.app.builder.core.config.ClientFlags
@@ -28,6 +29,7 @@ import com.app.builder.core.locale.now
 import com.app.builder.core.security.uuid
 import com.app.builder.domain.Building
 import com.app.builder.domain.Equipment
+import com.app.builder.domain.User
 import com.app.builder.domain.UserCredentials
 import com.app.builder.domain.gateway.UseCases
 import com.app.builder.test.FakeData
@@ -39,8 +41,10 @@ import com.app.builder.ui.component.link.Link
 import com.app.builder.ui.component.link.LinkPermissions
 import com.app.builder.ui.component.link.LinkPickerStore
 import com.app.builder.ui.component.list.BuildingItem
+import com.app.builder.ui.component.list.UserItem
 import com.app.builder.ui.component.session.SessionState
 import com.app.builder.ui.component.session.SessionStore
+import com.app.builder.ui.component.user.userLinkPickerStore
 import com.app.builder.ui.navigation.Router
 import com.app.builder.ui.navigation.Screen
 
@@ -48,7 +52,7 @@ class EquipmentDetailScreenTest: TestCase() {
 
     override suspend fun beforeTest() {
         super.beforeTest()
-        ClientFlags.set { it.copy(http = true, scheduler = true, equipments = true, buildingEquipments = true) }
+        ClientFlags.set { it.copy(http = true, scheduler = true, equipments = true, buildingEquipments = true, equipmentUsers = true) }
     }
 
     /**
@@ -68,19 +72,35 @@ class EquipmentDetailScreenTest: TestCase() {
     }
 
     /**
+     * The stores of a rendered equipment detail screen.
+     *
+     * @property store The equipment detail store.
+     * @property sessionStore The session store.
+     * @property buildingPickerStore The building picker store.
+     * @property userPickerStore The user picker store.
+     */
+    private data class EquipmentStores(
+        val store: EquipmentDetailScreenStore,
+        val sessionStore: SessionStore,
+        val buildingPickerStore: LinkPickerStore<Building, BuildingItem>,
+        val userPickerStore: LinkPickerStore<User, UserItem>,
+    )
+
+    /**
      * Renders the equipment detail screen of the equipment with [equipmentUuid] with an action bar offering every equipment detail action, as the equipment entry provider does.
      *
      * @param useCases The use cases backing the stores.
      * @param equipmentUuid The uuid of the equipment to display.
      * @param new Whether the equipment is new and not stored yet.
-     * @return The [EquipmentDetailScreenStore], the [SessionStore] and the building picker store rendered.
+     * @return The stores rendered.
      */
-    private fun ComposeUiTest.setEquipmentDetailScreen(useCases: UseCases, equipmentUuid: Uuid = FakeData.equipment.uuid, new: Boolean = false): Triple<EquipmentDetailScreenStore, SessionStore, LinkPickerStore<Building, BuildingItem>> {
+    private fun ComposeUiTest.setEquipmentDetailScreen(useCases: UseCases, equipmentUuid: Uuid = FakeData.equipment.uuid, new: Boolean = false): EquipmentStores {
         val store = EquipmentDetailScreenStore(
             state = EquipmentDetailScreenState(),
             router = router,
             equipmentUseCases = useCases.equipmentUseCases,
             buildingEquipmentUseCases = useCases.buildingEquipmentUseCases,
+            equipmentUserUseCases = useCases.equipmentUserUseCases,
             authenticationUseCases = useCases.authenticationUseCases,
             equipmentUuid = equipmentUuid.toString(),
             new = new
@@ -89,6 +109,8 @@ class EquipmentDetailScreenTest: TestCase() {
         val filtersStore = FiltersStore(state = FiltersState())
         val buildingFiltersStore = FiltersStore(state = FiltersState())
         val buildingPickerStore = buildingLinkPickerStore(buildingUseCases = useCases.buildingUseCases)
+        val userFiltersStore = FiltersStore(state = FiltersState())
+        val userPickerStore = userLinkPickerStore(userUseCases = useCases.userUseCases)
 
         setUI {
             EquipmentDetailScreen(
@@ -96,11 +118,13 @@ class EquipmentDetailScreenTest: TestCase() {
                 filtersStore = filtersStore,
                 buildingFiltersStore = buildingFiltersStore,
                 buildingPickerStore = buildingPickerStore,
+                userFiltersStore = userFiltersStore,
+                userPickerStore = userPickerStore,
                 store = store,
             )
         }
 
-        return Triple(first = store, second = sessionStore, third = buildingPickerStore)
+        return EquipmentStores(store = store, sessionStore = sessionStore, buildingPickerStore = buildingPickerStore, userPickerStore = userPickerStore)
     }
 
     /** Verifies that the equipment detail screen displays the name and description of the loaded equipment. */
@@ -113,6 +137,7 @@ class EquipmentDetailScreenTest: TestCase() {
             router = router,
             equipmentUseCases = useCases.equipmentUseCases,
             buildingEquipmentUseCases = useCases.buildingEquipmentUseCases,
+            equipmentUserUseCases = useCases.equipmentUserUseCases,
             authenticationUseCases = useCases.authenticationUseCases,
             equipmentUuid = FakeData.equipment.uuid.toString()
         )
@@ -120,6 +145,8 @@ class EquipmentDetailScreenTest: TestCase() {
         val filtersStore = FiltersStore(state = FiltersState())
         val buildingFiltersStore = FiltersStore(state = FiltersState())
         val buildingPickerStore = buildingLinkPickerStore(buildingUseCases = useCases.buildingUseCases)
+        val userFiltersStore = FiltersStore(state = FiltersState())
+        val userPickerStore = userLinkPickerStore(userUseCases = useCases.userUseCases)
 
         setUI {
             EquipmentDetailScreen(
@@ -127,6 +154,8 @@ class EquipmentDetailScreenTest: TestCase() {
                 filtersStore = filtersStore,
                 buildingFiltersStore = buildingFiltersStore,
                 buildingPickerStore = buildingPickerStore,
+                userFiltersStore = userFiltersStore,
+                userPickerStore = userPickerStore,
                 store = store,
             )
         }
@@ -414,6 +443,7 @@ class EquipmentDetailScreenTest: TestCase() {
         router = router,
         equipmentUseCases = useCases.equipmentUseCases,
         buildingEquipmentUseCases = useCases.buildingEquipmentUseCases,
+        equipmentUserUseCases = useCases.equipmentUserUseCases,
         authenticationUseCases = useCases.authenticationUseCases,
         equipmentUuid = FakeData.equipment.uuid.toString()
     )
@@ -465,17 +495,79 @@ class EquipmentDetailScreenTest: TestCase() {
         assertEquals(expected = FakeData.equipment, actual = useCases.equipmentUseCases.observeEquipment(uuid = FakeData.equipment.uuid).first())
     }
 
+    /** Verifies that the linked users are listed, and selecting one opens it. */
+    @Test
+    fun usersAreListed() = runUITest {
+        val useCases = storedEquipmentUseCases()
+        useCases.userUseCases.upsertUser(user = FakeData.user)
+        useCases.equipmentUserUseCases.upsertEquipmentUser(equipmentUser = FakeData.equipmentUser)
+        val (store, sessionStore) = setEquipmentDetailScreen(useCases = useCases)
+
+        waitUntil { store.state.users.isNotEmpty() && sessionStore.state.account != null && store.state.writable }
+        onNodeWithTag(testTag = "equipment_users").assertExists()
+        onNodeWithTag(testTag = "equipment_users_${FakeData.user.uuid}").performScrollTo().performClick()
+
+        waitUntil { router.backStack.lastOrNull() == Screen.UserDetail(uuid = FakeData.user.uuid.toString()) }
+    }
+
+    /** Verifies that a user ticked in the picker and confirmed is listed, and linked to the equipment once saved. */
+    @Test
+    fun addUser() = runUITest {
+        val useCases = storedEquipmentUseCases()
+        val (store, sessionStore, _, userPickerStore) = setEquipmentDetailScreen(useCases = useCases)
+
+        waitUntil { store.state.equipment != null && userPickerStore.state.candidates.isNotEmpty() && sessionStore.state.account != null && store.state.writable }
+        onNodeWithTag(testTag = "equipment_users_link").assertDoesNotExist()
+        onNodeWithTag(testTag = "action_edit").performClick()
+        waitUntil { store.state.editing }
+        onNodeWithTag(testTag = "equipment_users_link").performScrollTo().performClick()
+        waitUntil { userPickerStore.state.open }
+        onNodeWithTag(testTag = "user_row_0").performClick()
+        waitUntil { userPickerStore.state.picked.isNotEmpty() }
+        onNode(matcher = hasTestTag(testTag = "action_save") and hasAnyAncestor(matcher = hasTestTag(testTag = "user_picker"))).performClick()
+        waitUntil { !userPickerStore.state.open && store.state.users.isNotEmpty() }
+        val picked = store.state.users.map { it.uuid }
+        onNodeWithTag(testTag = "action_save").performClick()
+        waitUntil { !store.state.editing }
+
+        val users = useCases.equipmentUserUseCases.observeUsersOfEquipment(equipmentUuid = FakeData.equipment.uuid).first { it.isNotEmpty() }
+        assertEquals(expected = picked, actual = users.map { it.uuid })
+    }
+
+    /** Verifies that canceling after unlinking a user keeps it linked, and that saving after only unlinking it deletes the equipment user and leaves the unchanged equipment as stored. */
+    @Test
+    fun usersOnlyEditLeavesEquipmentUnchanged() = runUnitTest {
+        val useCases = storedEquipmentUseCases()
+        useCases.userUseCases.upsertUser(user = FakeData.user)
+        useCases.equipmentUserUseCases.upsertEquipmentUser(equipmentUser = FakeData.equipmentUser)
+        val store = equipmentStore(useCases = useCases)
+
+        store.stateFlow.first { it.storedEquipment != null && it.users.isNotEmpty() }
+        store.send(action = EquipmentDetailScreenAction.Edit)
+        store.send(action = EquipmentDetailScreenAction.RemoveUser(userUuid = FakeData.user.uuid))
+        store.send(action = EquipmentDetailScreenAction.Cancel)
+        assertEquals(expected = listOf(element = Link(uuid = FakeData.user.uuid, name = FakeData.user.name)), actual = store.stateFlow.first { !it.editing }.users)
+
+        store.send(action = EquipmentDetailScreenAction.Edit)
+        store.send(action = EquipmentDetailScreenAction.RemoveUser(userUuid = FakeData.user.uuid))
+        store.send(action = EquipmentDetailScreenAction.Save)
+        store.stateFlow.first { !it.editing }
+
+        assertTrue(actual = useCases.equipmentUserUseCases.observeUsersOfEquipment(equipmentUuid = FakeData.equipment.uuid).first { it.isEmpty() }.isEmpty())
+        assertEquals(expected = FakeData.equipment, actual = useCases.equipmentUseCases.observeEquipment(uuid = FakeData.equipment.uuid).first())
+    }
+
     /** Verifies that the state follows what the current account can do: an admin can write the equipment and edit its links, a user with only read permission can do neither, and the links can't be read while their client feature flag is off. */
     @Test
     fun permissions() = runUnitTest {
         val admin = equipmentStore(useCases = storedEquipmentUseCases()).stateFlow.first { it.writable }
-        assertTrue(actual = admin.let { it.buildingLinks == LinkPermissions(canRead = true, canEdit = true) })
+        assertTrue(actual = admin.let { it.buildingLinks == LinkPermissions(canRead = true, canEdit = true) && it.userLinks == LinkPermissions(canRead = true, canEdit = true) })
 
         val reader = equipmentStore(useCases = storedEquipmentUseCases(credentials = FakeData.credentials)).stateFlow.first { it.buildingLinks.canRead }
-        assertFalse(actual = reader.writable || reader.buildingLinks.canEdit)
+        assertFalse(actual = reader.writable || reader.buildingLinks.canEdit || reader.userLinks.canEdit)
 
-        ClientFlags.set { it.copy(buildingEquipments = false) }
+        ClientFlags.set { it.copy(buildingEquipments = false, equipmentUsers = false) }
         val disabled = equipmentStore(useCases = storedEquipmentUseCases()).stateFlow.first { it.writable }
-        assertTrue(actual = disabled.let { it.buildingLinks == LinkPermissions() })
+        assertTrue(actual = disabled.let { it.buildingLinks == LinkPermissions() && it.userLinks == LinkPermissions() })
     }
 }

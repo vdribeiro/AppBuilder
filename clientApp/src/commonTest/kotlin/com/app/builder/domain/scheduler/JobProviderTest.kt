@@ -51,6 +51,8 @@ class JobProviderTest: TestCase() {
             guestJob(type = Job.Type.GET, entityType = EntityType.BUILDING_EQUIPMENT),
             guestJob(type = Job.Type.GET, entityType = EntityType.MATERIAL),
             guestJob(type = Job.Type.GET, entityType = EntityType.BUILDING_MATERIAL),
+            guestJob(type = Job.Type.GET, entityType = EntityType.BUILDING_USER),
+            guestJob(type = Job.Type.GET, entityType = EntityType.EQUIPMENT_USER),
             guestJob(type = Job.Type.GET, entityType = EntityType.USER, entityUuid = Uuid.random()),
             guestJob(type = Job.Type.GET, entityType = EntityType.TASK, entityUuid = Uuid.random()),
             guestJob(type = Job.Type.GET, entityType = EntityType.EQUIPMENT, entityUuid = Uuid.random()),
@@ -58,6 +60,8 @@ class JobProviderTest: TestCase() {
             guestJob(type = Job.Type.GET, entityType = EntityType.BUILDING_EQUIPMENT, entityUuid = Uuid.random()),
             guestJob(type = Job.Type.GET, entityType = EntityType.MATERIAL, entityUuid = Uuid.random()),
             guestJob(type = Job.Type.GET, entityType = EntityType.BUILDING_MATERIAL, entityUuid = Uuid.random()),
+            guestJob(type = Job.Type.GET, entityType = EntityType.BUILDING_USER, entityUuid = Uuid.random()),
+            guestJob(type = Job.Type.GET, entityType = EntityType.EQUIPMENT_USER, entityUuid = Uuid.random()),
             guestJob(type = Job.Type.POST, entityType = EntityType.TRANSLATION),
             guestJob(type = Job.Type.POST, entityType = EntityType.USER),
             guestJob(type = Job.Type.POST, entityType = EntityType.TASK),
@@ -66,6 +70,8 @@ class JobProviderTest: TestCase() {
             guestJob(type = Job.Type.POST, entityType = EntityType.BUILDING_EQUIPMENT),
             guestJob(type = Job.Type.POST, entityType = EntityType.MATERIAL),
             guestJob(type = Job.Type.POST, entityType = EntityType.BUILDING_MATERIAL),
+            guestJob(type = Job.Type.POST, entityType = EntityType.BUILDING_USER),
+            guestJob(type = Job.Type.POST, entityType = EntityType.EQUIPMENT_USER),
             guestJob(type = Job.Type.DELETE, entityType = EntityType.ACCOUNT),
         )
 

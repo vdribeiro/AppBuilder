@@ -127,7 +127,9 @@ class TagManager(
             EntityType.BUILDING,
             EntityType.BUILDING_EQUIPMENT,
             EntityType.MATERIAL,
-            EntityType.BUILDING_MATERIAL -> Unit
+            EntityType.BUILDING_MATERIAL,
+            EntityType.BUILDING_USER,
+            EntityType.EQUIPMENT_USER -> Unit
         }
     }
 

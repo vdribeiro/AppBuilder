@@ -13,12 +13,14 @@ import com.app.builder.core.telemetry.Telemetry
 import com.app.builder.domain.Building
 import com.app.builder.domain.BuildingEquipment
 import com.app.builder.domain.BuildingMaterial
+import com.app.builder.domain.BuildingUser
 import com.app.builder.domain.EntityType
 import com.app.builder.domain.Permission
 import com.app.builder.domain.gateway.authentication.AuthenticationUseCases
 import com.app.builder.domain.gateway.building.BuildingUseCases
 import com.app.builder.domain.gateway.buildingequipment.BuildingEquipmentUseCases
 import com.app.builder.domain.gateway.buildingmaterial.BuildingMaterialUseCases
+import com.app.builder.domain.gateway.buildinguser.BuildingUserUseCases
 import com.app.builder.ui.component.link.Link
 import com.app.builder.ui.component.link.linkChanges
 import com.app.builder.ui.component.link.linkPermissions
@@ -26,13 +28,14 @@ import com.app.builder.ui.navigation.Router
 import com.app.builder.ui.store.Store
 
 /**
- * Store backing the Building Detail Screen, observing the building and its linked equipments and materials while viewing it, and applying, saving and discarding edits while editing it.
+ * Store backing the Building Detail Screen, observing the building and its linked equipments, materials and users while viewing it, and applying, saving and discarding edits while editing it.
  *
  * @param state Initial Building Detail Screen state.
  * @property router The router used for navigation.
  * @property buildingUseCases Use cases used to observe and save the building.
  * @property buildingEquipmentUseCases Use cases used to observe and save the building equipments of the building.
  * @property buildingMaterialUseCases Use cases used to observe and save the building materials of the building.
+ * @property buildingUserUseCases Use cases used to observe and save the building users of the building.
  * @property authenticationUseCases Use cases used to observe the current account.
  * @property buildingUuid UUID of the building being displayed.
  * @property new Whether the building is new and not stored yet, starting it in edit mode.
@@ -43,6 +46,7 @@ class BuildingDetailScreenStore(
     private val buildingUseCases: BuildingUseCases,
     private val buildingEquipmentUseCases: BuildingEquipmentUseCases,
     private val buildingMaterialUseCases: BuildingMaterialUseCases,
+    private val buildingUserUseCases: BuildingUserUseCases,
     private val authenticationUseCases: AuthenticationUseCases,
     private val buildingUuid: String,
     private val new: Boolean = false
@@ -52,7 +56,7 @@ class BuildingDetailScreenStore(
     }
 
     /**
-     * Starts a [new] building in edit mode, then observes what the current account can do with the building and its links, and the building with [buildingUuid] and its linked equipments and materials, ignoring their changes while they're being edited.
+     * Starts a [new] building in edit mode, then observes what the current account can do with the building and its links, and the building with [buildingUuid] and its linked equipments, materials and users, ignoring their changes while they're being edited.
      *
      * @return The [Job] representing this execution.
      */
@@ -73,7 +77,8 @@ class BuildingDetailScreenStore(
             val writable = account?.hasPermission(entityType = EntityType.BUILDING, permission = Permission.WRITE) ?: false
             val equipmentLinks = account.linkPermissions(enabled = flags.buildingEquipments, linked = EntityType.EQUIPMENT, link = EntityType.BUILDING_EQUIPMENT)
             val materialLinks = account.linkPermissions(enabled = flags.buildingMaterials, linked = EntityType.MATERIAL, link = EntityType.BUILDING_MATERIAL)
-            updateState { it.copy(writable = writable, equipmentLinks = equipmentLinks, materialLinks = materialLinks) }
+            val userLinks = account.linkPermissions(enabled = flags.buildingUsers, linked = EntityType.USER, link = EntityType.BUILDING_USER)
+            updateState { it.copy(writable = writable, equipmentLinks = equipmentLinks, materialLinks = materialLinks, userLinks = userLinks) }
         }
         buildingUseCases.observeBuilding(uuid = uuid).observe(id = "building") { building ->
             updateState { if (it.editing) it.copy(storedBuilding = building) else it.showing(building = building).copy(storedBuilding = building) }
@@ -85,6 +90,10 @@ class BuildingDetailScreenStore(
         buildingMaterialUseCases.observeMaterialsInBuilding(buildingUuid = uuid).observe(id = "materials") { materials ->
             val stored = materials.map { Link(uuid = it.material.uuid, name = it.material.name, quantity = it.quantity.toString()) }.toImmutableList()
             updateState { it.copy(storedMaterials = stored, materials = if (it.editing) it.materials else stored) }
+        }
+        buildingUserUseCases.observeUsersInBuilding(buildingUuid = uuid).observe(id = "users") { users ->
+            val stored = users.map { Link(uuid = it.uuid, name = it.name) }.toImmutableList()
+            updateState { it.copy(storedUsers = stored, users = if (it.editing) it.users else stored) }
         }
 
         Telemetry.info(tag = TAG, message = "Setup complete")
@@ -117,6 +126,11 @@ class BuildingDetailScreenStore(
                 current.copy(materials = current.materials.map { if (it.uuid == action.materialUuid) it.copy(quantity = action.quantity) else it }.toImmutableList())
             }
 
+            is BuildingDetailScreenAction.SetUsers -> updateState { it.copy(users = action.users) }
+            is BuildingDetailScreenAction.RemoveUser -> updateState { current ->
+                current.copy(users = current.users.filter { it.uuid != action.userUuid }.toImmutableList())
+            }
+
             BuildingDetailScreenAction.Edit -> updateState { it.copy(editing = true) }
             BuildingDetailScreenAction.Save -> save(state = state)
             BuildingDetailScreenAction.Cancel -> cancel(state = state)
@@ -126,7 +140,7 @@ class BuildingDetailScreenStore(
     }
 
     /**
-     * Saves the edited building with the typed coordinates when it differs from the stored one, then saves its building equipments and building materials, and stops editing it, unless a coordinate or a quantity is invalid.
+     * Saves the edited building with the typed coordinates when it differs from the stored one, then saves its building equipments, building materials and building users, and stops editing it, unless a coordinate or a quantity is invalid.
      *
      * @param state Building Detail Screen state at the time the save was requested.
      * @return The [Job] representing this execution.
@@ -145,6 +159,7 @@ class BuildingDetailScreenStore(
         }
         saveEquipments(state = state, modifiedAt = modifiedAt)
         saveMaterials(state = state, modifiedAt = modifiedAt)
+        saveUsers(state = state, modifiedAt = modifiedAt)
         updateState { it.showing(building = building).copy(editing = false, new = false) }
     }
 
@@ -193,7 +208,28 @@ class BuildingDetailScreenStore(
     }
 
     /**
-     * Discards the edits, then reloads the stored building and its stored linked equipments and materials and stops editing it, or leaves the screen when the building is new.
+     * Upserts a building user for each user in [BuildingDetailScreenState.users] and not in [BuildingDetailScreenState.storedUsers], and deletes it for each user in the latter and not in the former.
+     *
+     * @param state Building Detail Screen state at the time the save was requested.
+     * @param modifiedAt The modification time of the building users.
+     */
+    private suspend fun saveUsers(state: BuildingDetailScreenState, modifiedAt: Instant) {
+        val building = state.building ?: return
+        val changes = linkChanges(edited = state.users, stored = state.storedUsers)
+        changes.upserted.forEach { link ->
+            buildingUserUseCases.upsertBuildingUser(
+                buildingUser = BuildingUser(modifiedAt = modifiedAt, buildingUuid = building.uuid, userUuid = link.uuid)
+            )
+        }
+        changes.removed.forEach { link ->
+            buildingUserUseCases.upsertBuildingUser(
+                buildingUser = BuildingUser(modifiedAt = modifiedAt, deletedAt = modifiedAt, buildingUuid = building.uuid, userUuid = link.uuid)
+            )
+        }
+    }
+
+    /**
+     * Discards the edits, then reloads the stored building and its stored linked equipments, materials and users and stops editing it, or leaves the screen when the building is new.
      *
      * @param state Building Detail Screen state at the time the cancel was requested.
      * @return The [Job] representing this execution.
@@ -204,7 +240,7 @@ class BuildingDetailScreenStore(
             return@launch
         }
         val building = state.building?.let { buildingUseCases.observeBuilding(uuid = it.uuid).firstOrNull() }
-        updateState { it.showing(building = building).copy(editing = false, equipments = it.storedEquipments, materials = it.storedMaterials) }
+        updateState { it.showing(building = building).copy(editing = false, equipments = it.storedEquipments, materials = it.storedMaterials, users = it.storedUsers) }
     }
 
     /**

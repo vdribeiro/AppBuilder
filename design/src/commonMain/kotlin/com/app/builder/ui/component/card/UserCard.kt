@@ -20,6 +20,7 @@ import com.app.builder.ui.Preview
 import com.app.builder.ui.component.button.PermissionItem
 import com.app.builder.ui.component.button.PermissionSelector
 import com.app.builder.ui.component.field.BooleanField
+import com.app.builder.ui.component.field.LinkSection
 import com.app.builder.ui.component.field.MetadataSection
 import com.app.builder.ui.component.field.TextField
 import com.app.builder.ui.component.image.Avatar
@@ -30,7 +31,7 @@ import com.app.builder.ui.getDateTime
 import com.app.builder.ui.getTranslation
 
 /**
- * A user card, with the user's avatar and name on top, followed by their account. Only the properties that are not `null` are shown.
+ * A user card, with the user's avatar and name on top, followed by their links and their account. Only the properties that are not `null` are shown.
  *
  * @param modifier The [Modifier] to be applied to the root layout.
  * @param enabled Whether the user's properties can be edited.
@@ -49,6 +50,7 @@ import com.app.builder.ui.getTranslation
  * @param onAccountActiveChange Callback for when the account is activated or disabled.
  * @param permissions The permissions of the user's account, or `null` to hide them.
  * @param onPermissionToggled Callback for when a permission is toggled.
+ * @param links A slot rendered above the account, typically a [LinkSection].
  */
 @Composable
 fun UserCard(
@@ -69,6 +71,7 @@ fun UserCard(
     onAccountActiveChange: (Boolean) -> Unit = {},
     permissions: ImmutableList<PermissionItem>? = null,
     onPermissionToggled: (PermissionItem) -> Unit = {},
+    links: @Composable () -> Unit = {},
 ) {
     val typography = LocalTypography.current
 
@@ -97,6 +100,7 @@ fun UserCard(
                     )
                 }
             }
+            links()
             if (username != null || password != null || accountActive != null || permissions != null) {
                 Text(
                     modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 4.dp),

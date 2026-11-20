@@ -8,6 +8,8 @@ import com.app.builder.ui.component.building.buildingFiltersStore
 import com.app.builder.ui.component.building.buildingLinkPickerStore
 import com.app.builder.ui.component.equipment.equipmentFiltersStore
 import com.app.builder.ui.component.session.SessionStore
+import com.app.builder.ui.component.user.userFiltersStore
+import com.app.builder.ui.component.user.userLinkPickerStore
 import com.app.builder.ui.lifecycle.hostViewModel
 import com.app.builder.ui.navigation.LocalRouter
 import com.app.builder.ui.navigation.Screen
@@ -34,12 +36,15 @@ fun EntryProviderScope<NavKey>.equipmentProvider(useCases: UseCases) {
             filtersStore = equipmentFiltersStore(),
             buildingFiltersStore = buildingFiltersStore(),
             buildingPickerStore = viewModel(key = "building_picker") { buildingLinkPickerStore(buildingUseCases = useCases.buildingUseCases) },
+            userFiltersStore = userFiltersStore(),
+            userPickerStore = viewModel(key = "user_picker") { userLinkPickerStore(userUseCases = useCases.userUseCases) },
             store = viewModel {
                 EquipmentDetailScreenStore(
                     state = EquipmentDetailScreenState(),
                     router = router,
                     equipmentUseCases = useCases.equipmentUseCases,
                     buildingEquipmentUseCases = useCases.buildingEquipmentUseCases,
+                    equipmentUserUseCases = useCases.equipmentUserUseCases,
                     authenticationUseCases = useCases.authenticationUseCases,
                     equipmentUuid = it.uuid,
                     new = it.new

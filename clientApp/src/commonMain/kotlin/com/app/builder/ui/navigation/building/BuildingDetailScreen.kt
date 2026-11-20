@@ -18,6 +18,7 @@ import com.app.builder.domain.Building
 import com.app.builder.domain.EntityType
 import com.app.builder.domain.Equipment
 import com.app.builder.domain.Material
+import com.app.builder.domain.User
 import com.app.builder.ui.InjectTranslations
 import com.app.builder.ui.LocalSplitScreen
 import com.app.builder.ui.Preview
@@ -33,10 +34,12 @@ import com.app.builder.ui.component.link.LinkPickerState
 import com.app.builder.ui.component.link.toLinkItem
 import com.app.builder.ui.component.list.EquipmentItem
 import com.app.builder.ui.component.list.MaterialItem
+import com.app.builder.ui.component.list.UserItem
 import com.app.builder.ui.component.material.MaterialLinkPicker
 import com.app.builder.ui.component.navigation.Navigation
 import com.app.builder.ui.component.navigation.NavigationRoute
 import com.app.builder.ui.component.session.SessionState
+import com.app.builder.ui.component.user.UserLinkPicker
 import com.app.builder.ui.devicelocation.LocalDeviceLocationProvider
 import com.app.builder.ui.navigation.LocalRouter
 import com.app.builder.ui.navigation.Router
@@ -56,6 +59,8 @@ import com.app.builder.ui.store.previewStore
  * @param equipmentPickerStore Provides the equipment picker state and receives its actions.
  * @param materialFiltersStore The material list filters, shown in the material picker.
  * @param materialPickerStore Provides the material picker state and receives its actions.
+ * @param userFiltersStore The user list filters, shown in the user picker.
+ * @param userPickerStore Provides the user picker state and receives its actions.
  * @param store Provides the building detail state and receives its actions.
  */
 @Composable
@@ -66,6 +71,8 @@ fun BuildingDetailScreen(
     equipmentPickerStore: Store<LinkPickerState<Equipment, EquipmentItem>, LinkPickerAction>,
     materialFiltersStore: Store<FiltersState, FiltersAction>,
     materialPickerStore: Store<LinkPickerState<Material, MaterialItem>, LinkPickerAction>,
+    userFiltersStore: Store<FiltersState, FiltersAction>,
+    userPickerStore: Store<LinkPickerState<User, UserItem>, LinkPickerAction>,
     store: Store<BuildingDetailScreenState, BuildingDetailScreenAction>,
 ) {
     val state by store.stateFlow.collectAsStateWithLifecycle()
@@ -85,7 +92,7 @@ fun BuildingDetailScreen(
                 sessionStore = sessionStore,
                 filtersStore = filtersStore.takeIf { splitScreen },
                 entityType = EntityType.BUILDING,
-                editEntityTypes = setOfNotNull(EntityType.BUILDING_EQUIPMENT.takeIf { state.equipmentLinks.canEdit }, EntityType.BUILDING_MATERIAL.takeIf { state.materialLinks.canEdit }),
+                editEntityTypes = setOfNotNull(EntityType.BUILDING_EQUIPMENT.takeIf { state.equipmentLinks.canEdit }, EntityType.BUILDING_MATERIAL.takeIf { state.materialLinks.canEdit }, EntityType.BUILDING_USER.takeIf { state.userLinks.canEdit }),
                 deleted = deleted,
                 onAddClick = if (splitScreen && !state.editing) {
                     { router.navigate(screen = Screen.BuildingDetail(uuid = uuid().toString(), new = true), option = Router.NavOption.REPLACE_LAST) }
@@ -159,6 +166,16 @@ fun BuildingDetailScreen(
                         },
                         onClick = { item -> router.navigate(screen = Screen.MaterialDetail(uuid = item.uuid), option = Router.NavOption.ADD) }
                     )
+                    if (building != null && state.userLinks.canRead) LinkSection(
+                        tag = "building_users",
+                        label = "building_users",
+                        items = state.users.map { it.toLinkItem() }.toImmutableList(),
+                        editing = state.editing && state.userLinks.canEdit,
+                        linkLabel = "building_link_users",
+                        onLinkClick = { userPickerStore.send(action = LinkPickerAction.Open(picked = state.users.map { it.uuid }.toSet())) },
+                        onRemove = { item -> item.uuid.toUuid()?.let { store.send(action = BuildingDetailScreenAction.RemoveUser(userUuid = it)) } },
+                        onClick = { item -> router.navigate(screen = Screen.UserDetail(uuid = item.uuid), option = Router.NavOption.ADD) }
+                    )
                 },
             )
         }
@@ -176,6 +193,13 @@ fun BuildingDetailScreen(
         filtersStore = materialFiltersStore,
         title = "building_link_materials",
         onConfirm = { store.send(action = BuildingDetailScreenAction.SetMaterials(materials = it)) }
+    )
+
+    UserLinkPicker(
+        store = userPickerStore,
+        filtersStore = userFiltersStore,
+        title = "building_link_users",
+        onConfirm = { store.send(action = BuildingDetailScreenAction.SetUsers(users = it)) }
     )
 }
 
@@ -201,6 +225,8 @@ private fun BuildingDetailScreenPreview() = Preview {
         equipmentPickerStore = previewStore(initialState = LinkPickerState()),
         materialFiltersStore = previewStore(initialState = FiltersState()),
         materialPickerStore = previewStore(initialState = LinkPickerState()),
+        userFiltersStore = previewStore(initialState = FiltersState()),
+        userPickerStore = previewStore(initialState = LinkPickerState()),
         store = previewStore(
             initialState = BuildingDetailScreenState(
                 building = building,

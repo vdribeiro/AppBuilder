@@ -1,0 +1,39 @@
+import kotlin.time.Instant;
+import kotlin.uuid.Uuid;
+
+CREATE TABLE IF NOT EXISTS BuildingUser (
+    uuid TEXT AS Uuid NOT NULL PRIMARY KEY,
+    modifiedAt TEXT AS Instant NOT NULL,
+    deletedAt TEXT AS Instant,
+    buildingUuid TEXT AS Uuid NOT NULL,
+    userUuid TEXT AS Uuid NOT NULL
+);
+
+upsertBuildingUser:
+INSERT OR REPLACE INTO BuildingUser VALUES ?;
+
+getBuildingUsersByUuids:
+SELECT *
+FROM BuildingUser
+WHERE uuid IN :buildingUserUuids;
+
+getBuildingUser:
+SELECT *
+FROM BuildingUser
+WHERE uuid = :buildingUserUuid;
+
+getUsersInBuilding:
+SELECT User.*
+FROM User
+JOIN BuildingUser ON BuildingUser.userUuid = User.uuid
+WHERE BuildingUser.buildingUuid = :buildingUuid
+    AND BuildingUser.deletedAt IS NULL
+    AND User.deletedAt IS NULL;
+
+getBuildingsOfUser:
+SELECT Building.*
+FROM Building
+JOIN BuildingUser ON BuildingUser.buildingUuid = Building.uuid
+WHERE BuildingUser.userUuid = :userUuid
+    AND BuildingUser.deletedAt IS NULL
+    AND Building.deletedAt IS NULL;

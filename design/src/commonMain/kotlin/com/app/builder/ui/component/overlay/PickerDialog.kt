@@ -4,20 +4,23 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import com.app.builder.ui.InjectTranslations
 import com.app.builder.ui.Preview
-import com.app.builder.ui.component.bar.EntityActions
 import com.app.builder.ui.component.bar.TopActionBar
+import com.app.builder.ui.core.button.Button
 import com.app.builder.ui.core.container.Scaffold
+import com.app.builder.ui.core.image.Icon
 import com.app.builder.ui.core.overlay.FullScreenDialog
 import com.app.builder.ui.core.text.Text
 
 /**
- * A dialog taking up the whole screen to pick items from a list, with a top action bar showing a close button, the title, a save button and room for list filters.
+ * A dialog taking up the whole screen to pick items from a list, with a top action bar showing a close button, the title, a save button with a check icon and room for list filters.
  *
  * @param modifier The [Modifier] to be applied to the dialog's content.
  * @param tag The prefix of the test tags of this dialog and its buttons.
@@ -50,7 +53,11 @@ fun PickerDialog(
                     title = title,
                     onBackClick = onDismiss,
                     actions = {
-                        EntityActions(onSaveClick = onSave)
+                        Button(
+                            modifier = Modifier.testTag(tag = "action_save"),
+                            onClick = { onSave() },
+                            content = { Icon(imageVector = Icons.Default.Check) }
+                        )
                         actions()
                     },
                     secondaryActions = secondaryActions,

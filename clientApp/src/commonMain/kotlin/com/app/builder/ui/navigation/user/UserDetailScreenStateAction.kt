@@ -1,8 +1,13 @@
 package com.app.builder.ui.navigation.user
 
+import kotlin.uuid.Uuid
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
 import com.app.builder.domain.Account
 import com.app.builder.domain.User
 import com.app.builder.ui.component.button.PermissionItem
+import com.app.builder.ui.component.link.Link
+import com.app.builder.ui.component.link.LinkPermissions
 
 /** Actions supported by the User Detail Screen. */
 sealed interface UserDetailScreenAction {
@@ -36,6 +41,30 @@ sealed interface UserDetailScreenAction {
      * @param permission Permission item with its updated read/write flags.
      */
     data class TogglePermission(val permission: PermissionItem): UserDetailScreenAction
+    /**
+     * Sets the buildings linked to the edited user.
+     *
+     * @param buildings The buildings to link.
+     */
+    data class SetBuildings(val buildings: ImmutableList<Link>): UserDetailScreenAction
+    /**
+     * Unlinks a building from the edited user.
+     *
+     * @param buildingUuid The unique identifier of the building.
+     */
+    data class RemoveBuilding(val buildingUuid: Uuid): UserDetailScreenAction
+    /**
+     * Sets the equipments linked to the edited user.
+     *
+     * @param equipments The equipments to link.
+     */
+    data class SetEquipments(val equipments: ImmutableList<Link>): UserDetailScreenAction
+    /**
+     * Unlinks an equipment from the edited user.
+     *
+     * @param equipmentUuid The unique identifier of the equipment.
+     */
+    data class RemoveEquipment(val equipmentUuid: Uuid): UserDetailScreenAction
     /** Start editing the current user. */
     data object Edit: UserDetailScreenAction
     /** Save the edited user and its account, creating the account when it has none, and stop editing it. */
@@ -61,6 +90,12 @@ sealed interface UserDetailScreenAction {
  * @property editing Whether the user is being edited, which stops it from following the stored user.
  * @property new Whether the user is new and not stored yet.
  * @property password Password a new account is created with.
+ * @property buildings The buildings linked to the user, including the edits that are not saved yet.
+ * @property savedBuildings The buildings linked to the user as stored.
+ * @property equipments The equipments linked to the user, including the edits that are not saved yet.
+ * @property savedEquipments The equipments linked to the user as stored.
+ * @property buildingLinks What the current user can do with the links to the buildings of the user.
+ * @property equipmentLinks What the current user can do with the links to the equipments of the user.
  */
 data class UserDetailScreenState(
     val user: User? = null,
@@ -73,4 +108,10 @@ data class UserDetailScreenState(
     val editing: Boolean = false,
     val new: Boolean = false,
     val password: String = "",
+    val buildings: ImmutableList<Link> = persistentListOf(),
+    val savedBuildings: ImmutableList<Link> = persistentListOf(),
+    val equipments: ImmutableList<Link> = persistentListOf(),
+    val savedEquipments: ImmutableList<Link> = persistentListOf(),
+    val buildingLinks: LinkPermissions = LinkPermissions(),
+    val equipmentLinks: LinkPermissions = LinkPermissions(),
 )

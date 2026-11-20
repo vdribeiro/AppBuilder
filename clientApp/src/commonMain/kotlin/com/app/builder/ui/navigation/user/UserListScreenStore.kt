@@ -11,11 +11,9 @@ import androidx.compose.runtime.snapshotFlow
 import com.app.builder.core.flow.Dispatcher
 import com.app.builder.core.telemetry.Telemetry
 import com.app.builder.data.storage.AppFile
-import com.app.builder.domain.User
-import com.app.builder.domain.User.Property
 import com.app.builder.domain.gateway.user.UserUseCases
-import com.app.builder.ui.component.list.UserItem
-import com.app.builder.ui.core.image.Image
+import com.app.builder.ui.component.user.filtered
+import com.app.builder.ui.component.user.toUserItem
 import com.app.builder.ui.navigation.Router
 import com.app.builder.ui.navigation.Screen
 import com.app.builder.ui.store.Store
@@ -64,11 +62,7 @@ class UserListScreenStore(
         ) { users, actionBarData ->
             users to actionBarData
         }.mapLatest { (users, actionBarData) ->
-            val comparator = userComparator(sortProperty = actionBarData.sortProperty, sortAscending = actionBarData.sortAscending)
-            users
-                .filter { actionBarData.showDeleted || it.deletedAt == null }
-                .filter { it.matchesSearch(search = actionBarData.search, searchableProperties = actionBarData.searchableProperties) }
-                .let { if (comparator == null) it else it.sortedWith(comparator = comparator) } to actionBarData
+            users.filtered(actionBarData = actionBarData) to actionBarData
         }
 
         combine(
@@ -96,61 +90,6 @@ class UserListScreenStore(
     private fun selectUser(action: UserListScreenAction.SelectUser): Job = launch(id = "selectUser") {
         router.navigate(screen = Screen.UserDetail(uuid = action.userUuid), option = Router.NavOption.REPLACE_LAST)
     }
-
-    /**
-     * Checks whether this user's searchable properties contain the given [search] text.
-     *
-     * @param search Search text to look for; an empty or blank value always matches.
-     * @param searchableProperties Names of the [Property] values to search within.
-     * @return `true` if any of the searchable properties contains [search], ignoring case.
-     */
-    private fun User.matchesSearch(search: String, searchableProperties: List<String>): Boolean {
-        return search.isBlank() || searchableProperties.any { property ->
-            when (property) {
-                Property.UUID.name -> uuid.toString()
-                Property.NAME.name -> name
-                Property.MODIFIED_AT.name -> modifiedAt.toString()
-                Property.DELETED_AT.name -> deletedAt?.toString()
-                else -> null
-            }?.contains(other = search, ignoreCase = true) == true
-        }
-    }
-
-    /**
-     * Builds a comparator for the given [sortProperty], reversed when [sortAscending] is `false`.
-     *
-     * @param sortProperty Name of the [User.Property] to sort by.
-     * @param sortAscending Whether the comparator should sort in ascending order.
-     * @return Comparator for the given property, or `null` if it doesn't match a known [User.Property].
-     */
-    private fun userComparator(sortProperty: String, sortAscending: Boolean): Comparator<User>? {
-        val comparator = when (sortProperty) {
-            Property.UUID.name -> compareBy<User> { it.uuid.toString() }
-            Property.MODIFIED_AT.name -> compareBy { it.modifiedAt }
-            Property.DELETED_AT.name -> compareBy { it.deletedAt }
-            Property.NAME.name -> compareBy { it.name }
-            else -> return null
-        }
-        return if (sortAscending) comparator else comparator.reversed()
-    }
-
-    /**
-     * Converts this user into a [UserItem], including only the properties named in [visibilityProperties].
-     *
-     * @param visibilityProperties Names of the [Property] values that should be visible on the item.
-     * @param selectedUuid UUID of the selected user.
-     * @return User item with hidden properties set to `null`.
-     */
-    private fun User.toUserItem(visibilityProperties: List<String>, selectedUuid: String?): UserItem = UserItem(
-        uuid = uuid.toString(),
-        selected = uuid.toString() == selectedUuid,
-        deleted = deletedAt != null,
-        uuidVisible = Property.UUID.name in visibilityProperties,
-        modifiedAt = modifiedAt.takeIf { Property.MODIFIED_AT.name in visibilityProperties }?.toString(),
-        deletedAt = deletedAt.takeIf { Property.DELETED_AT.name in visibilityProperties }?.toString(),
-        name = name.takeIf { Property.NAME.name in visibilityProperties },
-        avatar = avatar?.let { Image(url = it) }
-    )
 
     companion object {
         private const val TAG = "UserListScreenStore"

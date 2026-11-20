@@ -77,6 +77,18 @@ sealed interface BuildingDetailScreenAction {
      * @param quantity The new quantity text.
      */
     data class ChangeMaterialQuantity(val materialUuid: Uuid, val quantity: String): BuildingDetailScreenAction
+    /**
+     * Sets the users linked to the edited building.
+     *
+     * @param users The users to link.
+     */
+    data class SetUsers(val users: ImmutableList<Link>): BuildingDetailScreenAction
+    /**
+     * Unlinks a user from the edited building.
+     *
+     * @param userUuid The unique identifier of the user.
+     */
+    data class RemoveUser(val userUuid: Uuid): BuildingDetailScreenAction
     /** Start editing the current building. */
     data object Edit: BuildingDetailScreenAction
     /** Save the edited building and stop editing it. */
@@ -102,9 +114,12 @@ sealed interface BuildingDetailScreenAction {
  * @property storedEquipments The equipments linked to the building as stored.
  * @property materials The materials linked to the building with their quantities as typed, including the edits that are not saved yet.
  * @property storedMaterials The materials linked to the building with their quantities, as stored.
+ * @property users The users linked to the building, including the edits that are not saved yet.
+ * @property storedUsers The users linked to the building as stored.
  * @property writable Whether the current user can edit, delete and restore the building.
  * @property equipmentLinks What the current user can do with the links to the equipments of the building.
  * @property materialLinks What the current user can do with the links to the materials of the building.
+ * @property userLinks What the current user can do with the links to the users of the building.
  */
 data class BuildingDetailScreenState(
     val building: Building? = null,
@@ -117,9 +132,12 @@ data class BuildingDetailScreenState(
     val storedEquipments: ImmutableList<Link> = persistentListOf(),
     val materials: ImmutableList<Link> = persistentListOf(),
     val storedMaterials: ImmutableList<Link> = persistentListOf(),
+    val users: ImmutableList<Link> = persistentListOf(),
+    val storedUsers: ImmutableList<Link> = persistentListOf(),
     val writable: Boolean = false,
     val equipmentLinks: LinkPermissions = LinkPermissions(),
     val materialLinks: LinkPermissions = LinkPermissions(),
+    val userLinks: LinkPermissions = LinkPermissions(),
 ) {
     /** Whether [latitude] is not a number within ±90, or is missing while [longitude] is set. */
     val latitudeError: Boolean

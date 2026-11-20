@@ -15,6 +15,7 @@ import com.app.builder.core.security.uuid
 import com.app.builder.domain.Building
 import com.app.builder.domain.EntityType
 import com.app.builder.domain.Equipment
+import com.app.builder.domain.User
 import com.app.builder.ui.InjectTranslations
 import com.app.builder.ui.LocalSplitScreen
 import com.app.builder.ui.Preview
@@ -28,9 +29,11 @@ import com.app.builder.ui.component.link.LinkPickerAction
 import com.app.builder.ui.component.link.LinkPickerState
 import com.app.builder.ui.component.link.toLinkItem
 import com.app.builder.ui.component.list.BuildingItem
+import com.app.builder.ui.component.list.UserItem
 import com.app.builder.ui.component.navigation.Navigation
 import com.app.builder.ui.component.navigation.NavigationRoute
 import com.app.builder.ui.component.session.SessionState
+import com.app.builder.ui.component.user.UserLinkPicker
 import com.app.builder.ui.navigation.LocalRouter
 import com.app.builder.ui.navigation.Router
 import com.app.builder.ui.navigation.Screen
@@ -45,6 +48,8 @@ import com.app.builder.ui.store.previewStore
  * @param filtersStore The equipment filters shared by every equipment screen, shown when the equipment list is beside this screen.
  * @param buildingFiltersStore The building list filters, shown in the building picker.
  * @param buildingPickerStore Provides the building picker state and receives its actions.
+ * @param userFiltersStore The user list filters, shown in the user picker.
+ * @param userPickerStore Provides the user picker state and receives its actions.
  * @param store Provides the equipment detail state and receives its actions.
  */
 @Composable
@@ -53,6 +58,8 @@ fun EquipmentDetailScreen(
     filtersStore: Store<FiltersState, FiltersAction>,
     buildingFiltersStore: Store<FiltersState, FiltersAction>,
     buildingPickerStore: Store<LinkPickerState<Building, BuildingItem>, LinkPickerAction>,
+    userFiltersStore: Store<FiltersState, FiltersAction>,
+    userPickerStore: Store<LinkPickerState<User, UserItem>, LinkPickerAction>,
     store: Store<EquipmentDetailScreenState, EquipmentDetailScreenAction>,
 ) {
     val state by store.stateFlow.collectAsStateWithLifecycle()
@@ -69,7 +76,7 @@ fun EquipmentDetailScreen(
                 sessionStore = sessionStore,
                 filtersStore = filtersStore.takeIf { splitScreen },
                 entityType = EntityType.EQUIPMENT,
-                editEntityTypes = if (state.buildingLinks.canEdit) setOf(EntityType.BUILDING_EQUIPMENT) else emptySet(),
+                editEntityTypes = setOfNotNull(EntityType.BUILDING_EQUIPMENT.takeIf { state.buildingLinks.canEdit }, EntityType.EQUIPMENT_USER.takeIf { state.userLinks.canEdit }),
                 deleted = deleted,
                 onAddClick = if (splitScreen && !state.editing) {
                     { router.navigate(screen = Screen.EquipmentDetail(uuid = uuid().toString(), new = true), option = Router.NavOption.REPLACE_LAST) }
@@ -114,6 +121,16 @@ fun EquipmentDetailScreen(
                         onRemove = { item -> item.uuid.toUuid()?.let { store.send(action = EquipmentDetailScreenAction.RemoveBuilding(buildingUuid = it)) } },
                         onClick = { item -> router.navigate(screen = Screen.BuildingDetail(uuid = item.uuid), option = Router.NavOption.ADD) }
                     )
+                    if (equipment != null && state.userLinks.canRead) LinkSection(
+                        tag = "equipment_users",
+                        label = "equipment_users",
+                        items = state.users.map { it.toLinkItem() }.toImmutableList(),
+                        editing = state.editing && state.userLinks.canEdit,
+                        linkLabel = "equipment_link_users",
+                        onLinkClick = { userPickerStore.send(action = LinkPickerAction.Open(picked = state.users.map { it.uuid }.toSet())) },
+                        onRemove = { item -> item.uuid.toUuid()?.let { store.send(action = EquipmentDetailScreenAction.RemoveUser(userUuid = it)) } },
+                        onClick = { item -> router.navigate(screen = Screen.UserDetail(uuid = item.uuid), option = Router.NavOption.ADD) }
+                    )
                 },
             )
         }
@@ -124,6 +141,13 @@ fun EquipmentDetailScreen(
         filtersStore = buildingFiltersStore,
         title = "equipment_link_buildings",
         onConfirm = { store.send(action = EquipmentDetailScreenAction.SetBuildings(buildings = it)) }
+    )
+
+    UserLinkPicker(
+        store = userPickerStore,
+        filtersStore = userFiltersStore,
+        title = "equipment_link_users",
+        onConfirm = { store.send(action = EquipmentDetailScreenAction.SetUsers(users = it)) }
     )
 }
 
@@ -144,6 +168,8 @@ private fun EquipmentDetailScreenPreview() = Preview {
         filtersStore = previewStore(initialState = FiltersState()),
         buildingFiltersStore = previewStore(initialState = FiltersState()),
         buildingPickerStore = previewStore(initialState = LinkPickerState()),
+        userFiltersStore = previewStore(initialState = FiltersState()),
+        userPickerStore = previewStore(initialState = LinkPickerState()),
         store = previewStore(
             initialState = EquipmentDetailScreenState(
                 equipment = equipment

@@ -12,10 +12,12 @@ import com.app.builder.core.telemetry.Telemetry
 import com.app.builder.domain.BuildingEquipment
 import com.app.builder.domain.EntityType
 import com.app.builder.domain.Equipment
+import com.app.builder.domain.EquipmentUser
 import com.app.builder.domain.Permission
 import com.app.builder.domain.gateway.authentication.AuthenticationUseCases
 import com.app.builder.domain.gateway.buildingequipment.BuildingEquipmentUseCases
 import com.app.builder.domain.gateway.equipment.EquipmentUseCases
+import com.app.builder.domain.gateway.equipmentuser.EquipmentUserUseCases
 import com.app.builder.ui.component.link.Link
 import com.app.builder.ui.component.link.linkChanges
 import com.app.builder.ui.component.link.linkPermissions
@@ -23,12 +25,13 @@ import com.app.builder.ui.navigation.Router
 import com.app.builder.ui.store.Store
 
 /**
- * Store backing the Equipment Detail Screen, observing the equipment and its linked buildings while viewing it, and applying, saving and discarding edits while editing it.
+ * Store backing the Equipment Detail Screen, observing the equipment and its linked buildings and users while viewing it, and applying, saving and discarding edits while editing it.
  *
  * @param state Initial Equipment Detail Screen state.
  * @property router The router used for navigation.
  * @property equipmentUseCases Use cases used to observe and save the equipment.
  * @property buildingEquipmentUseCases Use cases used to observe and save the building equipments of the equipment.
+ * @property equipmentUserUseCases Use cases used to observe and save the equipment users of the equipment.
  * @property authenticationUseCases Use cases used to observe the current account.
  * @property equipmentUuid UUID of the equipment being displayed.
  * @property new Whether the equipment is new and not stored yet, starting it in edit mode.
@@ -38,6 +41,7 @@ class EquipmentDetailScreenStore(
     private val router: Router,
     private val equipmentUseCases: EquipmentUseCases,
     private val buildingEquipmentUseCases: BuildingEquipmentUseCases,
+    private val equipmentUserUseCases: EquipmentUserUseCases,
     private val authenticationUseCases: AuthenticationUseCases,
     private val equipmentUuid: String,
     private val new: Boolean = false
@@ -47,7 +51,7 @@ class EquipmentDetailScreenStore(
     }
 
     /**
-     * Starts a [new] equipment in edit mode, then observes what the current account can do with the equipment and its links, and the equipment with [equipmentUuid] and its linked buildings, ignoring their changes while they're being edited.
+     * Starts a [new] equipment in edit mode, then observes what the current account can do with the equipment and its links, and the equipment with [equipmentUuid] and its linked buildings and users, ignoring their changes while they're being edited.
      *
      * @return The [Job] representing this execution.
      */
@@ -67,7 +71,8 @@ class EquipmentDetailScreenStore(
         ) { account, flags -> account to flags }.observe(id = "current_account") { (account, flags) ->
             val writable = account?.hasPermission(entityType = EntityType.EQUIPMENT, permission = Permission.WRITE) ?: false
             val buildingLinks = account.linkPermissions(enabled = flags.buildingEquipments, linked = EntityType.BUILDING, link = EntityType.BUILDING_EQUIPMENT)
-            updateState { it.copy(writable = writable, buildingLinks = buildingLinks) }
+            val userLinks = account.linkPermissions(enabled = flags.equipmentUsers, linked = EntityType.USER, link = EntityType.EQUIPMENT_USER)
+            updateState { it.copy(writable = writable, buildingLinks = buildingLinks, userLinks = userLinks) }
         }
         equipmentUseCases.observeEquipment(uuid = uuid).observe(id = "equipment") { equipment ->
             updateState { if (it.editing) it.copy(storedEquipment = equipment) else it.copy(equipment = equipment, storedEquipment = equipment) }
@@ -75,6 +80,10 @@ class EquipmentDetailScreenStore(
         buildingEquipmentUseCases.observeBuildingsOfEquipment(equipmentUuid = uuid).observe(id = "buildings") { buildings ->
             val stored = buildings.map { Link(uuid = it.uuid, name = it.name) }.toImmutableList()
             updateState { it.copy(storedBuildings = stored, buildings = if (it.editing) it.buildings else stored) }
+        }
+        equipmentUserUseCases.observeUsersOfEquipment(equipmentUuid = uuid).observe(id = "users") { users ->
+            val stored = users.map { Link(uuid = it.uuid, name = it.name) }.toImmutableList()
+            updateState { it.copy(storedUsers = stored, users = if (it.editing) it.users else stored) }
         }
 
         Telemetry.info(tag = TAG, message = "Setup complete")
@@ -91,6 +100,11 @@ class EquipmentDetailScreenStore(
             }
 
             is EquipmentDetailScreenAction.SetBuildings -> updateState { it.copy(buildings = action.buildings) }
+            is EquipmentDetailScreenAction.RemoveUser -> updateState { current ->
+                current.copy(users = current.users.filter { it.uuid != action.userUuid }.toImmutableList())
+            }
+
+            is EquipmentDetailScreenAction.SetUsers -> updateState { it.copy(users = action.users) }
             EquipmentDetailScreenAction.Edit -> updateState { it.copy(editing = true) }
             EquipmentDetailScreenAction.Save -> save(state = state)
             EquipmentDetailScreenAction.Cancel -> cancel(state = state)
@@ -100,7 +114,7 @@ class EquipmentDetailScreenStore(
     }
 
     /**
-     * Saves the edited equipment when it differs from the stored one, then saves its building equipments, and stops editing it.
+     * Saves the edited equipment when it differs from the stored one, then saves its building equipments and equipment users, and stops editing it.
      *
      * @param state Equipment Detail Screen state at the time the save was requested.
      * @return The [Job] representing this execution.
@@ -114,6 +128,7 @@ class EquipmentDetailScreenStore(
             else -> edited.copy(modifiedAt = modifiedAt).also { equipmentUseCases.upsertEquipment(equipment = it) }
         }
         saveBuildings(state = state, modifiedAt = modifiedAt)
+        saveUsers(state = state, modifiedAt = modifiedAt)
         updateState { it.copy(equipment = equipment, editing = false, new = false) }
     }
 
@@ -139,7 +154,28 @@ class EquipmentDetailScreenStore(
     }
 
     /**
-     * Discards the edits, then reloads the stored equipment and its stored linked buildings and stops editing it, or leaves the screen when the equipment is new.
+     * Upserts an equipment user for each user in [EquipmentDetailScreenState.users] and not in [EquipmentDetailScreenState.storedUsers], and deletes it for each user in the latter and not in the former.
+     *
+     * @param state Equipment Detail Screen state at the time the save was requested.
+     * @param modifiedAt The modification time of the equipment users.
+     */
+    private suspend fun saveUsers(state: EquipmentDetailScreenState, modifiedAt: Instant) {
+        val equipment = state.equipment ?: return
+        val changes = linkChanges(edited = state.users, stored = state.storedUsers)
+        changes.upserted.forEach { link ->
+            equipmentUserUseCases.upsertEquipmentUser(
+                equipmentUser = EquipmentUser(modifiedAt = modifiedAt, equipmentUuid = equipment.uuid, userUuid = link.uuid)
+            )
+        }
+        changes.removed.forEach { link ->
+            equipmentUserUseCases.upsertEquipmentUser(
+                equipmentUser = EquipmentUser(modifiedAt = modifiedAt, deletedAt = modifiedAt, equipmentUuid = equipment.uuid, userUuid = link.uuid)
+            )
+        }
+    }
+
+    /**
+     * Discards the edits, then reloads the stored equipment and its stored linked buildings and users and stops editing it, or leaves the screen when the equipment is new.
      *
      * @param state Equipment Detail Screen state at the time the cancel was requested.
      * @return The [Job] representing this execution.
@@ -150,7 +186,7 @@ class EquipmentDetailScreenStore(
             return@launch
         }
         val equipment = state.equipment?.let { equipmentUseCases.observeEquipment(uuid = it.uuid).firstOrNull() }
-        updateState { it.copy(equipment = equipment, editing = false, buildings = it.storedBuildings) }
+        updateState { it.copy(equipment = equipment, editing = false, buildings = it.storedBuildings, users = it.storedUsers) }
     }
 
     /**
