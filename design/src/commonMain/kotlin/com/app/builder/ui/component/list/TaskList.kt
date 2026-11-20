@@ -18,7 +18,6 @@ import com.app.builder.core.security.uuid
 import com.app.builder.ui.Preview
 import com.app.builder.ui.core.image.Icon
 import com.app.builder.ui.core.list.LazyColumn
-import com.app.builder.ui.getDateTime
 
 /**
  * Task list.
@@ -48,7 +47,11 @@ fun TaskList(
                 deleted = item.deleted,
                 headline = item.title,
                 supporting = item.description,
-                metadata = listOf(item.uuid.takeIf { item.uuidVisible }, item.modifiedAt?.let { getDateTime(utc = it) }, item.deletedAt?.let { getDateTime(utc = it) }),
+                metadata = listOf(
+                    EntityRowMetadata(text = item.uuid.takeIf { item.uuidVisible }),
+                    EntityRowMetadata(text = item.modifiedAt, dateTime = true),
+                    EntityRowMetadata(text = item.deletedAt, dateTime = true),
+                ),
                 leadingContent = item.completed?.let { completed -> { Icon(imageVector = if (completed) Icons.Default.CheckCircle else Icons.Outlined.RadioButtonUnchecked) } }
             )
         }

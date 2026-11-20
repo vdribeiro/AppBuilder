@@ -14,7 +14,6 @@ import androidx.compose.ui.tooling.preview.PreviewLightDark
 import com.app.builder.core.security.uuid
 import com.app.builder.ui.Preview
 import com.app.builder.ui.core.list.LazyColumn
-import com.app.builder.ui.getDateTime
 
 /**
  * Material list.
@@ -45,7 +44,11 @@ fun MaterialList(
                 checked = item.checked,
                 headline = item.name,
                 supporting = item.description,
-                metadata = listOf(item.uuid.takeIf { item.uuidVisible }, item.modifiedAt?.let { getDateTime(utc = it) }, item.deletedAt?.let { getDateTime(utc = it) })
+                metadata = listOf(
+                    EntityRowMetadata(text = item.uuid.takeIf { item.uuidVisible }),
+                    EntityRowMetadata(text = item.modifiedAt, dateTime = true),
+                    EntityRowMetadata(text = item.deletedAt, dateTime = true),
+                )
             )
         }
     }

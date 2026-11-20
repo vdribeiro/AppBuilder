@@ -20,8 +20,8 @@ import com.app.builder.ui.core.divider.Divider
  * @param modifier The [Modifier] to be applied to the root layout.
  * @param requestUuid The UUID of the request.
  * @param requestType The HTTP method of the request.
- * @param requestUtc When the request was made on the client.
- * @param requestSentUtc When the request was sent by the client.
+ * @param requestUtc When the request was made on the client, as a UTC ISO-8601 string shown as a localized date-time.
+ * @param requestSentUtc When the request was sent by the client, as a UTC ISO-8601 string shown as a localized date-time.
  * @param userUuid The UUID of the user that made the request.
  * @param appVersion The client application version.
  * @param os The operating system of the client device.
@@ -86,11 +86,14 @@ fun RegistryCard(
         ) {
             groups.forEachIndexed { index, group ->
                 if (index > 0) Divider(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
-                group.forEach { (label, value) -> FieldValue(label = label, value = value) }
+                group.forEach { (label, value) -> FieldValue(label = label, value = value, dateTimeValue = label in DATE_TIME_LABELS) }
             }
         }
     }
 }
+
+/** The labels of the fields whose value is shown as a localized date-time. */
+private val DATE_TIME_LABELS = setOf("registry_request_utc", "registry_request_sent_utc")
 
 @PreviewLightDark
 @Composable

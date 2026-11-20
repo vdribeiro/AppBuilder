@@ -31,6 +31,8 @@ import com.app.builder.core.locale.toInstant
 import com.app.builder.ui.LocalColorScheme
 import com.app.builder.ui.Preview
 import com.app.builder.ui.component.actionbar.ActionBar
+import com.app.builder.ui.component.list.EntityRow
+import com.app.builder.ui.component.list.EntityRowMetadata
 import com.app.builder.ui.component.navigation.Navigation
 import com.app.builder.ui.component.navigation.NavigationRoute
 import com.app.builder.ui.component.session.SessionState
@@ -41,11 +43,9 @@ import com.app.builder.ui.core.card.Card
 import com.app.builder.ui.core.divider.Divider
 import com.app.builder.ui.core.image.Icon
 import com.app.builder.ui.core.list.LazyColumn
-import com.app.builder.ui.core.list.ListItem
 import com.app.builder.ui.core.progress.ProgressIndicator
 import com.app.builder.ui.core.text.Text
 import com.app.builder.ui.devicelocation.LocalDeviceLocationProvider
-import com.app.builder.ui.getDateTime
 import com.app.builder.ui.navigation.LocalRouter
 import com.app.builder.ui.permission.LocalPermissionManager
 import com.app.builder.ui.permission.Permission
@@ -176,12 +176,12 @@ fun DeviceLocationScreen(
                         fix.altitude?.let { "altitude: ${it.roundTo(decimals = 1)}m" },
                         fix.bearing?.let { "bearing: ${it.roundTo(decimals = 0).toInt()}°" },
                         fix.speed?.let { "speed: ${it.roundTo(decimals = 1)}m/s" },
-                        fix.fixTime.toInstant()?.toString()?.let { "time: ${getDateTime(utc = it)}" },
                     )
-                    ListItem(
-                        leadingContent = { Icon(imageVector = Icons.Default.LocationOn) },
-                        headlineText = "${fix.latitude.roundTo(decimals = 6)}, ${fix.longitude.roundTo(decimals = 6)}",
-                        supportingText = details.joinToString(separator = "\n")
+                    EntityRow(
+                        headline = "${fix.latitude.roundTo(decimals = 6)}, ${fix.longitude.roundTo(decimals = 6)}",
+                        supporting = details.joinToString(separator = "\n"),
+                        metadata = listOf(EntityRowMetadata(text = fix.fixTime.toInstant()?.toString(), dateTime = true)),
+                        leadingContent = { Icon(imageVector = Icons.Default.LocationOn) }
                     )
                     if (index < locations.lastIndex) Divider()
                 }

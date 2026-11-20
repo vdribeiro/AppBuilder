@@ -16,19 +16,25 @@ import com.app.builder.ui.core.divider.Divider
  *
  * @param modifier The [Modifier] to be applied to the root layout.
  * @param entries Pairs of translated label and value.
+ * @param dateTimeEntries Pairs of translated label and UTC ISO-8601 string, shown after [entries] as localized date-times.
  */
 @Composable
 fun MetadataSection(
     modifier: Modifier = Modifier,
     entries: ImmutableList<Pair<String, String?>> = persistentListOf(),
+    dateTimeEntries: ImmutableList<Pair<String, String?>> = persistentListOf(),
 ) {
     val visible = entries.filter { it.second != null }
-    if (visible.isEmpty()) return
+    val visibleDateTimes = dateTimeEntries.filter { it.second != null }
+    if (visible.isEmpty() && visibleDateTimes.isEmpty()) return
 
     Column(modifier = modifier) {
         Divider(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
         visible.forEach { (label, value) ->
             FieldValue(label = label, value = value, maxLines = 1)
+        }
+        visibleDateTimes.forEach { (label, value) ->
+            FieldValue(label = label, value = value, dateTimeValue = true, maxLines = 1)
         }
     }
 }
@@ -39,6 +45,8 @@ private fun MetadataSectionPreview() = Preview {
     MetadataSection(
         entries = persistentListOf(
             "UUID" to "6f1c2a8e-0b7d-4c2e-9a51-3f0e6d4b8c21",
+        ),
+        dateTimeEntries = persistentListOf(
             "Modified At" to "2026-11-09T10:00:00Z",
             "Deleted At" to null,
         )

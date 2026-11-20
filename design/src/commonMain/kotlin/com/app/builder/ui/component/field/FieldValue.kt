@@ -20,6 +20,7 @@ import com.app.builder.ui.core.text.Text
  * @param label The label of the field, translated.
  * @param value The value of the field.
  * @param translateValue True to translate [value], for values that are translation keys such as an option, false to show it as given.
+ * @param dateTimeValue True to show [value], a UTC ISO-8601 string, as a localized date-time.
  * @param maxLines The maximum number of lines of [value] before it is truncated.
  */
 @Composable
@@ -28,6 +29,7 @@ fun FieldValue(
     label: String = "",
     value: String? = null,
     translateValue: Boolean = false,
+    dateTimeValue: Boolean = false,
     maxLines: Int = Int.MAX_VALUE,
 ) {
     val typography = LocalTypography.current
@@ -46,6 +48,7 @@ fun FieldValue(
         Text(
             text = value?.takeIf { it.isNotBlank() } ?: EMPTY_VALUE,
             translate = translateValue && !value.isNullOrBlank(),
+            dateTime = dateTimeValue && !value.isNullOrBlank(),
             maxLines = maxLines,
             style = typography.bodyLarge
         )

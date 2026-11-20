@@ -22,8 +22,8 @@ import com.app.builder.ui.core.card.Card
  * @param modifier The [Modifier] to be applied to the root layout.
  * @param enabled Whether the material's properties can be edited.
  * @param uuid The UUID of the material.
- * @param modifiedAt The modification timestamp of the material.
- * @param deletedAt The deletion timestamp of the material.
+ * @param modifiedAt The modification timestamp of the material, as a UTC ISO-8601 string shown as a localized date-time.
+ * @param deletedAt The deletion timestamp of the material, as a UTC ISO-8601 string shown as a localized date-time.
  * @param name The name of the material.
  * @param onNameChange Callback for when the name changes.
  * @param description The description of the material.
@@ -74,6 +74,8 @@ fun MaterialCard(
             MetadataSection(
                 entries = persistentListOf(
                     "material_uuid" to uuid,
+                ),
+                dateTimeEntries = persistentListOf(
                     "material_modified_at" to modifiedAt,
                     "material_deleted_at" to deletedAt,
                 )

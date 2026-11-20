@@ -18,7 +18,6 @@ import com.app.builder.core.security.uuid
 import com.app.builder.ui.Preview
 import com.app.builder.ui.core.image.Icon
 import com.app.builder.ui.core.list.LazyColumn
-import com.app.builder.ui.getDateTime
 
 /**
  * Equipment list.
@@ -49,7 +48,11 @@ fun EquipmentList(
                 checked = item.checked,
                 headline = item.name,
                 supporting = item.description,
-                metadata = listOf(item.uuid.takeIf { item.uuidVisible }, item.modifiedAt?.let { getDateTime(utc = it) }, item.deletedAt?.let { getDateTime(utc = it) }),
+                metadata = listOf(
+                    EntityRowMetadata(text = item.uuid.takeIf { item.uuidVisible }),
+                    EntityRowMetadata(text = item.modifiedAt, dateTime = true),
+                    EntityRowMetadata(text = item.deletedAt, dateTime = true),
+                ),
                 leadingContent = item.malfunctioning?.let { malfunctioning -> { Icon(imageVector = if (malfunctioning) Icons.Default.Error else Icons.Default.CheckCircle) } }
             )
         }

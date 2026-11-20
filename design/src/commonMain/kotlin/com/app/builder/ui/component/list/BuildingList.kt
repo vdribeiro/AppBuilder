@@ -14,7 +14,6 @@ import androidx.compose.ui.tooling.preview.PreviewLightDark
 import com.app.builder.core.security.uuid
 import com.app.builder.ui.Preview
 import com.app.builder.ui.core.list.LazyColumn
-import com.app.builder.ui.getDateTime
 
 /**
  * Building list.
@@ -45,7 +44,11 @@ fun BuildingList(
                 checked = item.checked,
                 headline = item.name,
                 supporting = listOfNotNull(item.address, item.description).filter { it.isNotBlank() }.joinToString(separator = " · "),
-                metadata = listOf(item.uuid.takeIf { item.uuidVisible }, item.modifiedAt?.let { getDateTime(utc = it) }, item.deletedAt?.let { getDateTime(utc = it) })
+                metadata = listOf(
+                    EntityRowMetadata(text = item.uuid.takeIf { item.uuidVisible }),
+                    EntityRowMetadata(text = item.modifiedAt, dateTime = true),
+                    EntityRowMetadata(text = item.deletedAt, dateTime = true),
+                )
             )
         }
     }

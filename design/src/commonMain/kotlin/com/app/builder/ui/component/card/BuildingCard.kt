@@ -28,8 +28,8 @@ import com.app.builder.ui.core.image.Icon
  * @param modifier The [Modifier] to be applied to the root layout.
  * @param enabled Whether the building's properties can be edited.
  * @param uuid The UUID of the building.
- * @param modifiedAt The modification timestamp of the building.
- * @param deletedAt The deletion timestamp of the building.
+ * @param modifiedAt The modification timestamp of the building, as a UTC ISO-8601 string shown as a localized date-time.
+ * @param deletedAt The deletion timestamp of the building, as a UTC ISO-8601 string shown as a localized date-time.
  * @param name The name of the building.
  * @param onNameChange Callback for when the name changes.
  * @param description The description of the building.
@@ -137,6 +137,8 @@ fun BuildingCard(
             MetadataSection(
                 entries = persistentListOf(
                     "building_uuid" to uuid,
+                ),
+                dateTimeEntries = persistentListOf(
                     "building_modified_at" to modifiedAt,
                     "building_deleted_at" to deletedAt,
                 )

@@ -15,6 +15,7 @@ import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import com.app.builder.ui.LocalColorScheme
 import com.app.builder.ui.Preview
+import com.app.builder.ui.getDateTime
 import com.app.builder.ui.getTranslation
 import androidx.compose.material3.Text as MaterialText
 
@@ -25,6 +26,7 @@ import androidx.compose.material3.Text as MaterialText
  * @param modifier The [Modifier] to be applied to the text bounding box layout structure.
  * @param text The literal text string content to render on screen.
  * @param translate True to try to fetch the translation value from the cache, false to show the plain given [text]. Defaults to true.
+ * @param dateTime True to show [text], a UTC ISO-8601 string, as a localized date-time instead of translating it. Defaults to false.
  * @param textAlign The alignment strategy for the text within its layout boundaries.
  * @param maxLines The maximum vertical lines allowed before truncating content layout blocks.
  * @param style Typography styling configurations applied to the text. Defaults to [LocalTextStyle].
@@ -36,6 +38,7 @@ fun Text(
     modifier: Modifier = Modifier,
     text: String = "",
     translate: Boolean = true,
+    dateTime: Boolean = false,
     textAlign: TextAlign? = null,
     maxLines: Int = Int.MAX_VALUE,
     style: TextStyle = LocalTextStyle.current,
@@ -44,7 +47,11 @@ fun Text(
 ) {
     MaterialText(
         modifier = modifier,
-        text = if (translate) getTranslation(key = text) else text,
+        text = when {
+            dateTime -> getDateTime(utc = text)
+            translate -> getTranslation(key = text)
+            else -> text
+        },
         textAlign = textAlign,
         maxLines = maxLines,
         style = style,

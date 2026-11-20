@@ -24,8 +24,8 @@ import com.app.builder.ui.core.card.Card
  * @param modifier The [Modifier] to be applied to the root layout.
  * @param enabled Whether the task's properties can be edited.
  * @param uuid The UUID of the task.
- * @param modifiedAt The modification timestamp of the task.
- * @param deletedAt The deletion timestamp of the task.
+ * @param modifiedAt The modification timestamp of the task, as a UTC ISO-8601 string shown as a localized date-time.
+ * @param deletedAt The deletion timestamp of the task, as a UTC ISO-8601 string shown as a localized date-time.
  * @param title The title of the task.
  * @param onTitleChange Callback for when the title changes.
  * @param description The description of the task.
@@ -89,6 +89,8 @@ fun TaskCard(
             MetadataSection(
                 entries = persistentListOf(
                     "task_uuid" to uuid,
+                ),
+                dateTimeEntries = persistentListOf(
                     "task_modified_at" to modifiedAt,
                     "task_deleted_at" to deletedAt,
                 )

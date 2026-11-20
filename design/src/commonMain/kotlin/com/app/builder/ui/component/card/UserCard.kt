@@ -33,8 +33,8 @@ import com.app.builder.ui.core.text.Text
  * @param modifier The [Modifier] to be applied to the root layout.
  * @param enabled Whether the user's properties can be edited.
  * @param uuid The UUID of the user.
- * @param modifiedAt The modification timestamp of the user.
- * @param deletedAt The deletion timestamp of the user.
+ * @param modifiedAt The modification timestamp of the user, as a UTC ISO-8601 string shown as a localized date-time.
+ * @param deletedAt The deletion timestamp of the user, as a UTC ISO-8601 string shown as a localized date-time.
  * @param name The name of the user.
  * @param onNameChange Callback for when the name changes.
  * @param avatar The avatar image of the user, falling back to the initials of [name].
@@ -141,6 +141,8 @@ fun UserCard(
             MetadataSection(
                 entries = persistentListOf(
                     "user_uuid" to uuid,
+                ),
+                dateTimeEntries = persistentListOf(
                     "user_modified_at" to modifiedAt,
                     "user_deleted_at" to deletedAt,
                 )

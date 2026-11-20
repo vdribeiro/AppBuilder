@@ -25,8 +25,8 @@ import com.app.builder.ui.core.card.Card
  * @param modifier The [Modifier] to be applied to the root layout.
  * @param enabled Whether the equipment's properties can be edited.
  * @param uuid The UUID of the equipment.
- * @param modifiedAt The modification timestamp of the equipment.
- * @param deletedAt The deletion timestamp of the equipment.
+ * @param modifiedAt The modification timestamp of the equipment, as a UTC ISO-8601 string shown as a localized date-time.
+ * @param deletedAt The deletion timestamp of the equipment, as a UTC ISO-8601 string shown as a localized date-time.
  * @param name The name of the equipment.
  * @param onNameChange Callback for when the name changes.
  * @param description The description of the equipment.
@@ -93,6 +93,8 @@ fun EquipmentCard(
             MetadataSection(
                 entries = persistentListOf(
                     "equipment_uuid" to uuid,
+                ),
+                dateTimeEntries = persistentListOf(
                     "equipment_modified_at" to modifiedAt,
                     "equipment_deleted_at" to deletedAt,
                 )

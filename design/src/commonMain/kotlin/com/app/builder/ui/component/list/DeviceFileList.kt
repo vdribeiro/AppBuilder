@@ -16,8 +16,6 @@ import androidx.compose.ui.tooling.preview.PreviewLightDark
 import com.app.builder.ui.Preview
 import com.app.builder.ui.core.image.Icon
 import com.app.builder.ui.core.list.LazyColumn
-import com.app.builder.ui.core.list.ListItem
-import com.app.builder.ui.getDateTime
 
 /**
  * File list.
@@ -39,12 +37,13 @@ fun DeviceFileList(
         horizontalAlignment = Alignment.Start
     ) {
         itemsIndexed(items = items, key = { _, item -> item.path }) { index, item ->
-            ListItem(
+            EntityRow(
                 modifier = Modifier
                     .testTag(tag = "file_item_$index")
                     .clickable { onClick(item) },
-                headlineText = item.name,
-                supportingText = listOfNotNull(item.size, item.modifiedAt?.let { getDateTime(utc = it) }).joinToString(separator = " - ").takeIf { it.isNotEmpty() },
+                headline = item.name,
+                supporting = item.size,
+                metadata = listOf(EntityRowMetadata(text = item.modifiedAt, dateTime = true)),
                 leadingContent = { Icon(imageVector = Icons.AutoMirrored.Filled.InsertDriveFile) }
             )
         }
