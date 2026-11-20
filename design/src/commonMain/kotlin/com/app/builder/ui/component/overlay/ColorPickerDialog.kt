@@ -49,7 +49,7 @@ private val palette: List<List<Color>> = buildList {
  * A dialog for choosing a color, either from a palette or by typing its hexadecimal value.
  *
  * @param modifier The [Modifier] to be applied to the dialog.
- * @param title The heading rendered at the top of the dialog.
+ * @param title The heading rendered at the top of the dialog, shown as given.
  * @param color The color currently in use, preselected when the dialog opens.
  * @param onConfirm Invoked with the chosen color when the user applies it.
  * @param onReset Invoked when the user restores the default color.

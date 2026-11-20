@@ -31,8 +31,8 @@ import com.app.builder.ui.getDateTime
  * @param onTitleChange Callback for when the title changes.
  * @param description The description of the task.
  * @param onDescriptionChange Callback for when the description changes.
- * @param state The task's state, shown as selected among [states].
- * @param states Every state the task can be in.
+ * @param state The task's state as a translation key, shown as selected among [states].
+ * @param states Every state the task can be in, as translation keys.
  * @param onStateChange Callback for when a state is selected.
  */
 @Composable

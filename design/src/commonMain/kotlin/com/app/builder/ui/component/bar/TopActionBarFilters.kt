@@ -62,7 +62,7 @@ fun FiltersButton(expanded: Boolean, onClick: (Boolean) -> Unit) {
 /**
  * Renders the search, sorting and property filters of a list for the [TopActionBar] secondary actions slot, switching between the filter buttons and the search input.
  *
- * @param properties Map of property keys to their display labels, used to populate the sort, visibility and search menus.
+ * @param properties Map of property keys to their display labels as translation keys, used to populate the sort, visibility and search menus.
  * @param search The search query the search input starts with, and follows when it changes from outside.
  * @param searchExpanded Whether the search input is open.
  * @param onSearchExpandClick Called with the new value when the search input is opened or closed.
@@ -202,7 +202,7 @@ fun Filters(
 }
 
 /**
- * Converts these properties into dropdown items, marking the checked ones.
+ * Converts these properties into dropdown items labelled with the translation of each property's value, marking the checked ones.
  *
  * @param checked Whether the property with the given key is checked.
  * @param onClick Called with the key of the clicked property.

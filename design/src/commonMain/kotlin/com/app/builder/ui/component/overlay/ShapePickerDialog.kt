@@ -35,7 +35,7 @@ private const val MAXIMUM_RADIUS = 50
  * A dialog for choosing a shape's corner radius, previewing the shape as it changes.
  *
  * @param modifier The [Modifier] to be applied to the dialog.
- * @param title The heading rendered at the top of the dialog.
+ * @param title The heading rendered at the top of the dialog, shown as given.
  * @param radius The corner radius currently in use, preselected when the dialog opens.
  * @param onConfirm Invoked with the chosen corner radius when the user applies it.
  * @param onReset Invoked when the user restores the default corner radius.

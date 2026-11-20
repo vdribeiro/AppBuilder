@@ -36,7 +36,7 @@ import com.app.builder.ui.getTranslation
  *
  * @param modifier The [Modifier] to be applied to the root layout.
  * @param label The label of the field, translated.
- * @param selected The selected option, or `null` if none is.
+ * @param selected The selected option as a translation key, or `null` if none is.
  * @param options Every option, as translation keys.
  * @param editing Whether the selection can be changed.
  * @param onSelect Callback for when an option is selected.

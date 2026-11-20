@@ -31,7 +31,7 @@ import com.app.builder.ui.core.text.Text
  * @param modifier The [Modifier] to be applied to the root layout.
  * @param name The name to fit in the avatar. Only the first letter of the first and last name will show capitalized if no image is provided.
  * @param image The image resource.
- * @param contentDescription Localized accessibility description text. Can be null.
+ * @param contentDescription Accessibility description text, shown as given. Can be null.
  * @param size The diameter of the avatar. Defaults to 40.dp.
  * @param shape The [Shape] the avatar is clipped to. Defaults to [CircleShape].
  */

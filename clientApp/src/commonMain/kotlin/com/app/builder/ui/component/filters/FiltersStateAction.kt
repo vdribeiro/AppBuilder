@@ -60,7 +60,7 @@ sealed interface FiltersAction {
 /**
  * State of the search, sorting and property filters applied to a list.
  *
- * @property properties Map of property keys to their display labels, used to populate the sort, visibility and search menus.
+ * @property properties Map of property keys to their display labels as translation keys, used to populate the sort, visibility and search menus.
  * @property filtersExpanded Whether the filters are currently expanded.
  * @property search Current search query text.
  * @property searchExpanded Whether the search input is currently open.

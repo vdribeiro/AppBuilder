@@ -160,7 +160,7 @@ fun UserProfile(
  * A titled group of related settings, rendered as a [Card] of stacked rows.
  *
  * @param modifier The [Modifier] to be applied to the section's layout.
- * @param title The section's title, shown above the card.
+ * @param title The section's title, translated, shown above the card.
  * @param content The section's rows, executing inside the card's sequential [ColumnScope].
  */
 @Composable

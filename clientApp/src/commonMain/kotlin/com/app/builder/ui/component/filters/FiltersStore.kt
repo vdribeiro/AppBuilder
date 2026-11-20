@@ -202,7 +202,7 @@ class FiltersStore(
         /**
          * Creates a filters store over [properties], searching all of them by default.
          *
-         * @param properties Map of property keys to their display labels.
+         * @param properties Map of property keys to their display labels as translation keys.
          * @param storageFile File the filters are persisted to.
          * @param sortProperty Key of the property the list is sorted by default.
          * @param sortAscending Whether the list is sorted in ascending order by default.

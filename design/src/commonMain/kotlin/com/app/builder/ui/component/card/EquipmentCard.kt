@@ -32,8 +32,8 @@ import com.app.builder.ui.getDateTime
  * @param onNameChange Callback for when the name changes.
  * @param description The description of the equipment.
  * @param onDescriptionChange Callback for when the description changes.
- * @param status The equipment's status, shown as selected among [statuses].
- * @param statuses Every status the equipment can be in.
+ * @param status The equipment's status as a translation key, shown as selected among [statuses].
+ * @param statuses Every status the equipment can be in, as translation keys.
  * @param onStatusChange Callback for when a status is selected.
  * @param links A slot rendered above the metadata, typically a [LinkSection].
  */

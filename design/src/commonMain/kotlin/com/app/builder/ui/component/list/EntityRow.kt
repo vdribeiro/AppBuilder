@@ -23,7 +23,7 @@ import com.app.builder.ui.getDateTime
  * @param deleted Whether the deleted icon is shown.
  * @param headline The primary text, shown as given.
  * @param supporting The secondary text, shown as given.
- * @param metadata Bookkeeping texts joined into the line above the headline, which is hidden when all are `null`.
+ * @param metadata Bookkeeping texts, shown as given, joined into the line above the headline, which is hidden when all are `null`.
  * @param leadingContent An optional composable slot rendered at the start of the row, typically an icon or avatar.
  * @param checked Whether the row's checkbox is ticked, or `null` for a row without a checkbox.
  */
