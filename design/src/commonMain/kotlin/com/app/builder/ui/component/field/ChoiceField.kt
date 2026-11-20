@@ -27,7 +27,7 @@ import com.app.builder.ui.core.button.Dropdown
 import com.app.builder.ui.core.button.DropdownItem
 import com.app.builder.ui.core.image.Icon
 import com.app.builder.ui.core.text.Text
-import com.app.builder.ui.core.text.TextValue
+import com.app.builder.ui.getTranslation
 
 /**
  * A property with a fixed set of options.
@@ -55,7 +55,7 @@ fun ChoiceField(
     val typography = LocalTypography.current
 
     if (!editing) {
-        FieldValue(modifier = modifier, label = label, value = selected?.let { TextValue.Translation(key = it) })
+        FieldValue(modifier = modifier, label = label, value = selected?.let { getTranslation(key = it) })
         return
     }
 
@@ -66,7 +66,7 @@ fun ChoiceField(
         verticalArrangement = Arrangement.spacedBy(space = 4.dp),
     ) {
         Text(
-            text = label,
+            text = getTranslation(key = label),
             maxLines = 1,
             style = typography.labelMedium
         )
@@ -74,14 +74,14 @@ fun ChoiceField(
             items = options.map { option ->
                 ButtonGroupItem(
                     selected = option == selected,
-                    text = option,
+                    text = getTranslation(key = option),
                     onClick = { onSelect(option) }
                 )
             }.toPersistentList()
         ) else Box {
             var expanded by remember { mutableStateOf(value = false) }
             Chip(
-                text = selected,
+                text = selected?.let { getTranslation(key = it) },
                 trailingIcon = { Icon(imageVector = Icons.Default.ArrowDropDown) },
                 onClick = { expanded = true }
             )
@@ -90,7 +90,7 @@ fun ChoiceField(
                 onDismissRequest = { expanded = false },
                 items = options.map { option ->
                     DropdownItem(
-                        text = option,
+                        text = getTranslation(key = option),
                         onClick = {
                             expanded = false
                             onSelect(option)

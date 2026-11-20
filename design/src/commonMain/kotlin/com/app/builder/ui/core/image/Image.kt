@@ -18,9 +18,6 @@ import com.app.builder.core.platform.OS
 import com.app.builder.core.platform.platform
 import com.app.builder.core.telemetry.Telemetry
 import com.app.builder.ui.Preview
-import com.app.builder.ui.core.text.TextValue
-import com.app.builder.ui.core.text.resolve
-import com.app.builder.ui.core.text.toTextValue
 
 /**
  * Resource with optional remote address, physical path and generated [DrawableResource] reference.
@@ -45,52 +42,7 @@ data class Image(
  *
  * @param modifier The [Modifier] to apply to the resulting image container layout boundaries.
  * @param image The image resource.
- * @param contentDescription Localized accessibility description text. Can be null.
- * @param contentScale Algorithm strategy used to determine target dimension scaling adjustments. Defaults to [ContentScale.Crop].
- */
-@Composable
-fun Image(
-    modifier: Modifier = Modifier,
-    image: Image,
-    contentDescription: TextValue?,
-    contentScale: ContentScale = ContentScale.Crop,
-) {
-    when {
-        image.url != null -> AsyncImage(
-            modifier = modifier,
-            model = image.url,
-            contentDescription = contentDescription?.resolve(),
-            contentScale = contentScale,
-            onError = { Telemetry.error(tag = TAG, message = "Unable to draw image", throwable = it.result.throwable) },
-        )
-
-        image.path != null && (platform.os == OS.Android || platform.os == OS.Ios) -> AsyncImage(
-            modifier = modifier,
-            model = Res.getUri(path = image.path),
-            contentDescription = contentDescription?.resolve(),
-            contentScale = contentScale,
-            onError = { Telemetry.error(tag = TAG, message = "Unable to draw image", throwable = it.result.throwable) },
-        )
-
-        image.drawable != null && (LocalInspectionMode.current || platform.os == OS.Windows || platform.os == OS.Mac || platform.os == OS.Linux || platform.os == OS.Web) -> Image(
-            modifier = modifier,
-            painter = painterResource(resource = image.drawable),
-            contentDescription = contentDescription?.resolve(),
-            contentScale = contentScale
-        )
-    }
-}
-
-/**
- * A platform-aware image loader that switches drawing implementations based on runtime environment.
- * It first tries to load and draw a remote image from [Image.url] using [AsyncImage].
- * Otherwise, for local images, when executing on mobile platforms outside of layout preview inspection modes,
- * it routes through the URI-based overload to dynamically resolve resources using URI paths and streaming.
- * Otherwise, it routes through [painterResource] to statically decode local bundled [DrawableResource] blocks.
- *
- * @param modifier The [Modifier] to apply to the resulting image container layout boundaries.
- * @param image The image resource.
- * @param contentDescription Localized accessibility description text. Can be null. Given as a translation key.
+ * @param contentDescription Accessibility description text, shown as given. Can be null.
  * @param contentScale Algorithm strategy used to determine target dimension scaling adjustments. Defaults to [ContentScale.Crop].
  */
 @Composable
@@ -99,12 +51,32 @@ fun Image(
     image: Image,
     contentDescription: String? = null,
     contentScale: ContentScale = ContentScale.Crop,
-) = Image(
-    modifier = modifier,
-    image = image,
-    contentDescription = contentDescription?.toTextValue(),
-    contentScale = contentScale
-)
+) {
+    when {
+        image.url != null -> AsyncImage(
+            modifier = modifier,
+            model = image.url,
+            contentDescription = contentDescription,
+            contentScale = contentScale,
+            onError = { Telemetry.error(tag = TAG, message = "Unable to draw image", throwable = it.result.throwable) },
+        )
+
+        image.path != null && (platform.os == OS.Android || platform.os == OS.Ios) -> AsyncImage(
+            modifier = modifier,
+            model = Res.getUri(path = image.path),
+            contentDescription = contentDescription,
+            contentScale = contentScale,
+            onError = { Telemetry.error(tag = TAG, message = "Unable to draw image", throwable = it.result.throwable) },
+        )
+
+        image.drawable != null && (LocalInspectionMode.current || platform.os == OS.Windows || platform.os == OS.Mac || platform.os == OS.Linux || platform.os == OS.Web) -> Image(
+            modifier = modifier,
+            painter = painterResource(resource = image.drawable),
+            contentDescription = contentDescription,
+            contentScale = contentScale
+        )
+    }
+}
 
 @PreviewLightDark
 @Composable

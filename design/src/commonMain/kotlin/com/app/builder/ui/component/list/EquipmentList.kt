@@ -18,7 +18,7 @@ import com.app.builder.core.security.uuid
 import com.app.builder.ui.Preview
 import com.app.builder.ui.core.image.Icon
 import com.app.builder.ui.core.list.LazyColumn
-import com.app.builder.ui.core.text.TextValue
+import com.app.builder.ui.getDateTime
 
 /**
  * Equipment list.
@@ -50,9 +50,9 @@ fun EquipmentList(
                 headline = item.name,
                 supporting = item.description,
                 metadata = listOf(
-                    item.uuid.takeIf { item.uuidVisible }?.let { TextValue.Plain(text = it) },
-                    item.modifiedAt?.let { TextValue.DateTime(utc = it) },
-                    item.deletedAt?.let { TextValue.DateTime(utc = it) },
+                    item.uuid.takeIf { item.uuidVisible },
+                    item.modifiedAt?.let { getDateTime(utc = it) },
+                    item.deletedAt?.let { getDateTime(utc = it) },
                 ),
                 leadingContent = item.malfunctioning?.let { malfunctioning -> { Icon(imageVector = if (malfunctioning) Icons.Default.Error else Icons.Default.CheckCircle) } }
             )

@@ -17,8 +17,6 @@ import com.app.builder.ui.Preview
 import com.app.builder.ui.core.button.Button
 import com.app.builder.ui.core.image.Icon
 import com.app.builder.ui.core.text.Text
-import com.app.builder.ui.core.text.TextValue
-import com.app.builder.ui.core.text.toTextValue
 
 /** Enum representing the position of the anchor relative to the tooltip. */
 enum class Position {
@@ -48,7 +46,7 @@ enum class Position {
 @Composable
 fun Tooltip(
     modifier: Modifier = Modifier,
-    text: TextValue?,
+    text: String? = null,
     position: Position = Position.ABOVE,
     content: @Composable () -> Unit = {},
 ) {
@@ -64,7 +62,7 @@ fun Tooltip(
         positionProvider = TooltipDefaults.rememberTooltipPositionProvider(positioning = positioning),
         tooltip = {
             PlainTooltip(modifier = modifier) {
-                Text(value = text ?: TextValue.Plain(text = ""))
+                Text(text = text.orEmpty())
             }
         },
         state = rememberTooltipState(isPersistent = true),
@@ -72,28 +70,6 @@ fun Tooltip(
         content = content
     )
 }
-
-/**
- * Wraps an anchor composable with a short descriptive label that appears on long-press or hover.
- * The label stays while the pointer hovers the anchor, or until the user taps elsewhere after a long-press.
- *
- * @param modifier The [Modifier] to be applied to the tooltip bubble's layout.
- * @param text The short descriptive message to display when the tooltip is shown. Given as a translation key.
- * @param position The position of the anchor relative to the tooltip. Defaults to [Position.ABOVE].
- * @param content The anchor composable the tooltip attaches to, typically an [Icon] or [Button].
- */
-@Composable
-fun Tooltip(
-    modifier: Modifier = Modifier,
-    text: String? = null,
-    position: Position = Position.ABOVE,
-    content: @Composable () -> Unit = {},
-) = Tooltip(
-    modifier = modifier,
-    text = text?.toTextValue(),
-    position = position,
-    content = content
-)
 
 @PreviewLightDark
 @Composable

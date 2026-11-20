@@ -21,7 +21,8 @@ import com.app.builder.ui.component.field.TextField
 import com.app.builder.ui.core.button.Button
 import com.app.builder.ui.core.card.Card
 import com.app.builder.ui.core.image.Icon
-import com.app.builder.ui.core.text.TextValue
+import com.app.builder.ui.getDateTime
+import com.app.builder.ui.getTranslation
 
 /**
  * A building card, showing only the properties that are not `null`.
@@ -130,16 +131,16 @@ fun BuildingCard(
                 modifier = Modifier
                     .testTag(tag = "building_use_location")
                     .padding(horizontal = 16.dp, vertical = 4.dp),
-                text = "building_use_location",
+                text = getTranslation(key = "building_use_location"),
                 content = { Icon(imageVector = Icons.Filled.MyLocation) },
                 onClick = { onUseLocationClick() }
             )
             links()
             MetadataSection(
                 entries = persistentListOf(
-                    "building_uuid" to uuid?.let { TextValue.Plain(text = it) },
-                    "building_modified_at" to modifiedAt?.let { TextValue.DateTime(utc = it) },
-                    "building_deleted_at" to deletedAt?.let { TextValue.DateTime(utc = it) },
+                    "building_uuid" to uuid,
+                    "building_modified_at" to modifiedAt?.let { getDateTime(utc = it) },
+                    "building_deleted_at" to deletedAt?.let { getDateTime(utc = it) },
                 )
             )
         }

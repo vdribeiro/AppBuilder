@@ -9,13 +9,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.window.DialogProperties
 import androidx.compose.ui.window.Dialog as WindowDialog
-import com.app.builder.ui.InjectTranslations
 import com.app.builder.ui.LocalTypography
 import com.app.builder.ui.Preview
 import com.app.builder.ui.core.button.Button
 import com.app.builder.ui.core.text.Text
-import com.app.builder.ui.core.text.TextValue
-import com.app.builder.ui.core.text.toTextValue
 
 /**
  * A highly configuration-driven modal alert that provides localized confirmations, optional dismiss behaviors, and safe null-checks for text components.
@@ -26,7 +23,7 @@ import com.app.builder.ui.core.text.toTextValue
  * @param text An optional primary body text description string detailing the message of the dialog.
  * @param confirmEnabled Controls whether the confirmation button is clickable.
  * @param confirmText The action button text for confirmations.
- * @param dismissText An optional localized action button string for cancellations. Defaults to the translation for "no". If null, the secondary action button slot is hidden.
+ * @param dismissText An optional action button text for cancellations. If null, the secondary action button slot is hidden.
  * @param onConfirm Callback invoked when the user selects the primary confirmation button.
  * @param onDismiss Callback invoked when the user selects the secondary dismissal button.
  * @param onDismissRequest Callback invoked when the user attempts to close the dialog by clicking outside its bounds or pressing back. Defaults to forwarding to [onDismiss].
@@ -35,11 +32,11 @@ import com.app.builder.ui.core.text.toTextValue
 @Composable
 fun Dialog(
     modifier: Modifier = Modifier,
-    title: TextValue? = null,
-    text: TextValue? = null,
+    title: String? = null,
+    text: String? = null,
     confirmEnabled: Boolean = true,
-    confirmText: TextValue,
-    dismissText: TextValue? = TextValue.Translation(key = "no"),
+    confirmText: String = "",
+    dismissText: String? = null,
     onConfirm: () -> Unit = {},
     onDismiss: (() -> Unit) = {},
     onDismissRequest: () -> Unit = onDismiss,
@@ -52,7 +49,7 @@ fun Dialog(
         title = {
             title?.let {
                 Text(
-                    value = it,
+                    text = it,
                     textAlign = TextAlign.Start,
                     style = typography.titleLarge
                 )
@@ -61,7 +58,7 @@ fun Dialog(
         text = {
             content?.invoke() ?: text?.let {
                 Text(
-                    value = it,
+                    text = it,
                     textAlign = TextAlign.Start,
                     style = typography.bodyLarge
                 )
@@ -72,46 +69,6 @@ fun Dialog(
         onDismissRequest = onDismissRequest
     )
 }
-
-/**
- * A highly configuration-driven modal alert that provides localized confirmations, optional dismiss behaviors, and safe null-checks for text components.
- * This ensures dialog slots adapt automatically when textual properties are omitted.
- *
- * @param modifier The [Modifier] to be applied to the dialog's structural container layout.
- * @param title An optional heading title text string rendered at the top of the dialog. Given as a translation key.
- * @param text An optional primary body text description string detailing the message of the dialog. Given as a translation key.
- * @param confirmEnabled Controls whether the confirmation button is clickable.
- * @param confirmText The localized action button string for confirmations. Defaults to the translation for "yes". Given as a translation key.
- * @param dismissText An optional localized action button string for cancellations. Defaults to the translation for "no". If null, the secondary action button slot is hidden. Given as a translation key.
- * @param onConfirm Callback invoked when the user selects the primary confirmation button.
- * @param onDismiss Callback invoked when the user selects the secondary dismissal button.
- * @param onDismissRequest Callback invoked when the user attempts to close the dialog by clicking outside its bounds or pressing back. Defaults to forwarding to [onDismiss].
- * @param content An optional composable slot rendered in place of [text], for dialogs whose body is more than a message.
- */
-@Composable
-fun Dialog(
-    modifier: Modifier = Modifier,
-    title: String? = null,
-    text: String? = null,
-    confirmEnabled: Boolean = true,
-    confirmText: String = "yes",
-    dismissText: String? = "no",
-    onConfirm: () -> Unit = {},
-    onDismiss: (() -> Unit) = {},
-    onDismissRequest: () -> Unit = onDismiss,
-    content: (@Composable () -> Unit)? = null,
-) = Dialog(
-    modifier = modifier,
-    title = title?.toTextValue(),
-    text = text?.toTextValue(),
-    confirmEnabled = confirmEnabled,
-    confirmText = confirmText.toTextValue(),
-    dismissText = dismissText?.toTextValue(),
-    onConfirm = onConfirm,
-    onDismiss = onDismiss,
-    onDismissRequest = onDismissRequest,
-    content = content
-)
 
 /**
  * A modal dialog taking up the whole screen.
@@ -137,15 +94,11 @@ fun FullScreenDialog(
 @PreviewLightDark
 @Composable
 private fun DialogPreview() = Preview {
-    InjectTranslations(
-        translations = mapOf(
-            "yes" to "Yes",
-            "no" to "No"
-        )
-    )
     Dialog(
         title = "Title",
-        text = "Text"
+        text = "Text",
+        confirmText = "Yes",
+        dismissText = "No"
     )
 }
 
@@ -153,6 +106,6 @@ private fun DialogPreview() = Preview {
 @Composable
 private fun FullScreenDialogPreview() = Preview {
     FullScreenDialog {
-        Text(text = "Content", translate = false)
+        Text(text = "Content")
     }
 }

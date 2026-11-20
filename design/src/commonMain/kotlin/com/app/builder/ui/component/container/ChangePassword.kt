@@ -17,6 +17,7 @@ import com.app.builder.ui.InjectTranslations
 import com.app.builder.ui.Preview
 import com.app.builder.ui.component.field.TextField
 import com.app.builder.ui.core.button.Button
+import com.app.builder.ui.getTranslation
 
 /**
  * A change password form of passwords that can be shown, with the submit button enabled once every password is filled and the confirmation matches the new password.
@@ -86,7 +87,7 @@ fun ChangePassword(
                 .testTag(tag = "change_password")
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp),
-            text = "change_password",
+            text = getTranslation(key = "change_password"),
             loading = loading,
             enabled = !loading && currentPassword.isNotBlank() && newPassword.isNotBlank() && confirmPassword == newPassword,
             onClick = { onSubmit() }

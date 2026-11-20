@@ -21,12 +21,13 @@ import com.app.builder.ui.LocalTypography
 import com.app.builder.ui.Preview
 import com.app.builder.ui.core.button.Checkbox
 import com.app.builder.ui.core.text.Text
+import com.app.builder.ui.getTranslation
 
 /**
  * Permission item.
  *
  * @property id Identifier of the entity the permission applies to.
- * @property name The displayed name of the entity the permission applies to.
+ * @property name The name of the entity the permission applies to, translated.
  * @property read Whether the entity can be read. Defaults to false.
  * @property write Whether the entity can be written. Defaults to false.
  */
@@ -66,18 +67,18 @@ fun PermissionSelector(
         ) {
             Text(
                 modifier = Modifier.weight(weight = 1f),
-                text = "permissions",
+                text = getTranslation(key = "permissions"),
                 style = typography.labelMedium
             )
             Text(
                 modifier = Modifier.width(width = TOGGLE_WIDTH),
-                text = "read",
+                text = getTranslation(key = "read"),
                 textAlign = TextAlign.Center,
                 style = typography.labelMedium
             )
             Text(
                 modifier = Modifier.width(width = TOGGLE_WIDTH),
-                text = "write",
+                text = getTranslation(key = "write"),
                 textAlign = TextAlign.Center,
                 style = typography.labelMedium
             )
@@ -90,7 +91,7 @@ fun PermissionSelector(
             ) {
                 Text(
                     modifier = Modifier.weight(weight = 1f),
-                    text = permission.name,
+                    text = getTranslation(key = permission.name),
                     maxLines = 1,
                     style = typography.bodyMedium
                 )

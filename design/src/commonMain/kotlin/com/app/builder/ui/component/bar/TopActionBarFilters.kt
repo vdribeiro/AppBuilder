@@ -42,6 +42,7 @@ import com.app.builder.ui.core.button.Dropdown
 import com.app.builder.ui.core.button.DropdownItem
 import com.app.builder.ui.core.image.Icon
 import com.app.builder.ui.core.text.Input
+import com.app.builder.ui.getTranslation
 
 /**
  * Renders the button expanding or collapsing the [Filters] for the [TopActionBar] actions slot.
@@ -207,15 +208,16 @@ fun Filters(
  * @param onClick Called with the key of the clicked property.
  * @return The dropdown items, in the order of these properties.
  */
+@Composable
 private fun ImmutableMap<String, String>.toCheckedItems(checked: (String) -> Boolean, onClick: (String) -> Unit): ImmutableList<DropdownItem> = map { property ->
     DropdownItem(
-        text = property.value,
+        text = getTranslation(key = property.value),
         onClick = { onClick(property.key) },
         leadingIcon = {
             if (checked(property.key)) {
                 Icon(
                     imageVector = Icons.Default.Check,
-                    contentDescription = "checked"
+                    contentDescription = getTranslation(key = "checked")
                 )
             } else Spacer(modifier = Modifier.size(size = 24.dp))
         }

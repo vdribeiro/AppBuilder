@@ -15,8 +15,6 @@ import com.app.builder.ui.LocalTypography
 import com.app.builder.ui.Preview
 import com.app.builder.ui.core.image.Icon
 import com.app.builder.ui.core.text.Text
-import com.app.builder.ui.core.text.TextValue
-import com.app.builder.ui.core.text.toTextValue
 import androidx.compose.material3.ListItem as MaterialListItem
 
 /**
@@ -34,9 +32,9 @@ import androidx.compose.material3.ListItem as MaterialListItem
 fun ListItem(
     modifier: Modifier = Modifier,
     selected: Boolean = false,
-    overlineText: TextValue? = null,
-    headlineText: TextValue?,
-    supportingText: TextValue? = null,
+    overlineText: String? = null,
+    headlineText: String? = null,
+    supportingText: String? = null,
     leadingContent: (@Composable () -> Unit)? = null,
     trailingContent: (@Composable () -> Unit)? = null,
 ) {
@@ -56,7 +54,7 @@ fun ListItem(
         overlineContent = overlineText?.let {
             {
                 Text(
-                    value = it,
+                    text = it,
                     textAlign = TextAlign.Start,
                     maxLines = 1,
                     style = typography.labelSmall
@@ -66,7 +64,7 @@ fun ListItem(
         headlineContent = {
             headlineText?.let {
                 Text(
-                    value = it,
+                    text = it,
                     textAlign = TextAlign.Start,
                     maxLines = 1,
                     style = typography.bodyLarge
@@ -76,7 +74,7 @@ fun ListItem(
         supportingContent = supportingText?.let {
             {
                 Text(
-                    value = it,
+                    text = it,
                     textAlign = TextAlign.Start,
                     style = typography.bodyMedium
                 )
@@ -86,38 +84,6 @@ fun ListItem(
         trailingContent = trailingContent
     )
 }
-
-/**
- * A single row entry for lists and menus, standardizing headline, supporting text, and leading/trailing decoration slots.
- *
- * @param modifier The [Modifier] to be applied to the row's layout.
- * @param selected When `true`, the row is drawn on the secondary container color.
- * @param translate True to translate the texts, false to show them as given. Defaults to true.
- * @param overlineText An optional small text rendered above the headline.
- * @param headlineText The primary text label for the row.
- * @param supportingText An optional secondary text description rendered below the headline.
- * @param leadingContent An optional composable slot rendered at the start of the row, typically an [Icon].
- * @param trailingContent An optional composable slot rendered at the end of the row, typically an [Icon] or [Text].
- */
-@Composable
-fun ListItem(
-    modifier: Modifier = Modifier,
-    selected: Boolean = false,
-    translate: Boolean = true,
-    overlineText: String? = null,
-    headlineText: String? = null,
-    supportingText: String? = null,
-    leadingContent: (@Composable () -> Unit)? = null,
-    trailingContent: (@Composable () -> Unit)? = null,
-) = ListItem(
-    modifier = modifier,
-    selected = selected,
-    overlineText = overlineText?.toTextValue(translate = translate),
-    headlineText = headlineText?.toTextValue(translate = translate),
-    supportingText = supportingText?.toTextValue(translate = translate),
-    leadingContent = leadingContent,
-    trailingContent = trailingContent
-)
 
 @PreviewLightDark
 @Composable

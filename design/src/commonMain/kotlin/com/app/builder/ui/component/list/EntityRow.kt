@@ -12,8 +12,7 @@ import com.app.builder.ui.Preview
 import com.app.builder.ui.core.button.Checkbox
 import com.app.builder.ui.core.image.Icon
 import com.app.builder.ui.core.list.ListItem
-import com.app.builder.ui.core.text.TextValue
-import com.app.builder.ui.core.text.resolve
+import com.app.builder.ui.getDateTime
 
 /**
  * A compact list row with a leading visual, its headline and supporting text and optional bookkeeping in a small line above the headline.
@@ -35,17 +34,14 @@ fun EntityRow(
     deleted: Boolean = false,
     headline: String? = null,
     supporting: String? = null,
-    metadata: List<TextValue?> = emptyList(),
+    metadata: List<String?> = emptyList(),
     leadingContent: (@Composable () -> Unit)? = null,
     checked: Boolean? = null,
 ) {
-    val overline = metadata.mapNotNull { it?.resolve() }
-
     ListItem(
         modifier = modifier.alpha(alpha = if (deleted) DELETED_ALPHA else 1f),
         selected = selected,
-        translate = false,
-        overlineText = overline.takeIf { it.isNotEmpty() }?.joinToString(separator = " · "),
+        overlineText = metadata.filterNotNull().takeIf { it.isNotEmpty() }?.joinToString(separator = " · "),
         headlineText = headline,
         supportingText = supporting?.takeIf { it.isNotBlank() },
         leadingContent = leadingContent,
@@ -72,6 +68,6 @@ private fun EntityRowPreview() = Preview {
     Column {
         EntityRow(headline = "Headline", supporting = "Supporting text", leadingContent = { Icon(imageVector = Icons.Default.Apps) })
         EntityRow(selected = true, headline = "Selected", supporting = "Supporting text", leadingContent = { Icon(imageVector = Icons.Default.Apps) })
-        EntityRow(deleted = true, headline = "Deleted", metadata = listOf(TextValue.Plain(text = "6f1c2a8e-0b7d-4c2e"), TextValue.DateTime(utc = "2026-11-09T10:00:00Z")))
+        EntityRow(deleted = true, headline = "Deleted", metadata = listOf("6f1c2a8e-0b7d-4c2e", getDateTime(utc = "2026-11-09T10:00:00Z")))
     }
 }

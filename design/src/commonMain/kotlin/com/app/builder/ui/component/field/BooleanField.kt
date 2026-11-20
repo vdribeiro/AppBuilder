@@ -20,6 +20,7 @@ import com.app.builder.ui.LocalTypography
 import com.app.builder.ui.Preview
 import com.app.builder.ui.core.button.Switch
 import com.app.builder.ui.core.text.Text
+import com.app.builder.ui.getTranslation
 
 /**
  * An on/off property: its label beside a switch. The whole row toggles the value, and only while [editing].
@@ -49,7 +50,7 @@ fun BooleanField(
     ) {
         Text(
             modifier = Modifier.weight(weight = 1f),
-            text = label,
+            text = getTranslation(key = label),
             maxLines = 1,
             style = typography.bodyLarge
         )

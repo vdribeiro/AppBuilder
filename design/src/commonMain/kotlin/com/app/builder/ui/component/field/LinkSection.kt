@@ -28,6 +28,7 @@ import com.app.builder.ui.core.divider.Divider
 import com.app.builder.ui.core.image.Icon
 import com.app.builder.ui.core.text.Input
 import com.app.builder.ui.core.text.Text
+import com.app.builder.ui.getTranslation
 
 /** A value a link carries besides the linked entity. */
 @Stable
@@ -94,7 +95,7 @@ fun LinkSection(
         Divider(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
         Text(
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
-            text = label,
+            text = getTranslation(key = label),
             maxLines = 1,
             style = typography.labelMedium
         )
@@ -113,7 +114,6 @@ fun LinkSection(
                         .weight(weight = 1f)
                         .padding(vertical = 12.dp),
                     text = item.name,
-                    translate = false,
                     style = typography.bodyLarge
                 )
                 when (val extra = item.extra) {
@@ -132,7 +132,6 @@ fun LinkSection(
                             .testTag(tag = "${tag}_extra_${item.uuid}")
                             .padding(start = 8.dp, end = 12.dp),
                         text = extra.value,
-                        translate = false,
                         style = typography.bodyLarge
                     )
 
@@ -149,7 +148,7 @@ fun LinkSection(
             modifier = Modifier
                 .testTag(tag = "${tag}_link")
                 .padding(horizontal = 16.dp, vertical = 4.dp),
-            text = linkLabel,
+            text = getTranslation(key = linkLabel),
             content = { Icon(imageVector = Icons.Filled.Add) },
             onClick = { onLinkClick() }
         )

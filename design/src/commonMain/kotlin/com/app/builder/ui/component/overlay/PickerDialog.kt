@@ -69,6 +69,6 @@ private fun PickerDialogPreview() = Preview {
     PickerDialog(
         title = "building_link_equipments",
     ) {
-        Text(text = "List of equipments", translate = false)
+        Text(text = "List of equipments")
     }
 }

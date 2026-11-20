@@ -44,21 +44,21 @@ fun Input(
     enabled: Boolean = true,
     value: String = "",
     onValueChange: (String) -> Unit = {},
-    label: TextValue?,
+    label: String? = null,
     maxLines: Int = Int.MAX_VALUE,
     keyboardType: KeyboardType = KeyboardType.Unspecified,
     visualTransformation: VisualTransformation = VisualTransformation.None,
     style: TextStyle = LocalTextStyle.current,
     leadingIcon: (@Composable () -> Unit)? = null,
     trailingIcon: (@Composable () -> Unit)? = null,
-    isError: Boolean = false,
+    isError: Boolean = false
 ) {
     OutlinedTextField(
         modifier = modifier,
         enabled = enabled,
         value = value,
         onValueChange = onValueChange,
-        label = label?.let { { Text(value = it, maxLines = 1) } },
+        label = label?.let { { Text(text = it, maxLines = 1) } },
         singleLine = maxLines == 1,
         maxLines = maxLines,
         keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
@@ -69,52 +69,6 @@ fun Input(
         isError = isError
     )
 }
-
-/**
- * Text entry component that standardizes the visual representation of input fields across the user interface, supporting fully customizable styling configurations,
- * maximum horizontal line layouts, and slot-based auxiliary decorations like leading search or filter icons.
- *
- * @param modifier The [Modifier] to be applied to the bounding layout structure of the text input.
- * @param enabled Controls whether the input can accept user focus, selection gestures, or keystroke input updates.
- * @param value The text buffer string value currently displayed inside the layout window.
- * @param onValueChange Callback dispatched instantly on every localized keyboard input stroke update.
- * @param label An optional label, translated, shown inside the field and floating above the value once it has focus or content. Given as a translation key.
- * @param maxLines The maximum number of lines before the input scrolls vertically. With `1`, the input is single line: it scrolls horizontally and the Enter key triggers the keyboard action instead of a line break.
- * @param keyboardType The type of software keyboard requested, such as text, number, email or password.
- * @param visualTransformation Transforms how the value is displayed, such as masking a password.
- * @param style Typography styling applied to the text field content. Defaults to [LocalTextStyle].
- * @param leadingIcon An optional composable slot rendering decorative action widgets or iconography assets at the front boundary of the input field.
- * @param trailingIcon An optional composable slot rendering action widgets or iconography assets at the end boundary of the input field.
- * @param isError Controls whether the input is in an error state.
- */
-@Composable
-fun Input(
-    modifier: Modifier = Modifier,
-    enabled: Boolean = true,
-    value: String = "",
-    onValueChange: (String) -> Unit = {},
-    label: String? = null,
-    maxLines: Int = Int.MAX_VALUE,
-    keyboardType: KeyboardType = KeyboardType.Unspecified,
-    visualTransformation: VisualTransformation = VisualTransformation.None,
-    style: TextStyle = LocalTextStyle.current,
-    leadingIcon: (@Composable () -> Unit)? = null,
-    trailingIcon: (@Composable () -> Unit)? = null,
-    isError: Boolean = false
-) = Input(
-    modifier = modifier,
-    enabled = enabled,
-    value = value,
-    onValueChange = onValueChange,
-    label = label?.toTextValue(),
-    maxLines = maxLines,
-    keyboardType = keyboardType,
-    visualTransformation = visualTransformation,
-    style = style,
-    leadingIcon = leadingIcon,
-    trailingIcon = trailingIcon,
-    isError = isError
-)
 
 @PreviewLightDark
 @Composable

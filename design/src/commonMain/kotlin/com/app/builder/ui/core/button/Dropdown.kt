@@ -19,8 +19,6 @@ import com.app.builder.ui.Preview
 import com.app.builder.ui.core.container.Scaffold
 import com.app.builder.ui.core.image.Icon
 import com.app.builder.ui.core.text.Text
-import com.app.builder.ui.core.text.TextValue
-import com.app.builder.ui.core.text.toTextValue
 
 /**
  * A dropdown component that decouples the underlying menu layout from the data model by using functional extraction lambdas to resolve state, text labels, visibility behaviors, and leading icons for each option.
@@ -49,7 +47,7 @@ fun Dropdown(
                 enabled = item.enabled,
                 text = {
                     Text(
-                        value = item.text,
+                        text = item.text,
                         maxLines = 1,
                         style = typography.labelLarge
                     )
@@ -65,37 +63,17 @@ fun Dropdown(
  * Dropdown item.
  *
  * @property enabled Whether a specific item choice can be selected. Defaults to `true`.
- * @property text The text label for a given item choice. Defaults to empty.
+ * @property text The text label string for a given item choice. Defaults to empty.
  * @property onClick A callback invoked when its option row is clicked.
  * @property leadingIcon An optional slot-based composable to render as a leading icon. A fallback empty spacing icon is applied.
  */
 @Stable
 data class DropdownItem(
     val enabled: Boolean = true,
-    val text: TextValue = TextValue.Plain(text = ""),
+    val text: String = "",
     val onClick: () -> Unit = {},
     val leadingIcon: @Composable () -> Unit = { Icon(emptySize = 8.dp) }
-) {
-    /**
-     * Creates a dropdown item whose text label is given as a translation key.
-     *
-     * @param enabled Whether the item choice can be selected. Defaults to `true`.
-     * @param text The translation key of the text label.
-     * @param onClick A callback invoked when its option row is clicked.
-     * @param leadingIcon An optional slot-based composable to render as a leading icon. A fallback empty spacing icon is applied.
-     */
-    constructor(
-        enabled: Boolean = true,
-        text: String,
-        onClick: () -> Unit = {},
-        leadingIcon: @Composable () -> Unit = { Icon(emptySize = 8.dp) }
-    ): this(
-        enabled = enabled,
-        text = text.toTextValue(),
-        onClick = onClick,
-        leadingIcon = leadingIcon
-    )
-}
+)
 
 @PreviewLightDark
 @Composable

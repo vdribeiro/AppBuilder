@@ -17,7 +17,7 @@ import com.app.builder.ui.component.field.ChoiceField
 import com.app.builder.ui.component.field.MetadataSection
 import com.app.builder.ui.component.field.TextField
 import com.app.builder.ui.core.card.Card
-import com.app.builder.ui.core.text.TextValue
+import com.app.builder.ui.getDateTime
 
 /**
  * A task card, showing only the properties that are not `null`.
@@ -89,9 +89,9 @@ fun TaskCard(
             }
             MetadataSection(
                 entries = persistentListOf(
-                    "task_uuid" to uuid?.let { TextValue.Plain(text = it) },
-                    "task_modified_at" to modifiedAt?.let { TextValue.DateTime(utc = it) },
-                    "task_deleted_at" to deletedAt?.let { TextValue.DateTime(utc = it) },
+                    "task_uuid" to uuid,
+                    "task_modified_at" to modifiedAt?.let { getDateTime(utc = it) },
+                    "task_deleted_at" to deletedAt?.let { getDateTime(utc = it) },
                 )
             )
         }

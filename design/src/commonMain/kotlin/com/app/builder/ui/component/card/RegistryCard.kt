@@ -13,7 +13,7 @@ import com.app.builder.ui.Preview
 import com.app.builder.ui.component.field.FieldValue
 import com.app.builder.ui.core.card.Card
 import com.app.builder.ui.core.divider.Divider
-import com.app.builder.ui.core.text.TextValue
+import com.app.builder.ui.getDateTime
 
 /**
  * A read-only registry card, showing only the properties that are not `null`, grouped into the request, the client that made it, and its body.
@@ -54,24 +54,24 @@ fun RegistryCard(
 ) {
     val groups = listOf(
         listOf(
-            "registry_request_type" to requestType?.let { TextValue.Plain(text = it) },
-            "registry_entity_type" to entityType?.let { TextValue.Plain(text = it) },
-            "registry_entity_uuid" to entityUuid?.let { TextValue.Plain(text = it) },
-            "registry_request_utc" to requestUtc?.let { TextValue.DateTime(utc = it) },
-            "registry_request_sent_utc" to requestSentUtc?.let { TextValue.DateTime(utc = it) },
+            "registry_request_type" to requestType,
+            "registry_entity_type" to entityType,
+            "registry_entity_uuid" to entityUuid,
+            "registry_request_utc" to requestUtc?.let { getDateTime(utc = it) },
+            "registry_request_sent_utc" to requestSentUtc?.let { getDateTime(utc = it) },
         ),
         listOf(
-            "registry_request_uuid" to requestUuid?.let { TextValue.Plain(text = it) },
-            "registry_user_uuid" to userUuid?.let { TextValue.Plain(text = it) },
-            "registry_device_uuid" to deviceUuid?.let { TextValue.Plain(text = it) },
-            "registry_brand" to brand?.let { TextValue.Plain(text = it) },
-            "registry_model" to model?.let { TextValue.Plain(text = it) },
-            "registry_os" to os?.let { TextValue.Plain(text = it) },
-            "registry_os_version" to osVersion?.let { TextValue.Plain(text = it) },
-            "registry_app_version" to appVersion?.let { TextValue.Plain(text = it) },
+            "registry_request_uuid" to requestUuid,
+            "registry_user_uuid" to userUuid,
+            "registry_device_uuid" to deviceUuid,
+            "registry_brand" to brand,
+            "registry_model" to model,
+            "registry_os" to os,
+            "registry_os_version" to osVersion,
+            "registry_app_version" to appVersion,
         ),
         listOf(
-            "registry_payload" to payload?.let { TextValue.Plain(text = it) },
+            "registry_payload" to payload,
         ),
     ).map { group -> group.filter { it.second != null } }.filter { it.isNotEmpty() }
 

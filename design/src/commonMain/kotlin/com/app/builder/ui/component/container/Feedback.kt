@@ -63,7 +63,6 @@ fun Feedback(
         }
         Text(
             text = text,
-            translate = false,
             style = typography.bodyLarge,
             textAlign = TextAlign.Center,
         )

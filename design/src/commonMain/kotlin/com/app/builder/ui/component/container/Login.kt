@@ -20,6 +20,7 @@ import com.app.builder.ui.component.field.TextField
 import com.app.builder.ui.core.button.Button
 import com.app.builder.ui.core.text.Input
 import com.app.builder.ui.core.text.Text
+import com.app.builder.ui.getTranslation
 
 /**
  * A login form.
@@ -50,7 +51,7 @@ fun Login(
         verticalArrangement = Arrangement.spacedBy(space = 16.dp)
     ) {
         Text(
-            text = "app_name",
+            text = getTranslation(key = "app_name"),
             style = typography.headlineMedium
         )
 
@@ -61,7 +62,7 @@ fun Login(
             modifier = Modifier.padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(space = 4.dp)
         ) {
-            Text(text = "username", style = typography.labelMedium)
+            Text(text = getTranslation(key = "username"), style = typography.labelMedium)
             Input(
                 modifier = Modifier
                     .testTag(tag = "username")
@@ -77,7 +78,7 @@ fun Login(
         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Text(
                 modifier = Modifier.padding(horizontal = 16.dp),
-                text = "password",
+                text = getTranslation(key = "password"),
                 style = typography.labelMedium
             )
             TextField(
@@ -98,7 +99,7 @@ fun Login(
                 .testTag(tag = "login")
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp),
-            text = "login",
+            text = getTranslation(key = "login"),
             loading = loading,
             enabled = !loading && username.isNotBlank() && password.isNotBlank(),
             onClick = { onSubmit() }

@@ -23,6 +23,7 @@ import com.app.builder.ui.Preview
 import com.app.builder.ui.core.button.RadioButton
 import com.app.builder.ui.core.overlay.Dialog
 import com.app.builder.ui.core.text.Text
+import com.app.builder.ui.getTranslation
 
 /**
  * A dialog to pick the language the app is shown in, listing a system entry followed by the languages as radio options, with apply and cancel buttons.
@@ -47,9 +48,9 @@ fun LanguageDialog(
 
     Dialog(
         modifier = modifier.testTag(tag = "language_dialog"),
-        title = "language",
-        confirmText = "apply",
-        dismissText = "cancel",
+        title = getTranslation(key = "language"),
+        confirmText = getTranslation(key = "apply"),
+        dismissText = getTranslation(key = "cancel"),
         onConfirm = onApply,
         onDismiss = onDismiss,
     ) {
@@ -69,7 +70,7 @@ fun LanguageDialog(
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     RadioButton(selected = candidate == selectedLanguage)
-                    Text(text = candidate ?: "system", maxLines = 1, style = typography.bodyLarge)
+                    Text(text = getTranslation(key = candidate ?: "system"), maxLines = 1, style = typography.bodyLarge)
                 }
             }
         }

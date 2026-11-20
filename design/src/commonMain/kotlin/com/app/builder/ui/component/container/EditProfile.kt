@@ -19,6 +19,7 @@ import com.app.builder.ui.component.field.TextField
 import com.app.builder.ui.component.image.Avatar
 import com.app.builder.ui.core.button.Button
 import com.app.builder.ui.core.image.Image
+import com.app.builder.ui.getTranslation
 
 /**
  * An edit profile form showing the user's avatar above their name and avatar URL, with the save button enabled once the name is filled.
@@ -72,7 +73,7 @@ fun EditProfile(
                 .testTag(tag = "save")
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp),
-            text = "save",
+            text = getTranslation(key = "save"),
             enabled = name.isNotBlank(),
             onClick = { onSubmit() }
         )

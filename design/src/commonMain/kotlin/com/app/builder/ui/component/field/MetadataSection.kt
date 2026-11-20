@@ -10,18 +10,18 @@ import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import com.app.builder.ui.Preview
 import com.app.builder.ui.core.divider.Divider
-import com.app.builder.ui.core.text.TextValue
+import com.app.builder.ui.getDateTime
 
 /**
  * The read-only data set apart below a divider, with values that can be selected and copied.
  *
  * @param modifier The [Modifier] to be applied to the root layout.
- * @param entries Pairs of translated label and value, where the entries with a `null` value are hidden.
+ * @param entries Pairs of label, translated, and value, shown as given, where the entries with a `null` value are hidden.
  */
 @Composable
 fun MetadataSection(
     modifier: Modifier = Modifier,
-    entries: ImmutableList<Pair<String, TextValue?>> = persistentListOf(),
+    entries: ImmutableList<Pair<String, String?>> = persistentListOf(),
 ) {
     val visible = entries.filter { it.second != null }
     if (visible.isEmpty()) return
@@ -39,8 +39,8 @@ fun MetadataSection(
 private fun MetadataSectionPreview() = Preview {
     MetadataSection(
         entries = persistentListOf(
-            "UUID" to TextValue.Plain(text = "6f1c2a8e-0b7d-4c2e-9a51-3f0e6d4b8c21"),
-            "Modified At" to TextValue.DateTime(utc = "2026-11-09T10:00:00Z"),
+            "UUID" to "6f1c2a8e-0b7d-4c2e-9a51-3f0e6d4b8c21",
+            "Modified At" to getDateTime(utc = "2026-11-09T10:00:00Z"),
             "Deleted At" to null,
         )
     )

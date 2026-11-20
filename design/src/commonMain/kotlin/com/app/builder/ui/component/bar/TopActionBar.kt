@@ -19,12 +19,13 @@ import com.app.builder.ui.core.bar.TopBarVariant
 import com.app.builder.ui.core.button.Button
 import com.app.builder.ui.core.image.Icon
 import com.app.builder.ui.core.text.Text
+import com.app.builder.ui.getTranslation
 
 /**
  * Renders the top action bar, a [TopBar] with a back button, a title and slots for what leads the title, the actions and a secondary row of actions.
  *
  * @param modifier The [Modifier] to be applied to the root layout.
- * @param title Text shown as the action bar's title.
+ * @param title Text shown as the action bar's title, translated.
  * @param onBackClick Shows a back arrow when not null and executes this callback when clicked.
  * @param leading Content shown before the title, such as an [AvatarButton] and [StatusIcons].
  * @param actions Content shown at the end of the bar, such as [EntityActions], a [FiltersButton] and a [LoginButton].
@@ -48,7 +49,7 @@ fun TopActionBar(
                 horizontalArrangement = Arrangement.spacedBy(space = 8.dp),
             ) {
                 leading()
-                Text(text = title)
+                Text(text = getTranslation(key = title))
             }
         },
         navigationIcon = {

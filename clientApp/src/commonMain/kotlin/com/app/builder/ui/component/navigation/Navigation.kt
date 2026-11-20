@@ -43,6 +43,7 @@ import com.app.builder.ui.Preview
 import com.app.builder.ui.component.session.SessionState
 import com.app.builder.ui.core.navigation.NavigationBar
 import com.app.builder.ui.core.navigation.NavigationItem
+import com.app.builder.ui.getTranslation
 import com.app.builder.ui.navigation.LocalRouter
 import com.app.builder.ui.navigation.Router
 import com.app.builder.ui.navigation.Screen
@@ -75,7 +76,8 @@ fun Navigation(
         modifier = Modifier
             .testTag(tag = "navigation_bar")
             .fillMaxWidth(),
-        items = items
+        moreText = getTranslation(key = "more"),
+        items = items.map { it.copy(text = getTranslation(key = it.text)) }.toPersistentList()
     )
 }
 
@@ -85,7 +87,7 @@ fun Navigation(
  * @param routes The routes the current user can open.
  * @param selected The route of the screen showing the bar, or null if it has none.
  * @param router The router used for navigation.
- * @return The items to display.
+ * @return The items to display, with their texts as translation keys.
  */
 private fun navigationItems(
     routes: List<NavigationRoute>,

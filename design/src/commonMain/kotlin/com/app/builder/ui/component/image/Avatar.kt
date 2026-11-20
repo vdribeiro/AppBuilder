@@ -65,7 +65,6 @@ fun Avatar(
             contentScale = ContentScale.Crop,
         ) else Text(
             text = initials(name = name),
-            translate = false,
             style = typography.titleMedium.copy(fontSize = scaledFontSize),
             color = onContainerColor,
         )

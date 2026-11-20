@@ -26,7 +26,8 @@ import com.app.builder.ui.component.image.Avatar
 import com.app.builder.ui.core.card.Card
 import com.app.builder.ui.core.image.Image
 import com.app.builder.ui.core.text.Text
-import com.app.builder.ui.core.text.TextValue
+import com.app.builder.ui.getDateTime
+import com.app.builder.ui.getTranslation
 
 /**
  * A user card, with the user's avatar and name on top, followed by their account. Only the properties that are not `null` are shown.
@@ -99,7 +100,7 @@ fun UserCard(
             if (username != null || password != null || accountActive != null || permissions != null) {
                 Text(
                     modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 4.dp),
-                    text = "account",
+                    text = getTranslation(key = "account"),
                     style = typography.titleSmall
                 )
             }
@@ -141,9 +142,9 @@ fun UserCard(
             }
             MetadataSection(
                 entries = persistentListOf(
-                    "user_uuid" to uuid?.let { TextValue.Plain(text = it) },
-                    "user_modified_at" to modifiedAt?.let { TextValue.DateTime(utc = it) },
-                    "user_deleted_at" to deletedAt?.let { TextValue.DateTime(utc = it) },
+                    "user_uuid" to uuid,
+                    "user_modified_at" to modifiedAt?.let { getDateTime(utc = it) },
+                    "user_deleted_at" to deletedAt?.let { getDateTime(utc = it) },
                 )
             )
         }

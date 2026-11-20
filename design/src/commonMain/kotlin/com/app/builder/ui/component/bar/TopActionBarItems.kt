@@ -25,6 +25,7 @@ import com.app.builder.ui.core.button.Button
 import com.app.builder.ui.core.image.Icon
 import com.app.builder.ui.core.image.Image
 import com.app.builder.ui.core.overlay.Tooltip
+import com.app.builder.ui.getTranslation
 
 /**
  * Renders the current user's avatar for the [TopActionBar] leading slot.
@@ -55,19 +56,19 @@ fun AvatarButton(name: String? = null, image: Image? = null, onClick: (() -> Uni
  */
 @Composable
 fun StatusIcons(synced: Boolean = true, clockTrusted: Boolean = true, sessionExpired: Boolean = false) {
-    if (sessionExpired) Tooltip(text = "status_session_expired") {
+    if (sessionExpired) Tooltip(text = getTranslation(key = "status_session_expired")) {
         Icon(
             modifier = Modifier.testTag(tag = "status_session_expired"),
             imageVector = Icons.Default.Warning
         )
     }
-    if (!synced && !sessionExpired) Tooltip(text = "status_not_synced") {
+    if (!synced && !sessionExpired) Tooltip(text = getTranslation(key = "status_not_synced")) {
         Icon(
             modifier = Modifier.testTag(tag = "status_not_synced"),
             imageVector = Icons.Default.SyncDisabled
         )
     }
-    if (!clockTrusted) Tooltip(text = "status_clock_untrusted") {
+    if (!clockTrusted) Tooltip(text = getTranslation(key = "status_clock_untrusted")) {
         Icon(
             modifier = Modifier.testTag(tag = "status_clock_untrusted"),
             imageVector = Icons.Default.Schedule

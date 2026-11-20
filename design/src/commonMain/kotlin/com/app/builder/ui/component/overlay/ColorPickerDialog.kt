@@ -30,6 +30,7 @@ import com.app.builder.ui.core.button.Button
 import com.app.builder.ui.core.button.ButtonStyle
 import com.app.builder.ui.core.overlay.Dialog
 import com.app.builder.ui.core.text.Input
+import com.app.builder.ui.getTranslation
 import com.app.builder.ui.toColorOrNull
 import com.app.builder.ui.toHex
 
@@ -72,8 +73,8 @@ fun ColorPickerDialog(
         modifier = modifier.testTag(tag = "color_picker_dialog"),
         title = title,
         confirmEnabled = selected != null,
-        confirmText = "apply",
-        dismissText = "cancel",
+        confirmText = getTranslation(key = "apply"),
+        dismissText = getTranslation(key = "cancel"),
         onConfirm = { selected?.let(onConfirm) },
         onDismiss = onDismiss
     ) {
@@ -99,7 +100,7 @@ fun ColorPickerDialog(
                 maxLines = 1,
                 isError = selected == null
             )
-            Button(style = ButtonStyle.TEXT, text = "reset", onClick = { onReset() })
+            Button(style = ButtonStyle.TEXT, text = getTranslation(key = "reset"), onClick = { onReset() })
             Column(
                 modifier = Modifier.heightIn(max = 240.dp).verticalScroll(state = rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(space = 4.dp)

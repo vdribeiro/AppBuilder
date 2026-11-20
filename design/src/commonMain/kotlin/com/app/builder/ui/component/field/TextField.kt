@@ -23,7 +23,7 @@ import com.app.builder.ui.core.button.Button
 import com.app.builder.ui.core.button.ButtonStyle
 import com.app.builder.ui.core.image.Icon
 import com.app.builder.ui.core.text.Input
-import com.app.builder.ui.core.text.TextValue
+import com.app.builder.ui.getTranslation
 
 /**
  * A text property: an outlined input with a floating label while [editing], and a [FieldValue] otherwise.
@@ -60,7 +60,7 @@ fun TextField(
         enabled = enabled,
         value = value,
         onValueChange = onValueChange,
-        label = label,
+        label = label?.let { getTranslation(key = it) },
         maxLines = maxLines,
         keyboardType = keyboardType,
         visualTransformation = if (password && !passwordVisible) PasswordVisualTransformation() else VisualTransformation.None,
@@ -71,7 +71,7 @@ fun TextField(
                     content = {
                         Icon(
                             imageVector = if (passwordVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility,
-                            contentDescription = if (passwordVisible) "hide_password" else "show_password"
+                            contentDescription = getTranslation(key = if (passwordVisible) "hide_password" else "show_password")
                         )
                     },
                     onClick = { passwordVisible = !passwordVisible }
@@ -82,7 +82,7 @@ fun TextField(
     ) else FieldValue(
         modifier = modifier,
         label = label.orEmpty(),
-        value = (if (password) PASSWORD_MASK.takeIf { value.isNotEmpty() } else value)?.let { TextValue.Plain(text = it) }
+        value = if (password) PASSWORD_MASK.takeIf { value.isNotEmpty() } else value
     )
 }
 

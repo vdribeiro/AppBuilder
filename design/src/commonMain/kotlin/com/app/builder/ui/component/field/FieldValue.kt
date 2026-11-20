@@ -11,7 +11,7 @@ import androidx.compose.ui.unit.dp
 import com.app.builder.ui.LocalTypography
 import com.app.builder.ui.Preview
 import com.app.builder.ui.core.text.Text
-import com.app.builder.ui.core.text.TextValue
+import com.app.builder.ui.getTranslation
 
 /**
  * The read-only presentation shared by every field: a small muted label above its value.
@@ -19,7 +19,7 @@ import com.app.builder.ui.core.text.TextValue
  *
  * @param modifier The [Modifier] to be applied to the root layout.
  * @param label The label of the field, translated.
- * @param value The value of the field.
+ * @param value The value of the field, shown as given.
  * @param maxLines The maximum number of lines of [value] before it is truncated.
  * @param selectable Whether [value] can be selected and copied.
  */
@@ -27,7 +27,7 @@ import com.app.builder.ui.core.text.TextValue
 fun FieldValue(
     modifier: Modifier = Modifier,
     label: String = "",
-    value: TextValue? = null,
+    value: String? = null,
     maxLines: Int = Int.MAX_VALUE,
     selectable: Boolean = false,
 ) {
@@ -40,12 +40,12 @@ fun FieldValue(
         verticalArrangement = Arrangement.spacedBy(space = 2.dp),
     ) {
         Text(
-            text = label,
+            text = getTranslation(key = label),
             maxLines = 1,
             style = typography.labelMedium
         )
         Text(
-            value = value?.takeIf { !it.isBlank } ?: TextValue.Plain(text = EMPTY_VALUE),
+            text = value?.takeIf { it.isNotBlank() } ?: EMPTY_VALUE,
             maxLines = maxLines,
             style = typography.bodyLarge,
             selectable = selectable
@@ -60,7 +60,7 @@ private const val EMPTY_VALUE = "—"
 @Composable
 private fun FieldValuePreview() = Preview {
     Column {
-        FieldValue(label = "Title", value = TextValue.Plain(text = "Be an awesome person"))
-        FieldValue(label = "Description", value = TextValue.Plain(text = ""))
+        FieldValue(label = "Title", value = "Be an awesome person")
+        FieldValue(label = "Description", value = "")
     }
 }

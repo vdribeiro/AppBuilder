@@ -24,7 +24,7 @@ import com.app.builder.ui.core.button.Switch
 import com.app.builder.ui.core.divider.Divider
 import com.app.builder.ui.core.text.Input
 import com.app.builder.ui.core.text.Text
-import com.app.builder.ui.core.text.TextValue
+import com.app.builder.ui.getTranslation
 
 /**
  * Renders a form for composing and sending a push payload:
@@ -81,7 +81,7 @@ fun PushForm(
                 horizontalArrangement = Arrangement.spacedBy(space = 8.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text(text = "push_field_type", style = typography.titleMedium)
+                Text(text = getTranslation(key = "push_field_type"), style = typography.titleMedium)
                 PushTypeSelector(
                     type = type,
                     onTypeSelected = onTypeSelected,
@@ -91,7 +91,7 @@ fun PushForm(
                 horizontalArrangement = Arrangement.spacedBy(space = 8.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text(text = "push_field_broadcast", style = typography.titleMedium)
+                Text(text = getTranslation(key = "push_field_broadcast"), style = typography.titleMedium)
                 Switch(
                     checked = broadcast,
                     onCheckedChange = onBroadcastChange,
@@ -103,7 +103,7 @@ fun PushForm(
             Divider()
 
             Column {
-                Text(text = "push_field_title", style = typography.titleMedium)
+                Text(text = getTranslation(key = "push_field_title"), style = typography.titleMedium)
                 Input(
                     modifier = Modifier.fillMaxWidth(),
                     value = title,
@@ -113,7 +113,7 @@ fun PushForm(
             }
 
             Column {
-                Text(text = "push_field_description", style = typography.titleMedium)
+                Text(text = getTranslation(key = "push_field_description"), style = typography.titleMedium)
                 Input(
                     modifier = Modifier.fillMaxWidth(),
                     value = description,
@@ -134,11 +134,11 @@ fun PushForm(
         Button(
             modifier = Modifier.fillMaxWidth(),
             loading = sending,
-            text = "push_send",
+            text = getTranslation(key = "push_send"),
             onClick = { onSendClick() },
         )
 
-        sent?.let { Text(value = TextValue.Translation(key = "push_sent", args = persistentListOf(it.toString())), style = typography.bodyMedium) }
+        sent?.let { Text(text = getTranslation(key = "push_sent", args = arrayOf(it.toString())), style = typography.bodyMedium) }
     }
 }
 

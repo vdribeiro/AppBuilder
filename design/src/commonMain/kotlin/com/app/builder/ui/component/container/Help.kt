@@ -20,6 +20,7 @@ import com.app.builder.ui.core.image.Icon
 import com.app.builder.ui.core.list.LazyColumn
 import com.app.builder.ui.core.list.ListItem
 import com.app.builder.ui.core.text.Text
+import com.app.builder.ui.getTranslation
 
 /**
  * The application help, explaining each status icon of the top action bar.
@@ -39,26 +40,26 @@ fun Help(modifier: Modifier = Modifier) {
                 modifier = Modifier.fillMaxWidth(),
                 verticalArrangement = Arrangement.spacedBy(space = 8.dp),
             ) {
-                Text(text = "help_status_icons", style = typography.titleMedium)
+                Text(text = getTranslation(key = "help_status_icons"), style = typography.titleMedium)
                 Card {
                     ListItem(
                         modifier = Modifier.testTag(tag = "help_session_expired"),
-                        headlineText = "help_session_expired",
-                        supportingText = "help_session_expired_description",
+                        headlineText = getTranslation(key = "help_session_expired"),
+                        supportingText = getTranslation(key = "help_session_expired_description"),
                         leadingContent = { Icon(imageVector = Icons.Default.Warning) },
                     )
                     Divider()
                     ListItem(
                         modifier = Modifier.testTag(tag = "help_not_synced"),
-                        headlineText = "help_not_synced",
-                        supportingText = "help_not_synced_description",
+                        headlineText = getTranslation(key = "help_not_synced"),
+                        supportingText = getTranslation(key = "help_not_synced_description"),
                         leadingContent = { Icon(imageVector = Icons.Default.SyncDisabled) },
                     )
                     Divider()
                     ListItem(
                         modifier = Modifier.testTag(tag = "help_clock_untrusted"),
-                        headlineText = "help_clock_untrusted",
-                        supportingText = "help_clock_untrusted_description",
+                        headlineText = getTranslation(key = "help_clock_untrusted"),
+                        supportingText = getTranslation(key = "help_clock_untrusted_description"),
                         leadingContent = { Icon(imageVector = Icons.Default.Schedule) },
                     )
                 }

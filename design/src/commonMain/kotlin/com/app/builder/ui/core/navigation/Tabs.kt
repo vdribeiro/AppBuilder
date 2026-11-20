@@ -20,39 +20,20 @@ import androidx.compose.ui.unit.dp
 import com.app.builder.ui.LocalTypography
 import com.app.builder.ui.Preview
 import com.app.builder.ui.core.text.Text
-import com.app.builder.ui.core.text.TextValue
-import com.app.builder.ui.core.text.toTextValue
 
 /**
  * Tab item.
  *
  * @property enabled Whether a specific tab is interactive. Defaults to `true`.
- * @property text The text label for a given tab. Defaults to null.
+ * @property text The text label string for a given tab. Defaults to null.
  * @property onClick A callback invoked when the tab is selected by the user.
  */
 @Stable
 data class Tab(
     val enabled: Boolean = true,
-    val text: TextValue? = null,
+    val text: String? = null,
     val onClick: () -> Unit = {}
-) {
-    /**
-     * Creates a tab whose text label is given as a translation key.
-     *
-     * @param enabled Whether the tab is interactive. Defaults to `true`.
-     * @param text The translation key of the text label.
-     * @param onClick A callback invoked when the tab is selected by the user.
-     */
-    constructor(
-        enabled: Boolean = true,
-        text: String?,
-        onClick: () -> Unit = {}
-    ): this(
-        enabled = enabled,
-        text = text?.toTextValue(),
-        onClick = onClick
-    )
-}
+)
 
 /**
  * A row of destinations grouping related content within the same context, drawing an animated indicator beneath the currently [selectedTabIndex].
@@ -77,7 +58,7 @@ fun Tabs(
                 onClick = item.onClick,
                 text = {
                     Text(
-                        value = item.text ?: TextValue.Plain(text = ""),
+                        text = item.text.orEmpty(),
                         maxLines = 1,
                         style = typography.labelLarge
                     )

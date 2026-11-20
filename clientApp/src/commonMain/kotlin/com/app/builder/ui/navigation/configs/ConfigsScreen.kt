@@ -26,6 +26,7 @@ import com.app.builder.ui.component.session.SessionState
 import com.app.builder.ui.core.list.LazyColumn
 import com.app.builder.ui.core.navigation.NavigationItem
 import com.app.builder.ui.core.navigation.NavigationRail
+import com.app.builder.ui.getTranslation
 import com.app.builder.ui.navigation.LocalRouter
 import com.app.builder.ui.navigation.Router
 import com.app.builder.ui.navigation.Screen
@@ -63,10 +64,11 @@ fun ConfigsScreen(
         Row(modifier = Modifier.fillMaxSize()) {
             NavigationRail(
                 modifier = Modifier.testTag(tag = "config_navigation_rail"),
+                moreText = getTranslation(key = "more"),
                 items = state.sections.mapIndexed { index, section ->
                     NavigationItem(
                         selected = index == selectedIndex,
-                        text = section.configType.text,
+                        text = getTranslation(key = section.configType.text),
                         icon = section.configType.icon,
                         onClick = { coroutineScope.launch { listState.animateScrollToItem(index = index) } }
                     )

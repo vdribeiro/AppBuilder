@@ -37,8 +37,6 @@ import com.app.builder.ui.Preview
 import com.app.builder.ui.core.image.Icon
 import com.app.builder.ui.core.progress.showLoading
 import com.app.builder.ui.core.text.Text
-import com.app.builder.ui.core.text.TextValue
-import com.app.builder.ui.core.text.toTextValue
 import androidx.compose.material3.Button as MaterialButton
 import androidx.compose.material3.IconToggleButton as MaterialIconToggleButton
 
@@ -75,7 +73,7 @@ fun Button(
     style: ButtonStyle = ButtonStyle.OUTLINED,
     loading: Boolean = false,
     enabled: Boolean = true,
-    text: TextValue?,
+    text: String? = null,
     checked: Boolean? = null,
     content: (@Composable () -> Unit)? = null,
     onClick: (Boolean) -> Unit = {},
@@ -113,7 +111,7 @@ fun Button(
                         Spacer(modifier = Modifier.width(width = 8.dp))
                     }
                     Text(
-                        value = text ?: TextValue.Plain(text = ""),
+                        text = text.orEmpty(),
                         textAlign = TextAlign.Center,
                         maxLines = 1,
                         style = typography.labelLarge
@@ -130,40 +128,6 @@ fun Button(
         }
     }
 }
-
-/**
- * A button with a built-in loading state.
- * When [loading] is `true`, the content is swapped for a [CircularProgressIndicator] and the button automatically becomes non-interactive.
- *
- * @param modifier The [Modifier] to be applied to the button layout.
- * @param style The container emphasis treatment to render. Defaults to [ButtonStyle.OUTLINED].
- * @param loading Controls whether to show a loading wheel instead of the text label.
- * @param enabled Controls the enabled state of the button. When `false`, the button is not clickable.
- * @param text The text label to display inside the button. Given as a translation key.
- * @param checked Whether this button is currently toggled on.
- * @param content A composable slot rendering an icon inside the button.
- * @param onClick Will be called when the user clicks the button, with the requested new checked state if checked is not null.
- */
-@Composable
-fun Button(
-    modifier: Modifier = Modifier,
-    style: ButtonStyle = ButtonStyle.OUTLINED,
-    loading: Boolean = false,
-    enabled: Boolean = true,
-    text: String? = null,
-    checked: Boolean? = null,
-    content: (@Composable () -> Unit)? = null,
-    onClick: (Boolean) -> Unit = {},
-) = Button(
-    modifier = modifier,
-    style = style,
-    loading = loading,
-    enabled = enabled,
-    text = text?.toTextValue(),
-    checked = checked,
-    content = content,
-    onClick = onClick
-)
 
 // TODO - SplitButton
 

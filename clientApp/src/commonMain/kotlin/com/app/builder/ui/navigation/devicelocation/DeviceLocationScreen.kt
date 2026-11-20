@@ -44,8 +44,8 @@ import com.app.builder.ui.core.image.Icon
 import com.app.builder.ui.core.list.LazyColumn
 import com.app.builder.ui.core.progress.ProgressIndicator
 import com.app.builder.ui.core.text.Text
-import com.app.builder.ui.core.text.TextValue
 import com.app.builder.ui.devicelocation.LocalDeviceLocationProvider
+import com.app.builder.ui.getDateTime
 import com.app.builder.ui.navigation.LocalRouter
 import com.app.builder.ui.permission.LocalPermissionManager
 import com.app.builder.ui.permission.Permission
@@ -180,7 +180,7 @@ fun DeviceLocationScreen(
                     EntityRow(
                         headline = "${fix.latitude.roundTo(decimals = 6)}, ${fix.longitude.roundTo(decimals = 6)}",
                         supporting = details.joinToString(separator = "\n"),
-                        metadata = listOf(fix.fixTime.toInstant()?.toString()?.let { TextValue.DateTime(utc = it) }),
+                        metadata = listOf(fix.fixTime.toInstant()?.toString()?.let { getDateTime(utc = it) }),
                         leadingContent = { Icon(imageVector = Icons.Default.LocationOn) }
                     )
                     if (index < locations.lastIndex) Divider()

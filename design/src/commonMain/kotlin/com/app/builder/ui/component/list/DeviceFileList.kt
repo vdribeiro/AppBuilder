@@ -16,7 +16,7 @@ import androidx.compose.ui.tooling.preview.PreviewLightDark
 import com.app.builder.ui.Preview
 import com.app.builder.ui.core.image.Icon
 import com.app.builder.ui.core.list.LazyColumn
-import com.app.builder.ui.core.text.TextValue
+import com.app.builder.ui.getDateTime
 
 /**
  * File list.
@@ -44,7 +44,7 @@ fun DeviceFileList(
                     .clickable { onClick(item) },
                 headline = item.name,
                 supporting = item.size,
-                metadata = listOf(item.modifiedAt?.let { TextValue.DateTime(utc = it) }),
+                metadata = listOf(item.modifiedAt?.let { getDateTime(utc = it) }),
                 leadingContent = { Icon(imageVector = Icons.AutoMirrored.Filled.InsertDriveFile) }
             )
         }

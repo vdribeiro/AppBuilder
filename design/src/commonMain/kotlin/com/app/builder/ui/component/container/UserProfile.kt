@@ -20,6 +20,7 @@ import com.app.builder.ui.core.image.Image
 import com.app.builder.ui.core.list.LazyColumn
 import com.app.builder.ui.core.list.ListItem
 import com.app.builder.ui.core.text.Text
+import com.app.builder.ui.getTranslation
 
 /**
  * A user profile, showing the user's avatar and full name followed by grouped sections of settings.
@@ -81,24 +82,24 @@ fun UserProfile(
             UserProfileSection(title = "account") {
                 ListItem(
                     modifier = Modifier.clickable { onEditProfileClick() },
-                    headlineText = "edit_profile",
+                    headlineText = getTranslation(key = "edit_profile"),
                 )
                 Divider()
                 ListItem(
                     modifier = Modifier.clickable { onChangePasswordClick() },
-                    headlineText = "change_password",
+                    headlineText = getTranslation(key = "change_password"),
                 )
                 Divider()
                 if (onNotificationsClick != null) {
                     ListItem(
                         modifier = Modifier.clickable { onNotificationsClick() },
-                        headlineText = "notifications",
+                        headlineText = getTranslation(key = "notifications"),
                     )
                     Divider()
                 }
                 ListItem(
                     modifier = Modifier.clickable { onLogoutClick() },
-                    headlineText = "logout",
+                    headlineText = getTranslation(key = "logout"),
                 )
             }
         }
@@ -109,14 +110,14 @@ fun UserProfile(
                     modifier = Modifier
                         .testTag(tag = "language")
                         .then(other = onLanguageClick?.let { Modifier.clickable { it() } } ?: Modifier),
-                    headlineText = "language",
-                    trailingContent = { Text(text = language, style = typography.bodyMedium) },
+                    headlineText = getTranslation(key = "language"),
+                    trailingContent = { Text(text = getTranslation(key = language), style = typography.bodyMedium) },
                 )
                 if (!guest) {
                     Divider()
                     ListItem(
                         modifier = Modifier.clickable { onResetClick() },
-                        headlineText = "reset",
+                        headlineText = getTranslation(key = "reset"),
                     )
                 }
             }
@@ -127,27 +128,27 @@ fun UserProfile(
                 if (onHelpClick != null) {
                     ListItem(
                         modifier = Modifier.clickable { onHelpClick() },
-                        headlineText = "help",
+                        headlineText = getTranslation(key = "help"),
                     )
                     Divider()
                 }
                 ListItem(
                     modifier = Modifier.clickable { onSendFeedbackClick() },
-                    headlineText = "send_feedback",
+                    headlineText = getTranslation(key = "send_feedback"),
                 )
                 Divider()
                 ListItem(
                     modifier = Modifier.clickable { onCopyrightClick() },
-                    headlineText = "copyright",
+                    headlineText = getTranslation(key = "copyright"),
                 )
                 Divider()
                 ListItem(
                     modifier = Modifier.clickable { onPrivacyPolicyClick() },
-                    headlineText = "privacy_policy",
+                    headlineText = getTranslation(key = "privacy_policy"),
                 )
                 Divider()
                 ListItem(
-                    headlineText = "app_version",
+                    headlineText = getTranslation(key = "app_version"),
                     trailingContent = { Text(text = appVersion, style = typography.bodyMedium) },
                 )
             }
@@ -174,7 +175,7 @@ private fun UserProfileSection(
         modifier = modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(space = 8.dp),
     ) {
-        Text(text = title, style = typography.titleMedium)
+        Text(text = getTranslation(key = title), style = typography.titleMedium)
         Card(content = content)
     }
 }

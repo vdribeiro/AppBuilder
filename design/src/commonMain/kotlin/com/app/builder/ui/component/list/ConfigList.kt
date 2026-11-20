@@ -87,7 +87,6 @@ fun ConfigList(
             ListItem(
                 modifier = Modifier.testTag(tag = "config_row_$index"),
                 selected = item.pending,
-                translate = false,
                 headlineText = item.name.toLabel(),
                 supportingText = item.description.takeIf { it.isNotBlank() },
                 trailingContent = {

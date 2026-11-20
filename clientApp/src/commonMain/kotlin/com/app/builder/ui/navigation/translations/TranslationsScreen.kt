@@ -22,6 +22,7 @@ import com.app.builder.ui.component.navigation.NavigationRoute
 import com.app.builder.ui.component.session.SessionState
 import com.app.builder.ui.core.navigation.Tab
 import com.app.builder.ui.core.navigation.Tabs
+import com.app.builder.ui.getTranslation
 import com.app.builder.ui.navigation.LocalRouter
 import com.app.builder.ui.navigation.Router
 import com.app.builder.ui.navigation.Screen
@@ -58,7 +59,7 @@ fun TranslationsScreen(
                     selectedTabIndex = state.languages.indexOf(element = state.selectedLanguage).coerceAtLeast(minimumValue = 0),
                     items = state.languages.map { languageIso ->
                         Tab(
-                            text = languageIso,
+                            text = getTranslation(key = languageIso),
                             onClick = { store.send(action = TranslationsScreenAction.SelectLanguage(languageIso = languageIso)) }
                         )
                     }.toPersistentList()

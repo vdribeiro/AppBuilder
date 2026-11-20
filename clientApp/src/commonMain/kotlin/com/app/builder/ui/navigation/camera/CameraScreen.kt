@@ -30,7 +30,6 @@ import com.app.builder.ui.core.button.Button
 import com.app.builder.ui.core.button.ButtonStyle
 import com.app.builder.ui.core.overlay.Snackbar
 import com.app.builder.ui.core.text.Text
-import com.app.builder.ui.core.text.TextValue
 import com.app.builder.ui.media.CameraPreview
 import com.app.builder.ui.navigation.LocalRouter
 import com.app.builder.ui.navigation.Router
@@ -66,7 +65,7 @@ fun CameraScreen(
         bottomBar = { Navigation(sessionStore = sessionStore, selected = NavigationRoute.CAMERA) },
         snackbarHost = {
             snackbarMessage?.let {
-                Snackbar(message = TextValue.Plain(text = it), onDismiss = { snackbarMessage = null })
+                Snackbar(message = it, onDismiss = { snackbarMessage = null })
             }
         }
     ) {

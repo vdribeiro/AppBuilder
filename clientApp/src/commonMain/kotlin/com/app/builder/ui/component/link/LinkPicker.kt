@@ -76,7 +76,7 @@ private fun LinkPickerPreview() = Preview {
         title = "building_link_equipments",
     ) { items, _ ->
         Column {
-            items.forEach { Text(text = it, translate = false) }
+            items.forEach { Text(text = it) }
         }
     }
 }

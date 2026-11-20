@@ -17,6 +17,7 @@ import com.app.builder.ui.InjectTranslations
 import com.app.builder.ui.LocalTypography
 import com.app.builder.ui.Preview
 import com.app.builder.ui.core.text.Text
+import com.app.builder.ui.getTranslation
 
 /**
  * Displays scrollable stacktrace logs, automatically scrolling to the bottom as new [logs] arrive.
@@ -40,7 +41,7 @@ fun Console(
         verticalArrangement = Arrangement.spacedBy(space = 16.dp),
     ) {
         Text(
-            text = "stacktrace",
+            text = getTranslation(key = "stacktrace"),
             style = typography.labelLarge
         )
         SelectionContainer {

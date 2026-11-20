@@ -86,7 +86,6 @@ private fun EditableTranslationRow(
         item.key?.let {
             Text(
                 text = it,
-                translate = false,
                 textAlign = TextAlign.Start,
                 maxLines = 1,
                 style = typography.bodyLarge

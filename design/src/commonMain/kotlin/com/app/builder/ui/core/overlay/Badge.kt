@@ -13,8 +13,6 @@ import com.app.builder.ui.LocalTypography
 import com.app.builder.ui.Preview
 import com.app.builder.ui.core.image.Icon
 import com.app.builder.ui.core.text.Text
-import com.app.builder.ui.core.text.TextValue
-import com.app.builder.ui.core.text.toTextValue
 import androidx.compose.material3.Badge as MaterialBadge
 import androidx.compose.material3.BadgedBox as MaterialBadgedBox
 
@@ -27,7 +25,7 @@ import androidx.compose.material3.BadgedBox as MaterialBadgedBox
 @Composable
 fun Badge(
     modifier: Modifier = Modifier,
-    text: TextValue?,
+    text: String? = null,
 ) {
     val typography = LocalTypography.current
 
@@ -36,7 +34,7 @@ fun Badge(
         content = text?.let {
             {
                 Text(
-                    value = it,
+                    text = it,
                     maxLines = 1,
                     style = typography.labelSmall
                 )
@@ -44,21 +42,6 @@ fun Badge(
         }
     )
 }
-
-/**
- * A small status descriptor drawing attention to an unread count or unseen event, rendering either a minimal dot or a short text label.
- *
- * @param modifier The [Modifier] to be applied to the badge's layout.
- * @param text An optional short label rendered inside the badge. If null, a minimal dot indicator is drawn instead. Given as a translation key.
- */
-@Composable
-fun Badge(
-    modifier: Modifier = Modifier,
-    text: String? = null,
-) = Badge(
-    modifier = modifier,
-    text = text?.toTextValue()
-)
 
 /**
  * Anchors a [badge] to the top-end corner of the wrapped [content], commonly used to flag unread counts on icons or navigation destinations.

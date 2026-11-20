@@ -20,7 +20,7 @@ import com.app.builder.ui.core.text.Text
 fun CategorySection(title: String, content: @Composable () -> Unit = {}) {
     val typography = LocalTypography.current
     Column {
-        Text(text = title, translate = false, style = typography.headlineSmall)
+        Text(text = title, style = typography.headlineSmall)
         content()
         Divider(modifier = Modifier.padding(top = 16.dp, bottom = 16.dp))
     }
@@ -36,7 +36,7 @@ fun CategorySection(title: String, content: @Composable () -> Unit = {}) {
 fun ShowcaseSection(title: String, content: @Composable () -> Unit) {
     val typography = LocalTypography.current
     Column(verticalArrangement = Arrangement.spacedBy(space = 12.dp)) {
-        Text(text = title, translate = false, style = typography.titleMedium)
+        Text(text = title, style = typography.titleMedium)
         content()
     }
 }

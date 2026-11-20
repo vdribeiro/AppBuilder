@@ -26,6 +26,7 @@ import com.app.builder.ui.core.button.ButtonStyle
 import com.app.builder.ui.core.overlay.Dialog
 import com.app.builder.ui.core.progress.Slider
 import com.app.builder.ui.core.text.Text
+import com.app.builder.ui.getTranslation
 
 /** The largest corner radius selectable, in dp. */
 private const val MAXIMUM_RADIUS = 50
@@ -55,8 +56,8 @@ fun ShapePickerDialog(
     Dialog(
         modifier = modifier.testTag(tag = "shape_picker_dialog"),
         title = title,
-        confirmText = "apply",
-        dismissText = "cancel",
+        confirmText = getTranslation(key = "apply"),
+        dismissText = getTranslation(key = "cancel"),
         onConfirm = { onConfirm(selected.dp) },
         onDismiss = onDismiss
     ) {
@@ -69,7 +70,7 @@ fun ShapePickerDialog(
                     .size(size = 96.dp)
                     .background(color = colorScheme.primaryContainer, shape = RoundedCornerShape(size = selected.dp))
             )
-            Text(text = "${selected.roundToInt()}dp", translate = false)
+            Text(text = "${selected.roundToInt()}dp")
             Slider(
                 modifier = Modifier.fillMaxWidth().testTag(tag = "shape_picker_radius"),
                 value = selected,
@@ -77,7 +78,7 @@ fun ShapePickerDialog(
                 valueRange = 0f..MAXIMUM_RADIUS.toFloat(),
                 steps = MAXIMUM_RADIUS - 1
             )
-            Button(style = ButtonStyle.TEXT, text = "reset", onClick = { onReset() })
+            Button(style = ButtonStyle.TEXT, text = getTranslation(key = "reset"), onClick = { onReset() })
         }
     }
 }

@@ -31,6 +31,7 @@ import com.app.builder.ui.core.button.Checkbox
 import com.app.builder.ui.core.button.Switch
 import com.app.builder.ui.core.list.LazyColumn
 import com.app.builder.ui.core.text.Text
+import com.app.builder.ui.getTranslation
 import com.app.builder.ui.navigation.LocalRouter
 import com.app.builder.ui.navigation.Router
 import com.app.builder.ui.navigation.Screen
@@ -63,7 +64,7 @@ fun AudioScreen(
         bottomBar = { Navigation(sessionStore = sessionStore, selected = NavigationRoute.AUDIO) },
     ) {
         if (!audioPlayer.available) {
-            Text(modifier = Modifier.align(alignment = Alignment.Center), text = "audio_unavailable")
+            Text(modifier = Modifier.align(alignment = Alignment.Center), text = getTranslation(key = "audio_unavailable"))
             return@Screen
         }
 
@@ -71,9 +72,9 @@ fun AudioScreen(
             modifier = Modifier.fillMaxWidth(),
             verticalArrangement = Arrangement.spacedBy(space = 8.dp)
         ) {
-            item { Text(text = state.toString(), translate = false) }
+            item { Text(text = state.toString()) }
 
-            item { Text(text = "audio_tracks") }
+            item { Text(text = getTranslation(key = "audio_tracks")) }
             entries.forEach { track ->
                 item {
                     Row(
@@ -91,16 +92,15 @@ fun AudioScreen(
                                 .substringBeforeLast(delimiter = '.')
                                 .replace(oldValue = "_", newValue = " ")
                                 .replaceFirstChar { it.uppercase() },
-                            translate = false
                         )
                     }
                 }
             }
 
             item {
-                Text(text = "audio_loop")
+                Text(text = getTranslation(key = "audio_loop"))
                 Switch(checked = loop, onCheckedChange = { loop = it })
-                Text(text = "audio_shuffle")
+                Text(text = getTranslation(key = "audio_shuffle"))
                 Switch(checked = shuffle, onCheckedChange = { shuffle = it })
             }
 
