@@ -9,8 +9,6 @@ import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.core.lessEq
 import org.jetbrains.exposed.v1.r2dbc.R2dbcDatabase
-import org.jetbrains.exposed.v1.r2dbc.batchInsert
-import org.jetbrains.exposed.v1.r2dbc.select
 import org.jetbrains.exposed.v1.r2dbc.selectAll
 import org.jetbrains.exposed.v1.r2dbc.update
 import com.app.builder.core.flow.Dispatcher
@@ -28,29 +26,6 @@ import com.app.builder.domain.usecase.Outcome
 class TranslationGateway(
     private val database: R2dbcDatabase
 ): TranslationUseCases {
-
-    override suspend fun seedTranslations(translations: List<Translation>): Outcome<Unit> = withContext(context = Dispatcher.IO) {
-        database.safeTransaction {
-            val stored = TranslationTable
-                .select(TranslationTable.languageIso, TranslationTable.key)
-                .toList()
-                .map { it[TranslationTable.languageIso] to it[TranslationTable.key] }
-                .toSet()
-            val missing = translations
-                .distinctBy { it.languageIso to it.key }
-                .filter { (it.languageIso to it.key) !in stored }
-            TranslationTable.batchInsert(data = missing, shouldReturnGeneratedValues = false) { translation ->
-                this[TranslationTable.languageIso] = translation.languageIso
-                this[TranslationTable.key] = translation.key
-                this[TranslationTable.modifiedAt] = translation.modifiedAt
-                this[TranslationTable.value] = translation.value
-            }
-            Outcome.Success(data = Unit)
-        }.getOrElse {
-            Telemetry.error(tag = TAG, message = "Unable to seed translations", throwable = it)
-            Outcome.Error
-        }
-    }
 
     override suspend fun getTranslations(): Outcome<List<Translation>> = withContext(context = Dispatcher.IO) {
         database.safeTransaction {

@@ -19,12 +19,9 @@ import com.app.builder.core.config.ClientConfigs
 import com.app.builder.core.config.ClientFlags
 import com.app.builder.core.config.ServerConfigs
 import com.app.builder.core.config.ServerFlags
-import com.app.builder.core.locale.now
 import com.app.builder.core.platform.Env
 import com.app.builder.core.platform.Property
 import com.app.builder.core.platform.platform
-import com.app.builder.core.platform.readResource
-import com.app.builder.core.security.toUuid
 import com.app.builder.core.telemetry.SentryLogger
 import com.app.builder.core.telemetry.ServerLogger
 import com.app.builder.core.telemetry.Telemetry
@@ -35,17 +32,9 @@ import com.app.builder.data.http.URL.Companion.DEV_PORT
 import com.app.builder.data.http.installHttpPlugins
 import com.app.builder.data.signal.LocalSignal
 import com.app.builder.data.signal.PostgresSignal
-import com.app.builder.domain.Account
-import com.app.builder.domain.EntityType
-import com.app.builder.domain.Permission
-import com.app.builder.domain.RegistrationForm
-import com.app.builder.domain.User
-import com.app.builder.domain.decodeTranslations
 import com.app.builder.domain.push.FcmManager
 import com.app.builder.domain.push.NoOpFcmService
 import com.app.builder.domain.route.installRouting
-import com.app.builder.domain.usecase.Outcome
-import com.app.builder.domain.usecase.getOrNull
 import com.app.builder.test.ExcludeFromTesting
 import com.google.auth.oauth2.GoogleCredentials
 import com.google.firebase.FirebaseApp
@@ -89,7 +78,7 @@ internal suspend fun Application.module() {
     installRouting(dependency = dependency)
 
     dependency.start(scope = this)
-    seed(dependency = dependency)
+    dependency.useCases.seedUseCases.seed()
 
     stopOnShutdown(dependency = dependency)
 }
@@ -210,89 +199,7 @@ private suspend fun createDependency(): Dependency {
     ).also { Telemetry.info(tag = TAG, message = "Dependency Index complete") }
 }
 
-/**
- * Populates the database.
- *
- * @param dependency The application dependency graph.
- */
-private suspend fun seed(dependency: Dependency) {
-    seedSuperUser(dependency = dependency)
-    seedTranslations(dependency = dependency)
-}
-
-/**
- * Registers the super user with write permission on every entity type, or restores those permissions when its account already exists.
- *
- * @param dependency The application dependency graph.
- * @throws IllegalStateException If the admin uuid, username or password is missing from the environment.
- */
-private suspend fun seedSuperUser(dependency: Dependency) {
-    val uuid = Env.adminUuid?.toUuid()
-    val username = Env.adminUsername
-    val password = Env.adminPassword
-    if (uuid == null || username.isNullOrBlank() || password.isNullOrBlank()) error(message = "Missing admin configurations")
-    val now = now()
-    val superUser = User(
-        uuid = uuid,
-        modifiedAt = now,
-        deletedAt = null,
-        name = username,
-        avatar = null
-    )
-    val superAccount = Account(
-        userUuid = uuid,
-        modifiedAt = now,
-        deletedAt = null,
-        username = username,
-        permissions = EntityType.entries.associateWith { Permission.WRITE }
-    )
-
-    val result = dependency.useCases.authenticationUseCases.register(registrationForm = RegistrationForm(user = superUser, account = superAccount, password = password))
-    if (result is Outcome.Success) {
-        Telemetry.info(tag = TAG, message = "Su account created")
-        return
-    }
-
-    val accountUseCases = dependency.useCases.accountUseCases
-    val account = accountUseCases.getAccount(userUuid = uuid).getOrNull() ?: run {
-        Telemetry.error(tag = TAG, message = "Su account not created")
-        return
-    }
-
-    if (account.permissions == superAccount.permissions) {
-        Telemetry.info(tag = TAG, message = "Su account already exists")
-        return
-    }
-
-    when (accountUseCases.upsertAccount(account = account.copy(modifiedAt = now, permissions = superAccount.permissions))) {
-        is Outcome.Success -> Telemetry.info(tag = TAG, message = "Su account permissions restored")
-        else -> Telemetry.error(tag = TAG, message = "Unable to restore su account permissions")
-    }
-}
-
-/**
- * Seeds the translations of the [TRANSLATIONS_RESOURCE] file.
- *
- * @param dependency The application dependency graph.
- */
-private suspend fun seedTranslations(dependency: Dependency) {
-    val translations = readResource(path = TRANSLATIONS_RESOURCE)
-        ?.let { decodeTranslations(value = it) }
-        ?: run {
-            Telemetry.error(tag = TAG, message = "Unable to load the translations file")
-            return
-        }
-
-    when (dependency.useCases.translationUseCases.seedTranslations(translations = translations)) {
-        is Outcome.Success -> Telemetry.info(tag = TAG, message = "Translations seeded")
-        else -> Telemetry.error(tag = TAG, message = "Unable to seed translations")
-    }
-}
-
 private const val TAG = "Server"
-
-/** Classpath location of the translations seeded into the database. */
-private const val TRANSLATIONS_RESOURCE = "static/translations.json"
 
 private val STARTUP_TIMEOUT = 120.seconds
 private val STOP_TIMEOUT = 15.seconds

@@ -3,8 +3,10 @@ package com.app.builder
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
+import kotlin.time.Instant
 import io.ktor.client.request.get
 import io.ktor.client.statement.bodyAsText
+import com.app.builder.core.locale.UNIX_EPOCH
 import com.app.builder.domain.usecase.getOrNull
 import com.app.builder.test.TestCase
 
@@ -25,5 +27,16 @@ class ApplicationTest: TestCase() {
         startApplication()
 
         assertTrue(actual = dependency.get().useCases.translationUseCases.getTranslations().getOrNull().orEmpty().isNotEmpty())
+    }
+
+    /** Verifies that starting the application in development mode seeds the entities of the seed resource. */
+    @Test
+    fun appSeedsEntities() = runServerTest {
+        application { module() }
+        startApplication()
+
+        val useCases = dependency.get().useCases
+        assertTrue(actual = useCases.buildingUseCases.getBuildings(lastSyncUtc = Instant.UNIX_EPOCH, cursorUtc = null, cursorUuid = null, pageSize = Int.MAX_VALUE).getOrNull().orEmpty().isNotEmpty())
+        assertTrue(actual = registries().isNotEmpty())
     }
 }

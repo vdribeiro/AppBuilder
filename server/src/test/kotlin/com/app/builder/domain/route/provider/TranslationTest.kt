@@ -35,7 +35,7 @@ class TranslationTest: TestCase() {
     fun getTranslations() = runServerTest {
         installRouting()
         val client = createClient(token = null)
-        assertEquals(expected = Outcome.Success(data = Unit), actual = dependency.get().useCases.translationUseCases.seedTranslations(translations = FakeData.translations))
+        assertEquals(expected = Outcome.Success(data = Unit), actual = dependency.get().useCases.seedUseCases.seedTranslations(translations = FakeData.translations))
 
         val response = client.get(request = HttpRequest(url = URL.Translations))
 
@@ -69,7 +69,7 @@ class TranslationTest: TestCase() {
         installRouting()
         val request = HttpRequest(url = URL.Translations)
         val edited = FakeData.translations.first().copy(modifiedAt = now(), value = "edited")
-        assertEquals(expected = Outcome.Success(data = Unit), actual = dependency.get().useCases.translationUseCases.seedTranslations(translations = FakeData.translations))
+        assertEquals(expected = Outcome.Success(data = Unit), actual = dependency.get().useCases.seedUseCases.seedTranslations(translations = FakeData.translations))
 
         assertEquals(expected = HttpStatusCode.Unauthorized, actual = createClient(token = null).post(request = request, body = edited).status)
 
@@ -94,7 +94,7 @@ class TranslationTest: TestCase() {
         installRouting()
         val client = createClient(token = adminBearerToken.accessToken)
         val unknown = FakeData.translations.first().copy(key = "unknown_key", modifiedAt = now())
-        assertEquals(expected = Outcome.Success(data = Unit), actual = dependency.get().useCases.translationUseCases.seedTranslations(translations = FakeData.translations))
+        assertEquals(expected = Outcome.Success(data = Unit), actual = dependency.get().useCases.seedUseCases.seedTranslations(translations = FakeData.translations))
 
         assertEquals(expected = HttpStatusCode.NotFound, actual = client.post(request = HttpRequest(url = URL.Translations), body = unknown).status)
     }
@@ -108,7 +108,7 @@ class TranslationTest: TestCase() {
         val now = now()
         val newer = FakeData.translations.first().copy(modifiedAt = now, value = "newer")
         val older = newer.copy(modifiedAt = now - 1.seconds, value = "older")
-        assertEquals(expected = Outcome.Success(data = Unit), actual = dependency.get().useCases.translationUseCases.seedTranslations(translations = FakeData.translations))
+        assertEquals(expected = Outcome.Success(data = Unit), actual = dependency.get().useCases.seedUseCases.seedTranslations(translations = FakeData.translations))
         assertEquals(expected = HttpStatusCode.OK, actual = client.post(request = request, body = newer).status)
 
         val response = client.post(request = request, body = older)
@@ -135,7 +135,7 @@ class TranslationTest: TestCase() {
         val client = createClient(token = null)
         val adminClient = createClient(token = adminBearerToken.accessToken)
         val edited = FakeData.translations.first().copy(modifiedAt = now(), value = "edited")
-        assertEquals(expected = Outcome.Success(data = Unit), actual = dependency.get().useCases.translationUseCases.seedTranslations(translations = FakeData.translations))
+        assertEquals(expected = Outcome.Success(data = Unit), actual = dependency.get().useCases.seedUseCases.seedTranslations(translations = FakeData.translations))
 
         var received: PushPayload? = null
         client.sse(

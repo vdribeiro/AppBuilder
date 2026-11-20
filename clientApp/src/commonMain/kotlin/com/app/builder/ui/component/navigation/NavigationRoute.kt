@@ -68,8 +68,8 @@ fun permittedRoutes(account: Account?, flags: ClientFlags): ImmutableList<Naviga
                 EntityType.SERVER_CONFIG
             ).any { permissions[it] != null }
         ) add(NavigationRoute.CONFIG)
-        if (flags.notifications && permissions[EntityType.NOTIFICATION] != null) add(NavigationRoute.NOTIFICATION)
         if (permissions[EntityType.TRANSLATION] != null) add(NavigationRoute.TRANSLATION)
+        if (flags.notifications && permissions[EntityType.NOTIFICATION] != null) add(NavigationRoute.NOTIFICATION)
         if (flags.locationCapture && permissions[EntityType.DEVICE_LOCATION] != null) add(NavigationRoute.DEVICE_LOCATION)
         if (flags.nfc && permissions[EntityType.NFC] != null) add(NavigationRoute.NFC)
         if (flags.camera) add(NavigationRoute.CAMERA)

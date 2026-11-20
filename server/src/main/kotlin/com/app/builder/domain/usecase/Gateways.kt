@@ -32,6 +32,8 @@ import com.app.builder.domain.usecase.notification.NotificationsGateway
 import com.app.builder.domain.usecase.notification.NotificationsUseCases
 import com.app.builder.domain.usecase.registry.RegistryGateway
 import com.app.builder.domain.usecase.registry.RegistryUseCases
+import com.app.builder.domain.usecase.seed.SeedGateway
+import com.app.builder.domain.usecase.seed.SeedUseCases
 import com.app.builder.domain.usecase.task.TaskGateway
 import com.app.builder.domain.usecase.task.TaskUseCases
 import com.app.builder.domain.usecase.ticket.TicketGateway
@@ -61,6 +63,7 @@ class Gateways(
     override val notificationsUseCases: NotificationsUseCases = NotificationsGateway(database = database, instanceSignal = instanceSignal)
     override val userUseCases: UserUseCases = UserGateway(database = database)
     override val accountUseCases: AccountUseCases = AccountGateway(database = database)
+    override val seedUseCases: SeedUseCases = SeedGateway(database = database, authenticationUseCases = authenticationUseCases, accountUseCases = accountUseCases)
     override val deviceLocationUseCases: DeviceLocationUseCases = DeviceLocationGateway(database = database)
     override val taskUseCases: TaskUseCases = TaskGateway(database = database, notificationsUseCases = notificationsUseCases)
     override val equipmentUseCases: EquipmentUseCases = EquipmentGateway(database = database, notificationsUseCases = notificationsUseCases)

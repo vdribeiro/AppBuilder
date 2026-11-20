@@ -15,6 +15,7 @@ import com.app.builder.domain.usecase.equipmentuser.EquipmentUserUseCases
 import com.app.builder.domain.usecase.material.MaterialUseCases
 import com.app.builder.domain.usecase.notification.NotificationsUseCases
 import com.app.builder.domain.usecase.registry.RegistryUseCases
+import com.app.builder.domain.usecase.seed.SeedUseCases
 import com.app.builder.domain.usecase.task.TaskUseCases
 import com.app.builder.domain.usecase.ticket.TicketUseCases
 import com.app.builder.domain.usecase.translation.TranslationUseCases
@@ -42,6 +43,8 @@ interface UseCases {
     val userUseCases: UserUseCases
     /** The account use cases. */
     val accountUseCases: AccountUseCases
+    /** The seed use cases. */
+    val seedUseCases: SeedUseCases
     /** The device location use cases. */
     val deviceLocationUseCases: DeviceLocationUseCases
     /** The task use cases. */

@@ -1,0 +1,761 @@
+{
+  "users": [
+    {
+      "uuid": "00000000-0000-4000-8000-000100000010",
+      "name": "Guilherme Lopes"
+    },
+    {
+      "uuid": "00000000-0000-4000-8000-000100000011",
+      "name": "Helena Martins"
+    },
+    {
+      "uuid": "00000000-0000-4000-8000-000100000012",
+      "name": "Inês Pereira",
+      "deletedAt": "2026-11-10T09:30:00Z"
+    }
+  ],
+  "registrations": [
+    {
+      "user": {
+        "uuid": "00000000-0000-4000-8000-000100000001",
+        "name": "Ana Silva"
+      },
+      "account": {
+        "userUuid": "00000000-0000-4000-8000-000100000001",
+        "username": "ana",
+        "permissions": {
+          "CLIENT_FLAG": "WRITE",
+          "CLIENT_CONFIG": "WRITE",
+          "SERVER_FLAG": "WRITE",
+          "SERVER_CONFIG": "WRITE",
+          "REGISTRY": "WRITE",
+          "NOTIFICATION": "WRITE",
+          "TRANSLATION": "WRITE",
+          "ACCOUNT": "WRITE",
+          "USER": "WRITE",
+          "DEVICE_LOCATION": "WRITE",
+          "NFC": "WRITE",
+          "TASK": "WRITE",
+          "EQUIPMENT": "WRITE",
+          "BUILDING": "WRITE",
+          "BUILDING_EQUIPMENT": "WRITE",
+          "MATERIAL": "WRITE",
+          "BUILDING_MATERIAL": "WRITE",
+          "BUILDING_USER": "WRITE",
+          "EQUIPMENT_USER": "WRITE"
+        }
+      },
+      "password": "password"
+    },
+    {
+      "user": {
+        "uuid": "00000000-0000-4000-8000-000100000002",
+        "name": "Bruno Costa"
+      },
+      "account": {
+        "userUuid": "00000000-0000-4000-8000-000100000002",
+        "username": "bruno",
+        "permissions": {
+          "CLIENT_FLAG": "READ",
+          "CLIENT_CONFIG": "READ",
+          "SERVER_FLAG": "READ",
+          "SERVER_CONFIG": "READ",
+          "REGISTRY": "READ",
+          "NOTIFICATION": "READ",
+          "TRANSLATION": "READ",
+          "ACCOUNT": "READ",
+          "USER": "READ",
+          "DEVICE_LOCATION": "READ",
+          "NFC": "READ",
+          "TASK": "READ",
+          "EQUIPMENT": "READ",
+          "BUILDING": "READ",
+          "BUILDING_EQUIPMENT": "READ",
+          "MATERIAL": "READ",
+          "BUILDING_MATERIAL": "READ",
+          "BUILDING_USER": "READ",
+          "EQUIPMENT_USER": "READ"
+        }
+      },
+      "password": "password"
+    },
+    {
+      "user": {
+        "uuid": "00000000-0000-4000-8000-000100000003",
+        "name": "Carla Mendes"
+      },
+      "account": {
+        "userUuid": "00000000-0000-4000-8000-000100000003",
+        "username": "carla",
+        "permissions": {
+          "CLIENT_FLAG": "READ",
+          "CLIENT_CONFIG": "READ",
+          "TRANSLATION": "READ",
+          "ACCOUNT": "READ",
+          "USER": "READ",
+          "DEVICE_LOCATION": "WRITE",
+          "NFC": "READ",
+          "TASK": "WRITE",
+          "EQUIPMENT": "WRITE",
+          "BUILDING": "READ",
+          "BUILDING_EQUIPMENT": "WRITE",
+          "MATERIAL": "READ",
+          "BUILDING_MATERIAL": "READ",
+          "BUILDING_USER": "READ",
+          "EQUIPMENT_USER": "WRITE"
+        }
+      },
+      "password": "password"
+    },
+    {
+      "user": {
+        "uuid": "00000000-0000-4000-8000-000100000004",
+        "name": "Diogo Ferreira"
+      },
+      "account": {
+        "userUuid": "00000000-0000-4000-8000-000100000004",
+        "username": "diogo",
+        "permissions": {
+          "CLIENT_FLAG": "READ",
+          "CLIENT_CONFIG": "READ",
+          "TRANSLATION": "READ",
+          "TASK": "READ"
+        }
+      },
+      "password": "password"
+    },
+    {
+      "user": {
+        "uuid": "00000000-0000-4000-8000-000100000005",
+        "name": "Eva Rocha"
+      },
+      "account": {
+        "userUuid": "00000000-0000-4000-8000-000100000005",
+        "username": "eva",
+        "permissions": {}
+      },
+      "password": "password"
+    },
+    {
+      "user": {
+        "uuid": "00000000-0000-4000-8000-000100000006",
+        "name": "Filipe Santos"
+      },
+      "account": {
+        "userUuid": "00000000-0000-4000-8000-000100000006",
+        "username": "filipe",
+        "permissions": {
+          "CLIENT_FLAG": "READ",
+          "CLIENT_CONFIG": "READ",
+          "TRANSLATION": "READ",
+          "ACCOUNT": "READ",
+          "USER": "READ",
+          "DEVICE_LOCATION": "WRITE",
+          "NFC": "READ",
+          "TASK": "WRITE",
+          "EQUIPMENT": "WRITE",
+          "BUILDING": "READ",
+          "BUILDING_EQUIPMENT": "WRITE",
+          "MATERIAL": "READ",
+          "BUILDING_MATERIAL": "READ",
+          "BUILDING_USER": "READ",
+          "EQUIPMENT_USER": "WRITE"
+        },
+        "deletedAt": "2026-11-10T09:30:00Z"
+      },
+      "password": "password"
+    },
+    {
+      "user": {
+        "uuid": "00000000-0000-4000-8000-000100000007",
+        "name": "Marta Nunes"
+      },
+      "account": {
+        "userUuid": "00000000-0000-4000-8000-000100000007",
+        "username": "marta",
+        "permissions": {
+          "CLIENT_FLAG": "READ",
+          "CLIENT_CONFIG": "READ",
+          "TRANSLATION": "READ",
+          "USER": "READ",
+          "BUILDING": "READ",
+          "MATERIAL": "WRITE",
+          "BUILDING_MATERIAL": "WRITE"
+        }
+      },
+      "password": "password"
+    },
+    {
+      "user": {
+        "uuid": "00000000-0000-4000-8000-000100000008",
+        "name": "Nuno Pinto"
+      },
+      "account": {
+        "userUuid": "00000000-0000-4000-8000-000100000008",
+        "username": "nuno",
+        "permissions": {
+          "CLIENT_FLAG": "READ",
+          "CLIENT_CONFIG": "READ",
+          "TRANSLATION": "READ",
+          "REGISTRY": "READ",
+          "ACCOUNT": "READ",
+          "USER": "READ"
+        }
+      },
+      "password": "password"
+    },
+    {
+      "user": {
+        "uuid": "00000000-0000-4000-8000-000100000009",
+        "name": "João Almeida",
+        "deletedAt": "2026-11-10T09:30:00Z"
+      },
+      "account": {
+        "userUuid": "00000000-0000-4000-8000-000100000009",
+        "username": "joao",
+        "permissions": {
+          "CLIENT_FLAG": "READ",
+          "CLIENT_CONFIG": "READ",
+          "SERVER_FLAG": "READ",
+          "SERVER_CONFIG": "READ",
+          "REGISTRY": "READ",
+          "NOTIFICATION": "READ",
+          "TRANSLATION": "READ",
+          "ACCOUNT": "READ",
+          "USER": "READ",
+          "DEVICE_LOCATION": "READ",
+          "NFC": "READ",
+          "TASK": "READ",
+          "EQUIPMENT": "READ",
+          "BUILDING": "READ",
+          "BUILDING_EQUIPMENT": "READ",
+          "MATERIAL": "READ",
+          "BUILDING_MATERIAL": "READ",
+          "BUILDING_USER": "READ",
+          "EQUIPMENT_USER": "READ"
+        },
+        "deletedAt": "2026-11-10T09:30:00Z"
+      },
+      "password": "password"
+    }
+  ],
+  "tasks": [
+    {
+      "uuid": "00000000-0000-4000-8000-000200000001",
+      "title": "Replace air filters",
+      "description": "Swap the filters of every HVAC unit on floors 1 to 3.",
+      "state": "TODO"
+    },
+    {
+      "uuid": "00000000-0000-4000-8000-000200000002",
+      "title": "Inspect elevator 1",
+      "description": "Annual safety inspection with the certified contractor.",
+      "state": "COMPLETE"
+    },
+    {
+      "uuid": "00000000-0000-4000-8000-000200000003",
+      "title": "Order LED tubes"
+    },
+    {
+      "uuid": "00000000-0000-4000-8000-000200000004",
+      "title": "Check the fire extinguishers",
+      "state": "COMPLETE"
+    },
+    {
+      "uuid": "00000000-0000-4000-8000-000200000005",
+      "title": "Quarterly maintenance round of the Lisbon headquarters, covering every floor and the parking levels",
+      "description": "1. Walk every floor and note damaged ceiling tiles, leaks and broken light fixtures.\n2. Test the emergency lighting and the exit signs.\n3. Read the water, gas and electricity meters and compare them with last quarter.\n4. Check the roof drains before the rainy season.\n5. Report anything that needs a contractor.",
+      "state": "TODO"
+    },
+    {
+      "uuid": "00000000-0000-4000-8000-000200000006",
+      "title": "Verificar a iluminação de emergência — piso 2",
+      "description": "Substituir as baterias com mais de 4 anos. Atenção ao corredor nº 3.",
+      "state": "TODO"
+    },
+    {
+      "uuid": "00000000-0000-4000-8000-000200000007",
+      "deletedAt": "2026-11-10T09:30:00Z",
+      "title": "Repaint the parking lines",
+      "description": "Cancelled, the parking is being rebuilt.",
+      "state": "TODO"
+    },
+    {
+      "uuid": "00000000-0000-4000-8000-000200000008",
+      "deletedAt": "2026-11-10T09:30:00Z",
+      "title": "Fix the leaking tap",
+      "description": "Kitchen on floor 1.",
+      "state": "COMPLETE"
+    }
+  ],
+  "equipments": [
+    {
+      "uuid": "00000000-0000-4000-8000-000300000001",
+      "name": "HVAC Unit A",
+      "description": "Rooftop air handling unit serving floors 1 to 3.",
+      "status": "WORKING"
+    },
+    {
+      "uuid": "00000000-0000-4000-8000-000300000002",
+      "name": "Elevator 1",
+      "description": "Passenger elevator, 8 people, 630 kg.",
+      "status": "MALFUNCTIONING"
+    },
+    {
+      "uuid": "00000000-0000-4000-8000-000300000003",
+      "name": "Fire Pump",
+      "description": "Diesel fire pump in the basement plant room.",
+      "status": "WORKING"
+    },
+    {
+      "uuid": "00000000-0000-4000-8000-000300000004",
+      "name": "Portable Generator",
+      "description": "5 kVA generator shared between sites.",
+      "status": "WORKING"
+    },
+    {
+      "uuid": "00000000-0000-4000-8000-000300000005",
+      "name": "Spare Compressor",
+      "status": "MALFUNCTIONING"
+    },
+    {
+      "uuid": "00000000-0000-4000-8000-000300000006",
+      "name": "Forklift",
+      "description": "Electric forklift, 1.5 t."
+    },
+    {
+      "uuid": "00000000-0000-4000-8000-000300000007",
+      "deletedAt": "2026-11-10T09:30:00Z",
+      "name": "Old Boiler",
+      "description": "Replaced by a heat pump.",
+      "status": "MALFUNCTIONING"
+    }
+  ],
+  "buildings": [
+    {
+      "uuid": "00000000-0000-4000-8000-000400000001",
+      "name": "Lisbon Headquarters",
+      "description": "Main office, 6 floors and 2 parking levels.",
+      "address": "Avenida da Liberdade 110, 1250-146 Lisboa",
+      "latitude": 38.7205,
+      "longitude": -9.145
+    },
+    {
+      "uuid": "00000000-0000-4000-8000-000400000002",
+      "name": "Porto Warehouse",
+      "description": "Storage and distribution.",
+      "address": "Rua do Freixo 1071, 4300-219 Porto",
+      "latitude": 41.1496,
+      "longitude": -8.5773
+    },
+    {
+      "uuid": "00000000-0000-4000-8000-000400000003",
+      "name": "Coimbra Office",
+      "description": "Rented office with no assigned staff yet.",
+      "address": "Rua Ferreira Borges 59, 3000-180 Coimbra"
+    },
+    {
+      "uuid": "00000000-0000-4000-8000-000400000004",
+      "name": "Faro Clinic"
+    },
+    {
+      "uuid": "00000000-0000-4000-8000-000400000005",
+      "name": "Funchal Hotel",
+      "description": "Seasonal site.",
+      "address": "Estrada Monumental 139, 9000-098 Funchal",
+      "latitude": 32.6388,
+      "longitude": -16.934
+    },
+    {
+      "uuid": "00000000-0000-4000-8000-000400000006",
+      "name": "Sydney Branch",
+      "description": "Southern and eastern hemisphere coordinates.",
+      "address": "1 Macquarie Street, Sydney NSW 2000",
+      "latitude": -33.8591,
+      "longitude": 151.2131
+    },
+    {
+      "uuid": "00000000-0000-4000-8000-000400000007",
+      "deletedAt": "2026-11-10T09:30:00Z",
+      "name": "Braga Old Depot",
+      "description": "Sold.",
+      "address": "Rua do Souto 20, 4700-329 Braga",
+      "latitude": 41.5503,
+      "longitude": -8.427
+    }
+  ],
+  "materials": [
+    {
+      "uuid": "00000000-0000-4000-8000-000500000001",
+      "name": "Air Filter G4",
+      "description": "592 x 592 x 48 mm pleated panel filter."
+    },
+    {
+      "uuid": "00000000-0000-4000-8000-000500000002",
+      "name": "LED Tube T8",
+      "description": "1200 mm, 18 W, 4000 K."
+    },
+    {
+      "uuid": "00000000-0000-4000-8000-000500000003",
+      "name": "Hydraulic Oil",
+      "description": "ISO VG 46, 20 l drum."
+    },
+    {
+      "uuid": "00000000-0000-4000-8000-000500000004",
+      "name": "Copper Pipe",
+      "description": "22 mm, 3 m lengths."
+    },
+    {
+      "uuid": "00000000-0000-4000-8000-000500000005",
+      "name": "White Paint"
+    },
+    {
+      "uuid": "00000000-0000-4000-8000-000500000006",
+      "deletedAt": "2026-11-10T09:30:00Z",
+      "name": "Halogen Lamp",
+      "description": "Discontinued, replaced by LED."
+    }
+  ],
+  "buildingEquipments": [
+    {
+      "buildingUuid": "00000000-0000-4000-8000-000400000001",
+      "equipmentUuid": "00000000-0000-4000-8000-000300000001"
+    },
+    {
+      "buildingUuid": "00000000-0000-4000-8000-000400000001",
+      "equipmentUuid": "00000000-0000-4000-8000-000300000002"
+    },
+    {
+      "buildingUuid": "00000000-0000-4000-8000-000400000001",
+      "equipmentUuid": "00000000-0000-4000-8000-000300000003"
+    },
+    {
+      "buildingUuid": "00000000-0000-4000-8000-000400000002",
+      "equipmentUuid": "00000000-0000-4000-8000-000300000002"
+    },
+    {
+      "buildingUuid": "00000000-0000-4000-8000-000400000007",
+      "equipmentUuid": "00000000-0000-4000-8000-000300000002"
+    },
+    {
+      "buildingUuid": "00000000-0000-4000-8000-000400000005",
+      "equipmentUuid": "00000000-0000-4000-8000-000300000007"
+    },
+    {
+      "deletedAt": "2026-11-10T09:30:00Z",
+      "buildingUuid": "00000000-0000-4000-8000-000400000004",
+      "equipmentUuid": "00000000-0000-4000-8000-000300000006"
+    }
+  ],
+  "buildingMaterials": [
+    {
+      "buildingUuid": "00000000-0000-4000-8000-000400000001",
+      "materialUuid": "00000000-0000-4000-8000-000500000001",
+      "quantity": 24
+    },
+    {
+      "buildingUuid": "00000000-0000-4000-8000-000400000001",
+      "materialUuid": "00000000-0000-4000-8000-000500000002",
+      "quantity": 120
+    },
+    {
+      "buildingUuid": "00000000-0000-4000-8000-000400000001",
+      "materialUuid": "00000000-0000-4000-8000-000500000003"
+    },
+    {
+      "buildingUuid": "00000000-0000-4000-8000-000400000002",
+      "materialUuid": "00000000-0000-4000-8000-000500000001",
+      "quantity": 6
+    },
+    {
+      "buildingUuid": "00000000-0000-4000-8000-000400000006",
+      "materialUuid": "00000000-0000-4000-8000-000500000002",
+      "quantity": 10000
+    },
+    {
+      "buildingUuid": "00000000-0000-4000-8000-000400000002",
+      "materialUuid": "00000000-0000-4000-8000-000500000006",
+      "quantity": 3
+    },
+    {
+      "deletedAt": "2026-11-10T09:30:00Z",
+      "buildingUuid": "00000000-0000-4000-8000-000400000004",
+      "materialUuid": "00000000-0000-4000-8000-000500000005",
+      "quantity": 2
+    }
+  ],
+  "buildingUsers": [
+    {
+      "buildingUuid": "00000000-0000-4000-8000-000400000001",
+      "userUuid": "00000000-0000-4000-8000-000100000001"
+    },
+    {
+      "buildingUuid": "00000000-0000-4000-8000-000400000001",
+      "userUuid": "00000000-0000-4000-8000-000100000003"
+    },
+    {
+      "buildingUuid": "00000000-0000-4000-8000-000400000001",
+      "userUuid": "00000000-0000-4000-8000-000100000010"
+    },
+    {
+      "buildingUuid": "00000000-0000-4000-8000-000400000002",
+      "userUuid": "00000000-0000-4000-8000-000100000002"
+    },
+    {
+      "buildingUuid": "00000000-0000-4000-8000-000400000005",
+      "userUuid": "00000000-0000-4000-8000-000100000003"
+    },
+    {
+      "buildingUuid": "00000000-0000-4000-8000-000400000005",
+      "userUuid": "00000000-0000-4000-8000-000100000010"
+    },
+    {
+      "buildingUuid": "00000000-0000-4000-8000-000400000002",
+      "userUuid": "00000000-0000-4000-8000-000100000012"
+    },
+    {
+      "buildingUuid": "00000000-0000-4000-8000-000400000006",
+      "userUuid": "00000000-0000-4000-8000-000100000009"
+    },
+    {
+      "deletedAt": "2026-11-10T09:30:00Z",
+      "buildingUuid": "00000000-0000-4000-8000-000400000004",
+      "userUuid": "00000000-0000-4000-8000-000100000004"
+    }
+  ],
+  "equipmentUsers": [
+    {
+      "equipmentUuid": "00000000-0000-4000-8000-000300000001",
+      "userUuid": "00000000-0000-4000-8000-000100000003"
+    },
+    {
+      "equipmentUuid": "00000000-0000-4000-8000-000300000002",
+      "userUuid": "00000000-0000-4000-8000-000100000002"
+    },
+    {
+      "equipmentUuid": "00000000-0000-4000-8000-000300000002",
+      "userUuid": "00000000-0000-4000-8000-000100000003"
+    },
+    {
+      "equipmentUuid": "00000000-0000-4000-8000-000300000002",
+      "userUuid": "00000000-0000-4000-8000-000100000010"
+    },
+    {
+      "equipmentUuid": "00000000-0000-4000-8000-000300000004",
+      "userUuid": "00000000-0000-4000-8000-000100000001"
+    },
+    {
+      "equipmentUuid": "00000000-0000-4000-8000-000300000004",
+      "userUuid": "00000000-0000-4000-8000-000100000010"
+    },
+    {
+      "equipmentUuid": "00000000-0000-4000-8000-000300000003",
+      "userUuid": "00000000-0000-4000-8000-000100000006"
+    },
+    {
+      "deletedAt": "2026-11-10T09:30:00Z",
+      "equipmentUuid": "00000000-0000-4000-8000-000300000006",
+      "userUuid": "00000000-0000-4000-8000-000100000004"
+    }
+  ],
+  "registries": [
+    {
+      "requestUuid": "00000000-0000-4000-8000-000600000001",
+      "requestType": "POST",
+      "requestUtc": "2026-11-02T09:00:00Z",
+      "requestSentUtc": "2026-11-02T09:00:01Z",
+      "userUuid": "ffffffff-ffff-ffff-ffff-ffffffffffff",
+      "appVersion": "1.0.0",
+      "os": {
+        "type": "web"
+      },
+      "osVersion": "131",
+      "brand": "Google",
+      "model": "Chrome",
+      "deviceUuid": "00000000-0000-4000-8000-000700000001",
+      "entityUuid": "00000000-0000-4000-8000-000100000001",
+      "entityType": "ACCOUNT",
+      "payload": "{\"userUuid\":\"00000000-0000-4000-8000-000100000001\",\"modifiedAt\":\"2026-11-02T09:00:00Z\",\"deletedAt\":null,\"username\":\"ana\",\"permissions\":{\"CLIENT_FLAG\":\"WRITE\",\"CLIENT_CONFIG\":\"WRITE\",\"SERVER_FLAG\":\"WRITE\",\"SERVER_CONFIG\":\"WRITE\",\"REGISTRY\":\"WRITE\",\"NOTIFICATION\":\"WRITE\",\"TRANSLATION\":\"WRITE\",\"ACCOUNT\":\"WRITE\",\"USER\":\"WRITE\",\"DEVICE_LOCATION\":\"WRITE\",\"NFC\":\"WRITE\",\"TASK\":\"WRITE\",\"EQUIPMENT\":\"WRITE\",\"BUILDING\":\"WRITE\",\"BUILDING_EQUIPMENT\":\"WRITE\",\"MATERIAL\":\"WRITE\",\"BUILDING_MATERIAL\":\"WRITE\",\"BUILDING_USER\":\"WRITE\",\"EQUIPMENT_USER\":\"WRITE\"}}"
+    },
+    {
+      "requestUuid": "00000000-0000-4000-8000-000600000002",
+      "requestType": "POST",
+      "requestUtc": "2026-11-02T09:15:00Z",
+      "requestSentUtc": "2026-11-02T09:15:00Z",
+      "userUuid": "00000000-0000-4000-8000-000100000001",
+      "appVersion": "1.0.0",
+      "os": {
+        "type": "mac"
+      },
+      "osVersion": "15.1",
+      "brand": "Apple",
+      "model": "MacBook Pro",
+      "deviceUuid": "00000000-0000-4000-8000-000700000004",
+      "entityUuid": "00000000-0000-4000-8000-000400000001",
+      "entityType": "BUILDING",
+      "payload": "{\"uuid\":\"00000000-0000-4000-8000-000400000001\",\"modifiedAt\":\"2026-11-02T09:15:00Z\",\"deletedAt\":null,\"name\":\"Lisbon Headquarters\",\"description\":\"Main office, 6 floors and 2 parking levels.\",\"address\":\"Avenida da Liberdade 110, 1250-146 Lisboa\",\"latitude\":38.7205,\"longitude\":-9.145}"
+    },
+    {
+      "requestUuid": "00000000-0000-4000-8000-000600000003",
+      "requestType": "POST",
+      "requestUtc": "2026-11-03T14:20:00Z",
+      "requestSentUtc": "2026-11-03T14:20:02Z",
+      "userUuid": "00000000-0000-4000-8000-000100000003",
+      "appVersion": "1.0.0",
+      "os": {
+        "type": "android"
+      },
+      "osVersion": "15",
+      "brand": "Google",
+      "model": "Pixel 9",
+      "deviceUuid": "00000000-0000-4000-8000-000700000002",
+      "entityUuid": "00000000-0000-4000-8000-000300000002",
+      "entityType": "EQUIPMENT",
+      "payload": "{\"uuid\":\"00000000-0000-4000-8000-000300000002\",\"modifiedAt\":\"2026-11-03T14:20:00Z\",\"deletedAt\":null,\"name\":\"Elevator 1\",\"description\":\"Passenger elevator, 8 people, 630 kg.\",\"status\":\"MALFUNCTIONING\"}"
+    },
+    {
+      "requestUuid": "00000000-0000-4000-8000-000600000004",
+      "requestType": "POST",
+      "requestUtc": "2026-11-04T08:05:00Z",
+      "requestSentUtc": "2026-11-04T11:47:30Z",
+      "userUuid": "00000000-0000-4000-8000-000100000003",
+      "appVersion": "1.1.0",
+      "os": {
+        "type": "ios"
+      },
+      "osVersion": "18.1",
+      "brand": "Apple",
+      "model": "iPhone 16",
+      "deviceUuid": "00000000-0000-4000-8000-000700000003",
+      "entityUuid": "00000000-0000-4000-8000-000200000002",
+      "entityType": "TASK",
+      "payload": "{\"uuid\":\"00000000-0000-4000-8000-000200000002\",\"modifiedAt\":\"2026-11-04T08:05:00Z\",\"deletedAt\":null,\"title\":\"Inspect elevator 1\",\"description\":\"Annual safety inspection with the certified contractor.\",\"state\":\"COMPLETE\"}"
+    },
+    {
+      "requestUuid": "00000000-0000-4000-8000-000600000005",
+      "requestType": "POST",
+      "requestUtc": "2026-11-05T16:40:00Z",
+      "requestSentUtc": "2026-11-05T16:40:01Z",
+      "userUuid": "00000000-0000-4000-8000-000100000007",
+      "appVersion": "1.0.0",
+      "os": {
+        "type": "windows"
+      },
+      "osVersion": "11",
+      "brand": "Dell",
+      "model": "Latitude 7450",
+      "deviceUuid": "00000000-0000-4000-8000-000700000005",
+      "entityUuid": "00000000-0000-4000-8000-000500000001",
+      "entityType": "MATERIAL",
+      "payload": "{\"uuid\":\"00000000-0000-4000-8000-000500000001\",\"modifiedAt\":\"2026-11-05T16:40:00Z\",\"deletedAt\":null,\"name\":\"Air Filter G4\",\"description\":\"592 x 592 x 48 mm pleated panel filter.\"}"
+    },
+    {
+      "requestUuid": "00000000-0000-4000-8000-000600000006",
+      "requestType": "GET",
+      "requestUtc": "2026-11-06T10:00:00Z",
+      "requestSentUtc": "2026-11-06T10:00:00Z",
+      "userUuid": "00000000-0000-4000-8000-000100000008",
+      "appVersion": "1.0.0",
+      "os": {
+        "type": "linux"
+      },
+      "osVersion": "6.8",
+      "brand": "Lenovo",
+      "model": "ThinkPad T14",
+      "deviceUuid": "00000000-0000-4000-8000-000700000006",
+      "entityUuid": "00000000-0000-4000-8000-000100000002",
+      "entityType": "ACCOUNT",
+      "payload": null
+    },
+    {
+      "requestUuid": "00000000-0000-4000-8000-000600000007",
+      "requestType": "POST",
+      "requestUtc": "2026-11-10T09:30:00Z",
+      "requestSentUtc": "2026-11-10T09:30:01Z",
+      "userUuid": "00000000-0000-4000-8000-000100000001",
+      "appVersion": "1.0.0",
+      "os": {
+        "type": "web"
+      },
+      "osVersion": "131",
+      "brand": "Google",
+      "model": "Chrome",
+      "deviceUuid": "00000000-0000-4000-8000-000700000001",
+      "entityUuid": "00000000-0000-4000-8000-000100000006",
+      "entityType": "ACCOUNT",
+      "payload": "{\"userUuid\":\"00000000-0000-4000-8000-000100000006\",\"modifiedAt\":\"2026-11-10T09:30:00Z\",\"deletedAt\":\"2026-11-10T09:30:00Z\",\"username\":\"filipe\",\"permissions\":{\"CLIENT_FLAG\":\"READ\",\"CLIENT_CONFIG\":\"READ\",\"TRANSLATION\":\"READ\",\"ACCOUNT\":\"READ\",\"USER\":\"READ\",\"DEVICE_LOCATION\":\"WRITE\",\"NFC\":\"READ\",\"TASK\":\"WRITE\",\"EQUIPMENT\":\"WRITE\",\"BUILDING\":\"READ\",\"BUILDING_EQUIPMENT\":\"WRITE\",\"MATERIAL\":\"READ\",\"BUILDING_MATERIAL\":\"READ\",\"BUILDING_USER\":\"READ\",\"EQUIPMENT_USER\":\"WRITE\"}}"
+    },
+    {
+      "requestUuid": "00000000-0000-4000-8000-000600000008",
+      "requestType": "POST",
+      "requestUtc": "2026-11-10T09:30:00Z",
+      "requestSentUtc": "2026-11-10T09:30:03Z",
+      "userUuid": "00000000-0000-4000-8000-000100000001",
+      "appVersion": "1.0.0",
+      "os": {
+        "type": "web"
+      },
+      "osVersion": "131",
+      "brand": "Google",
+      "model": "Chrome",
+      "deviceUuid": "00000000-0000-4000-8000-000700000001",
+      "entityUuid": "00000000-0000-4000-8000-000100000012",
+      "entityType": "USER",
+      "payload": "{\"uuid\":\"00000000-0000-4000-8000-000100000012\",\"modifiedAt\":\"2026-11-10T09:30:00Z\",\"deletedAt\":\"2026-11-10T09:30:00Z\",\"name\":\"Inês Pereira\",\"avatar\":null}"
+    },
+    {
+      "requestUuid": "00000000-0000-4000-8000-000600000009",
+      "requestType": "POST",
+      "requestUtc": "2026-11-09T18:10:00Z",
+      "requestSentUtc": "2026-11-09T18:10:01Z",
+      "userUuid": "00000000-0000-4000-8000-000100000009",
+      "appVersion": "0.9.0",
+      "os": {
+        "type": "android"
+      },
+      "osVersion": "15",
+      "brand": "Google",
+      "model": "Pixel 9",
+      "deviceUuid": "00000000-0000-4000-8000-000700000002",
+      "entityUuid": "00000000-0000-4000-8000-000200000007",
+      "entityType": "TASK",
+      "payload": "{\"uuid\":\"00000000-0000-4000-8000-000200000007\",\"modifiedAt\":\"2026-11-09T18:10:00Z\",\"deletedAt\":\"2026-11-10T09:30:00Z\",\"title\":\"Repaint the parking lines\",\"description\":\"Cancelled, the parking is being rebuilt.\",\"state\":\"TODO\"}"
+    },
+    {
+      "requestUuid": "00000000-0000-4000-8000-000600000010",
+      "requestType": "POST",
+      "requestUtc": "2026-11-12T12:00:00Z",
+      "requestSentUtc": "2026-11-12T12:00:01Z",
+      "userUuid": "00000000-0000-4000-8000-000100000001",
+      "appVersion": "1.0.0",
+      "os": {
+        "type": "mac"
+      },
+      "osVersion": "15.1",
+      "brand": "Apple",
+      "model": "MacBook Pro",
+      "deviceUuid": "00000000-0000-4000-8000-000700000004",
+      "entityUuid": null,
+      "entityType": "TRANSLATION",
+      "payload": "{\"languageIso\":\"en\",\"key\":\"task_title\",\"modifiedAt\":\"2026-11-12T12:00:00Z\",\"value\":\"Title\"}"
+    },
+    {
+      "requestUuid": "00000000-0000-4000-8000-000600000011",
+      "requestType": "POST",
+      "requestUtc": "2026-11-13T07:45:00Z",
+      "requestSentUtc": "2026-11-13T07:45:00Z",
+      "userUuid": "00000000-0000-4000-8000-000100000099",
+      "appVersion": "0.0.0",
+      "os": {
+        "type": "unknown"
+      },
+      "osVersion": "",
+      "brand": "",
+      "model": "",
+      "deviceUuid": "00000000-0000-4000-8000-000700000007",
+      "entityUuid": "00000000-0000-4000-8000-000200000001",
+      "entityType": "TASK",
+      "payload": "{\"uuid\":\"00000000-0000-4000-8000-000200000001\",\"modifiedAt\":\"2026-11-13T07:45:00Z\",\"deletedAt\":null,\"title\":\"Replace air filters\",\"description\":\"Swap the filters of every HVAC unit on floors 1 to 3.\",\"state\":\"TODO\"}"
+    }
+  ]
+}
