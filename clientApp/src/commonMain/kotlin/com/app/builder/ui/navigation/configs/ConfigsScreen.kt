@@ -80,7 +80,7 @@ fun ConfigsScreen(
             ) {
                 state.sections.forEach { section ->
                     item(key = section.configType) {
-                        CategorySection(title = section.configType.text) {
+                        CategorySection(title = getTranslation(key = section.configType.text)) {
                             ConfigList(
                                 items = section.items,
                                 enabled = section.editable,

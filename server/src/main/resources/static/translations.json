@@ -731,6 +731,11 @@
   },
   {
     "languageIso": "en",
+    "key": "building_equipment",
+    "value": "Building Equipment"
+  },
+  {
+    "languageIso": "en",
     "key": "building_equipments",
     "value": "Equipment"
   },
@@ -783,6 +788,11 @@
     "languageIso": "en",
     "key": "material_uuid",
     "value": "UUID"
+  },
+  {
+    "languageIso": "en",
+    "key": "building_material",
+    "value": "Building Material"
   },
   {
     "languageIso": "en",
@@ -1536,6 +1546,11 @@
   },
   {
     "languageIso": "pt",
+    "key": "building_equipment",
+    "value": "Equipamento do Edifício"
+  },
+  {
+    "languageIso": "pt",
     "key": "building_equipments",
     "value": "Equipamentos"
   },
@@ -1588,6 +1603,11 @@
     "languageIso": "pt",
     "key": "material_uuid",
     "value": "UUID"
+  },
+  {
+    "languageIso": "pt",
+    "key": "building_material",
+    "value": "Material do Edifício"
   },
   {
     "languageIso": "pt",
