@@ -32,42 +32,42 @@
   {
     "languageIso": "en",
     "key": "client_flag",
-    "value": "Client Flag"
+    "value": "Client Features"
   },
   {
     "languageIso": "pt",
     "key": "client_flag",
-    "value": "Flag de Cliente"
+    "value": "Features do Cliente"
   },
   {
     "languageIso": "en",
     "key": "client_config",
-    "value": "Client Config"
+    "value": "Client Configurations"
   },
   {
     "languageIso": "pt",
     "key": "client_config",
-    "value": "Configuração de Cliente"
+    "value": "Configurações do Cliente"
   },
   {
     "languageIso": "en",
     "key": "server_flag",
-    "value": "Server Flag"
+    "value": "Server Features"
   },
   {
     "languageIso": "pt",
     "key": "server_flag",
-    "value": "Flag de Servidor"
+    "value": "Features do Servidor"
   },
   {
     "languageIso": "en",
     "key": "server_config",
-    "value": "Server Config"
+    "value": "Server Configurations"
   },
   {
     "languageIso": "pt",
     "key": "server_config",
-    "value": "Configuração de Servidor"
+    "value": "Configurações do Servidor"
   },
   {
     "languageIso": "en",
