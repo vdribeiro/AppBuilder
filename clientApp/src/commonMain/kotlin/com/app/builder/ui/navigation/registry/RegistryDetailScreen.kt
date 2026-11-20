@@ -59,6 +59,7 @@ fun RegistryDetailScreen(
                 requestType = registry?.requestType,
                 requestUtc = registry?.requestUtc?.toString(),
                 requestSentUtc = registry?.requestSentUtc?.toString(),
+                userName = state.userName,
                 userUuid = registry?.userUuid?.toString(),
                 appVersion = registry?.appVersion,
                 os = registry?.os?.toString(),

@@ -11,8 +11,8 @@ import androidx.compose.runtime.snapshotFlow
 import com.app.builder.core.flow.Dispatcher
 import com.app.builder.core.telemetry.Telemetry
 import com.app.builder.data.storage.AppFile
-import com.app.builder.domain.Registry
 import com.app.builder.domain.Registry.Property
+import com.app.builder.domain.gateway.registry.RegistryEntry
 import com.app.builder.domain.gateway.registry.RegistryUseCases
 import com.app.builder.ui.component.list.RegistryItem
 import com.app.builder.ui.navigation.Router
@@ -96,26 +96,26 @@ class RegistryListScreenStore(
     }
 
     /**
-     * Gets the displayed text of the given [property].
+     * Gets the displayed text of the given [property], where [Property.USER_UUID] is the user's name when known.
      *
      * @param property Name of the [Property] to read.
      * @return The property's text, or `null` if it's unset or doesn't match a known [Property].
      */
-    private fun Registry.text(property: String): String? = when (property) {
-        Property.REQUEST_UUID.name -> requestUuid.toString()
-        Property.REQUEST_TYPE.name -> requestType
-        Property.REQUEST_UTC.name -> requestUtc.toString()
-        Property.REQUEST_SENT_UTC.name -> requestSentUtc.toString()
-        Property.USER_UUID.name -> userUuid.toString()
-        Property.APP_VERSION.name -> appVersion
-        Property.OS.name -> os.toString()
-        Property.OS_VERSION.name -> osVersion
-        Property.BRAND.name -> brand
-        Property.MODEL.name -> model
-        Property.DEVICE_UUID.name -> deviceUuid.toString()
-        Property.ENTITY_UUID.name -> entityUuid?.toString()
-        Property.ENTITY_TYPE.name -> entityType?.name
-        Property.PAYLOAD.name -> payload
+    private fun RegistryEntry.text(property: String): String? = when (property) {
+        Property.REQUEST_UUID.name -> registry.requestUuid.toString()
+        Property.REQUEST_TYPE.name -> registry.requestType
+        Property.REQUEST_UTC.name -> registry.requestUtc.toString()
+        Property.REQUEST_SENT_UTC.name -> registry.requestSentUtc.toString()
+        Property.USER_UUID.name -> userName ?: registry.userUuid.toString()
+        Property.APP_VERSION.name -> registry.appVersion
+        Property.OS.name -> registry.os.toString()
+        Property.OS_VERSION.name -> registry.osVersion
+        Property.BRAND.name -> registry.brand
+        Property.MODEL.name -> registry.model
+        Property.DEVICE_UUID.name -> registry.deviceUuid.toString()
+        Property.ENTITY_UUID.name -> registry.entityUuid?.toString()
+        Property.ENTITY_TYPE.name -> registry.entityType?.name
+        Property.PAYLOAD.name -> registry.payload
         else -> null
     }
 
@@ -126,7 +126,7 @@ class RegistryListScreenStore(
      * @param searchableProperties Names of the [Property] values to search within.
      * @return `true` if any of the searchable properties contains [search], ignoring case.
      */
-    private fun Registry.matchesSearch(search: String, searchableProperties: List<String>): Boolean {
+    private fun RegistryEntry.matchesSearch(search: String, searchableProperties: List<String>): Boolean {
         return search.isBlank() || searchableProperties.any { property ->
             text(property = property)?.contains(other = search, ignoreCase = true) == true
         }
@@ -135,14 +135,14 @@ class RegistryListScreenStore(
     /**
      * Builds a comparator for the given [sortProperty], reversed when [sortAscending] is `false`.
      *
-     * @param sortProperty Name of the [Registry.Property] to sort by.
+     * @param sortProperty Name of the [Property] to sort by.
      * @param sortAscending Whether the comparator should sort in ascending order.
-     * @return Comparator for the given property, or `null` if it doesn't match a known [Registry.Property].
+     * @return Comparator for the given property, or `null` if it doesn't match a known [Property].
      */
-    private fun registryComparator(sortProperty: String, sortAscending: Boolean): Comparator<Registry>? {
+    private fun registryComparator(sortProperty: String, sortAscending: Boolean): Comparator<RegistryEntry>? {
         val comparator = when (sortProperty) {
-            Property.REQUEST_UTC.name -> compareBy<Registry> { it.requestUtc }
-            Property.REQUEST_SENT_UTC.name -> compareBy { it.requestSentUtc }
+            Property.REQUEST_UTC.name -> compareBy<RegistryEntry> { it.registry.requestUtc }
+            Property.REQUEST_SENT_UTC.name -> compareBy { it.registry.requestSentUtc }
             in Property.entries.map { it.name } -> compareBy { it.text(property = sortProperty) }
             else -> return null
         }
@@ -156,16 +156,16 @@ class RegistryListScreenStore(
      * @param selectedUuid Request UUID of the selected registry.
      * @return Registry item with hidden properties set to `null`.
      */
-    private fun Registry.toRegistryItem(visibilityProperties: List<String>, selectedUuid: String?): RegistryItem {
+    private fun RegistryEntry.toRegistryItem(visibilityProperties: List<String>, selectedUuid: String?): RegistryItem {
         fun visible(property: Property): String? = text(property = property.name).takeIf { property.name in visibilityProperties }
         return RegistryItem(
-            uuid = requestUuid.toString(),
-            selected = requestUuid.toString() == selectedUuid,
+            uuid = registry.requestUuid.toString(),
+            selected = registry.requestUuid.toString() == selectedUuid,
             uuidVisible = Property.REQUEST_UUID.name in visibilityProperties,
             requestType = visible(property = Property.REQUEST_TYPE),
             requestUtc = visible(property = Property.REQUEST_UTC),
             requestSentUtc = visible(property = Property.REQUEST_SENT_UTC),
-            userUuid = visible(property = Property.USER_UUID),
+            user = visible(property = Property.USER_UUID),
             appVersion = visible(property = Property.APP_VERSION),
             os = visible(property = Property.OS),
             osVersion = visible(property = Property.OS_VERSION),

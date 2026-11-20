@@ -6,6 +6,8 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlinx.coroutines.flow.firstOrNull
 import com.app.builder.Dependency.getUserDependency
+import com.app.builder.domain.EntityType
+import com.app.builder.domain.gateway.authentication.toUserSchema
 import com.app.builder.test.FakeData
 import com.app.builder.test.TestCase
 
@@ -27,8 +29,43 @@ class RegistryUseCasesTest: TestCase() {
 
         registryDao.upsertRegistry(Registry = FakeData.registry.toRegistrySchema())
 
-        assertEquals(expected = listOf(element = FakeData.registry), actual = registryUseCases.observeRegistries().firstOrNull().orEmpty())
-        assertEquals(expected = FakeData.registry, actual = registryUseCases.observeRegistry(uuid = FakeData.registry.requestUuid).firstOrNull())
+        val entry = RegistryEntry(registry = FakeData.registry, userName = null)
+        assertEquals(expected = listOf(element = entry), actual = registryUseCases.observeRegistries().firstOrNull().orEmpty())
+        assertEquals(expected = entry, actual = registryUseCases.observeRegistry(uuid = FakeData.registry.requestUuid).firstOrNull())
+    }
+
+    /** Verifies that observed registries carry the name of their user once it is stored, for a user allowed to read users. */
+    @Test
+    fun observeRegistriesWithUserName() = runUnitTest {
+        val registryUseCases = dependency.get()
+            .getUserDependency(account = FakeData.adminAccount)
+            .useCases
+            .registryUseCases
+        val database = dependency.get().database
+
+        database.registryQueries.upsertRegistry(Registry = FakeData.registry.toRegistrySchema())
+        database.userQueries.upsertUser(User = FakeData.adminUser.toUserSchema())
+
+        val entry = RegistryEntry(registry = FakeData.registry, userName = FakeData.adminUser.name)
+        assertEquals(expected = listOf(element = entry), actual = registryUseCases.observeRegistries().firstOrNull().orEmpty())
+        assertEquals(expected = entry, actual = registryUseCases.observeRegistry(uuid = FakeData.registry.requestUuid).firstOrNull())
+    }
+
+    /** Verifies that observed registries carry no user name, even when the user is stored, for a user not allowed to read users. */
+    @Test
+    fun observeRegistriesWithoutUserPermission() = runUnitTest {
+        val registryUseCases = dependency.get()
+            .getUserDependency(account = FakeData.adminAccount.copy(permissions = FakeData.adminAccount.permissions - EntityType.USER))
+            .useCases
+            .registryUseCases
+        val database = dependency.get().database
+
+        database.registryQueries.upsertRegistry(Registry = FakeData.registry.toRegistrySchema())
+        database.userQueries.upsertUser(User = FakeData.adminUser.toUserSchema())
+
+        val entry = RegistryEntry(registry = FakeData.registry, userName = null)
+        assertEquals(expected = listOf(element = entry), actual = registryUseCases.observeRegistries().firstOrNull().orEmpty())
+        assertEquals(expected = entry, actual = registryUseCases.observeRegistry(uuid = FakeData.registry.requestUuid).firstOrNull())
     }
 
     /** Verifies that a user without read permission on registries observes nothing, even when registries are stored. */

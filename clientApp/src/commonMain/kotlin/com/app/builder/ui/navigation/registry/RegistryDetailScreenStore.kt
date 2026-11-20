@@ -35,8 +35,8 @@ class RegistryDetailScreenStore(
             return@launch
         }
 
-        registryUseCases.observeRegistry(uuid = uuid).observe(id = "registry") { registry ->
-            updateState { it.copy(registry = registry) }
+        registryUseCases.observeRegistry(uuid = uuid).observe(id = "registry") { entry ->
+            updateState { it.copy(registry = entry?.registry, userName = entry?.userName) }
         }
 
         Telemetry.info(tag = TAG, message = "Setup complete")

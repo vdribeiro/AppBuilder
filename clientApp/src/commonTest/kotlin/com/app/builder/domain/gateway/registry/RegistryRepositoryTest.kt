@@ -68,13 +68,13 @@ class RegistryRepositoryTest: TestCase() {
             .database
             .registryQueries
         assertNull(actual = AppFile.Sync.cache().value.orEmpty()[AppFile.Sync.Key.REGISTRIES_LAST_SYNC_UTC])
-        assertTrue(actual = registryDao.getRegistries().awaitAsList().isEmpty())
+        assertTrue(actual = registryDao.getRegistries(canReadUsers = false).awaitAsList().isEmpty())
 
         val jobResult = registryRepository.executeSyncRegistries(job = Job(userUuid = Uuid.NIL, entityType = EntityType.REGISTRY, type = Job.Type.GET))
         assertTrue(actual = jobResult is JobResult.Success)
 
         assertNotNull(actual = AppFile.Sync.cache().value.orEmpty()[AppFile.Sync.Key.REGISTRIES_LAST_SYNC_UTC])
-        assertEquals(expected = listOf(element = FakeData.registry), actual = registryDao.getRegistries().awaitAsList().map { it.toRegistry() })
+        assertEquals(expected = listOf(element = FakeData.registry), actual = registryDao.getRegistries(canReadUsers = false, mapper = ::toRegistryEntry).awaitAsList().map { it.registry })
     }
 
     /** Verifies that executing a registries sync job fails and stores nothing for a user without read permission on them. */
@@ -92,7 +92,7 @@ class RegistryRepositoryTest: TestCase() {
         assertTrue(actual = jobResult is JobResult.Error)
 
         assertNull(actual = AppFile.Sync.cache().value.orEmpty()[AppFile.Sync.Key.REGISTRIES_LAST_SYNC_UTC])
-        assertTrue(actual = registryDao.getRegistries().awaitAsList().isEmpty())
+        assertTrue(actual = registryDao.getRegistries(canReadUsers = false).awaitAsList().isEmpty())
     }
 
     /** Verifies that executing a registries sync job fails when the http client flag is disabled. */

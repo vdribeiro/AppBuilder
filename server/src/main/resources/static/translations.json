@@ -204,6 +204,7 @@
     "registry_request_type":     { "en": "Request Type", "pt": "Tipo de Pedido" },
     "registry_request_utc":      { "en": "Request At", "pt": "Pedido em" },
     "registry_request_sent_utc": { "en": "Sent At", "pt": "Enviado em" },
+    "registry_user_name":        { "en": "User Name", "pt": "Nome do Utilizador" },
     "registry_user_uuid":        { "en": "User UUID", "pt": "UUID do Utilizador" },
     "registry_app_version":      { "en": "App Version", "pt": "Versão da App" },
     "registry_os":               { "en": "OS", "pt": "SO" },

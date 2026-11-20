@@ -51,11 +51,14 @@ class RegistryGateway(
     /** Query interface for the registries table. */
     private val registryDao = database.registryQueries
 
-    override fun observeRegistries(): Flow<List<Registry>> {
+    /** Whether the account can read users. */
+    private val canReadUsers get() = account.hasPermission(entityType = EntityType.USER, permission = Permission.READ)
+
+    override fun observeRegistries(): Flow<List<RegistryEntry>> {
         account.validatePermission(tag = TAG, entityType = EntityType.REGISTRY, permission = Permission.READ)?.let { return emptyFlow() }
 
-        return registryDao.getRegistries()
-            .asFlow { it.toRegistry() }
+        return registryDao.getRegistries(canReadUsers = canReadUsers, mapper = ::toRegistryEntry)
+            .asFlow { it }
             .onStart {
                 val job = Job(
                     userUuid = account.userUuid,
@@ -71,11 +74,11 @@ class RegistryGateway(
             }
     }
 
-    override fun observeRegistry(uuid: Uuid): Flow<Registry?> {
+    override fun observeRegistry(uuid: Uuid): Flow<RegistryEntry?> {
         account.validatePermission(tag = TAG, entityType = EntityType.REGISTRY, permission = Permission.READ)?.let { return emptyFlow() }
 
-        return registryDao.getRegistry(requestUuid = uuid)
-            .asFlow { it.toRegistry() }
+        return registryDao.getRegistry(canReadUsers = canReadUsers, requestUuid = uuid, mapper = ::toRegistryEntry)
+            .asFlow { it }
             .map { it.firstOrNull() }
             .flowOn(context = Dispatcher.IO)
             .catch {

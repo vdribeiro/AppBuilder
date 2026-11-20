@@ -23,6 +23,7 @@ import com.app.builder.ui.getDateTime
  * @param requestType The HTTP method of the request.
  * @param requestUtc When the request was made on the client, as a UTC ISO-8601 string shown as a localized date-time.
  * @param requestSentUtc When the request was sent by the client, as a UTC ISO-8601 string shown as a localized date-time.
+ * @param userName The name of the user that made the request.
  * @param userUuid The UUID of the user that made the request.
  * @param appVersion The client application version.
  * @param os The operating system of the client device.
@@ -41,6 +42,7 @@ fun RegistryCard(
     requestType: String? = null,
     requestUtc: String? = null,
     requestSentUtc: String? = null,
+    userName: String? = null,
     userUuid: String? = null,
     appVersion: String? = null,
     os: String? = null,
@@ -62,6 +64,7 @@ fun RegistryCard(
         ),
         listOf(
             "registry_request_uuid" to requestUuid,
+            "registry_user_name" to userName,
             "registry_user_uuid" to userUuid,
             "registry_device_uuid" to deviceUuid,
             "registry_brand" to brand,

@@ -23,10 +23,12 @@ upsertRegistry:
 INSERT OR REPLACE INTO Registry VALUES ?;
 
 getRegistries:
-SELECT Registry.*
-FROM Registry;
+SELECT Registry.*, User.name AS userName
+FROM Registry
+LEFT JOIN User ON User.uuid = Registry.userUuid AND :canReadUsers;
 
 getRegistry:
-SELECT Registry.*
+SELECT Registry.*, User.name AS userName
 FROM Registry
+LEFT JOIN User ON User.uuid = Registry.userUuid AND :canReadUsers
 WHERE requestUuid = :requestUuid;
