@@ -72,7 +72,7 @@ class BuildingListScreenTest: TestCase() {
 
         onNodeWithTag(testTag = "action_bar").assertIsDisplayed()
         onNodeWithTag(testTag = "navigation_bar").assertIsDisplayed()
-        onNodeWithText(text = "building").assertIsSelected()
+        onNodeWithText(text = "navigation_building").assertIsSelected()
 
         onNodeWithTag(testTag = "building_list").assertIsDisplayed()
         onNodeWithTag(testTag = "building_list").count(count = 1)

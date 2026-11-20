@@ -71,7 +71,7 @@ fun TextField(
                     content = {
                         Icon(
                             imageVector = if (passwordVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility,
-                            contentDescription = getTranslation(key = if (passwordVisible) "hide_password" else "show_password")
+                            contentDescription = getTranslation(key = if (passwordVisible) "text_field_hide_password" else "text_field_show_password")
                         )
                     },
                     onClick = { passwordVisible = !passwordVisible }

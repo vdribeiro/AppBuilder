@@ -217,7 +217,7 @@ private fun ImmutableMap<String, String>.toCheckedItems(checked: (String) -> Boo
             if (checked(property.key)) {
                 Icon(
                     imageVector = Icons.Default.Check,
-                    contentDescription = getTranslation(key = "checked")
+                    contentDescription = getTranslation(key = "filters_checked")
                 )
             } else Spacer(modifier = Modifier.size(size = 24.dp))
         }

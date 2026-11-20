@@ -675,21 +675,27 @@ The colors and shapes showcases edit it in place, `DesignScreenStore` saves each
 * **Seed**: the server's `main/resources/static/translations.json`. On every startup the server inserts the entries whose language and key are not stored yet and leaves the stored ones untouched, so a new key reaches an existing database without overwriting an edited value.
 * **Offline fallback**: a mirror of the seed bundled in the client at `commonMain/composeResources/files/translations.json`, so a cold start with no network still renders text. Keeping it in sync is recommended.
 
-Each entry of both files is a `languageIso` / `key` / `value` triple, so a new language is the same keys repeated under a new ISO 639-1 code, not a new file:
+Both files group their keys by the screen or component that shows them, one key per line, and each key maps an ISO 639-1 code to its value, so a new language is a new code on each line, not a new file:
 
 ```json
-[
-  { "languageIso": "en", "key": "hello_world", "value": "Hello World" },
-  { "languageIso": "pt", "key": "hello_world", "value": "Olá Mundo" },
-  { "languageIso": "en", "key": "translation_with_arguments", "value": "I have 2 arguments %1$s and %2$s" }
-]
+{
+  "login": {
+    "login_username": { "en": "Username", "pt": "Nome de utilizador" },
+    "login_submit":   { "en": "Login", "pt": "Iniciar sessão" }
+  },
+  "push": {
+    "push_sent": { "en": "Sent %1$s", "pt": "Enviadas: %1$s" }
+  }
+}
 ```
+
+A key is looked up by its own name, starts with the name of its group and belongs to one place only: the same word on two screens is two keys with the same value (`color_picker_apply` and `language_dialog_apply`), never one shared key. A group reads in the order of its screen.
 
 Read them in a composable with `getTranslation(key, default, args)`. The language is resolved automatically; `args` fills positional placeholders and must be passed by name since it follows `default`:
 
 ```kotlin
-getTranslation(key = "translation_with_arguments", args = *arrayOf("one", "two"))
-// I have 2 arguments one and two
+getTranslation(key = "push_sent", args = *arrayOf("3"))
+// Sent 3
 ```
 
 In a composable, always call `getTranslation` rather than `TranslationCache.get`: it reads `LocalTranslationState`, so a language change or a fresh fetch recomposes every string with no restart, while a direct cache read returns a value that never updates.
@@ -1498,7 +1504,7 @@ Call `grantPermission(permission)` from `LocalPermissionManager`. It checks the 
 
 ### How do I add a new translation or language?
 
-Add `languageIso`/`key`/`value` entries to the server's `translations.json` and mirror them into the client's bundled copy. A new language is the same keys under a new ISO code.
+Add a key for the place that shows the text to its group in the server's `translations.json`, with one value per language, and mirror it into the client's bundled copy; do not reuse a key of another screen. A new language is a new ISO code on each key.
 The server stores the new entries on its next start. You can change the value of an existing key. See [Translations](#translations).
 
 ### How do I turn a feature off?

@@ -184,21 +184,21 @@ fun BuildingDetailScreen(
     EquipmentLinkPicker(
         store = equipmentPickerStore,
         filtersStore = equipmentFiltersStore,
-        title = "building_link_equipments",
+        title = "building_link_equipments_title",
         onConfirm = { store.send(action = BuildingDetailScreenAction.SetEquipments(equipments = it)) }
     )
 
     MaterialLinkPicker(
         store = materialPickerStore,
         filtersStore = materialFiltersStore,
-        title = "building_link_materials",
+        title = "building_link_materials_title",
         onConfirm = { store.send(action = BuildingDetailScreenAction.SetMaterials(materials = it)) }
     )
 
     UserLinkPicker(
         store = userPickerStore,
         filtersStore = userFiltersStore,
-        title = "building_link_users",
+        title = "building_link_users_title",
         onConfirm = { store.send(action = BuildingDetailScreenAction.SetUsers(users = it)) }
     )
 }

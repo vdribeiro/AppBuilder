@@ -364,23 +364,23 @@ class NavigationTest: TestCase() {
         }
         waitForIdle()
 
-        onNodeWithText(text = "design_colors").performClick()
+        onNodeWithText(text = "navigation_design_colors").performClick()
         waitForIdle()
         assertEquals(expected = listOf(Screen.DesignColors), actual = router.backStack.toList())
 
-        onNodeWithText(text = "design_shapes").performClick()
+        onNodeWithText(text = "navigation_design_shapes").performClick()
         waitForIdle()
         assertEquals(expected = listOf(Screen.DesignShapes), actual = router.backStack.toList())
 
-        onNodeWithText(text = "design_typography").performClick()
+        onNodeWithText(text = "navigation_design_typography").performClick()
         waitForIdle()
         assertEquals(expected = listOf(Screen.DesignTypography), actual = router.backStack.toList())
 
-        onNodeWithText(text = "design_components").performClick()
+        onNodeWithText(text = "navigation_design_components").performClick()
         waitForIdle()
         assertEquals(expected = listOf(Screen.DesignComponents), actual = router.backStack.toList())
 
-        onNodeWithText(text = "app").performClick()
+        onNodeWithText(text = "navigation_app").performClick()
         waitForIdle()
         assertEquals(expected = listOf(authenticatedScreen), actual = router.backStack.toList())
     }

@@ -34,7 +34,7 @@ fun ChangePasswordScreen(store: Store<ChangePasswordScreenState, ChangePasswordS
         onBackClick = { router.back() },
         topBar = {
             TopActionBar(
-                title = "change_password",
+                title = "change_password_title",
                 onBackClick = { router.back() }
             )
         },
@@ -67,11 +67,12 @@ fun ChangePasswordScreen(store: Store<ChangePasswordScreenState, ChangePasswordS
 private fun ChangePasswordScreenPreview() = Preview {
     InjectTranslations(
         translations = mapOf(
-            "change_password" to "Change Password",
-            "current_password" to "Current Password",
-            "new_password" to "New Password",
-            "confirm_password" to "Confirm Password",
-            "unable_to_change_password" to "Unable to change the password"
+            "change_password_title" to "Change Password",
+            "change_password_submit" to "Change Password",
+            "change_password_current" to "Current Password",
+            "change_password_new" to "New Password",
+            "change_password_confirm" to "Confirm Password",
+            "change_password_failed" to "Unable to change the password"
         )
     )
     ChangePasswordScreen(
@@ -80,7 +81,7 @@ private fun ChangePasswordScreenPreview() = Preview {
                 currentPassword = "password123",
                 newPassword = "password456",
                 confirmPassword = "password456",
-                message = "unable_to_change_password"
+                message = "change_password_failed"
             )
         )
     )

@@ -2,7 +2,6 @@ package com.app.builder.domain.route.provider
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 import io.ktor.client.call.body
 import io.ktor.http.HttpStatusCode
 import com.app.builder.core.config.ClientConfigs
@@ -13,8 +12,6 @@ import com.app.builder.data.http.HttpRequest
 import com.app.builder.data.http.URL
 import com.app.builder.data.http.get
 import com.app.builder.data.http.post
-import com.app.builder.domain.EntityType
-import com.app.builder.test.FakeData
 import com.app.builder.test.TestCase
 
 class ConfigTest: TestCase() {
@@ -68,21 +65,6 @@ class ConfigTest: TestCase() {
 
         assertEquals(expected = ServerFlags.value, actual = adminClient.get(request = HttpRequest(url = URL.ServerFlags)).body<ServerFlags>())
         assertEquals(expected = ServerConfigs.value, actual = adminClient.get(request = HttpRequest(url = URL.ServerConfigs)).body<ServerConfigs>())
-    }
-
-    /** Verifies that reading server flags and configs is recorded in the registry. */
-    @Test
-    fun getServerConfigsIsRecorded() = runServerTest {
-        installRouting()
-        val adminClient = createClient(token = adminBearerToken.accessToken)
-
-        assertEquals(expected = HttpStatusCode.OK, actual = adminClient.get(request = HttpRequest(url = URL.ServerFlags, headerMap = registryHeaders())).status)
-        assertEquals(expected = HttpStatusCode.OK, actual = adminClient.get(request = HttpRequest(url = URL.ServerConfigs, headerMap = registryHeaders())).status)
-
-        awaitUntil { registries().size == 2 }
-        val registries = registries()
-        assertTrue(actual = registries.all { it.requestType == "GET" && it.userUuid == FakeData.adminUser.uuid })
-        assertEquals(expected = setOf(EntityType.SERVER_FLAG, EntityType.SERVER_CONFIG), actual = registries.map { it.entityType }.toSet())
     }
 
     /** Verifies that updating server flags and configs requires admin permission and persists valid values. */

@@ -104,14 +104,14 @@ fun UserCard(
             if (username != null || password != null || accountActive != null || permissions != null) {
                 Text(
                     modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 4.dp),
-                    text = getTranslation(key = "account"),
+                    text = getTranslation(key = "user_account"),
                     style = typography.titleSmall
                 )
             }
             accountActive?.let {
                 BooleanField(
                     modifier = Modifier.testTag(tag = "account_active"),
-                    label = "account_active",
+                    label = "user_account_active",
                     checked = it,
                     editing = accountEnabled,
                     onCheckedChange = onAccountActiveChange
@@ -119,7 +119,7 @@ fun UserCard(
             }
             username?.let {
                 TextField(
-                    label = "username",
+                    label = "user_account_username",
                     value = it,
                     editing = accountEnabled,
                     onValueChange = onUsernameChange
@@ -127,7 +127,7 @@ fun UserCard(
             }
             password?.let {
                 TextField(
-                    label = "password",
+                    label = "user_account_password",
                     value = it,
                     editing = accountEnabled,
                     onValueChange = onPasswordChange,
@@ -162,13 +162,13 @@ private fun UserCardPreview() = Preview {
         translations = mapOf(
             "user_name" to "Name",
             "user_modified_at" to "Modified At",
-            "username" to "Username",
-            "password" to "Password",
-            "account" to "Account",
-            "account_active" to "Active",
-            "permissions" to "Permissions",
-            "read" to "Read",
-            "write" to "Write",
+            "user_account_username" to "Username",
+            "user_account_password" to "Password",
+            "user_account" to "Account",
+            "user_account_active" to "Active",
+            "permission_title" to "Permissions",
+            "permission_read" to "Read",
+            "permission_write" to "Write",
         )
     )
     Column(verticalArrangement = Arrangement.spacedBy(space = 8.dp)) {

@@ -72,7 +72,7 @@ fun BuildingLinkPicker(
 @PreviewLightDark
 @Composable
 private fun BuildingLinkPickerPreview() = Preview {
-    InjectTranslations(translations = mapOf("equipment_link_buildings" to "Link buildings"))
+    InjectTranslations(translations = mapOf("equipment_link_buildings_title" to "Link buildings"))
     BuildingLinkPicker(
         store = previewStore(
             initialState = LinkPickerState(
@@ -81,6 +81,6 @@ private fun BuildingLinkPickerPreview() = Preview {
             )
         ),
         filtersStore = previewStore(initialState = FiltersState()),
-        title = "equipment_link_buildings",
+        title = "equipment_link_buildings_title",
     )
 }

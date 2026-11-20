@@ -125,7 +125,7 @@ fun MaterialDetailScreen(
     BuildingLinkPicker(
         store = buildingPickerStore,
         filtersStore = buildingFiltersStore,
-        title = "material_link_buildings",
+        title = "material_link_buildings_title",
         onConfirm = { store.send(action = MaterialDetailScreenAction.SetBuildings(buildings = it)) }
     )
 }

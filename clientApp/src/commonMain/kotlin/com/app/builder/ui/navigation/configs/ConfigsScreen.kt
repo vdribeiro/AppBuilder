@@ -64,7 +64,7 @@ fun ConfigsScreen(
         Row(modifier = Modifier.fillMaxSize()) {
             NavigationRail(
                 modifier = Modifier.testTag(tag = "config_navigation_rail"),
-                moreText = getTranslation(key = "more"),
+                moreText = getTranslation(key = "config_more"),
                 items = state.sections.mapIndexed { index, section ->
                     NavigationItem(
                         selected = index == selectedIndex,

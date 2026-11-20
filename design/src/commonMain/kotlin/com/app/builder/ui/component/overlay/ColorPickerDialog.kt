@@ -73,8 +73,8 @@ fun ColorPickerDialog(
         modifier = modifier.testTag(tag = "color_picker_dialog"),
         title = title,
         confirmEnabled = selected != null,
-        confirmText = getTranslation(key = "apply"),
-        dismissText = getTranslation(key = "cancel"),
+        confirmText = getTranslation(key = "color_picker_apply"),
+        dismissText = getTranslation(key = "color_picker_cancel"),
         onConfirm = { selected?.let(onConfirm) },
         onDismiss = onDismiss
     ) {
@@ -100,7 +100,7 @@ fun ColorPickerDialog(
                 maxLines = 1,
                 isError = selected == null
             )
-            Button(style = ButtonStyle.TEXT, text = getTranslation(key = "reset"), onClick = { onReset() })
+            Button(style = ButtonStyle.TEXT, text = getTranslation(key = "color_picker_reset"), onClick = { onReset() })
             Column(
                 modifier = Modifier.heightIn(max = 240.dp).verticalScroll(state = rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(space = 4.dp)

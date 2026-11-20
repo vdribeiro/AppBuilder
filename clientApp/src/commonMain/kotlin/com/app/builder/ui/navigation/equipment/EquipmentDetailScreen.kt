@@ -139,14 +139,14 @@ fun EquipmentDetailScreen(
     BuildingLinkPicker(
         store = buildingPickerStore,
         filtersStore = buildingFiltersStore,
-        title = "equipment_link_buildings",
+        title = "equipment_link_buildings_title",
         onConfirm = { store.send(action = EquipmentDetailScreenAction.SetBuildings(buildings = it)) }
     )
 
     UserLinkPicker(
         store = userPickerStore,
         filtersStore = userFiltersStore,
-        title = "equipment_link_users",
+        title = "equipment_link_users_title",
         onConfirm = { store.send(action = EquipmentDetailScreenAction.SetUsers(users = it)) }
     )
 }

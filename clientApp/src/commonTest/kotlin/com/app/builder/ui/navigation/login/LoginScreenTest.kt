@@ -42,12 +42,12 @@ class LoginScreenTest: TestCase() {
         assertTrue(actual = store.state.username.isBlank())
         assertTrue(actual = store.state.password.isBlank())
 
-        onNodeWithText(text = "app_name").assertIsDisplayed()
+        onNodeWithText(text = "login_app_name").assertIsDisplayed()
 
-        onNodeWithText(text = "username").assertIsDisplayed()
+        onNodeWithText(text = "login_username").assertIsDisplayed()
         onNodeWithTag(testTag = "username").assertIsDisplayed()
 
-        onNodeWithText(text = "password").assertIsDisplayed()
+        onNodeWithText(text = "login_password").assertIsDisplayed()
         onNodeWithTag(testTag = "password").assertIsDisplayed()
 
         onNodeWithTag(testTag = "login").assertIsDisplayed()
@@ -82,11 +82,11 @@ class LoginScreenTest: TestCase() {
         onNodeWithTag(testTag = "password").performTextInput(text = "secret")
         onNodeWithTag(testTag = "password").assertTextEquals("••••••")
 
-        onNodeWithContentDescription(label = "show_password").performClick()
+        onNodeWithContentDescription(label = "text_field_show_password").performClick()
         onNodeWithTag(testTag = "password").assertTextEquals("secret")
 
-        onNodeWithContentDescription(label = "hide_password").performClick()
+        onNodeWithContentDescription(label = "text_field_hide_password").performClick()
         onNodeWithTag(testTag = "password").assertTextEquals("••••••")
-        onNodeWithContentDescription(label = "show_password").assertIsDisplayed()
+        onNodeWithContentDescription(label = "text_field_show_password").assertIsDisplayed()
     }
 }

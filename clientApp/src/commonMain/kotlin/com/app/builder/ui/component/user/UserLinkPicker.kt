@@ -72,7 +72,7 @@ fun UserLinkPicker(
 @PreviewLightDark
 @Composable
 private fun UserLinkPickerPreview() = Preview {
-    InjectTranslations(translations = mapOf("building_link_users" to "Link users"))
+    InjectTranslations(translations = mapOf("building_link_users_title" to "Link users"))
     UserLinkPicker(
         store = previewStore(
             initialState = LinkPickerState(
@@ -81,6 +81,6 @@ private fun UserLinkPickerPreview() = Preview {
             )
         ),
         filtersStore = previewStore(initialState = FiltersState()),
-        title = "building_link_users",
+        title = "building_link_users_title",
     )
 }

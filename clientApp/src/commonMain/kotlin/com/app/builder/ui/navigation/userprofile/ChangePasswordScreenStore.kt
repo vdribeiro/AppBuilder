@@ -62,7 +62,7 @@ class ChangePasswordScreenStore(
 
         updateState { it.copy(loading = true, message = null) }
         val changed = authenticationUseCases.changePassword(userUuid = userUuid, currentPassword = state.currentPassword, newPassword = state.newPassword)
-        if (changed) router.back() else updateState { it.copy(loading = false, message = "unable_to_change_password") }
+        if (changed) router.back() else updateState { it.copy(loading = false, message = "change_password_failed") }
 
         Telemetry.info(tag = TAG, message = "Password change finished: $changed")
     }

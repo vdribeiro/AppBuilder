@@ -51,7 +51,7 @@ fun Login(
         verticalArrangement = Arrangement.spacedBy(space = 16.dp)
     ) {
         Text(
-            text = getTranslation(key = "app_name"),
+            text = getTranslation(key = "login_app_name"),
             style = typography.headlineMedium
         )
 
@@ -62,7 +62,7 @@ fun Login(
             modifier = Modifier.padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(space = 4.dp)
         ) {
-            Text(text = getTranslation(key = "username"), style = typography.labelMedium)
+            Text(text = getTranslation(key = "login_username"), style = typography.labelMedium)
             Input(
                 modifier = Modifier
                     .testTag(tag = "username")
@@ -78,7 +78,7 @@ fun Login(
         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Text(
                 modifier = Modifier.padding(horizontal = 16.dp),
-                text = getTranslation(key = "password"),
+                text = getTranslation(key = "login_password"),
                 style = typography.labelMedium
             )
             TextField(
@@ -99,7 +99,7 @@ fun Login(
                 .testTag(tag = "login")
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp),
-            text = getTranslation(key = "login"),
+            text = getTranslation(key = "login_submit"),
             loading = loading,
             enabled = !loading && username.isNotBlank() && password.isNotBlank(),
             onClick = { onSubmit() }
@@ -112,10 +112,10 @@ fun Login(
 private fun LoginPreview() = Preview {
     InjectTranslations(
         translations = mapOf(
-            "app_name" to "App Builder",
-            "username" to "Username",
-            "password" to "Password",
-            "login" to "Login"
+            "login_app_name" to "App Builder",
+            "login_username" to "Username",
+            "login_password" to "Password",
+            "login_submit" to "Login"
         )
     )
     Login(

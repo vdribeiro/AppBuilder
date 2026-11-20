@@ -63,9 +63,8 @@ fun MaterialListScreen(
 private fun MaterialListScreenPreview() = Preview {
     InjectTranslations(
         translations = mapOf(
-            "material_list" to "Materials",
             "material_name" to "Name",
-            "description" to "Description"
+            "material_description" to "Description"
         )
     )
     MaterialListScreen(

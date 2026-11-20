@@ -63,9 +63,8 @@ fun TaskListScreen(
 private fun TaskListScreenPreview() = Preview {
     InjectTranslations(
         translations = mapOf(
-            "task_list" to "Tasks",
-            "title" to "Title",
-            "description" to "Description"
+            "task_title" to "Title",
+            "task_description" to "Description"
         )
     )
     TaskListScreen(

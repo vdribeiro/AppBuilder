@@ -76,7 +76,7 @@ fun Navigation(
         modifier = Modifier
             .testTag(tag = "navigation_bar")
             .fillMaxWidth(),
-        moreText = getTranslation(key = "more"),
+        moreText = getTranslation(key = "navigation_more"),
         items = items.map { it.copy(text = getTranslation(key = it.text)) }.toPersistentList()
     )
 }
@@ -120,15 +120,15 @@ private fun navigationItems(
         when (section) {
             NavigationSection.MAIN -> {
                 routes.filter { it.section == NavigationSection.MAIN }.forEach { add(it.toItem()) }
-                addSectionEntry(section = NavigationSection.SYSTEM, text = "system", icon = Icons.Filled.Tune)
-                addSectionEntry(section = NavigationSection.DESIGN, text = "design", icon = Icons.Filled.Palette)
+                addSectionEntry(section = NavigationSection.SYSTEM, text = "navigation_system", icon = Icons.Filled.Tune)
+                addSectionEntry(section = NavigationSection.DESIGN, text = "navigation_design", icon = Icons.Filled.Palette)
             }
 
             NavigationSection.SYSTEM,
             NavigationSection.DESIGN -> {
                 add(
                     NavigationItem(
-                        text = "app",
+                        text = "navigation_app",
                         icon = Icons.Filled.Apps,
                         onClick = { router.navigate(screen = authenticatedScreen, option = Router.NavOption.CLEAR) },
                     )
@@ -142,25 +142,25 @@ private fun navigationItems(
 /** The translation key of the label shown for this route. */
 private val NavigationRoute.text: String
     get() = when (this) {
-        NavigationRoute.HOME -> "home"
-        NavigationRoute.TASK -> "task"
-        NavigationRoute.EQUIPMENT -> "equipment"
-        NavigationRoute.MATERIAL -> "material"
-        NavigationRoute.BUILDING -> "building"
-        NavigationRoute.USER -> "user"
-        NavigationRoute.REGISTRY -> "registry"
-        NavigationRoute.DEVICE_LOCATION -> "device_location"
-        NavigationRoute.NFC -> "nfc"
-        NavigationRoute.CAMERA -> "camera"
-        NavigationRoute.DEVICE_FILE -> "device_file"
-        NavigationRoute.AUDIO -> "audio"
-        NavigationRoute.NOTIFICATION -> "push"
-        NavigationRoute.CONFIG -> "config"
-        NavigationRoute.TRANSLATION -> "translation"
-        NavigationRoute.DESIGN_COMPONENTS -> "design_components"
-        NavigationRoute.DESIGN_COLORS -> "design_colors"
-        NavigationRoute.DESIGN_SHAPES -> "design_shapes"
-        NavigationRoute.DESIGN_TYPOGRAPHY -> "design_typography"
+        NavigationRoute.HOME -> "navigation_home"
+        NavigationRoute.TASK -> "navigation_task"
+        NavigationRoute.EQUIPMENT -> "navigation_equipment"
+        NavigationRoute.MATERIAL -> "navigation_material"
+        NavigationRoute.BUILDING -> "navigation_building"
+        NavigationRoute.USER -> "navigation_user"
+        NavigationRoute.REGISTRY -> "navigation_registry"
+        NavigationRoute.DEVICE_LOCATION -> "navigation_device_location"
+        NavigationRoute.NFC -> "navigation_nfc"
+        NavigationRoute.CAMERA -> "navigation_camera"
+        NavigationRoute.DEVICE_FILE -> "navigation_device_file"
+        NavigationRoute.AUDIO -> "navigation_audio"
+        NavigationRoute.NOTIFICATION -> "navigation_push"
+        NavigationRoute.CONFIG -> "navigation_config"
+        NavigationRoute.TRANSLATION -> "navigation_translation"
+        NavigationRoute.DESIGN_COMPONENTS -> "navigation_design_components"
+        NavigationRoute.DESIGN_COLORS -> "navigation_design_colors"
+        NavigationRoute.DESIGN_SHAPES -> "navigation_design_shapes"
+        NavigationRoute.DESIGN_TYPOGRAPHY -> "navigation_design_typography"
     }
 
 /** The icon shown for this route. */

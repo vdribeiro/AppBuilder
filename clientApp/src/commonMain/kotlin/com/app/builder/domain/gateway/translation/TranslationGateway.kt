@@ -28,6 +28,7 @@ import com.app.builder.domain.Account
 import com.app.builder.domain.EntityType
 import com.app.builder.domain.Permission
 import com.app.builder.domain.Translation
+import com.app.builder.domain.decodeTranslations
 import com.app.builder.domain.gateway.account.validatePermission
 import com.app.builder.domain.scheduler.Job
 import com.app.builder.domain.scheduler.JobResult
@@ -109,7 +110,9 @@ class TranslationGateway(
             .onFailure { Telemetry.error(tag = TAG, message = "Unable to check translations", throwable = it) }
             .getOrDefault(defaultValue = false)
         if (isEmpty) {
-            val translations: List<Translation> = loadResource<Translation>(json = JsonResource.Translations)
+            val translations: List<Translation> = loadResource(json = JsonResource.Translations)
+                ?.let { decodeTranslations(value = it) }
+                .orEmpty()
             database.safeTransaction {
                 rewriteTranslations(translations = translations)
             }.onSuccess {

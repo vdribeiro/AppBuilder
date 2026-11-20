@@ -72,7 +72,7 @@ class EquipmentListScreenTest: TestCase() {
 
         onNodeWithTag(testTag = "action_bar").assertIsDisplayed()
         onNodeWithTag(testTag = "navigation_bar").assertIsDisplayed()
-        onNodeWithText(text = "equipment").assertIsSelected()
+        onNodeWithText(text = "navigation_equipment").assertIsSelected()
 
         onNodeWithTag(testTag = "equipment_list").assertIsDisplayed()
         onNodeWithTag(testTag = "equipment_list").count(count = 1)

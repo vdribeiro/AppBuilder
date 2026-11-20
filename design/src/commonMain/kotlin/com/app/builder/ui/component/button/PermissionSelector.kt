@@ -67,18 +67,18 @@ fun PermissionSelector(
         ) {
             Text(
                 modifier = Modifier.weight(weight = 1f),
-                text = getTranslation(key = "permissions"),
+                text = getTranslation(key = "permission_title"),
                 style = typography.labelMedium
             )
             Text(
                 modifier = Modifier.width(width = TOGGLE_WIDTH),
-                text = getTranslation(key = "read"),
+                text = getTranslation(key = "permission_read"),
                 textAlign = TextAlign.Center,
                 style = typography.labelMedium
             )
             Text(
                 modifier = Modifier.width(width = TOGGLE_WIDTH),
-                text = getTranslation(key = "write"),
+                text = getTranslation(key = "permission_write"),
                 textAlign = TextAlign.Center,
                 style = typography.labelMedium
             )
@@ -130,9 +130,9 @@ private val TOGGLE_WIDTH = 64.dp
 private fun PermissionSelectorPreview() = Preview {
     InjectTranslations(
         translations = mapOf(
-            "permissions" to "Permissions",
-            "read" to "Read",
-            "write" to "Write"
+            "permission_title" to "Permissions",
+            "permission_read" to "Read",
+            "permission_write" to "Write"
         )
     )
     PermissionSelector(

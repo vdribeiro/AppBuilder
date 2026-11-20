@@ -128,14 +128,14 @@ private fun TranslationListPreview() = Preview {
     TranslationList(
         items = persistentListOf(
             TranslationItem(
-                id = "app_name",
-                key = "app_name",
+                id = "login_app_name",
+                key = "login_app_name",
                 value = "App Builder"
             ),
             TranslationItem(
-                id = "yes",
-                key = "yes",
-                value = "Yes"
+                id = "login_submit",
+                key = "login_submit",
+                value = "Login"
             )
         )
     )
@@ -148,14 +148,14 @@ private fun TranslationListEnabledPreview() = Preview {
         enabled = true,
         items = persistentListOf(
             TranslationItem(
-                id = "app_name",
-                key = "app_name",
+                id = "login_app_name",
+                key = "login_app_name",
                 value = "App Builder"
             ),
             TranslationItem(
-                id = "yes",
-                key = "yes",
-                value = "Yes",
+                id = "login_submit",
+                key = "login_submit",
+                value = "Login",
                 pending = true
             )
         )

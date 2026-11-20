@@ -75,13 +75,13 @@ class ChangePasswordScreenTest: TestCase() {
 
         onNodeWithTag(testTag = "current_password").performTextInput(text = "current")
         onNodeWithTag(testTag = "new_password").performTextInput(text = "new")
-        onAllNodesWithContentDescription(label = "show_password").assertCountEquals(expectedSize = 3)
+        onAllNodesWithContentDescription(label = "text_field_show_password").assertCountEquals(expectedSize = 3)
 
-        onAllNodesWithContentDescription(label = "show_password")[1].performClick()
+        onAllNodesWithContentDescription(label = "text_field_show_password")[1].performClick()
         onNodeWithTag(testTag = "current_password").assertTextContains(value = "•••••••")
         onNodeWithTag(testTag = "new_password").assertTextContains(value = "new")
-        onAllNodesWithContentDescription(label = "show_password").assertCountEquals(expectedSize = 2)
-        onNodeWithContentDescription(label = "hide_password").assertIsDisplayed()
+        onAllNodesWithContentDescription(label = "text_field_show_password").assertCountEquals(expectedSize = 2)
+        onNodeWithContentDescription(label = "text_field_hide_password").assertIsDisplayed()
     }
 
     /** Verifies that a wrong current password keeps the screen open and shows a message that can be dismissed. */
@@ -105,7 +105,7 @@ class ChangePasswordScreenTest: TestCase() {
         onNodeWithTag(testTag = "confirm_password").performTextInput(text = "new_password")
         onNodeWithTag(testTag = "change_password").performClick()
 
-        waitUntil(timeoutMillis = 10_000) { store.state.message == "unable_to_change_password" }
+        waitUntil(timeoutMillis = 10_000) { store.state.message == "change_password_failed" }
         assertFalse(actual = store.state.loading)
         assertEquals(expected = listOf(Screen.UserProfile, Screen.ChangePassword), actual = router.backStack.toList())
 
@@ -135,7 +135,7 @@ class ChangePasswordScreenTest: TestCase() {
         onNodeWithTag(testTag = "confirm_password").performTextInput(text = "new_password")
         onNodeWithTag(testTag = "change_password").performClick()
 
-        waitUntil(timeoutMillis = 10_000) { store.state.message == "unable_to_change_password" }
+        waitUntil(timeoutMillis = 10_000) { store.state.message == "change_password_failed" }
         assertFalse(actual = store.state.loading)
         assertTrue(actual = store.state.currentPassword.isNotEmpty())
 

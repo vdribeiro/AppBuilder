@@ -60,7 +60,7 @@ fun DeviceFilesScreen(
 private fun DeviceFilesScreenPreview() = Preview {
     InjectTranslations(
         translations = mapOf(
-            "device_file" to "Files"
+            "navigation_device_file" to "Files"
         )
     )
     DeviceFilesScreen(

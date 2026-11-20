@@ -34,7 +34,7 @@ fun ErrorScreen(store: Store<ErrorScreenState, Unit>) {
         onBackClick = { router.navigate(screen = Screen.Home, option = Router.NavOption.CLEAR) },
         topBar = {
             TopActionBar(
-                title = "feedback",
+                title = "feedback_title",
                 onBackClick = {
                     if (state.error) {
                         val screen = when (appState) {

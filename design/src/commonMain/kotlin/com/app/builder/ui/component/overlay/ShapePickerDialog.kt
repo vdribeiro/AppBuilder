@@ -56,8 +56,8 @@ fun ShapePickerDialog(
     Dialog(
         modifier = modifier.testTag(tag = "shape_picker_dialog"),
         title = title,
-        confirmText = getTranslation(key = "apply"),
-        dismissText = getTranslation(key = "cancel"),
+        confirmText = getTranslation(key = "shape_picker_apply"),
+        dismissText = getTranslation(key = "shape_picker_cancel"),
         onConfirm = { onConfirm(selected.dp) },
         onDismiss = onDismiss
     ) {
@@ -78,7 +78,7 @@ fun ShapePickerDialog(
                 valueRange = 0f..MAXIMUM_RADIUS.toFloat(),
                 steps = MAXIMUM_RADIUS - 1
             )
-            Button(style = ButtonStyle.TEXT, text = getTranslation(key = "reset"), onClick = { onReset() })
+            Button(style = ButtonStyle.TEXT, text = getTranslation(key = "shape_picker_reset"), onClick = { onReset() })
         }
     }
 }

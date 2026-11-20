@@ -64,7 +64,7 @@ fun <T, Item> LinkPicker(
 @PreviewLightDark
 @Composable
 private fun LinkPickerPreview() = Preview {
-    InjectTranslations(translations = mapOf("building_link_equipments" to "Link equipments"))
+    InjectTranslations(translations = mapOf("building_link_equipments_title" to "Link equipments"))
     LinkPicker(
         store = previewStore(
             initialState = LinkPickerState<String, String>(
@@ -73,7 +73,7 @@ private fun LinkPickerPreview() = Preview {
             )
         ),
         filtersStore = previewStore(initialState = FiltersState()),
-        title = "building_link_equipments",
+        title = "building_link_equipments_title",
     ) { items, _ ->
         Column {
             items.forEach { Text(text = it) }

@@ -41,7 +41,7 @@ fun Console(
         verticalArrangement = Arrangement.spacedBy(space = 16.dp),
     ) {
         Text(
-            text = getTranslation(key = "stacktrace"),
+            text = getTranslation(key = "console_stacktrace"),
             style = typography.labelLarge
         )
         SelectionContainer {
@@ -62,7 +62,7 @@ fun Console(
 private fun ConsolePreview() = Preview {
     InjectTranslations(
         translations = mapOf(
-            "stacktrace" to "Stacktrace"
+            "console_stacktrace" to "Stacktrace"
         )
     )
     Console(logs = "Some very interesting logs")

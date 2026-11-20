@@ -188,7 +188,7 @@ class BuildingDetailScreenTest: TestCase() {
 
         onNodeWithTag(testTag = "action_bar").assertIsDisplayed()
         onNodeWithTag(testTag = "navigation_bar").assertIsDisplayed()
-        onNode(matcher = isSelected() and hasText(text = "building")).assertIsDisplayed()
+        onNode(matcher = isSelected() and hasText(text = "navigation_building")).assertIsDisplayed()
 
         onNodeWithText(text = "building_name").assertIsDisplayed()
         onNodeWithText(text = FakeData.building.name).assertIsDisplayed()

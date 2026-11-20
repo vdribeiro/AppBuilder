@@ -59,7 +59,7 @@ fun TranslationsScreen(
                     selectedTabIndex = state.languages.indexOf(element = state.selectedLanguage).coerceAtLeast(minimumValue = 0),
                     items = state.languages.map { languageIso ->
                         Tab(
-                            text = getTranslation(key = languageIso),
+                            text = getTranslation(key = "language_$languageIso", default = languageIso),
                             onClick = { store.send(action = TranslationsScreenAction.SelectLanguage(languageIso = languageIso)) }
                         )
                     }.toPersistentList()
@@ -81,8 +81,8 @@ private fun TranslationsScreenPreview() = Preview {
         translations = mapOf(
             "translation_key" to "Key",
             "translation_value" to "Value",
-            "en" to "English",
-            "pt" to "Português",
+            "language_en" to "English",
+            "language_pt" to "Português",
         )
     )
     TranslationsScreen(
@@ -93,8 +93,8 @@ private fun TranslationsScreenPreview() = Preview {
                 languages = persistentListOf("en", "pt"),
                 selectedLanguage = "en",
                 translations = persistentListOf(
-                    TranslationItem(id = "app_name", key = "app_name", value = "App Builder"),
-                    TranslationItem(id = "yes", key = "yes", value = "Yes"),
+                    TranslationItem(id = "login_app_name", key = "login_app_name", value = "App Builder"),
+                    TranslationItem(id = "login_submit", key = "login_submit", value = "Login"),
                 )
             )
         )

@@ -17,7 +17,7 @@ fun HelpScreen() {
         onBackClick = { router.back() },
         topBar = {
             TopActionBar(
-                title = "help",
+                title = "help_title",
                 onBackClick = { router.back() }
             )
         },

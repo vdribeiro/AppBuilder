@@ -54,7 +54,7 @@ fun EditProfile(
             value = name,
             editing = true,
             onValueChange = onNameValueChange,
-            label = "user_name",
+            label = "edit_profile_name",
         )
 
         TextField(
@@ -63,7 +63,7 @@ fun EditProfile(
             editing = true,
             keyboardType = KeyboardType.Uri,
             onValueChange = onAvatarValueChange,
-            label = "user_avatar",
+            label = "edit_profile_avatar",
         )
 
         Spacer(modifier = Modifier.height(height = 16.dp))
@@ -73,7 +73,7 @@ fun EditProfile(
                 .testTag(tag = "save")
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp),
-            text = getTranslation(key = "save"),
+            text = getTranslation(key = "edit_profile_save"),
             enabled = name.isNotBlank(),
             onClick = { onSubmit() }
         )
@@ -85,9 +85,9 @@ fun EditProfile(
 private fun EditProfilePreview() = Preview {
     InjectTranslations(
         translations = mapOf(
-            "user_name" to "Name",
-            "user_avatar" to "Avatar URL",
-            "save" to "Save"
+            "edit_profile_name" to "Name",
+            "edit_profile_avatar" to "Avatar URL",
+            "edit_profile_save" to "Save"
         )
     )
     EditProfile(name = "Vitor Ribeiro", avatar = "https://example.com/avatar.png")

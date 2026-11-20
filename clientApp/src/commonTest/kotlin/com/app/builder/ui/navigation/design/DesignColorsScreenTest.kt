@@ -53,7 +53,7 @@ class DesignColorsScreenTest: DesignScreenTestCase() {
         mainClock.advanceTimeByFrame()
         onNodeWithTag(testTag = "color_picker_hex").performTextReplacement(text = "#123456")
         mainClock.advanceTimeByFrame()
-        onNodeWithText(text = "apply").performClick()
+        onNodeWithText(text = "color_picker_apply").performClick()
         mainClock.advanceTimeByFrame()
 
         assertEquals(expected = CustomTheme(mode = ThemeMode.DARK, dark = mapOf(ColorRole.PRIMARY.name to "#123456")), actual = store.savedTheme)
@@ -73,7 +73,7 @@ class DesignColorsScreenTest: DesignScreenTestCase() {
 
         onNodeWithTag(testTag = "color_picker_hex").performTextReplacement(text = "#123456")
         mainClock.advanceTimeByFrame()
-        onNodeWithText(text = "apply").performClick()
+        onNodeWithText(text = "color_picker_apply").performClick()
         mainClock.advanceTimeByFrame()
 
         val expected = CustomTheme(mode = ThemeMode.LIGHT, light = mapOf(ColorRole.PRIMARY.name to "#123456"))
@@ -94,7 +94,7 @@ class DesignColorsScreenTest: DesignScreenTestCase() {
         onNodeWithTag(testTag = "color_picker_hex").performTextReplacement(text = "#12")
         mainClock.advanceTimeByFrame()
 
-        onNodeWithText(text = "apply").assertIsNotEnabled()
+        onNodeWithText(text = "color_picker_apply").assertIsNotEnabled()
     }
 
     /** Verifies that resetting a color from the color picker restores its default. */
@@ -108,7 +108,7 @@ class DesignColorsScreenTest: DesignScreenTestCase() {
 
         onNodeWithTag(testTag = "color_swatch_${ColorRole.PRIMARY.name}").performClick()
         mainClock.advanceTimeByFrame()
-        onNodeWithText(text = "reset").performClick()
+        onNodeWithText(text = "color_picker_reset").performClick()
         mainClock.advanceTimeByFrame()
 
         assertEquals(expected = CustomTheme(mode = ThemeMode.LIGHT), actual = store.savedTheme)

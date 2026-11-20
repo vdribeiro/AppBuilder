@@ -58,7 +58,7 @@ class DeviceFilesScreenStore(
      */
     private fun openDeviceFile(action: DeviceFilesScreenAction.OpenFile): Job = launch(id = "openFile") {
         val opened = openFile(path = action.path)
-        updateState { it.copy(message = if (opened) null else "unable_to_open_file") }
+        updateState { it.copy(message = if (opened) null else "device_file_unable_to_open") }
     }
 
     /**

@@ -63,9 +63,8 @@ fun BuildingListScreen(
 private fun BuildingListScreenPreview() = Preview {
     InjectTranslations(
         translations = mapOf(
-            "building_list" to "Buildings",
             "building_name" to "Name",
-            "description" to "Description"
+            "building_description" to "Description"
         )
     )
     BuildingListScreen(

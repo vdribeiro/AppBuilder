@@ -79,76 +79,76 @@ fun UserProfile(
         }
 
         if (!guest) item {
-            UserProfileSection(title = "account") {
+            UserProfileSection(title = "profile_account") {
                 ListItem(
                     modifier = Modifier.clickable { onEditProfileClick() },
-                    headlineText = getTranslation(key = "edit_profile"),
+                    headlineText = getTranslation(key = "profile_edit_profile"),
                 )
                 Divider()
                 ListItem(
                     modifier = Modifier.clickable { onChangePasswordClick() },
-                    headlineText = getTranslation(key = "change_password"),
+                    headlineText = getTranslation(key = "profile_change_password"),
                 )
                 Divider()
                 if (onNotificationsClick != null) {
                     ListItem(
                         modifier = Modifier.clickable { onNotificationsClick() },
-                        headlineText = getTranslation(key = "notifications"),
+                        headlineText = getTranslation(key = "profile_notifications"),
                     )
                     Divider()
                 }
                 ListItem(
                     modifier = Modifier.clickable { onLogoutClick() },
-                    headlineText = getTranslation(key = "logout"),
+                    headlineText = getTranslation(key = "profile_logout"),
                 )
             }
         }
 
         item {
-            UserProfileSection(title = "device") {
+            UserProfileSection(title = "profile_device") {
                 ListItem(
                     modifier = Modifier
                         .testTag(tag = "language")
                         .then(other = onLanguageClick?.let { Modifier.clickable { it() } } ?: Modifier),
-                    headlineText = getTranslation(key = "language"),
-                    trailingContent = { Text(text = getTranslation(key = language), style = typography.bodyMedium) },
+                    headlineText = getTranslation(key = "profile_language"),
+                    trailingContent = { Text(text = getTranslation(key = "language_$language", default = language), style = typography.bodyMedium) },
                 )
                 if (!guest) {
                     Divider()
                     ListItem(
                         modifier = Modifier.clickable { onResetClick() },
-                        headlineText = getTranslation(key = "reset"),
+                        headlineText = getTranslation(key = "profile_reset"),
                     )
                 }
             }
         }
 
         item {
-            UserProfileSection(title = "about") {
+            UserProfileSection(title = "profile_about") {
                 if (onHelpClick != null) {
                     ListItem(
                         modifier = Modifier.clickable { onHelpClick() },
-                        headlineText = getTranslation(key = "help"),
+                        headlineText = getTranslation(key = "profile_help"),
                     )
                     Divider()
                 }
                 ListItem(
                     modifier = Modifier.clickable { onSendFeedbackClick() },
-                    headlineText = getTranslation(key = "send_feedback"),
+                    headlineText = getTranslation(key = "profile_send_feedback"),
                 )
                 Divider()
                 ListItem(
                     modifier = Modifier.clickable { onCopyrightClick() },
-                    headlineText = getTranslation(key = "copyright"),
+                    headlineText = getTranslation(key = "profile_copyright"),
                 )
                 Divider()
                 ListItem(
                     modifier = Modifier.clickable { onPrivacyPolicyClick() },
-                    headlineText = getTranslation(key = "privacy_policy"),
+                    headlineText = getTranslation(key = "profile_privacy_policy"),
                 )
                 Divider()
                 ListItem(
-                    headlineText = getTranslation(key = "app_version"),
+                    headlineText = getTranslation(key = "profile_app_version"),
                     trailingContent = { Text(text = appVersion, style = typography.bodyMedium) },
                 )
             }

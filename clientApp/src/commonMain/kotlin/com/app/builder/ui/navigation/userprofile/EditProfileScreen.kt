@@ -34,7 +34,7 @@ fun EditProfileScreen(store: Store<EditProfileScreenState, EditProfileScreenActi
         onBackClick = { router.back() },
         topBar = {
             TopActionBar(
-                title = "edit_profile",
+                title = "edit_profile_title",
                 onBackClick = { router.back() }
             )
         },
@@ -60,10 +60,10 @@ fun EditProfileScreen(store: Store<EditProfileScreenState, EditProfileScreenActi
 private fun EditProfileScreenPreview() = Preview {
     InjectTranslations(
         translations = mapOf(
-            "edit_profile" to "Edit Profile",
-            "user_name" to "Name",
-            "user_avatar" to "Avatar URL",
-            "save" to "Save"
+            "edit_profile_title" to "Edit Profile",
+            "edit_profile_name" to "Name",
+            "edit_profile_avatar" to "Avatar URL",
+            "edit_profile_save" to "Save"
         )
     )
     val user = User(name = "Vitor Ribeiro")

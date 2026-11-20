@@ -103,7 +103,7 @@ class TaskDetailScreenTest: TestCase() {
 
         onNodeWithTag(testTag = "action_bar").assertIsDisplayed()
         onNodeWithTag(testTag = "navigation_bar").assertIsDisplayed()
-        onNodeWithText(text = "more").assertIsDisplayed()
+        onNodeWithText(text = "navigation_more").assertIsDisplayed()
 
         onNodeWithText(text = "task_title").assertIsDisplayed()
         onNodeWithText(text = FakeData.task.title).assertIsDisplayed()

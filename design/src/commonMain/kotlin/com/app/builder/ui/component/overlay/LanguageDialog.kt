@@ -48,9 +48,9 @@ fun LanguageDialog(
 
     Dialog(
         modifier = modifier.testTag(tag = "language_dialog"),
-        title = getTranslation(key = "language"),
-        confirmText = getTranslation(key = "apply"),
-        dismissText = getTranslation(key = "cancel"),
+        title = getTranslation(key = "language_dialog_title"),
+        confirmText = getTranslation(key = "language_dialog_apply"),
+        dismissText = getTranslation(key = "language_dialog_cancel"),
         onConfirm = onApply,
         onDismiss = onDismiss,
     ) {
@@ -70,7 +70,7 @@ fun LanguageDialog(
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     RadioButton(selected = candidate == selectedLanguage)
-                    Text(text = getTranslation(key = candidate ?: "system"), maxLines = 1, style = typography.bodyLarge)
+                    Text(text = getTranslation(key = "language_${candidate ?: "system"}", default = candidate ?: "system"), maxLines = 1, style = typography.bodyLarge)
                 }
             }
         }
@@ -82,12 +82,12 @@ fun LanguageDialog(
 private fun LanguageDialogPreview() = Preview {
     InjectTranslations(
         translations = mapOf(
-            "language" to "Language",
-            "system" to "System",
-            "en" to "English",
-            "pt" to "Português",
-            "apply" to "Apply",
-            "cancel" to "Cancel"
+            "language_dialog_title" to "Language",
+            "language_system" to "System",
+            "language_en" to "English",
+            "language_pt" to "Português",
+            "language_dialog_apply" to "Apply",
+            "language_dialog_cancel" to "Cancel"
         )
     )
     LanguageDialog(

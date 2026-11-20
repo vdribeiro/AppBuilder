@@ -63,9 +63,8 @@ fun EquipmentListScreen(
 private fun EquipmentListScreenPreview() = Preview {
     InjectTranslations(
         translations = mapOf(
-            "equipment_list" to "Equipments",
             "equipment_name" to "Name",
-            "description" to "Description"
+            "equipment_description" to "Description"
         )
     )
     EquipmentListScreen(

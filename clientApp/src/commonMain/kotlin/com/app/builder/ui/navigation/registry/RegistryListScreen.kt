@@ -54,7 +54,7 @@ fun RegistryListScreen(
 private fun RegistryListScreenPreview() = Preview {
     InjectTranslations(
         translations = mapOf(
-            "registry" to "Registry"
+            "navigation_registry" to "Registry"
         )
     )
     RegistryListScreen(

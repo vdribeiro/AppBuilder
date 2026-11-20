@@ -15,6 +15,6 @@ import com.app.builder.ui.getTranslation
 actual fun CameraPreview(modifier: Modifier, camera: Camera) {
     // Live preview is not supported on desktop as there is no standard JVM API for rendering a webcam stream without native libraries.
     Box(modifier = modifier, contentAlignment = Alignment.Center) {
-        Text(text = getTranslation(key = "not_supported"))
+        Text(text = getTranslation(key = "camera_not_supported"))
     }
 }

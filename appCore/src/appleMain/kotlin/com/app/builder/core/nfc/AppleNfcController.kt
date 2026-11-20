@@ -71,7 +71,7 @@ internal class AppleNfcController: NfcController() {
             queue = null,
             invalidateAfterFirstRead = false
         ).apply {
-            alertMessage = "scan_nfc_tag"
+            alertMessage = "nfc_scan_tag"
             beginSession()
         }
         session = newSession
@@ -114,7 +114,7 @@ internal class AppleNfcController: NfcController() {
                 val records = message?.records?.mapNotNull { record -> (record as? NFCNDEFPayload)?.toNfcRecord() } ?: emptyList()
                 TagProvider.sendTag(tag = NfcTag(id = tag.serialNumber(), records = records))
 
-                session.alertMessage = "tag_read"
+                session.alertMessage = "nfc_tag_read"
                 session.invalidateSession()
                 stop()
             }
@@ -146,7 +146,7 @@ internal class AppleNfcController: NfcController() {
                     return@writeNDEF
                 }
 
-                session.alertMessage = "tag_write"
+                session.alertMessage = "nfc_tag_written"
                 session.invalidateSession()
                 stop()
             }

@@ -72,9 +72,9 @@ fun PickerDialog(
 @PreviewLightDark
 @Composable
 private fun PickerDialogPreview() = Preview {
-    InjectTranslations(translations = mapOf("building_link_equipments" to "Link equipments"))
+    InjectTranslations(translations = mapOf("building_link_equipments_title" to "Link equipments"))
     PickerDialog(
-        title = "building_link_equipments",
+        title = "building_link_equipments_title",
     ) {
         Text(text = "List of equipments")
     }

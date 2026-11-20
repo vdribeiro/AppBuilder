@@ -33,15 +33,14 @@ import com.app.builder.data.database.DatabaseFactory.getInMemoryConnectionFactor
 import com.app.builder.data.database.DatabaseFactory.getPostgresConnectionFactory
 import com.app.builder.data.http.URL.Companion.DEV_PORT
 import com.app.builder.data.http.installHttpPlugins
-import com.app.builder.data.serializer.decode
 import com.app.builder.data.signal.LocalSignal
 import com.app.builder.data.signal.PostgresSignal
 import com.app.builder.domain.Account
 import com.app.builder.domain.EntityType
 import com.app.builder.domain.Permission
 import com.app.builder.domain.RegistrationForm
-import com.app.builder.domain.Translation
 import com.app.builder.domain.User
+import com.app.builder.domain.decodeTranslations
 import com.app.builder.domain.push.FcmManager
 import com.app.builder.domain.push.NoOpFcmService
 import com.app.builder.domain.route.installRouting
@@ -278,7 +277,7 @@ private suspend fun seedSuperUser(dependency: Dependency) {
  */
 private suspend fun seedTranslations(dependency: Dependency) {
     val translations = readResource(path = TRANSLATIONS_RESOURCE)
-        ?.let { decode<List<Translation>>(value = it) }
+        ?.let { decodeTranslations(value = it) }
         ?: run {
             Telemetry.error(tag = TAG, message = "Unable to load the translations file")
             return

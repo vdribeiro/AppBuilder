@@ -58,8 +58,8 @@ fun Feedback(
             contentDescription = "Feedback Icon",
         )
 
-        val text = if (error) getTranslation(key = "system_failure", default = "An unexpected error occurred.\nPlease contact your system administrator.") else {
-            getTranslation(key = "feedback", default = "Your feedback is important and extremely appreciated!\nThank you!")
+        val text = if (error) getTranslation(key = "feedback_error", default = "An unexpected error occurred.\nPlease contact your system administrator.") else {
+            getTranslation(key = "feedback_message", default = "Your feedback is important and extremely appreciated!\nThank you!")
         }
         Text(
             text = text,
@@ -78,8 +78,8 @@ fun Feedback(
                 showThanks = false
             },
         )
-        val thanks = getTranslation(key = "thanks").takeIf { it != "thanks" } ?: "Thank you for your feedback"
-        val send = getTranslation(key = "send").takeIf { it != "send" } ?: "Send"
+        val thanks = getTranslation(key = "feedback_thanks").takeIf { it != "feedback_thanks" } ?: "Thank you for your feedback"
+        val send = getTranslation(key = "feedback_send").takeIf { it != "feedback_send" } ?: "Send"
         Button(
             enabled = !showThanks && feedback.isNotBlank(),
             text = if (showThanks) thanks else send,

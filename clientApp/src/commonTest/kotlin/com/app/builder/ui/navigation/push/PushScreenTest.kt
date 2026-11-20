@@ -39,7 +39,7 @@ class PushScreenTest: TestCase() {
         setUI { PushScreen(sessionStore = sessionStore, store = pushScreenStore) }
 
         onNodeWithTag(testTag = "navigation_bar").assertIsDisplayed()
-        onNode(matcher = isSelected() and hasText(text = "push")).assertIsDisplayed()
+        onNode(matcher = isSelected() and hasText(text = "navigation_push")).assertIsDisplayed()
         onNodeWithText(text = "push_field_type").assertIsDisplayed()
         onNodeWithText(text = "push_field_broadcast").assertIsDisplayed()
         onNodeWithText(text = "push_field_title").assertIsDisplayed()
@@ -59,7 +59,7 @@ class PushScreenTest: TestCase() {
         pushScreenStore.send(action = PushScreenAction.ToggleBroadcast(value = false))
         waitForIdle()
 
-        onNodeWithText(text = "users").assertIsDisplayed()
+        onNodeWithText(text = "push_users").assertIsDisplayed()
         val user = pushScreenStore.state.users.first()
         pushScreenStore.send(action = PushScreenAction.ToggleUser(user = user))
         waitForIdle()

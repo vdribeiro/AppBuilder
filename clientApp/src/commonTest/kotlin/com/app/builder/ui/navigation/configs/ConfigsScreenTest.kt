@@ -48,7 +48,7 @@ class ConfigsScreenTest: TestCase() {
         setUI { ConfigsScreen(sessionStore = sessionStore, store = configScreenStore) }
 
         onNodeWithTag(testTag = "navigation_bar").assertIsDisplayed()
-        onNode(matcher = isSelected() and hasText(text = "config")).assertIsDisplayed()
+        onNode(matcher = isSelected() and hasText(text = "navigation_config")).assertIsDisplayed()
         onNodeWithTag(testTag = "config_navigation_rail").assertIsDisplayed()
         onNodeWithTag(testTag = "config_sections").assertIsDisplayed()
 

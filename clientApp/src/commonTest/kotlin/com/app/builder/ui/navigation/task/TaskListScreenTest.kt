@@ -71,7 +71,7 @@ class TaskListScreenTest: TestCase() {
 
         onNodeWithTag(testTag = "action_bar").assertIsDisplayed()
         onNodeWithTag(testTag = "navigation_bar").assertIsDisplayed()
-        onNodeWithText(text = "more").assertIsDisplayed()
+        onNodeWithText(text = "navigation_more").assertIsDisplayed()
 
         onNodeWithTag(testTag = "task_list").assertIsDisplayed()
         onNodeWithTag(testTag = "task_list").count(count = 1)

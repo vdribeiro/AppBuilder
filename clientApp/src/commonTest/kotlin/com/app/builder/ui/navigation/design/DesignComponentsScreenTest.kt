@@ -43,10 +43,10 @@ class DesignComponentsScreenTest: DesignScreenTestCase() {
 
         onNodeWithTag(testTag = "action_bar").assertIsDisplayed()
         onNodeWithTag(testTag = "navigation_bar").assertIsDisplayed()
-        listOf("app", "design_components", "design_colors", "design_shapes", "design_typography").forEach { text ->
+        listOf("navigation_app", "navigation_design_components", "navigation_design_colors", "navigation_design_shapes", "navigation_design_typography").forEach { text ->
             onNode(matcher = hasText(text = text) and hasAnyAncestor(matcher = hasTestTag(testTag = "navigation_bar"))).assertIsDisplayed()
         }
-        onNode(matcher = isSelected() and hasText(text = "design_components")).assertIsDisplayed()
+        onNode(matcher = isSelected() and hasText(text = "navigation_design_components")).assertIsDisplayed()
     }
 
     /** Verifies that selecting another design route in the navigation bar opens its screen. */
@@ -55,7 +55,7 @@ class DesignComponentsScreenTest: DesignScreenTestCase() {
         setShowcase { DesignComponentsScreen(sessionStore = sessionStore) }
         waitForIdle()
 
-        onNodeWithText(text = "design_colors").performClick()
+        onNodeWithText(text = "navigation_design_colors").performClick()
         waitForIdle()
 
         assertEquals(expected = listOf<NavKey>(Screen.DesignColors), actual = router.backStack.toList())
@@ -67,7 +67,7 @@ class DesignComponentsScreenTest: DesignScreenTestCase() {
         setShowcase { DesignComponentsScreen(sessionStore = sessionStore) }
         waitForIdle()
 
-        onNodeWithText(text = "app").performClick()
+        onNodeWithText(text = "navigation_app").performClick()
         waitForIdle()
 
         assertEquals(expected = listOf<NavKey>(authenticatedScreen), actual = router.backStack.toList())

@@ -99,7 +99,7 @@ fun TaskDetailScreen(
 private fun TaskDetailScreenPreview() = Preview {
     InjectTranslations(
         translations = mapOf(
-            "title" to "Title"
+            "task_title" to "Title"
         )
     )
     val task = Task(

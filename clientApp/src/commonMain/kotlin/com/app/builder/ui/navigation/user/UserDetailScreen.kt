@@ -155,14 +155,14 @@ fun UserDetailScreen(
     BuildingLinkPicker(
         store = buildingPickerStore,
         filtersStore = buildingFiltersStore,
-        title = "user_link_buildings",
+        title = "user_link_buildings_title",
         onConfirm = { store.send(action = UserDetailScreenAction.SetBuildings(buildings = it)) }
     )
 
     EquipmentLinkPicker(
         store = equipmentPickerStore,
         filtersStore = equipmentFiltersStore,
-        title = "user_link_equipments",
+        title = "user_link_equipments_title",
         onConfirm = { store.send(action = UserDetailScreenAction.SetEquipments(equipments = it)) }
     )
 }
@@ -175,7 +175,7 @@ fun UserDetailScreen(
 private fun Account.toPermissionItems(): ImmutableList<PermissionItem> = EntityType.entries.map {
     PermissionItem(
         id = it.name,
-        name = it.name.lowercase(),
+        name = "permission_${it.name.lowercase()}",
         read = hasPermission(entityType = it, permission = Permission.READ),
         write = hasPermission(entityType = it, permission = Permission.WRITE)
     )

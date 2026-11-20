@@ -65,11 +65,11 @@ enum class ConfigType(
     val entityType: EntityType
 ) {
     /** Client feature flags. */
-    CLIENT_FLAG(text = "client_flag", icon = Icons.Filled.Flag, entityType = EntityType.CLIENT_FLAG),
+    CLIENT_FLAG(text = "config_client_flag", icon = Icons.Filled.Flag, entityType = EntityType.CLIENT_FLAG),
     /** Client configs. */
-    CLIENT_CONFIG(text = "client_config", icon = Icons.Filled.Settings, entityType = EntityType.CLIENT_CONFIG),
+    CLIENT_CONFIG(text = "config_client_config", icon = Icons.Filled.Settings, entityType = EntityType.CLIENT_CONFIG),
     /** Server feature flags. */
-    SERVER_FLAG(text = "server_flag", icon = Icons.Outlined.Flag, entityType = EntityType.SERVER_FLAG),
+    SERVER_FLAG(text = "config_server_flag", icon = Icons.Outlined.Flag, entityType = EntityType.SERVER_FLAG),
     /** Server configs. */
-    SERVER_CONFIG(text = "server_config", icon = Icons.Outlined.Settings, entityType = EntityType.SERVER_CONFIG)
+    SERVER_CONFIG(text = "config_server_config", icon = Icons.Outlined.Settings, entityType = EntityType.SERVER_CONFIG)
 }

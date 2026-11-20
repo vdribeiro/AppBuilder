@@ -51,10 +51,10 @@ fun LoginScreen(store: Store<LoginScreenState, LoginScreenAction>) {
 private fun LoginScreenLoadingPreview() = Preview {
     InjectTranslations(
         translations = mapOf(
-            "app_name" to "App Builder",
-            "username" to "Username",
-            "password" to "Password",
-            "login" to "Login"
+            "login_app_name" to "App Builder",
+            "login_username" to "Username",
+            "login_password" to "Password",
+            "login_submit" to "Login"
         )
     )
     LoginScreen(
@@ -73,10 +73,10 @@ private fun LoginScreenLoadingPreview() = Preview {
 private fun LoginScreenAllPreview() = Preview {
     InjectTranslations(
         translations = mapOf(
-            "app_name" to "App Builder",
-            "username" to "Username",
-            "password" to "Password",
-            "login" to "Login"
+            "login_app_name" to "App Builder",
+            "login_username" to "Username",
+            "login_password" to "Password",
+            "login_submit" to "Login"
         )
     )
     LoginScreen(

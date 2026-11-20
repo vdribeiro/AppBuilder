@@ -61,13 +61,13 @@ class DeviceFilesScreenTest: TestCase() {
         store.send(action = DeviceFilesScreenAction.OpenFile(path = "${FakeData.task.uuid}.missing"))
         waitUntil { store.state.message != null }
 
-        assertEquals(expected = "unable_to_open_file", actual = store.state.message)
-        onNodeWithText(text = "unable_to_open_file").assertIsDisplayed()
+        assertEquals(expected = "device_file_unable_to_open", actual = store.state.message)
+        onNodeWithText(text = "device_file_unable_to_open").assertIsDisplayed()
 
         store.send(action = DeviceFilesScreenAction.DismissMessage)
         waitForIdle()
 
         assertNull(actual = store.state.message)
-        onNodeWithText(text = "unable_to_open_file").assertDoesNotExist()
+        onNodeWithText(text = "device_file_unable_to_open").assertDoesNotExist()
     }
 }

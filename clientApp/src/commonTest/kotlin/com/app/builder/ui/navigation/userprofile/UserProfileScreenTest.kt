@@ -39,15 +39,15 @@ class UserProfileScreenTest: TestCase() {
         waitUntil { store.state.guest }
         assertNull(actual = store.state.name)
 
-        onNodeWithText(text = "about").assertIsDisplayed()
-        onNodeWithText(text = "account").assertDoesNotExist()
-        onNodeWithText(text = "logout").assertDoesNotExist()
-        onNodeWithText(text = "device").assertIsDisplayed()
-        onNodeWithText(text = "language").assertIsDisplayed()
-        onNodeWithText(text = "reset").assertDoesNotExist()
-        onNodeWithText(text = "help").assertDoesNotExist()
+        onNodeWithText(text = "profile_about").assertIsDisplayed()
+        onNodeWithText(text = "profile_account").assertDoesNotExist()
+        onNodeWithText(text = "profile_logout").assertDoesNotExist()
+        onNodeWithText(text = "profile_device").assertIsDisplayed()
+        onNodeWithText(text = "profile_language").assertIsDisplayed()
+        onNodeWithText(text = "profile_reset").assertDoesNotExist()
+        onNodeWithText(text = "profile_help").assertDoesNotExist()
 
-        onNodeWithText(text = "send_feedback").performScrollTo().performClick()
+        onNodeWithText(text = "profile_send_feedback").performScrollTo().performClick()
         assertEquals(expected = listOf(Screen.Error(error = false)), actual = router.backStack.toList())
     }
 
@@ -65,13 +65,13 @@ class UserProfileScreenTest: TestCase() {
         setUI { UserProfileScreen(store = store) }
 
         waitUntil { !store.state.guest }
-        onNodeWithText(text = "help").performScrollTo().assertIsDisplayed()
+        onNodeWithText(text = "profile_help").performScrollTo().assertIsDisplayed()
 
         ClientFlags.set { it.copy(help = false) }
         waitForIdle()
 
-        onNodeWithText(text = "help").assertDoesNotExist()
-        onNodeWithText(text = "send_feedback").performScrollTo().assertIsDisplayed()
+        onNodeWithText(text = "profile_help").assertDoesNotExist()
+        onNodeWithText(text = "profile_send_feedback").performScrollTo().assertIsDisplayed()
     }
 
     /** Verifies that help opens the help screen for a logged in user. */
@@ -88,7 +88,7 @@ class UserProfileScreenTest: TestCase() {
         setUI { UserProfileScreen(store = store) }
 
         waitUntil { !store.state.guest }
-        onNodeWithText(text = "help").performScrollTo().performClick()
+        onNodeWithText(text = "profile_help").performScrollTo().performClick()
         assertEquals(expected = listOf(Screen.Help), actual = router.backStack.toList())
     }
 
@@ -106,7 +106,7 @@ class UserProfileScreenTest: TestCase() {
         setUI { UserProfileScreen(store = store) }
 
         waitUntil { !store.state.guest }
-        onNodeWithText(text = "edit_profile").performScrollTo().performClick()
+        onNodeWithText(text = "profile_edit_profile").performScrollTo().performClick()
         assertEquals(expected = listOf(Screen.EditProfile), actual = router.backStack.toList())
     }
 
@@ -124,7 +124,7 @@ class UserProfileScreenTest: TestCase() {
         setUI { UserProfileScreen(store = store) }
 
         waitUntil { !store.state.guest }
-        onNodeWithText(text = "change_password").performScrollTo().performClick()
+        onNodeWithText(text = "profile_change_password").performScrollTo().performClick()
         assertEquals(expected = listOf(Screen.ChangePassword), actual = router.backStack.toList())
     }
 
@@ -145,13 +145,13 @@ class UserProfileScreenTest: TestCase() {
         assertEquals(expected = FakeData.adminUser.name, actual = store.state.name)
 
         onNodeWithText(text = FakeData.adminUser.name).assertIsDisplayed()
-        onNodeWithText(text = "account").assertIsDisplayed()
-        onNodeWithText(text = "logout").performScrollTo().performClick()
+        onNodeWithText(text = "profile_account").assertIsDisplayed()
+        onNodeWithText(text = "profile_logout").performScrollTo().performClick()
 
         waitUntil { store.state.guest }
         assertNull(actual = store.state.name)
         assertNull(actual = authenticationUseCases.observeCurrentUser().firstOrNull())
-        onNodeWithText(text = "account").assertDoesNotExist()
+        onNodeWithText(text = "profile_account").assertDoesNotExist()
         assertTrue(actual = router.backStack.isEmpty())
     }
 
@@ -179,7 +179,7 @@ class UserProfileScreenTest: TestCase() {
         onNodeWithTag(testTag = "language").performScrollTo().performClick()
         onNodeWithTag(testTag = "language_$language").performClick()
         assertNull(actual = store.state.selectedLanguage)
-        onNodeWithText(text = "apply").performClick()
+        onNodeWithText(text = "language_dialog_apply").performClick()
 
         waitUntil { store.state.selectedLanguage == language && store.state.language == language }
         assertEquals(expected = language, actual = SelectedLanguage.value)
@@ -188,7 +188,7 @@ class UserProfileScreenTest: TestCase() {
 
         onNodeWithTag(testTag = "language").performScrollTo().performClick()
         onNodeWithTag(testTag = "language_system").performClick()
-        onNodeWithText(text = "apply").performClick()
+        onNodeWithText(text = "language_dialog_apply").performClick()
 
         waitUntil { store.state.selectedLanguage == null }
     }

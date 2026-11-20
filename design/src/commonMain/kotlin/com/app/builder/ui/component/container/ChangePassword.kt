@@ -55,7 +55,7 @@ fun ChangePassword(
             editing = true,
             keyboardType = KeyboardType.Password,
             onValueChange = onCurrentPasswordValueChange,
-            label = "current_password",
+            label = "change_password_current",
             enabled = !loading,
         )
 
@@ -65,7 +65,7 @@ fun ChangePassword(
             editing = true,
             keyboardType = KeyboardType.Password,
             onValueChange = onNewPasswordValueChange,
-            label = "new_password",
+            label = "change_password_new",
             enabled = !loading,
         )
 
@@ -75,7 +75,7 @@ fun ChangePassword(
             editing = true,
             keyboardType = KeyboardType.Password,
             onValueChange = onConfirmPasswordValueChange,
-            label = "confirm_password",
+            label = "change_password_confirm",
             enabled = !loading,
             isError = confirmPassword.isNotEmpty() && confirmPassword != newPassword,
         )
@@ -87,7 +87,7 @@ fun ChangePassword(
                 .testTag(tag = "change_password")
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp),
-            text = getTranslation(key = "change_password"),
+            text = getTranslation(key = "change_password_submit"),
             loading = loading,
             enabled = !loading && currentPassword.isNotBlank() && newPassword.isNotBlank() && confirmPassword == newPassword,
             onClick = { onSubmit() }
@@ -100,10 +100,10 @@ fun ChangePassword(
 private fun ChangePasswordPreview() = Preview {
     InjectTranslations(
         translations = mapOf(
-            "current_password" to "Current Password",
-            "new_password" to "New Password",
-            "confirm_password" to "Confirm Password",
-            "change_password" to "Change Password"
+            "change_password_current" to "Current Password",
+            "change_password_new" to "New Password",
+            "change_password_confirm" to "Confirm Password",
+            "change_password_submit" to "Change Password"
         )
     )
     ChangePassword(

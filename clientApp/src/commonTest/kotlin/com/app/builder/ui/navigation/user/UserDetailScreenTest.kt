@@ -160,9 +160,9 @@ class UserDetailScreenTest: TestCase() {
         onNodeWithTag(testTag = "action_bar").assertIsDisplayed()
         onNodeWithTag(testTag = "navigation_bar").assertIsDisplayed()
         onNodeWithText(text = FakeData.user.name).assert(matcher = !hasSetTextAction())
-        onNodeWithText(text = "username").assertIsDisplayed()
+        onNodeWithText(text = "user_account_username").assertIsDisplayed()
         onNode(matcher = SemanticsMatcher.keyIsDefined(key = SemanticsProperties.EditableText) and hasText(text = FakeData.account.username)).assertDoesNotExist()
-        onNodeWithText(text = "password").assertDoesNotExist()
+        onNodeWithText(text = "user_account_password").assertDoesNotExist()
         onNodeWithTag(testTag = "account_active").assertIsOn().assertIsNotEnabled()
         onNodeWithTag(testTag = "${EntityType.TASK.name}_read").assertIsOn().assertIsNotEnabled()
         onNodeWithTag(testTag = "${EntityType.TASK.name}_write").assertIsOff()
@@ -304,7 +304,7 @@ class UserDetailScreenTest: TestCase() {
         assertTrue(actual = store.state.new)
         assertEquals(expected = userUuid, actual = store.state.user?.uuid)
         assertEquals(expected = userUuid, actual = store.state.account?.userUuid)
-        onNodeWithText(text = "password").assertIsDisplayed()
+        onNodeWithText(text = "user_account_password").assertIsDisplayed()
         onNodeWithTag(testTag = "account_active").assertDoesNotExist()
         onNodeWithTag(testTag = "action_save").assertIsDisplayed()
         onNodeWithTag(testTag = "action_cancel").assertIsDisplayed()
@@ -348,7 +348,7 @@ class UserDetailScreenTest: TestCase() {
         assertEquals(expected = "", actual = store.state.password)
         assertEquals(expected = "newuser", actual = store.state.savedAccount?.username)
         assertEquals(expected = "newuser", actual = useCases.accountUseCases.observeAccount(userUuid = userUuid).first { it != null }?.username)
-        onNodeWithText(text = "password").assertDoesNotExist()
+        onNodeWithText(text = "user_account_password").assertDoesNotExist()
     }
 
     /** Verifies that failing to create the account of a new user keeps editing, while the user is no longer new. */
@@ -443,7 +443,7 @@ class UserDetailScreenTest: TestCase() {
 
         assertEquals(expected = user.uuid, actual = store.state.account?.userUuid)
         assertEquals(expected = "", actual = store.state.account?.username)
-        onNodeWithText(text = "password").assertIsDisplayed()
+        onNodeWithText(text = "user_account_password").assertIsDisplayed()
     }
 
     /** Verifies that an invalid user uuid loads nothing. */

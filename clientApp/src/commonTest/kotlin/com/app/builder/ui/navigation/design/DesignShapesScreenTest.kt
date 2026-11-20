@@ -39,7 +39,7 @@ class DesignShapesScreenTest: DesignScreenTestCase() {
         waitForIdle()
         mainClock.advanceTimeByFrame()
         onNodeWithText(text = "20dp").assertIsDisplayed()
-        onNodeWithText(text = "apply").performClick()
+        onNodeWithText(text = "shape_picker_apply").performClick()
         mainClock.advanceTimeByFrame()
 
         val expected = CustomTheme(shapes = mapOf(ShapeRole.MEDIUM.name to 20f))
@@ -58,7 +58,7 @@ class DesignShapesScreenTest: DesignScreenTestCase() {
 
         onNodeWithTag(testTag = "shape_swatch_${ShapeRole.MEDIUM.name}").performClick()
         mainClock.advanceTimeByFrame()
-        onNodeWithText(text = "reset").performClick()
+        onNodeWithText(text = "shape_picker_reset").performClick()
         mainClock.advanceTimeByFrame()
 
         assertEquals(expected = CustomTheme(), actual = store.savedTheme)

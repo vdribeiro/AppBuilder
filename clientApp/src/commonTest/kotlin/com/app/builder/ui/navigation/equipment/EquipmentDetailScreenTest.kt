@@ -165,7 +165,7 @@ class EquipmentDetailScreenTest: TestCase() {
 
         onNodeWithTag(testTag = "action_bar").assertIsDisplayed()
         onNodeWithTag(testTag = "navigation_bar").assertIsDisplayed()
-        onNode(matcher = isSelected() and hasText(text = "equipment")).assertIsDisplayed()
+        onNode(matcher = isSelected() and hasText(text = "navigation_equipment")).assertIsDisplayed()
 
         onNodeWithText(text = "equipment_name").assertIsDisplayed()
         onNodeWithText(text = FakeData.equipment.name).assertIsDisplayed()
