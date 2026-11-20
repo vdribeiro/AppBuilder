@@ -13,6 +13,7 @@ import com.app.builder.ui.Preview
 import com.app.builder.ui.component.field.FieldValue
 import com.app.builder.ui.core.card.Card
 import com.app.builder.ui.core.divider.Divider
+import com.app.builder.ui.core.text.TextValue
 
 /**
  * A read-only registry card, showing only the properties that are not `null`, grouped into the request, the client that made it, and its body.
@@ -53,24 +54,24 @@ fun RegistryCard(
 ) {
     val groups = listOf(
         listOf(
-            "registry_request_type" to requestType,
-            "registry_entity_type" to entityType,
-            "registry_entity_uuid" to entityUuid,
-            "registry_request_utc" to requestUtc,
-            "registry_request_sent_utc" to requestSentUtc,
+            "registry_request_type" to requestType?.let { TextValue.Plain(text = it) },
+            "registry_entity_type" to entityType?.let { TextValue.Plain(text = it) },
+            "registry_entity_uuid" to entityUuid?.let { TextValue.Plain(text = it) },
+            "registry_request_utc" to requestUtc?.let { TextValue.DateTime(utc = it) },
+            "registry_request_sent_utc" to requestSentUtc?.let { TextValue.DateTime(utc = it) },
         ),
         listOf(
-            "registry_request_uuid" to requestUuid,
-            "registry_user_uuid" to userUuid,
-            "registry_device_uuid" to deviceUuid,
-            "registry_brand" to brand,
-            "registry_model" to model,
-            "registry_os" to os,
-            "registry_os_version" to osVersion,
-            "registry_app_version" to appVersion,
+            "registry_request_uuid" to requestUuid?.let { TextValue.Plain(text = it) },
+            "registry_user_uuid" to userUuid?.let { TextValue.Plain(text = it) },
+            "registry_device_uuid" to deviceUuid?.let { TextValue.Plain(text = it) },
+            "registry_brand" to brand?.let { TextValue.Plain(text = it) },
+            "registry_model" to model?.let { TextValue.Plain(text = it) },
+            "registry_os" to os?.let { TextValue.Plain(text = it) },
+            "registry_os_version" to osVersion?.let { TextValue.Plain(text = it) },
+            "registry_app_version" to appVersion?.let { TextValue.Plain(text = it) },
         ),
         listOf(
-            "registry_payload" to payload,
+            "registry_payload" to payload?.let { TextValue.Plain(text = it) },
         ),
     ).map { group -> group.filter { it.second != null } }.filter { it.isNotEmpty() }
 
@@ -86,14 +87,11 @@ fun RegistryCard(
         ) {
             groups.forEachIndexed { index, group ->
                 if (index > 0) Divider(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
-                group.forEach { (label, value) -> FieldValue(label = label, value = value, dateTimeValue = label in DATE_TIME_LABELS) }
+                group.forEach { (label, value) -> FieldValue(label = label, value = value) }
             }
         }
     }
 }
-
-/** The labels of the fields whose value is shown as a localized date-time. */
-private val DATE_TIME_LABELS = setOf("registry_request_utc", "registry_request_sent_utc")
 
 @PreviewLightDark
 @Composable

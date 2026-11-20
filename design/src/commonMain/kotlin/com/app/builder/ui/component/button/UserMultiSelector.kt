@@ -19,7 +19,7 @@ import com.app.builder.ui.Preview
 import com.app.builder.ui.core.button.Checkbox
 import com.app.builder.ui.core.card.Card
 import com.app.builder.ui.core.text.Text
-import com.app.builder.ui.getTranslation
+import com.app.builder.ui.core.text.TextValue
 
 /**
  * User item.
@@ -55,8 +55,7 @@ fun UserMultiSelector(
         verticalArrangement = Arrangement.spacedBy(space = 8.dp)
     ) {
         Text(
-            text = getTranslation(key = "users", args = arrayOf(selectedUsers.size.toString())),
-            translate = false,
+            value = TextValue.Translation(key = "users", args = persistentListOf(selectedUsers.size.toString())),
             style = typography.titleMedium,
         )
         users.forEach { user ->

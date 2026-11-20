@@ -11,6 +11,7 @@ import androidx.compose.ui.unit.dp
 import com.app.builder.ui.LocalTypography
 import com.app.builder.ui.Preview
 import com.app.builder.ui.core.text.Text
+import com.app.builder.ui.core.text.TextValue
 
 /**
  * The read-only presentation shared by every field: a small muted label above its value.
@@ -19,17 +20,13 @@ import com.app.builder.ui.core.text.Text
  * @param modifier The [Modifier] to be applied to the root layout.
  * @param label The label of the field, translated.
  * @param value The value of the field.
- * @param translateValue True to translate [value], for values that are translation keys such as an option, false to show it as given.
- * @param dateTimeValue True to show [value], a UTC ISO-8601 string, as a localized date-time.
  * @param maxLines The maximum number of lines of [value] before it is truncated.
  */
 @Composable
 fun FieldValue(
     modifier: Modifier = Modifier,
     label: String = "",
-    value: String? = null,
-    translateValue: Boolean = false,
-    dateTimeValue: Boolean = false,
+    value: TextValue? = null,
     maxLines: Int = Int.MAX_VALUE,
 ) {
     val typography = LocalTypography.current
@@ -46,9 +43,7 @@ fun FieldValue(
             style = typography.labelMedium
         )
         Text(
-            text = value?.takeIf { it.isNotBlank() } ?: EMPTY_VALUE,
-            translate = translateValue && !value.isNullOrBlank(),
-            dateTime = dateTimeValue && !value.isNullOrBlank(),
+            value = value?.takeIf { !it.isBlank } ?: TextValue.Plain(text = EMPTY_VALUE),
             maxLines = maxLines,
             style = typography.bodyLarge
         )
@@ -62,7 +57,7 @@ private const val EMPTY_VALUE = "—"
 @Composable
 private fun FieldValuePreview() = Preview {
     Column {
-        FieldValue(label = "Title", value = "Be an awesome person")
-        FieldValue(label = "Description", value = "")
+        FieldValue(label = "Title", value = TextValue.Plain(text = "Be an awesome person"))
+        FieldValue(label = "Description", value = TextValue.Plain(text = ""))
     }
 }

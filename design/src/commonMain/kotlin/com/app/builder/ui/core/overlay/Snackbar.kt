@@ -11,6 +11,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import com.app.builder.ui.Preview
 import com.app.builder.ui.core.container.Scaffold
+import com.app.builder.ui.core.text.TextValue
+import com.app.builder.ui.core.text.resolve
 
 /**
  * A wrapper around Material 3's [SnackbarHost] that exposes a state-free, declarative API.
@@ -18,7 +20,7 @@ import com.app.builder.ui.core.container.Scaffold
  * This component manages its own [SnackbarHostState] and coordinates the presentation duration through a [LaunchedEffect] and coroutine timeout based on the provided parameters.
  *
  * @param modifier The [Modifier] to be applied to the root layout.
- * @param message The text content to display inside the snackbar.
+ * @param message The text to display inside the snackbar.
  * @param buttonText The text label for an optional action button. If null, no action button is rendered.
  * @param durationMillis The amount of time in milliseconds before the snackbar is programmatically dismissed. Defaults to [Long.MAX_VALUE] if an action button is present, or 3000ms if it is text-only.
  * @param onDismiss A callback invoked when the snackbar times out or is dismissed from the screen.
@@ -26,16 +28,17 @@ import com.app.builder.ui.core.container.Scaffold
 @Composable
 fun Snackbar(
     modifier: Modifier = Modifier,
-    message: String? = null,
+    message: TextValue? = null,
     buttonText: String? = null,
     durationMillis: Long = if (buttonText != null) Long.MAX_VALUE else 3000L,
     onDismiss: () -> Unit = {},
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
-    LaunchedEffect(key1 = message) {
+    val text = message?.resolve().orEmpty()
+    LaunchedEffect(key1 = text) {
         withTimeoutOrNull(timeMillis = durationMillis) {
             snackbarHostState.showSnackbar(
-                message = message.orEmpty(),
+                message = text,
                 actionLabel = buttonText,
                 duration = SnackbarDuration.Indefinite
             )
@@ -54,7 +57,7 @@ private fun SnackbarPreview() = Preview {
     Scaffold(
         snackbarHost = {
             Snackbar(
-                message = "Snackbar"
+                message = TextValue.Plain(text = "Snackbar")
             )
         }
     )
@@ -66,7 +69,7 @@ private fun SnackbarWithButtonPreview() = Preview {
     Scaffold(
         snackbarHost = {
             Snackbar(
-                message = "Snackbar",
+                message = TextValue.Plain(text = "Snackbar"),
                 buttonText = "Action"
             )
         }

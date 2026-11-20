@@ -27,6 +27,7 @@ import com.app.builder.ui.core.button.Dropdown
 import com.app.builder.ui.core.button.DropdownItem
 import com.app.builder.ui.core.image.Icon
 import com.app.builder.ui.core.text.Text
+import com.app.builder.ui.core.text.TextValue
 
 /**
  * A property with a fixed set of options.
@@ -54,7 +55,7 @@ fun ChoiceField(
     val typography = LocalTypography.current
 
     if (!editing) {
-        FieldValue(modifier = modifier, label = label, value = selected, translateValue = true)
+        FieldValue(modifier = modifier, label = label, value = selected?.let { TextValue.Translation(key = it) })
         return
     }
 

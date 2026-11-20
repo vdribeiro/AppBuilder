@@ -32,6 +32,7 @@ import com.app.builder.ui.core.overlay.Snackbar
 import com.app.builder.ui.core.overlay.TimePicker
 import com.app.builder.ui.core.overlay.Tooltip
 import com.app.builder.ui.core.text.Text
+import com.app.builder.ui.core.text.TextValue
 import com.app.builder.ui.showcase.ShowcaseSection
 
 /** Displays badges, date and time pickers, modal bottom sheets, dialogs, snackbars, and tooltips. */
@@ -185,7 +186,7 @@ private fun SnackbarPreview() {
                     onClick = { messageId++ }
                 )
             },
-            snackbarHost = { if (messageId > 0) Snackbar(message = "Action #$messageId completed", buttonText = "Undo") }
+            snackbarHost = { if (messageId > 0) Snackbar(message = TextValue.Plain(text = "Action #$messageId completed"), buttonText = "Undo") }
         )
     }
 }

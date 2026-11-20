@@ -24,7 +24,7 @@ import com.app.builder.ui.core.button.Switch
 import com.app.builder.ui.core.divider.Divider
 import com.app.builder.ui.core.text.Input
 import com.app.builder.ui.core.text.Text
-import com.app.builder.ui.getTranslation
+import com.app.builder.ui.core.text.TextValue
 
 /**
  * Renders a form for composing and sending a push payload:
@@ -138,7 +138,7 @@ fun PushForm(
             onClick = { onSendClick() },
         )
 
-        sent?.let { Text(text = getTranslation(key = "push_sent", args = arrayOf(it.toString())), translate = false, style = typography.bodyMedium) }
+        sent?.let { Text(value = TextValue.Translation(key = "push_sent", args = persistentListOf(it.toString())), style = typography.bodyMedium) }
     }
 }
 

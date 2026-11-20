@@ -18,6 +18,7 @@ import com.app.builder.core.security.uuid
 import com.app.builder.ui.Preview
 import com.app.builder.ui.core.image.Icon
 import com.app.builder.ui.core.list.LazyColumn
+import com.app.builder.ui.core.text.TextValue
 
 /**
  * Task list.
@@ -48,9 +49,9 @@ fun TaskList(
                 headline = item.title,
                 supporting = item.description,
                 metadata = listOf(
-                    EntityRowMetadata(text = item.uuid.takeIf { item.uuidVisible }),
-                    EntityRowMetadata(text = item.modifiedAt, dateTime = true),
-                    EntityRowMetadata(text = item.deletedAt, dateTime = true),
+                    item.uuid.takeIf { item.uuidVisible }?.let { TextValue.Plain(text = it) },
+                    item.modifiedAt?.let { TextValue.DateTime(utc = it) },
+                    item.deletedAt?.let { TextValue.DateTime(utc = it) },
                 ),
                 leadingContent = item.completed?.let { completed -> { Icon(imageVector = if (completed) Icons.Default.CheckCircle else Icons.Outlined.RadioButtonUnchecked) } }
             )

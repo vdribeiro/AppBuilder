@@ -21,6 +21,7 @@ import com.app.builder.core.security.uuid
 import com.app.builder.ui.Preview
 import com.app.builder.ui.core.image.Icon
 import com.app.builder.ui.core.list.LazyColumn
+import com.app.builder.ui.core.text.TextValue
 
 /**
  * Registry list.
@@ -53,12 +54,12 @@ fun RegistryList(
                     item.payload
                 ).joinToString(separator = "\n"),
                 metadata = listOf(
-                    EntityRowMetadata(text = item.uuid.takeIf { item.uuidVisible }),
-                    EntityRowMetadata(text = item.requestUtc, dateTime = true),
-                    EntityRowMetadata(text = item.requestSentUtc, dateTime = true),
-                    EntityRowMetadata(text = item.userUuid),
-                    EntityRowMetadata(text = item.deviceUuid),
-                    EntityRowMetadata(text = item.entityUuid),
+                    item.uuid.takeIf { item.uuidVisible }?.let { TextValue.Plain(text = it) },
+                    item.requestUtc?.let { TextValue.DateTime(utc = it) },
+                    item.requestSentUtc?.let { TextValue.DateTime(utc = it) },
+                    item.userUuid?.let { TextValue.Plain(text = it) },
+                    item.deviceUuid?.let { TextValue.Plain(text = it) },
+                    item.entityUuid?.let { TextValue.Plain(text = it) },
                 ),
                 leadingContent = { Icon(imageVector = requestIcon(requestType = item.requestType)) }
             )

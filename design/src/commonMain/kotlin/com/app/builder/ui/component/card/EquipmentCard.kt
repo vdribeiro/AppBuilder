@@ -18,6 +18,7 @@ import com.app.builder.ui.component.field.LinkSection
 import com.app.builder.ui.component.field.MetadataSection
 import com.app.builder.ui.component.field.TextField
 import com.app.builder.ui.core.card.Card
+import com.app.builder.ui.core.text.TextValue
 
 /**
  * An equipment card, showing only the properties that are not `null`.
@@ -92,11 +93,9 @@ fun EquipmentCard(
             links()
             MetadataSection(
                 entries = persistentListOf(
-                    "equipment_uuid" to uuid,
-                ),
-                dateTimeEntries = persistentListOf(
-                    "equipment_modified_at" to modifiedAt,
-                    "equipment_deleted_at" to deletedAt,
+                    "equipment_uuid" to uuid?.let { TextValue.Plain(text = it) },
+                    "equipment_modified_at" to modifiedAt?.let { TextValue.DateTime(utc = it) },
+                    "equipment_deleted_at" to deletedAt?.let { TextValue.DateTime(utc = it) },
                 )
             )
         }

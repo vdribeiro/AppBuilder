@@ -16,6 +16,7 @@ import com.app.builder.ui.Preview
 import com.app.builder.ui.component.image.Avatar
 import com.app.builder.ui.core.image.Image
 import com.app.builder.ui.core.list.LazyColumn
+import com.app.builder.ui.core.text.TextValue
 
 /**
  * User list.
@@ -45,9 +46,9 @@ fun UserList(
                 deleted = item.deleted,
                 headline = item.name,
                 metadata = listOf(
-                    EntityRowMetadata(text = item.uuid.takeIf { item.uuidVisible }),
-                    EntityRowMetadata(text = item.modifiedAt, dateTime = true),
-                    EntityRowMetadata(text = item.deletedAt, dateTime = true),
+                    item.uuid.takeIf { item.uuidVisible }?.let { TextValue.Plain(text = it) },
+                    item.modifiedAt?.let { TextValue.DateTime(utc = it) },
+                    item.deletedAt?.let { TextValue.DateTime(utc = it) },
                 ),
                 leadingContent = { Avatar(name = item.name, image = item.avatar, contentDescription = item.name) }
             )
