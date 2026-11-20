@@ -918,6 +918,7 @@ The switch is `Env.developmentMode`, from the `DEVELOPMENT` variable.
 | Future-dated requests | Allowed                               | Rejected                                           |
 | Rate limiting         | One shared bucket                     | Per caller address, if `TRUSTED_PROXY_HOPS` is set |
 | Seeded account        | `admin`/`admin`                       | The `ADMIN_*` values                               |
+| Seeded entities       | `static/seed.json`                    | None                                               |
 
 > [!NOTE]
 > FCM needs **all** of: production mode, Google Application Default Credentials, and `GCP_PROJECT_ID`.
