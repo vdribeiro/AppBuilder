@@ -26,7 +26,7 @@
   },
   "login": {
     "login_app_name": { "en": "App Builder", "pt": "App Builder" },
-    "login_username": { "en": "Username", "pt": "Nome de utilizador" },
+    "login_username": { "en": "Username", "pt": "Utilizador" },
     "login_password": { "en": "Password", "pt": "Palavra-passe" },
     "login_submit":   { "en": "Login", "pt": "Iniciar sessão" }
   },
@@ -44,7 +44,7 @@
     "profile_about":           { "en": "About", "pt": "Sobre" },
     "profile_help":            { "en": "Help", "pt": "Ajuda" },
     "profile_send_feedback":   { "en": "Send Feedback", "pt": "Enviar Feedback" },
-    "profile_copyright":       { "en": "Copyright", "pt": "Direitos de Autor" },
+    "profile_copyright":       { "en": "Copyright", "pt": "Copyright" },
     "profile_privacy_policy":  { "en": "Privacy Policy", "pt": "Política de Privacidade" },
     "profile_app_version":     { "en": "App Version", "pt": "Versão da App" }
   },
@@ -59,7 +59,7 @@
     "change_password_current": { "en": "Current Password", "pt": "Palavra-passe Atual" },
     "change_password_new":     { "en": "New Password", "pt": "Nova Palavra-passe" },
     "change_password_confirm": { "en": "Confirm Password", "pt": "Confirmar Palavra-passe" },
-    "change_password_submit":  { "en": "Change Password", "pt": "Alterar Palavra-passe" },
+    "change_password_submit":  { "en": "Submit", "pt": "Submeter" },
     "change_password_failed":  { "en": "Unable to change the password", "pt": "Não foi possível alterar a palavra-passe" }
   },
   "language_dialog": {
@@ -110,21 +110,21 @@
     "permission_client_config":      { "en": "Client Configurations", "pt": "Configurações do Cliente" },
     "permission_server_flag":        { "en": "Server Features", "pt": "Features do Servidor" },
     "permission_server_config":      { "en": "Server Configurations", "pt": "Configurações do Servidor" },
-    "permission_registry":           { "en": "Registry", "pt": "Registo" },
-    "permission_notification":       { "en": "Notification", "pt": "Notificação" },
-    "permission_translation":        { "en": "Translation", "pt": "Tradução" },
-    "permission_account":            { "en": "Account", "pt": "Conta" },
-    "permission_user":               { "en": "User", "pt": "Utilizador" },
+    "permission_registry":           { "en": "Registry", "pt": "Registos" },
+    "permission_notification":       { "en": "Notifications", "pt": "Notificações" },
+    "permission_translation":        { "en": "Translations", "pt": "Traduções" },
+    "permission_account":            { "en": "Accounts", "pt": "Contas" },
+    "permission_user":               { "en": "Users", "pt": "Utilizadores" },
     "permission_device_location":    { "en": "Device Location", "pt": "Localização do Dispositivo" },
     "permission_nfc":                { "en": "NFC", "pt": "NFC" },
-    "permission_task":               { "en": "Task", "pt": "Tarefa" },
-    "permission_equipment":          { "en": "Equipment", "pt": "Equipamento" },
-    "permission_building":           { "en": "Building", "pt": "Edifício" },
-    "permission_building_equipment": { "en": "Building Equipment", "pt": "Equipamento do Edifício" },
-    "permission_material":           { "en": "Material", "pt": "Material" },
-    "permission_building_material":  { "en": "Building Material", "pt": "Material do Edifício" },
-    "permission_building_user":      { "en": "Building User", "pt": "Utilizador do Edifício" },
-    "permission_equipment_user":     { "en": "Equipment User", "pt": "Utilizador do Equipamento" }
+    "permission_task":               { "en": "Tasks", "pt": "Tarefas" },
+    "permission_equipment":          { "en": "Equipments", "pt": "Equipamentos" },
+    "permission_building":           { "en": "Buildings", "pt": "Edifícios" },
+    "permission_building_equipment": { "en": "Buildings Equipments Link", "pt": "Link Edifícios Equipamentos" },
+    "permission_material":           { "en": "Materials", "pt": "Materiais" },
+    "permission_building_material":  { "en": "Buildings Materials Link", "pt": "Link Edifícios Materiais" },
+    "permission_building_user":      { "en": "Buildings Users Link", "pt": "Link Edifícios Utilizadores" },
+    "permission_equipment_user":     { "en": "Equipments Users Link", "pt": "Link Equipamentos Utilizadores" }
   },
   "config": {
     "config_more":          { "en": "More", "pt": "Mais" },
@@ -141,12 +141,12 @@
   },
   "push": {
     "push_field_type":        { "en": "Type", "pt": "Tipo" },
-    "push_field_broadcast":   { "en": "Broadcast", "pt": "Difusão" },
+    "push_field_broadcast":   { "en": "Broadcast", "pt": "Broadcast" },
     "push_field_title":       { "en": "Title", "pt": "Título" },
     "push_field_description": { "en": "Description", "pt": "Descrição" },
     "push_users":             { "en": "%1$s Users", "pt": "%1$s Utilizadores" },
     "push_send":              { "en": "Send", "pt": "Enviar" },
-    "push_sent":              { "en": "Sent %1$s", "pt": "Enviadas: %1$s" }
+    "push_sent":              { "en": "Sent %1$s", "pt": "Enviados: %1$s" }
   },
   "audio": {
     "audio_unavailable": { "en": "Audio playback is unavailable", "pt": "A reprodução de áudio não está disponível" },
@@ -244,7 +244,7 @@
     "equipment_modified_at":           { "en": "Modified At", "pt": "Modificado em" },
     "equipment_deleted_at":            { "en": "Deleted At", "pt": "Eliminado em" },
     "equipment_status":                { "en": "Status", "pt": "Estado" },
-    "equipment_status_working":        { "en": "Working", "pt": "Em funcionamento" },
+    "equipment_status_working":        { "en": "Working", "pt": "A Funcionar" },
     "equipment_status_malfunctioning": { "en": "Malfunctioning", "pt": "Avariado" },
     "equipment_uuid":                  { "en": "UUID", "pt": "UUID" },
     "equipment_buildings":             { "en": "Buildings", "pt": "Edifícios" },
