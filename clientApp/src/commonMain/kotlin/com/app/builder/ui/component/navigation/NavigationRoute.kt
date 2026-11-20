@@ -69,12 +69,12 @@ fun permittedRoutes(account: Account?, flags: ClientFlags): ImmutableList<Naviga
             ).any { permissions[it] != null }
         ) add(NavigationRoute.CONFIG)
         if (flags.notifications && permissions[EntityType.NOTIFICATION] != null) add(NavigationRoute.NOTIFICATION)
+        if (permissions[EntityType.TRANSLATION] != null) add(NavigationRoute.TRANSLATION)
         if (flags.locationCapture && permissions[EntityType.DEVICE_LOCATION] != null) add(NavigationRoute.DEVICE_LOCATION)
         if (flags.nfc && permissions[EntityType.NFC] != null) add(NavigationRoute.NFC)
         if (flags.camera) add(NavigationRoute.CAMERA)
         if (flags.music) add(NavigationRoute.AUDIO)
         if (flags.deviceFiles) add(NavigationRoute.DEVICE_FILE)
-        if (permissions[EntityType.TRANSLATION] != null) add(NavigationRoute.TRANSLATION)
         if (flags.design) addAll(
             elements = listOf(
                 NavigationRoute.DESIGN_COMPONENTS,
