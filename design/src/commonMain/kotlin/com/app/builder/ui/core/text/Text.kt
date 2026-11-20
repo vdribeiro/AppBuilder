@@ -75,7 +75,7 @@ fun Text(
     fontWeight: FontWeight? = null,
 ) = Text(
     modifier = modifier,
-    value = if (translate) TextValue.Translation(key = text) else TextValue.Plain(text = text),
+    value = text.toTextValue(translate = translate),
     textAlign = textAlign,
     maxLines = maxLines,
     style = style,

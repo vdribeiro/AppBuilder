@@ -49,13 +49,15 @@ import com.app.builder.ui.core.overlay.ModalBottomSheet
 import com.app.builder.ui.core.text.Text
 import androidx.compose.ui.Alignment as UiAlignment
 import com.app.builder.ui.core.list.LazyColumn as ScrollableLazyColumn
+import com.app.builder.ui.core.text.TextValue
+import com.app.builder.ui.core.text.toTextValue
 
 /**
  * Navigation item.
  *
  * @property enabled Whether a specific item is interactive. Defaults to `true`.
  * @property selected Whether a specific item is currently selected. Defaults to `false`.
- * @property text The text label string for a given item. Defaults to blank.
+ * @property text The text label for a given item. Defaults to blank.
  * @property icon The [ImageVector] asset for a given item. Defaults to null.
  * @property badge An optional composable slot rendering an unread-count or unseen-event indicator anchored to the icon. Defaults to null.
  * @property onClick A callback invoked when an item is selected by the user.
@@ -64,11 +66,37 @@ import com.app.builder.ui.core.list.LazyColumn as ScrollableLazyColumn
 data class NavigationItem(
     val enabled: Boolean = true,
     val selected: Boolean = false,
-    val text: String = "",
+    val text: TextValue = TextValue.Plain(text = ""),
     val icon: ImageVector? = null,
     val badge: (@Composable () -> Unit)? = null,
     val onClick: () -> Unit = {}
-)
+) {
+    /**
+     * Creates a navigation item whose text label is given as a translation key.
+     *
+     * @param enabled Whether the item is interactive. Defaults to `true`.
+     * @param selected Whether the item is currently selected. Defaults to `false`.
+     * @param text The translation key of the text label.
+     * @param icon The [ImageVector] asset for the item. Defaults to null.
+     * @param badge An optional composable slot rendering an unread-count or unseen-event indicator anchored to the icon. Defaults to null.
+     * @param onClick A callback invoked when the item is selected by the user.
+     */
+    constructor(
+        enabled: Boolean = true,
+        selected: Boolean = false,
+        text: String,
+        icon: ImageVector? = null,
+        badge: (@Composable () -> Unit)? = null,
+        onClick: () -> Unit = {}
+    ): this(
+        enabled = enabled,
+        selected = selected,
+        text = text.toTextValue(),
+        icon = icon,
+        badge = badge,
+        onClick = onClick
+    )
+}
 
 /**
  * Navigation bar for a persistent and convenient way to switch between destinations.
@@ -95,7 +123,7 @@ fun NavigationBar(
                 selected = item.selected,
                 label = {
                     Text(
-                        text = item.text,
+                        value = item.text,
                         textAlign = TextAlign.Center,
                         maxLines = 1,
                         style = typography.labelLarge
@@ -188,7 +216,7 @@ fun NavigationRail(
                 railExpanded = expanded,
                 label = {
                     Text(
-                        text = item.text,
+                        value = item.text,
                         textAlign = TextAlign.Center,
                         maxLines = 1,
                         style = typography.labelLarge

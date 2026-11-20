@@ -13,6 +13,7 @@ import com.app.builder.ui.Preview
 import com.app.builder.ui.core.container.Scaffold
 import com.app.builder.ui.core.text.TextValue
 import com.app.builder.ui.core.text.resolve
+import com.app.builder.ui.core.text.toTextValue
 
 /**
  * A wrapper around Material 3's [SnackbarHost] that exposes a state-free, declarative API.
@@ -28,18 +29,19 @@ import com.app.builder.ui.core.text.resolve
 @Composable
 fun Snackbar(
     modifier: Modifier = Modifier,
-    message: TextValue? = null,
-    buttonText: String? = null,
+    message: TextValue?,
+    buttonText: TextValue? = null,
     durationMillis: Long = if (buttonText != null) Long.MAX_VALUE else 3000L,
     onDismiss: () -> Unit = {},
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
     val text = message?.resolve().orEmpty()
-    LaunchedEffect(key1 = text) {
+    val actionLabel = buttonText?.resolve()
+    LaunchedEffect(key1 = text, key2 = actionLabel) {
         withTimeoutOrNull(timeMillis = durationMillis) {
             snackbarHostState.showSnackbar(
                 message = text,
-                actionLabel = buttonText,
+                actionLabel = actionLabel,
                 duration = SnackbarDuration.Indefinite
             )
         }
@@ -51,13 +53,39 @@ fun Snackbar(
     )
 }
 
+/**
+ * A wrapper around Material 3's [SnackbarHost] that exposes a state-free, declarative API.
+ *
+ * This component manages its own [SnackbarHostState] and coordinates the presentation duration through a [LaunchedEffect] and coroutine timeout based on the provided parameters.
+ *
+ * @param modifier The [Modifier] to be applied to the root layout.
+ * @param message The text to display inside the snackbar. Given as a translation key.
+ * @param buttonText The text label for an optional action button. If null, no action button is rendered. Given as a translation key.
+ * @param durationMillis The amount of time in milliseconds before the snackbar is programmatically dismissed. Defaults to [Long.MAX_VALUE] if an action button is present, or 3000ms if it is text-only.
+ * @param onDismiss A callback invoked when the snackbar times out or is dismissed from the screen.
+ */
+@Composable
+fun Snackbar(
+    modifier: Modifier = Modifier,
+    message: String? = null,
+    buttonText: String? = null,
+    durationMillis: Long = if (buttonText != null) Long.MAX_VALUE else 3000L,
+    onDismiss: () -> Unit = {},
+) = Snackbar(
+    modifier = modifier,
+    message = message?.toTextValue(),
+    buttonText = buttonText?.toTextValue(),
+    durationMillis = durationMillis,
+    onDismiss = onDismiss
+)
+
 @PreviewLightDark
 @Composable
 private fun SnackbarPreview() = Preview {
     Scaffold(
         snackbarHost = {
             Snackbar(
-                message = TextValue.Plain(text = "Snackbar")
+                message = "Snackbar"
             )
         }
     )
@@ -69,7 +97,7 @@ private fun SnackbarWithButtonPreview() = Preview {
     Scaffold(
         snackbarHost = {
             Snackbar(
-                message = TextValue.Plain(text = "Snackbar"),
+                message = "Snackbar",
                 buttonText = "Action"
             )
         }

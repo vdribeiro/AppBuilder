@@ -27,6 +27,8 @@ import com.app.builder.ui.LocalTypography
 import com.app.builder.ui.Preview
 import com.app.builder.ui.core.image.Icon
 import com.app.builder.ui.core.text.Text
+import com.app.builder.ui.core.text.TextValue
+import com.app.builder.ui.core.text.toTextValue
 import androidx.compose.material3.SegmentedButton as MaterialSegmentedButton
 
 /** Distinguishes between the container treatments a [ButtonGroup] can adopt. */
@@ -42,7 +44,7 @@ enum class ButtonGroupVariant {
  *
  * @property enabled Whether a specific item can be selected. Defaults to `true`.
  * @property selected Whether a specific item is currently selected. Defaults to `false`.
- * @property text The text label string for a given item. Defaults to null.
+ * @property text The text label for a given item. Defaults to null.
  * @property icon An optional [ImageVector] rendered alongside the text. In [ButtonGroupVariant.CONNECTED], it crossfades with the selected checkmark and when null, the default checkmark-only behavior applies.
  * @property onClick A callback invoked when the item is selected by the user.
  */
@@ -50,10 +52,33 @@ enum class ButtonGroupVariant {
 data class ButtonGroupItem(
     val enabled: Boolean = true,
     val selected: Boolean = false,
-    val text: String? = null,
+    val text: TextValue? = null,
     val icon: ImageVector? = null,
     val onClick: () -> Unit = {}
-)
+) {
+    /**
+     * Creates a button group item whose text label is given as a translation key.
+     *
+     * @param enabled Whether the item can be selected. Defaults to `true`.
+     * @param selected Whether the item is currently selected. Defaults to `false`.
+     * @param text The translation key of the text label.
+     * @param icon An optional [ImageVector] rendered alongside the text.
+     * @param onClick A callback invoked when the item is selected by the user.
+     */
+    constructor(
+        enabled: Boolean = true,
+        selected: Boolean = false,
+        text: String?,
+        icon: ImageVector? = null,
+        onClick: () -> Unit = {}
+    ): this(
+        enabled = enabled,
+        selected = selected,
+        text = text?.toTextValue(),
+        icon = icon,
+        onClick = onClick
+    )
+}
 
 /**
  * A row of related actions.
@@ -73,7 +98,7 @@ fun ButtonGroup(
     val typography = LocalTypography.current
     val label: @Composable (ButtonGroupItem) -> Unit = { item ->
         Text(
-            text = item.text.orEmpty(),
+            value = item.text ?: TextValue.Plain(text = ""),
             maxLines = 1,
             style = typography.labelLarge
         )

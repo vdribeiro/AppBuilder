@@ -24,6 +24,8 @@ import com.app.builder.ui.LocalTypography
 import com.app.builder.ui.Preview
 import com.app.builder.ui.core.image.Icon
 import com.app.builder.ui.core.text.Text
+import com.app.builder.ui.core.text.TextValue
+import com.app.builder.ui.core.text.toTextValue
 
 /** Distinguishes between the visual and interaction treatments a [Chip] can adopt. */
 enum class ChipVariant {
@@ -55,7 +57,7 @@ fun Chip(
     variant: ChipVariant = ChipVariant.ASSIST,
     enabled: Boolean = true,
     selected: Boolean = false,
-    text: String? = null,
+    text: TextValue?,
     leadingIcon: (@Composable () -> Unit)? = null,
     trailingIcon: (@Composable () -> Unit)? = null,
     onClick: () -> Unit = {},
@@ -63,7 +65,7 @@ fun Chip(
     val typography = LocalTypography.current
     val label: @Composable () -> Unit = {
         Text(
-            text = text.orEmpty(),
+            value = text ?: TextValue.Plain(text = ""),
             maxLines = 1,
             style = typography.labelLarge
         )
@@ -108,6 +110,39 @@ fun Chip(
         )
     }
 }
+
+/**
+ * Compact element that unifies the assist, filter, input, and suggestion chip styles.
+ *
+ * @param modifier The [Modifier] to be applied to the chip's layout.
+ * @param variant The visual and interaction treatment to render. Defaults to [ChipVariant.ASSIST].
+ * @param enabled Controls the enabled state of the chip. When `false`, the chip is not clickable.
+ * @param selected Whether the chip is currently toggled on. Only meaningful for [ChipVariant.FILTER] and [ChipVariant.INPUT].
+ * @param text The text label to display inside the chip. Given as a translation key.
+ * @param leadingIcon An optional composable slot rendering a leading icon or avatar.
+ * @param trailingIcon An optional composable slot rendering a trailing icon, such as a remove affordance. Ignored for [ChipVariant.SUGGESTION].
+ * @param onClick Called when the user clicks the chip.
+ */
+@Composable
+fun Chip(
+    modifier: Modifier = Modifier,
+    variant: ChipVariant = ChipVariant.ASSIST,
+    enabled: Boolean = true,
+    selected: Boolean = false,
+    text: String? = null,
+    leadingIcon: (@Composable () -> Unit)? = null,
+    trailingIcon: (@Composable () -> Unit)? = null,
+    onClick: () -> Unit = {},
+) = Chip(
+    modifier = modifier,
+    variant = variant,
+    enabled = enabled,
+    selected = selected,
+    text = text?.toTextValue(),
+    leadingIcon = leadingIcon,
+    trailingIcon = trailingIcon,
+    onClick = onClick
+)
 
 @PreviewLightDark
 @Composable

@@ -44,6 +44,15 @@ sealed interface TextValue {
 }
 
 /**
+ * Wraps this string into the text a component displays.
+ *
+ * @receiver The string to wrap.
+ * @param translate True to treat this string as a translation key, false to show it as given. Defaults to true.
+ * @return A [TextValue.Translation] keyed by this string when [translate], or a [TextValue.Plain] holding it otherwise.
+ */
+fun String.toTextValue(translate: Boolean = true): TextValue = if (translate) TextValue.Translation(key = this) else TextValue.Plain(text = this)
+
+/**
  * Resolves this text into the string to display.
  *
  * @receiver The text to resolve.
