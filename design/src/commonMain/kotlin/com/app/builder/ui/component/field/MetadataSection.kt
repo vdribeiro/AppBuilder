@@ -13,7 +13,7 @@ import com.app.builder.ui.core.divider.Divider
 import com.app.builder.ui.core.text.TextValue
 
 /**
- * The read-only data set apart below a divider.
+ * The read-only data set apart below a divider, with values that can be selected and copied.
  *
  * @param modifier The [Modifier] to be applied to the root layout.
  * @param entries Pairs of translated label and value, where the entries with a `null` value are hidden.
@@ -29,7 +29,7 @@ fun MetadataSection(
     Column(modifier = modifier) {
         Divider(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
         visible.forEach { (label, value) ->
-            FieldValue(label = label, value = value, maxLines = 1)
+            FieldValue(label = label, value = value, maxLines = 1, selectable = true)
         }
     }
 }

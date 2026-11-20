@@ -2,6 +2,7 @@ package com.app.builder.ui.core.text
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -28,6 +29,7 @@ import androidx.compose.material3.Text as MaterialText
  * @param style Typography styling configurations applied to the text. Defaults to [LocalTextStyle].
  * @param color The specific color applied to the text layer. Defaults to [Color.Unspecified].
  * @param fontWeight The stroke thickness rendering weight applied to the font glyphs.
+ * @param selectable Whether the text can be selected and copied.
  */
 @Composable
 fun Text(
@@ -38,17 +40,21 @@ fun Text(
     style: TextStyle = LocalTextStyle.current,
     color: Color = Color.Unspecified,
     fontWeight: FontWeight? = null,
+    selectable: Boolean = false,
 ) {
-    MaterialText(
-        modifier = modifier,
-        text = value.resolve(),
-        textAlign = textAlign,
-        maxLines = maxLines,
-        style = style,
-        color = color,
-        fontWeight = fontWeight,
-        overflow = TextOverflow.Ellipsis
-    )
+    val content = @Composable {
+        MaterialText(
+            modifier = modifier,
+            text = value.resolve(),
+            textAlign = textAlign,
+            maxLines = maxLines,
+            style = style,
+            color = color,
+            fontWeight = fontWeight,
+            overflow = TextOverflow.Ellipsis
+        )
+    }
+    if (selectable) SelectionContainer(content = content) else content()
 }
 
 /**
@@ -62,6 +68,7 @@ fun Text(
  * @param style Typography styling configurations applied to the text. Defaults to [LocalTextStyle].
  * @param color The specific color applied to the text layer. Defaults to [Color.Unspecified].
  * @param fontWeight The stroke thickness rendering weight applied to the font glyphs.
+ * @param selectable Whether the text can be selected and copied.
  */
 @Composable
 fun Text(
@@ -73,6 +80,7 @@ fun Text(
     style: TextStyle = LocalTextStyle.current,
     color: Color = Color.Unspecified,
     fontWeight: FontWeight? = null,
+    selectable: Boolean = false,
 ) = Text(
     modifier = modifier,
     value = text.toTextValue(translate = translate),
@@ -80,7 +88,8 @@ fun Text(
     maxLines = maxLines,
     style = style,
     color = color,
-    fontWeight = fontWeight
+    fontWeight = fontWeight,
+    selectable = selectable
 )
 
 /**
@@ -134,6 +143,10 @@ private fun TextPreview() = Preview {
         Text(
             text = "Text",
             fontWeight = FontWeight.Bold
+        )
+        Text(
+            text = "Text",
+            selectable = true
         )
     }
 }

@@ -21,6 +21,7 @@ import com.app.builder.ui.core.text.TextValue
  * @param label The label of the field, translated.
  * @param value The value of the field.
  * @param maxLines The maximum number of lines of [value] before it is truncated.
+ * @param selectable Whether [value] can be selected and copied.
  */
 @Composable
 fun FieldValue(
@@ -28,6 +29,7 @@ fun FieldValue(
     label: String = "",
     value: TextValue? = null,
     maxLines: Int = Int.MAX_VALUE,
+    selectable: Boolean = false,
 ) {
     val typography = LocalTypography.current
 
@@ -45,7 +47,8 @@ fun FieldValue(
         Text(
             value = value?.takeIf { !it.isBlank } ?: TextValue.Plain(text = EMPTY_VALUE),
             maxLines = maxLines,
-            style = typography.bodyLarge
+            style = typography.bodyLarge,
+            selectable = selectable
         )
     }
 }
