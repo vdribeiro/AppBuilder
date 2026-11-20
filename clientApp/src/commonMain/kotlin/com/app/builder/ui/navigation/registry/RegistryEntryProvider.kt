@@ -44,7 +44,7 @@ private val properties = Registry.Property.entries.associate { entry -> entry.na
 /** The registry properties shown by default. */
 private val visibleProperties = listOf(
     Registry.Property.REQUEST_TYPE,
-    Registry.Property.USER_UUID,
+    Registry.Property.USER_NAME,
     Registry.Property.ENTITY_TYPE,
 ).map { it.name }
 

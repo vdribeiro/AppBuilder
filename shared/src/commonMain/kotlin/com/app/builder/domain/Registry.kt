@@ -41,7 +41,7 @@ data class Registry(
     val payload: String?,
 ) {
     /**
-     * Enumerates the [Registry] fields that map to a localized display label.
+     * Enumerates the [Registry] fields, and the name of its user, that map to a localized display label.
      *
      * @property translationKey The [Translation.key] used to look up the localized label for this field.
      */
@@ -52,6 +52,7 @@ data class Registry(
         REQUEST_UTC(translationKey = "registry_request_utc"),
         REQUEST_SENT_UTC(translationKey = "registry_request_sent_utc"),
         USER_UUID(translationKey = "registry_user_uuid"),
+        USER_NAME(translationKey = "registry_user_name"),
         APP_VERSION(translationKey = "registry_app_version"),
         OS(translationKey = "registry_os"),
         OS_VERSION(translationKey = "registry_os_version"),

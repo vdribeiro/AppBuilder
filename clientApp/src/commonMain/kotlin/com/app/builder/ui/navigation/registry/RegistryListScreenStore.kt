@@ -96,7 +96,7 @@ class RegistryListScreenStore(
     }
 
     /**
-     * Gets the displayed text of the given [property], where [Property.USER_UUID] is the user's name when known.
+     * Gets the displayed text of the given [property].
      *
      * @param property Name of the [Property] to read.
      * @return The property's text, or `null` if it's unset or doesn't match a known [Property].
@@ -106,7 +106,8 @@ class RegistryListScreenStore(
         Property.REQUEST_TYPE.name -> registry.requestType
         Property.REQUEST_UTC.name -> registry.requestUtc.toString()
         Property.REQUEST_SENT_UTC.name -> registry.requestSentUtc.toString()
-        Property.USER_UUID.name -> userName ?: registry.userUuid.toString()
+        Property.USER_UUID.name -> registry.userUuid.toString()
+        Property.USER_NAME.name -> userName
         Property.APP_VERSION.name -> registry.appVersion
         Property.OS.name -> registry.os.toString()
         Property.OS_VERSION.name -> registry.osVersion
@@ -165,7 +166,8 @@ class RegistryListScreenStore(
             requestType = visible(property = Property.REQUEST_TYPE),
             requestUtc = visible(property = Property.REQUEST_UTC),
             requestSentUtc = visible(property = Property.REQUEST_SENT_UTC),
-            user = visible(property = Property.USER_UUID),
+            userUuid = visible(property = Property.USER_UUID),
+            userName = visible(property = Property.USER_NAME),
             appVersion = visible(property = Property.APP_VERSION),
             os = visible(property = Property.OS),
             osVersion = visible(property = Property.OS_VERSION),

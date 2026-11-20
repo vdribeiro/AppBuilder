@@ -57,7 +57,8 @@ fun RegistryList(
                     item.uuid.takeIf { item.uuidVisible },
                     item.requestUtc?.let { getDateTime(utc = it) },
                     item.requestSentUtc?.let { getDateTime(utc = it) },
-                    item.user,
+                    item.userUuid,
+                    item.userName,
                     item.deviceUuid,
                     item.entityUuid,
                 ),
@@ -89,7 +90,8 @@ private fun requestIcon(requestType: String?): ImageVector = when (requestType?.
  * @property requestType The HTTP method of the request.
  * @property requestUtc When the request was made on the client, as a UTC ISO-8601 string shown as a localized date-time.
  * @property requestSentUtc When the request was sent by the client, as a UTC ISO-8601 string shown as a localized date-time.
- * @property user The name of the user that made the request, or their UUID when the name is unknown.
+ * @property userName The name of the user that made the request.
+ * @property userUuid The UUID of the user that made the request.
  * @property appVersion The client application version.
  * @property os The operating system of the client device.
  * @property osVersion The operating system version of the client device.
@@ -108,7 +110,8 @@ data class RegistryItem(
     val requestType: String? = null,
     val requestUtc: String? = null,
     val requestSentUtc: String? = null,
-    val user: String? = null,
+    val userName: String? = null,
+    val userUuid: String? = null,
     val appVersion: String? = null,
     val os: String? = null,
     val osVersion: String? = null,
