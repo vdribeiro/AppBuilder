@@ -13,24 +13,24 @@ import kotlinx.datetime.toJavaZoneId
 import com.app.builder.core.platform.loop
 import com.app.builder.core.telemetry.Telemetry
 
-actual fun getLanguage(): String = runCatching {
+actual fun getDeviceLanguage(): String = runCatching {
     Locale.getDefault().language.ifBlank { DEFAULT_LANGUAGE }
 }.onFailure {
     Telemetry.error(tag = TAG, message = "Unable to get language", throwable = it)
 }.getOrDefault(defaultValue = DEFAULT_LANGUAGE)
 
+actual fun observeDeviceLanguage(): Flow<String> = flow {
+    loop { emit(value = getDeviceLanguage()) }
+}.distinctUntilChanged()
+
 actual fun getLocalDateTime(utc: String, languageIso: String?): String = runCatching {
     DateTimeFormatter
         .ofLocalizedDateTime(FormatStyle.SHORT)
-        .withLocale(languageIso?.takeIf { it != getLanguage() }?.let { Locale.forLanguageTag(it) } ?: Locale.getDefault(Locale.Category.FORMAT))
+        .withLocale(languageIso?.takeIf { it != getDeviceLanguage() }?.let { Locale.forLanguageTag(it) } ?: Locale.getDefault(Locale.Category.FORMAT))
         .withZone(TimeZone.currentSystemDefault().toJavaZoneId())
         .format(Instant.parse(input = utc).toJavaInstant())
 }.onFailure {
     Telemetry.error(tag = TAG, message = "Unable to get local date time", throwable = it)
 }.getOrDefault(defaultValue = utc)
-
-actual fun observeLocale(): Flow<String> = flow {
-    loop { emit(value = getLanguage()) }
-}.distinctUntilChanged()
 
 private const val TAG = "Locale"

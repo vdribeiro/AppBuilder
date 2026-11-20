@@ -8,14 +8,21 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import org.w3c.dom.events.Event
 import com.app.builder.core.telemetry.Telemetry
 
-actual fun getLanguage(): String = runCatching {
+actual fun getDeviceLanguage(): String = runCatching {
     window.navigator.language.substringBefore(delimiter = "-").ifBlank { DEFAULT_LANGUAGE }
 }.onFailure {
     Telemetry.error(tag = TAG, message = "Unable to get language", throwable = it)
 }.getOrDefault(defaultValue = DEFAULT_LANGUAGE)
 
+actual fun observeDeviceLanguage(): Flow<String> = callbackFlow {
+    trySend(element = getDeviceLanguage())
+    val listener: ((Event) -> Unit) = { trySend(element = getDeviceLanguage()) }
+    window.addEventListener(type = "languagechange", callback = listener)
+    awaitClose { window.removeEventListener(type = "languagechange", callback = listener) }
+}.distinctUntilChanged()
+
 actual fun getLocalDateTime(utc: String, languageIso: String?): String = runCatching {
-    formatDateJs(utc = utc, language = languageIso?.takeIf { it != getLanguage() }.orEmpty()).also { if (it == "INVALID") throw IllegalArgumentException() }
+    formatDateJs(utc = utc, language = languageIso?.takeIf { it != getDeviceLanguage() }.orEmpty()).also { if (it == "INVALID") throw IllegalArgumentException() }
 }.onFailure {
     Telemetry.error(tag = TAG, message = "Unable to get local date time", throwable = it)
 }.getOrDefault(defaultValue = utc)
@@ -40,12 +47,5 @@ actual fun getLocalDateTime(utc: String, languageIso: String?): String = runCatc
     """
 )
 private external fun formatDateJs(utc: String, language: String): String
-
-actual fun observeLocale(): Flow<String> = callbackFlow {
-    trySend(element = getLanguage())
-    val listener: ((Event) -> Unit) = { trySend(element = getLanguage()) }
-    window.addEventListener(type = "languagechange", callback = listener)
-    awaitClose { window.removeEventListener(type = "languagechange", callback = listener) }
-}.distinctUntilChanged()
 
 private const val TAG = "Locale"

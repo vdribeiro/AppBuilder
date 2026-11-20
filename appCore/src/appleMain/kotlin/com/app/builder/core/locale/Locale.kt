@@ -19,11 +19,19 @@ import platform.Foundation.timeZoneForSecondsFromGMT
 import com.app.builder.core.platform.observe
 import com.app.builder.core.telemetry.Telemetry
 
-actual fun getLanguage(): String = runCatching {
+actual fun getDeviceLanguage(): String = runCatching {
     (NSLocale.preferredLanguages.first() as String).substringBefore(delimiter = "-").substringBefore(delimiter = "_")
 }.onFailure {
     Telemetry.error(tag = TAG, message = "Unable to get language", throwable = it)
 }.getOrDefault(defaultValue = DEFAULT_LANGUAGE)
+
+actual fun observeDeviceLanguage(): Flow<String> = callbackFlow {
+    trySend(element = getDeviceLanguage())
+    val observer = NSNotificationCenter.defaultCenter.observe(
+        name = NSCurrentLocaleDidChangeNotification
+    ) { trySend(element = getDeviceLanguage()) }
+    awaitClose { NSNotificationCenter.defaultCenter.removeObserver(observer) }
+}.distinctUntilChanged()
 
 actual fun getLocalDateTime(utc: String, languageIso: String?): String = runCatching {
     val instant = Instant.parse(input = utc)
@@ -31,7 +39,7 @@ actual fun getLocalDateTime(utc: String, languageIso: String?): String = runCatc
     val formatter = NSDateFormatter().apply {
         dateStyle = NSDateFormatterShortStyle
         timeStyle = NSDateFormatterShortStyle
-        languageIso?.takeIf { it != getLanguage() }?.let { locale = NSLocale(localeIdentifier = it) }
+        languageIso?.takeIf { it != getDeviceLanguage() }?.let { locale = NSLocale(localeIdentifier = it) }
     }
     val secondsFromGmt = timeZone.offsetAt(instant = instant).totalSeconds
     formatter.timeZone = NSTimeZone.timeZoneForSecondsFromGMT(seconds = secondsFromGmt.toLong())
@@ -39,13 +47,5 @@ actual fun getLocalDateTime(utc: String, languageIso: String?): String = runCatc
 }.onFailure {
     Telemetry.error(tag = TAG, message = "Unable to get local date time", throwable = it)
 }.getOrDefault(defaultValue = utc)
-
-actual fun observeLocale(): Flow<String> = callbackFlow {
-    trySend(element = getLanguage())
-    val observer = NSNotificationCenter.defaultCenter.observe(
-        name = NSCurrentLocaleDidChangeNotification
-    ) { trySend(element = getLanguage()) }
-    awaitClose { NSNotificationCenter.defaultCenter.removeObserver(observer) }
-}.distinctUntilChanged()
 
 private const val TAG = "Locale"

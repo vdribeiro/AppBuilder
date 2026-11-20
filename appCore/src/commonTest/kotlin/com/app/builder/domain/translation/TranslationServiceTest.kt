@@ -58,7 +58,7 @@ class TranslationServiceTest: TestCase() {
     fun emptyLocalDataFallsBackToDefaultLanguage() = runUnitTest {
         val store = FakeTranslationStore()
         store.setTranslations(translations = listOf(Translation(languageIso = DEFAULT_LANGUAGE, key = "hello", value = "Hello")))
-        val translationService: TranslationService = TranslationManager(translationStore = store, locale = flowOf(value = PORTUGUESE))
+        val translationService: TranslationService = TranslationManager(translationStore = store, languageFlow = flowOf(value = PORTUGUESE))
 
         translationService.start()
         translationService.stop()
@@ -117,7 +117,7 @@ class TranslationServiceTest: TestCase() {
                 Translation(languageIso = PORTUGUESE, key = "hello", value = "Olá"),
             )
         )
-        val translationService: TranslationService = TranslationManager(translationStore = store, locale = flowOf(value = PORTUGUESE))
+        val translationService: TranslationService = TranslationManager(translationStore = store, languageFlow = flowOf(value = PORTUGUESE))
 
         translationService.start()
         translationService.stop()
@@ -131,7 +131,7 @@ class TranslationServiceTest: TestCase() {
         val store = FakeTranslationStore()
         val english = Translation(languageIso = DEFAULT_LANGUAGE, key = "hello", value = "Hello")
         store.setTranslations(translations = listOf(english))
-        val translationService: TranslationService = TranslationManager(translationStore = store, locale = flowOf(value = PORTUGUESE))
+        val translationService: TranslationService = TranslationManager(translationStore = store, languageFlow = flowOf(value = PORTUGUESE))
 
         translationService.start()
         assertEquals(expected = "Hello", actual = TranslationCache.get(key = "hello"))
@@ -154,7 +154,7 @@ class TranslationServiceTest: TestCase() {
             )
         )
         val locale = MutableStateFlow(value = PORTUGUESE)
-        val translationService: TranslationService = TranslationManager(translationStore = store, locale = locale)
+        val translationService: TranslationService = TranslationManager(translationStore = store, languageFlow = locale)
 
         translationService.start()
         assertEquals(expected = "Olá", actual = TranslationCache.get(key = "hello"))

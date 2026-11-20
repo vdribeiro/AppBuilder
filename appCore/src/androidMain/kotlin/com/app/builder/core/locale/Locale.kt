@@ -18,27 +18,17 @@ import android.content.IntentFilter
 import com.app.builder.applicationContext
 import com.app.builder.core.telemetry.Telemetry
 
-actual fun getLanguage(): String = runCatching {
+actual fun getDeviceLanguage(): String = runCatching {
     applicationContext.resources.configuration.locales[0].language.ifBlank { DEFAULT_LANGUAGE }
 }.onFailure {
     Telemetry.error(tag = TAG, message = "Unable to get language", throwable = it)
 }.getOrDefault(defaultValue = DEFAULT_LANGUAGE)
 
-actual fun getLocalDateTime(utc: String, languageIso: String?): String = runCatching {
-    DateTimeFormatter
-        .ofLocalizedDateTime(FormatStyle.SHORT)
-        .withLocale(languageIso?.takeIf { it != getLanguage() }?.let { Locale.forLanguageTag(it) } ?: Locale.getDefault(Locale.Category.FORMAT))
-        .withZone(TimeZone.currentSystemDefault().toJavaZoneId())
-        .format(Instant.parse(input = utc).toJavaInstant())
-}.onFailure {
-    Telemetry.error(tag = TAG, message = "Unable to get local date time", throwable = it)
-}.getOrDefault(defaultValue = utc)
-
-actual fun observeLocale(): Flow<String> = callbackFlow {
-    trySend(element = getLanguage())
+actual fun observeDeviceLanguage(): Flow<String> = callbackFlow {
+    trySend(element = getDeviceLanguage())
     val receiver = object: BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
-            if (intent?.action == Intent.ACTION_LOCALE_CHANGED) trySend(element = getLanguage())
+            if (intent?.action == Intent.ACTION_LOCALE_CHANGED) trySend(element = getDeviceLanguage())
         }
     }
 
@@ -58,5 +48,15 @@ actual fun observeLocale(): Flow<String> = callbackFlow {
         }
     }
 }.distinctUntilChanged()
+
+actual fun getLocalDateTime(utc: String, languageIso: String?): String = runCatching {
+    DateTimeFormatter
+        .ofLocalizedDateTime(FormatStyle.SHORT)
+        .withLocale(languageIso?.takeIf { it != getDeviceLanguage() }?.let { Locale.forLanguageTag(it) } ?: Locale.getDefault(Locale.Category.FORMAT))
+        .withZone(TimeZone.currentSystemDefault().toJavaZoneId())
+        .format(Instant.parse(input = utc).toJavaInstant())
+}.onFailure {
+    Telemetry.error(tag = TAG, message = "Unable to get local date time", throwable = it)
+}.getOrDefault(defaultValue = utc)
 
 private const val TAG = "Locale"

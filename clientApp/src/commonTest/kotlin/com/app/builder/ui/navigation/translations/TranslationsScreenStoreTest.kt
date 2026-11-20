@@ -56,7 +56,7 @@ class TranslationsScreenStoreTest: TestCase() {
             state = TranslationsScreenState(),
             translationUseCases = dependency.get().userGraph.useCases.translationUseCases,
             authenticationUseCases = dependency.get().userGraph.useCases.authenticationUseCases,
-            locale = flowOf(value = locale)
+            languageFlow = flowOf(value = locale)
         )
     }
 
@@ -83,7 +83,7 @@ class TranslationsScreenStoreTest: TestCase() {
             state = TranslationsScreenState(),
             translationUseCases = useCases.translationUseCases,
             authenticationUseCases = useCases.authenticationUseCases,
-            locale = flowOf(value = "en")
+            languageFlow = flowOf(value = "en")
         ).also { store -> store.listedValues(count = 2) }
     }
 

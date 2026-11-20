@@ -8,17 +8,17 @@ import kotlinx.coroutines.launch
 import com.app.builder.test.TestCase
 
 class LocaleTest: TestCase() {
-    /** Verifies that [observeLocale] emits the current device language. */
+    /** Verifies that [observeDeviceLanguage] emits the current device language. */
     @Test
-    fun observeLocal() = runUnitTest {
-        assertEquals(expected = getLanguage(), actual = observeLocale().first())
+    fun observeDeviceLanguageEmitsCurrentLanguage() = runUnitTest {
+        assertEquals(expected = getDeviceLanguage(), actual = observeDeviceLanguage().first())
     }
 
-    /** Verifies that [observeLocale] emits the current language once and stays silent while it does not change, even as time passes. */
+    /** Verifies that [observeDeviceLanguage] emits the current language once and stays silent while it does not change, even as time passes. */
     @Test
-    fun observeLocaleDoesNotEmitDuplicatesOnSubsequentTicks() = runUnitTest {
+    fun observeDeviceLanguageDoesNotEmitDuplicatesOnSubsequentTicks() = runUnitTest {
         val emissions = mutableListOf<String>()
-        val job = backgroundScope.launch { observeLocale().collect { emissions.add(element = it) } }
+        val job = backgroundScope.launch { observeDeviceLanguage().collect { emissions.add(element = it) } }
 
         testScheduler.runCurrent()
         testScheduler.advanceTimeBy(delayTimeMillis = INTERVAL_MILLIS)
@@ -26,7 +26,7 @@ class LocaleTest: TestCase() {
         testScheduler.advanceTimeBy(delayTimeMillis = INTERVAL_MILLIS)
         testScheduler.runCurrent()
 
-        assertEquals(expected = listOf(getLanguage()), actual = emissions)
+        assertEquals(expected = listOf(getDeviceLanguage()), actual = emissions)
         job.cancel()
     }
 

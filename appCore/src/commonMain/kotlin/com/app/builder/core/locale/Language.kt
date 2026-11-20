@@ -17,7 +17,7 @@ object SelectedLanguage: StateHolder<String?>(initialValue = null)
  * @param locale Emits the device's ISO 639-1 language code whenever it changes.
  * @return A [Flow] emitting the ISO 639-1 code of the app language.
  */
-fun observeLanguage(locale: Flow<String> = observeLocale()): Flow<String> =
+fun observeLanguage(locale: Flow<String> = observeDeviceLanguage()): Flow<String> =
     combine(
         flow = SelectedLanguage.flow,
         flow2 = locale

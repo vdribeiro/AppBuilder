@@ -15,7 +15,7 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import com.app.builder.core.flow.Dispatcher
 import com.app.builder.core.locale.DEFAULT_LANGUAGE
-import com.app.builder.core.locale.observeLocale
+import com.app.builder.core.locale.observeLanguage
 import com.app.builder.core.telemetry.Telemetry
 import com.app.builder.data.translation.TranslationCache
 
@@ -24,11 +24,11 @@ import com.app.builder.data.translation.TranslationCache
  * Manages the lifecycle of a reactive translation observer.
  *
  * @property translationStore The persistence coordinator used to observe translations.
- * @property locale Emits the current ISO 639-1 language code whenever it changes.
+ * @property languageFlow Emits the current ISO 639-1 language code whenever it changes.
  */
 class TranslationManager(
     private val translationStore: TranslationStore,
-    private val locale: Flow<String> = observeLocale()
+    private val languageFlow: Flow<String> = observeLanguage()
 ): TranslationService {
 
     /** An isolated scope for the manager's coroutine operations. */
@@ -63,7 +63,7 @@ class TranslationManager(
     private fun startTranslationsJob() {
         if (job?.isActive != true) job = scope.launch(context = Dispatcher.Default) {
             withContext(context = Dispatcher.IO) { translationStore.syncTranslations() }
-            locale
+            languageFlow
                 .flatMapLatest { iso ->
                     translationStore.observeTranslations(languageIso = iso)
                         .flatMapLatest { translations ->

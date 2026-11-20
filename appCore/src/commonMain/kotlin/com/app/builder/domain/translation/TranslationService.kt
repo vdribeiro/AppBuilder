@@ -1,7 +1,7 @@
 package com.app.builder.domain.translation
 
 import com.app.builder.core.locale.DEFAULT_LANGUAGE
-import com.app.builder.core.locale.observeLocale
+import com.app.builder.core.locale.observeLanguage
 import com.app.builder.data.translation.TranslationCache
 import com.app.builder.domain.Translation
 
@@ -16,7 +16,7 @@ interface TranslationService {
      * If the observer is already running, this is a no-op.
      *
      * ### Resolution Flow:
-     * 1. Listens to [observeLocale].
+     * 1. Listens to [observeLanguage].
      * 2. Queries the local data for the current language ISO.
      * 3. If the local data returns empty, falls back to the [DEFAULT_LANGUAGE].
      * 4. Finally, pushes the resolved list of [Translation] objects into the [TranslationCache].
