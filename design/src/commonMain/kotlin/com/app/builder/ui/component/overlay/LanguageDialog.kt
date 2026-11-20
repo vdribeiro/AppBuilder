@@ -70,7 +70,7 @@ fun LanguageDialog(
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     RadioButton(selected = candidate == selectedLanguage)
-                    Text(text = getTranslation(key = "language_${candidate ?: "system"}", default = candidate ?: "system"), maxLines = 1, style = typography.bodyLarge)
+                    Text(text = getTranslation(key = "language_dialog_${candidate ?: "system"}", default = candidate ?: "system"), maxLines = 1, style = typography.bodyLarge)
                 }
             }
         }
@@ -83,9 +83,9 @@ private fun LanguageDialogPreview() = Preview {
     InjectTranslations(
         translations = mapOf(
             "language_dialog_title" to "Language",
-            "language_system" to "System",
-            "language_en" to "English",
-            "language_pt" to "Português",
+            "language_dialog_system" to "System",
+            "language_dialog_en" to "English",
+            "language_dialog_pt" to "Português",
             "language_dialog_apply" to "Apply",
             "language_dialog_cancel" to "Cancel"
         )

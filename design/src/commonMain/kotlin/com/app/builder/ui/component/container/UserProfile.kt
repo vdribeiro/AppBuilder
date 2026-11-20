@@ -111,7 +111,7 @@ fun UserProfile(
                         .testTag(tag = "language")
                         .then(other = onLanguageClick?.let { Modifier.clickable { it() } } ?: Modifier),
                     headlineText = getTranslation(key = "profile_language"),
-                    trailingContent = { Text(text = getTranslation(key = "language_$language", default = language), style = typography.bodyMedium) },
+                    trailingContent = { Text(text = getTranslation(key = "profile_language_$language", default = language), style = typography.bodyMedium) },
                 )
                 if (!guest) {
                     Divider()

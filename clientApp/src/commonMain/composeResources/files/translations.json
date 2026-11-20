@@ -38,6 +38,8 @@
     "profile_logout":          { "en": "Logout", "pt": "Terminar sessão" },
     "profile_device":          { "en": "Device", "pt": "Dispositivo" },
     "profile_language":        { "en": "Language", "pt": "Idioma" },
+    "profile_language_en":     { "en": "English", "pt": "English" },
+    "profile_language_pt":     { "en": "Português", "pt": "Português" },
     "profile_reset":           { "en": "Reset", "pt": "Repor" },
     "profile_about":           { "en": "About", "pt": "Sobre" },
     "profile_help":            { "en": "Help", "pt": "Ajuda" },
@@ -60,13 +62,11 @@
     "change_password_submit":  { "en": "Change Password", "pt": "Alterar Palavra-passe" },
     "change_password_failed":  { "en": "Unable to change the password", "pt": "Não foi possível alterar a palavra-passe" }
   },
-  "language": {
-    "language_system": { "en": "System", "pt": "Sistema" },
-    "language_en":     { "en": "English", "pt": "English" },
-    "language_pt":     { "en": "Português", "pt": "Português" }
-  },
   "language_dialog": {
     "language_dialog_title":  { "en": "Language", "pt": "Idioma" },
+    "language_dialog_system": { "en": "System", "pt": "Sistema" },
+    "language_dialog_en":     { "en": "English", "pt": "English" },
+    "language_dialog_pt":     { "en": "Português", "pt": "Português" },
     "language_dialog_apply":  { "en": "Apply", "pt": "Aplicar" },
     "language_dialog_cancel": { "en": "Cancel", "pt": "Cancelar" }
   },
@@ -134,8 +134,10 @@
     "config_server_config": { "en": "Server Configurations", "pt": "Configurações do Servidor" }
   },
   "translation": {
-    "translation_key":   { "en": "Key", "pt": "Chave" },
-    "translation_value": { "en": "Value", "pt": "Valor" }
+    "translation_language_en": { "en": "English", "pt": "English" },
+    "translation_language_pt": { "en": "Português", "pt": "Português" },
+    "translation_key":         { "en": "Key", "pt": "Chave" },
+    "translation_value":       { "en": "Value", "pt": "Valor" }
   },
   "push": {
     "push_field_type":        { "en": "Type", "pt": "Tipo" },
