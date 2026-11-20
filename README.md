@@ -692,8 +692,10 @@ getTranslation(key = "translation_with_arguments", args = *arrayOf("one", "two")
 // I have 2 arguments one and two
 ```
 
-Always go through `Translations` rather than `TranslationCache` directly: it resolves against the cache's *state*, so a language change or a fresh fetch recomposes every string with no restart.
+In a composable, always call `getTranslation` rather than `TranslationCache.get`: it reads `LocalTranslationState`, so a language change or a fresh fetch recomposes every string with no restart, while a direct cache read returns a value that never updates.
 `InjectTranslations(translations)` seeds the cache directly, which is handy for previews and tests.
+
+Date-times follow the same rule: in a composable, call `getDateTime` rather than `getLocalDateTime`. It formats through `LocalDateTimeFormatter`, and rebuilds when the selected language changes, so every date-time is reformatted with no restart. `getLocalDateTime` reads the selected language once and is meant for non-UI code.
 
 Values can be edited by any account with `TRANSLATION` `WRITE` (also offline like any other entity). Keys and languages are not: they only come from the seed.
 After each update the server broadcasts a `PushPayload.Translations`, and every client that receives it syncs its translations again.
