@@ -14,6 +14,9 @@ val javafxDependencies = listOf(
     libs.javafx.base,
     libs.javafx.graphics,
     libs.javafx.media,
+    libs.javafx.swing,
+    libs.javafx.controls,
+    libs.javafx.web,
 )
 
 //region Generate files

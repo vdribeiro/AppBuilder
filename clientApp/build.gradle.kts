@@ -80,12 +80,16 @@ val javafxModulePath: String by lazy { javafx.asPath }
 val javafxModules: String = "javafx.base," +
         "javafx.graphics," +
         "javafx.media," +
-        "javafx.swing"
+        "javafx.swing," +
+        "javafx.controls," +
+        "javafx.web"
 val javafxDependencies = listOf(
     libs.javafx.base,
     libs.javafx.graphics,
     libs.javafx.media,
-    libs.javafx.swing
+    libs.javafx.swing,
+    libs.javafx.controls,
+    libs.javafx.web
 )
 
 // Module paths have to run after, otherwise it breaks the configuration
@@ -279,7 +283,8 @@ compose.desktop {
         jvmArgs += listOf(
             "--enable-native-access=ALL-UNNAMED",
             "--enable-native-access=javafx.graphics",
-            "--enable-native-access=javafx.media"
+            "--enable-native-access=javafx.media",
+            "--enable-native-access=javafx.web"
         )
 
         nativeDistributions {
