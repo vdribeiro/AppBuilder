@@ -22,9 +22,8 @@ Everything is pre-wired, so you can skip the boilerplate and ship to every platf
 | **[Testing](#testing)**                              | Unit, UI and server tests from one hermetic harness.                                                                                |
 | **[Build and release](#versioning--release-builds)** | Convention plugins, one-command version bumps and notarised packaging.                                                              |
 
-> [!IMPORTANT]
-> The project is licensed **AGPL-3.0**. Derivative works must be distributed under the same license with source available, and that applies to network services too, not just distributed binaries.
-> If that doesn't suit you, it still works as a reference architecture. See [License](#license).
+> [!NOTE]
+> The project is licensed **Apache-2.0**. You can build on it, including in closed-source apps and services, as long as you keep the copyright notice. See [License](#license).
 
 ## Contents
 
@@ -1585,12 +1584,9 @@ The foundational layer is where I think human ownership matters most, because th
 
 ## License
 
-Copyright (C) 2024-2026 Vitor Ribeiro.
+Copyright 2024-2026 Vitor Ribeiro.
 
-Licensed under the **GNU Affero General Public License v3.0**. See [LICENSE](LICENSE) for the full text.
+Licensed under the **Apache License, Version 2.0**. See [LICENSE](LICENSE) for the full text.
 
-You are free to use, modify and distribute this project, but derivative works must be distributed under the same license with source available, and you must keep the copyright notice and credit the original author.
-The Affero clause extends this to network use: if you run a modified version as a hosted or networked service, you must offer its source to that service's users.
-If that doesn't fit your use case, treat the project as a reference architecture, or get in touch about a commercial license.
-
-As the sole copyright holder, I retain the right to license this code under other terms.
+You are free to use, modify and distribute this project, including in closed-source apps and services.
+If you redistribute it, keep the copyright notice, the license and the [NOTICE](NOTICE) file, and state which files you changed.
