@@ -16,8 +16,15 @@ interface NotificationsUseCases {
     fun observeNotifications(userUuid: Uuid): Flow<List<PushPayload>>
 
     /**
+     * Observes the notifications saved through this instance.
+     *
+     * @return A Flow emitting every notification saved through this instance.
+     */
+    fun observeSavedNotifications(): Flow<PushPayload>
+
+    /**
      * Persists a notification to the database.
-     * This fires the notification observer to deal with the new notification.
+     * This emits it on [observeSavedNotifications] and fires the notification observers on every server instance.
      *
      * @param notification The notification to save.
      * @return `true` if the notification was saved successfully, `false` otherwise or no rows were affected.

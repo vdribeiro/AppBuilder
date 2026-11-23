@@ -154,7 +154,7 @@ class PushManager(
      */
     private fun startSavedJob() {
         if (savedJob?.isActive != true) savedJob = scope.launch(context = Dispatcher.IO) {
-            notificationsUseCases.savedNotifications.collect { pushPayload ->
+            notificationsUseCases.observeSavedNotifications().collect { pushPayload ->
                 val userUuid = pushPayload.userUuid ?: return@collect
                 sendToFcmTokens(userUuid = userUuid, pushPayload = pushPayload)
                 if (!ServerFlags.value.pushSocket) notificationsUseCases.deleteNotification(notificationUuid = pushPayload.uuid)

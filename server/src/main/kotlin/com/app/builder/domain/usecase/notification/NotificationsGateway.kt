@@ -2,6 +2,8 @@ package com.app.builder.domain.usecase.notification
 
 import kotlin.uuid.Uuid
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
@@ -33,6 +35,9 @@ class NotificationsGateway(
     private val instanceSignal: InstanceSignal
 ): NotificationsUseCases {
 
+    /** Emits every notification saved through this instance. */
+    private val savedNotifications = MutableSharedFlow<PushPayload>()
+
     override fun observeNotifications(userUuid: Uuid): Flow<List<PushPayload>> = flow {
         emit(value = getNotifications(userUuid))
         instanceSignal
@@ -41,14 +46,16 @@ class NotificationsGateway(
             .collect { emit(value = getNotifications(userUuid)) }
     }.flowOn(context = Dispatcher.IO)
 
+    override fun observeSavedNotifications(): Flow<PushPayload> = savedNotifications.asSharedFlow()
+
     override suspend fun saveNotification(notification: PushPayload): Boolean = withContext(context = Dispatcher.IO) {
-        if (!ServerFlags.value.push) return@withContext false
+        if (!ServerFlags.value.pushSocket && !ServerFlags.value.pushFirebase) return@withContext false
         if (notification !is PushPayload.EntityNotification) {
             Telemetry.error(tag = TAG, message = "Unable to persist notification ${notification.uuid}. Only entity notifications can be persisted")
             return@withContext false
         }
         val notificationUserUuid = notification.userUuid
-        database.safeTransaction {
+        val persisted = database.safeTransaction {
             NotificationTable.upsert {
                 it[uuid] = notification.uuid
                 it[userUuid] = notificationUserUuid
@@ -59,7 +66,11 @@ class NotificationsGateway(
             }.insertedCount > 0
         }.onFailure {
             Telemetry.error(tag = TAG, message = "Failed to save notification", throwable = it)
-        }.getOrDefault(defaultValue = false) && instanceSignal.notify(channel = NOTIFICATION_CHANNEL, payload = notificationUserUuid.toString())
+        }.getOrDefault(defaultValue = false)
+        if (!persisted) return@withContext false
+
+        savedNotifications.emit(value = notification)
+        instanceSignal.notify(channel = NOTIFICATION_CHANNEL, payload = notificationUserUuid.toString())
     }
 
     override suspend fun deleteNotification(notificationUuid: Uuid): Boolean = withContext(context = Dispatcher.IO) {

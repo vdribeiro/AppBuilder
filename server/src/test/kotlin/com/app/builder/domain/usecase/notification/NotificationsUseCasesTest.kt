@@ -37,7 +37,7 @@ class NotificationsUseCasesTest: TestCase() {
         assertNull(actual = notificationsUseCases.observeNotifications(userUuid = userUuid).firstOrNull()?.firstOrNull { it == FakeData.entityNotification })
     }
 
-    /** Verifies that a saved notification is emitted on the saved notifications flow. */
+    /** Verifies that a saved notification is emitted to the saved notifications observer. */
     @Test
     fun savedNotificationIsEmitted() = runServerTest {
         val notificationsUseCases = dependency.get()
@@ -45,7 +45,7 @@ class NotificationsUseCasesTest: TestCase() {
             .notificationsUseCases
 
         coroutineScope {
-            val saved = async(start = CoroutineStart.UNDISPATCHED) { notificationsUseCases.savedNotifications.first() }
+            val saved = async(start = CoroutineStart.UNDISPATCHED) { notificationsUseCases.observeSavedNotifications().first() }
             assertTrue(actual = notificationsUseCases.saveNotification(notification = FakeData.entityNotification))
             assertEquals(expected = FakeData.entityNotification, actual = withTimeout(timeMillis = 5_000L) { saved.await() })
         }
