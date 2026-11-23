@@ -53,8 +53,11 @@ class BroadcastManager(
     /** Tracks the currently active broadcast loop. */
     private var listenJob: Job? = null
 
-    /** Whether the broadcast client feature flag is on. */
-    private val enabled: Flow<Boolean> = ClientFlags.flow.map { it.broadcast }.distinctUntilChanged()
+    /** Whether the broadcast stream client feature flag is on. */
+    private val streamEnabled: Flow<Boolean> = ClientFlags.flow.map { it.broadcastStream }.distinctUntilChanged()
+
+    /** Whether the broadcast Firebase client feature flag is on. */
+    private val firebaseEnabled: Flow<Boolean> = ClientFlags.flow.map { it.broadcastFirebase }.distinctUntilChanged()
 
     override suspend fun stop() = withContext(context = Dispatcher.IO) {
         mutex.withLock {
@@ -84,7 +87,7 @@ class BroadcastManager(
             Telemetry.info(tag = TAG, message = "Subscribe to FCM broadcasts")
             combine(
                 flow = PushProvider.token.filterNotNull(),
-                flow2 = enabled
+                flow2 = firebaseEnabled
             ) { token, enabled -> token.takeIf { enabled } }
                 .filterNotNull()
                 .distinctUntilChanged()
@@ -101,7 +104,7 @@ class BroadcastManager(
             Telemetry.info(tag = TAG, message = "Listen to broadcasts")
             combine(
                 flow = getInternetAvailabilityFlow(),
-                flow2 = enabled
+                flow2 = streamEnabled
             ) { online, enabled -> online && enabled }
                 .distinctUntilChanged()
                 .collectLatest { connectable ->
