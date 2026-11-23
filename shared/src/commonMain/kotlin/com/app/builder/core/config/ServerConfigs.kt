@@ -14,6 +14,8 @@ data class ServerConfigs(
     val refreshTokenValidity: Long,
     /** Time in milliseconds a refresh token stays accepted after it was rotated, so a client that never received the rotated pair, such as when the response was lost, can still recover its session. */
     val refreshTokenGracePeriod: Long,
+    /** Number of wrong current passwords a session may give when changing the password. The session is ended on the last one, so the user has to log in again. Values below 1 count as 1. */
+    val maxPasswordAttempts: Int,
     /** Global per-IP rate limiter maximum requests per period, applied to every route not covered by a specific limiter. */
     val rateLimiterLimit: Int,
     /** Global rate limiter refill period in milliseconds. */
@@ -64,6 +66,7 @@ data class ServerConfigs(
             accessTokenValidity = 3_600_000L,
             refreshTokenValidity = 2_592_000_000L,
             refreshTokenGracePeriod = 60_000L,
+            maxPasswordAttempts = 3,
             rateLimiterLimit = 200,
             rateLimiterRefillPeriod = 60_000L,
             rateLimiterProbeLimit = 5,

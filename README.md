@@ -831,6 +831,11 @@ Every refresh rotates the refresh token. If a rotation's response fails to arriv
 If the server refuses the refresh token, the session is marked **expired** rather than deleted, so no queued work is lost. A warning joins the status icons in the top bar, asking the user to log out and log in again.
 Until then, nothing that needs the session reaches the server: no refresh is attempted, the user's jobs wait without a request, and the push connection stays closed. Logging in again clears it and everything resumes.
 
+### Changing the Password
+
+`POST /api/change-password` takes the session's refresh token, the current password and the new one. A successful change ends the account's sessions on every other device.
+Wrong current passwords are counted per session: the one that reaches `ServerConfigs.maxPasswordAttempts` ends the session, so the user has to log in again before trying further. A successful change clears the count.
+
 ### Offline Login
 
 A user who logged out can log back in without a connection, as long as their session is still on the device. That is the case while the logout hasn't reached the server yet: logging out offline queues it, and the session is only deleted once it runs.

@@ -226,7 +226,42 @@ class AuthenticationUseCasesTest: TestCase() {
         assertIs<Outcome.Success<Authentication>>(value = authenticationUseCases.login(credentials = form.credentials))
     }
 
-    /** Verifies that a failure on the server's side is reported as an error rather than as a rejected credential. */
+    /** Verifies that a session is ended by its last allowed wrong current password, that blank new passwords are not counted, and that the account's other sessions and its password are left as they were. */
+    @Test
+    fun changePasswordEndsSessionAfterMaxAttempts() = runServerTest {
+        ServerConfigs.set { it.copy(maxPasswordAttempts = 3) }
+        val authenticationUseCases = dependency.get().useCases.authenticationUseCases
+        val form = registrationForm(username = "change_password_attempts_user", permissions = emptyMap())
+        val session = seedUser(registrationForm = form)
+        val otherSession = assertIs<Outcome.Success<Authentication>>(value = authenticationUseCases.login(credentials = form.credentials)).data
+        val passwordChange = PasswordChange(refreshToken = session.bearer.refreshToken, currentPassword = "wrong_password", newPassword = "new_password")
+
+        repeat(times = 5) { assertEquals(expected = Outcome.Invalid, actual = authenticationUseCases.changePassword(passwordChange = passwordChange.copy(newPassword = " "))) }
+        repeat(times = 2) { assertEquals(expected = Outcome.Invalid, actual = authenticationUseCases.changePassword(passwordChange = passwordChange)) }
+        assertEquals(expected = Outcome.Rejected, actual = authenticationUseCases.changePassword(passwordChange = passwordChange))
+
+        assertEquals(expected = Outcome.Rejected, actual = authenticationUseCases.changePassword(passwordChange = passwordChange.copy(currentPassword = form.password)))
+        assertEquals(expected = Outcome.Rejected, actual = authenticationUseCases.refreshTokens(refreshToken = session.bearer.refreshToken))
+        assertIs<Outcome.Success<BearerToken>>(value = authenticationUseCases.refreshTokens(refreshToken = otherSession.bearer.refreshToken))
+        assertIs<Outcome.Success<Authentication>>(value = authenticationUseCases.login(credentials = form.credentials))
+    }
+
+    /** Verifies that a successful password change clears the wrong current passwords counted for the session. */
+    @Test
+    fun changePasswordSuccessResetsAttempts() = runServerTest {
+        ServerConfigs.set { it.copy(maxPasswordAttempts = 2) }
+        val authenticationUseCases = dependency.get().useCases.authenticationUseCases
+        val form = registrationForm(username = "change_password_reset_user", permissions = emptyMap())
+        val session = seedUser(registrationForm = form)
+        val wrong = PasswordChange(refreshToken = session.bearer.refreshToken, currentPassword = "wrong_password", newPassword = "new_password")
+
+        assertEquals(expected = Outcome.Invalid, actual = authenticationUseCases.changePassword(passwordChange = wrong))
+        assertEquals(expected = Outcome.Success(data = form.user.uuid), actual = authenticationUseCases.changePassword(passwordChange = wrong.copy(currentPassword = form.password)))
+        assertEquals(expected = Outcome.Invalid, actual = authenticationUseCases.changePassword(passwordChange = wrong))
+        assertEquals(expected = Outcome.Rejected, actual = authenticationUseCases.changePassword(passwordChange = wrong))
+    }
+
+
     @Test
     fun databaseFailureIsAnErrorNotARejection() = runServerTest {
         val authenticationUseCases = dependency.get()

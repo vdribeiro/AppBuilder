@@ -8,8 +8,11 @@ import kotlinx.coroutines.withContext
 import org.jetbrains.exposed.v1.core.ResultRow
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.core.greaterEq
+import org.jetbrains.exposed.v1.core.less
 import org.jetbrains.exposed.v1.core.neq
 import org.jetbrains.exposed.v1.core.or
+import org.jetbrains.exposed.v1.core.plus
 import org.jetbrains.exposed.v1.r2dbc.R2dbcDatabase
 import org.jetbrains.exposed.v1.r2dbc.deleteWhere
 import org.jetbrains.exposed.v1.r2dbc.insert
@@ -255,12 +258,39 @@ class AuthenticationGateway(
             return@withContext Outcome.Rejected
         }
         if (passwordChange.newPassword.isBlank()) return@withContext Outcome.Invalid
-        if (!verifyPassword(password = passwordChange.currentPassword, hash = account[UserAccountTable.passwordHash])) return@withContext Outcome.Invalid
+
+        val maxAttempts = ServerConfigs.value.maxPasswordAttempts.coerceAtLeast(minimumValue = 1)
+        val counted = database.safeTransaction {
+            val counted = UserSessionTable.update(where = { (UserSessionTable.uuid eq sessionUuid) and (UserSessionTable.passwordAttempts less maxAttempts) }) {
+                it[UserSessionTable.passwordAttempts] = UserSessionTable.passwordAttempts + 1
+            } > 0
+            if (!counted) UserSessionTable.deleteWhere { UserSessionTable.uuid eq sessionUuid }
+            counted
+        }.getOrElse {
+            Telemetry.error(tag = TAG, message = "Unable to count the password attempt of session $sessionUuid", throwable = it)
+            return@withContext Outcome.Error
+        }
+        if (!counted) return@withContext Outcome.Rejected
+
+        if (!verifyPassword(password = passwordChange.currentPassword, hash = account[UserAccountTable.passwordHash])) {
+            val ended = database.safeTransaction {
+                UserSessionTable.deleteWhere { (UserSessionTable.uuid eq sessionUuid) and (UserSessionTable.passwordAttempts greaterEq maxAttempts) } > 0
+            }.getOrElse {
+                Telemetry.error(tag = TAG, message = "Unable to end session $sessionUuid", throwable = it)
+                return@withContext Outcome.Error
+            }
+            if (!ended) return@withContext Outcome.Invalid
+            Telemetry.error(tag = TAG, message = "Ended session $sessionUuid of user $userUuid after $maxAttempts wrong current passwords")
+            return@withContext Outcome.Rejected
+        }
         val password = hashPassword(password = passwordChange.newPassword) ?: return@withContext Outcome.Error
 
         database.safeTransaction {
             UserAccountTable.update(where = { UserAccountTable.userUuid eq userUuid }) {
                 it[UserAccountTable.passwordHash] = password
+            }
+            UserSessionTable.update(where = { UserSessionTable.uuid eq sessionUuid }) {
+                it[UserSessionTable.passwordAttempts] = 0
             }
             UserSessionTable.deleteWhere { (UserSessionTable.userUuid eq userUuid) and (UserSessionTable.uuid neq sessionUuid) }
             Outcome.Success(data = userUuid)

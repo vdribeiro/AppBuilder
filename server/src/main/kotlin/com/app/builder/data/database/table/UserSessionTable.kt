@@ -19,6 +19,8 @@ object UserSessionTable: Table(name = "user_session") {
     val createdAt = timestamp(name = "created_at")
     /** The timestamp after which the session is no longer valid. */
     val expiresAt = timestamp(name = "expires_at")
+    /** The number of wrong current passwords the session gave when changing the password since its last successful change. */
+    val passwordAttempts = integer(name = "password_attempts").default(defaultValue = 0)
 
     override val primaryKey = PrimaryKey(firstColumn = uuid)
 }

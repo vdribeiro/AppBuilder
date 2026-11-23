@@ -1,6 +1,7 @@
 package com.app.builder.domain.usecase.authentication
 
 import kotlin.uuid.Uuid
+import com.app.builder.core.config.ServerConfigs
 import com.app.builder.domain.Authentication
 import com.app.builder.domain.BearerToken
 import com.app.builder.domain.PasswordChange
@@ -45,9 +46,10 @@ interface AuthenticationUseCases {
 
     /**
      * Changes the password of the account the session of a submitted [passwordChange] belongs to, and invalidates every other session of that account.
+     * A session that gives [ServerConfigs.maxPasswordAttempts] wrong current passwords without a successful change in between is ended.
      *
      * @param passwordChange The refresh token of the session, the current password and the new one.
-     * @return [Outcome.Success] with the uuid of the user the account belongs to, [Outcome.Rejected] when no session matches, the session is expired or the account is disabled, [Outcome.Invalid] when the current password is wrong or the new one is blank, or [Outcome.Error] when the operation failed.
+     * @return [Outcome.Success] with the uuid of the user the account belongs to, [Outcome.Rejected] when no session matches, the session is expired, the account is disabled or the session was ended by its last wrong current password, [Outcome.Invalid] when the current password is wrong or the new one is blank, or [Outcome.Error] when the operation failed.
      */
     suspend fun changePassword(passwordChange: PasswordChange): Outcome<Uuid>
 }
