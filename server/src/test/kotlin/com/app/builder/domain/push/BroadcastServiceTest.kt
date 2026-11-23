@@ -17,7 +17,7 @@ class BroadcastServiceTest: TestCase() {
 
     override suspend fun beforeTest() {
         super.beforeTest()
-        ServerFlags.set { it.copy(broadcastStream = true) }
+        ServerFlags.set { it.copy(broadcastStream = true, broadcastFirebase = true) }
     }
 
     /** Verifies that connections can be added and removed, respecting the configured connection limit. */
@@ -96,6 +96,19 @@ class BroadcastServiceTest: TestCase() {
         broadcastService.broadcast(pushPayload = pushPayload)
 
         assertEquals(expected = pushPayload, actual = withTimeout(timeMillis = 5_000L) { fakeFcmService.broadcasts.receive() })
+    }
+
+    /** Verifies that a broadcast is not relayed to the FCM broadcast topic while the broadcast Firebase flag is off. */
+    @Test
+    fun broadcastIsNotRelayedToTheFcmTopicWhileFirebaseIsDisabled() = runServerTest {
+        ServerFlags.set { it.copy(broadcastFirebase = false) }
+        val fakeFcmService = FakeFcmService()
+        val broadcastService = BroadcastManager(instanceSignal = dependency.get().instanceSignal, fcmService = fakeFcmService)
+
+        broadcastService.broadcast(pushPayload = PushPayload.Flags())
+
+        delay(timeMillis = 200)
+        assertTrue(actual = fakeFcmService.broadcasts.tryReceive().isFailure)
     }
 
     /** Verifies that a session failing every delivery attempt is dropped, freeing its slot for a new connection. */

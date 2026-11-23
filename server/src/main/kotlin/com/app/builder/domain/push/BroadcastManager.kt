@@ -95,7 +95,7 @@ class BroadcastManager(
         if (!instanceSignal.notify(channel = CHANNEL, payload = "$instanceId$ENVELOPE_SEPARATOR$data")) {
             Telemetry.error(tag = TAG, message = "Unable to relay broadcast ${pushPayload.uuid} to other instances")
         }
-        scope.launch(context = Dispatcher.IO) { fcmService.sendToBroadcastTopic(pushPayload = pushPayload) }
+        if (ServerFlags.value.broadcastFirebase) scope.launch(context = Dispatcher.IO) { fcmService.sendToBroadcastTopic(pushPayload = pushPayload) }
     }
 
     /**

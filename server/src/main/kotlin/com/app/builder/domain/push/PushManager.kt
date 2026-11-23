@@ -236,12 +236,13 @@ class PushManager(
 
     /**
      * Delivers to this user's devices via Firebase Cloud Messaging, skipping any device that already has a live WebSocket connection — on any server instance — to avoid delivering the same payload twice.
-     * No device is skipped while the push socket server feature flag is off.
+     * No device is skipped while the push socket server feature flag is off, and nothing is delivered while the push Firebase server feature flag is off.
      *
      * @param userUuid The user to deliver to.
      * @param pushPayload The payload to deliver.
      */
     private fun sendToFcmTokens(userUuid: Uuid, pushPayload: PushPayload) {
+        if (!ServerFlags.value.pushFirebase) return
         scope.launch(context = Dispatcher.IO) {
             val connectedDeviceUuids = if (ServerFlags.value.pushSocket) connectionUseCases.getConnectedDeviceUuids(userUuid = userUuid) else emptyList()
             val registered = deviceTokenUseCases.getTokens(userUuid = userUuid).getOrNull() ?: return@launch

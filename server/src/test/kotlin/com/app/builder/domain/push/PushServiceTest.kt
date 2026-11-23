@@ -152,6 +152,21 @@ class PushServiceTest: TestCase() {
         assertEquals(expected = setOf("connected-token", "offline-token"), actual = withTimeout(timeMillis = 5_000L) { fakeFcmService.multicasts.receive() }.toSet())
     }
 
+    /** Verifies that nothing is delivered via FCM while the push Firebase flag is off. */
+    @Test
+    fun fcmIsSkippedWhilePushFirebaseIsDisabled() = runServerTest {
+        ServerFlags.set { it.copy(pushFirebase = false) }
+        val useCases = dependency.get().useCases
+        val fakeFcmService = FakeFcmService()
+        val pushService = createOtherInstance(fcmService = fakeFcmService)
+        assertEquals(expected = Outcome.Success(data = Unit), actual = useCases.deviceTokenUseCases.registerToken(userUuid = FakeData.adminUser.uuid, registration = DeviceToken(deviceUuid = uuid(), token = "token")))
+
+        pushService.sendNotification(pushPayload = FakeData.notification)
+
+        delay(timeMillis = 200)
+        assertTrue(actual = fakeFcmService.multicasts.tryReceive().isFailure)
+    }
+
     /** Verifies that a notification saved on another instance is delivered over this instance's WebSocket connection. */
     @Test
     fun webSocketDeliversNotificationsSavedOnAnotherInstance() = runServerTest {

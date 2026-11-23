@@ -1,7 +1,6 @@
 package com.app.builder.domain.push
 
 import kotlinx.coroutines.withContext
-import com.app.builder.core.config.ServerFlags
 import com.app.builder.core.flow.Dispatcher
 import com.app.builder.core.telemetry.Telemetry
 import com.app.builder.data.serializer.encode
@@ -17,7 +16,6 @@ import com.google.firebase.messaging.Notification
 
 /**
  * Sends push payloads via the Firebase Admin SDK.
- * Sending to device tokens is a no-op while the push Firebase server feature flag is off, and the broadcast topic operations are no-ops while the broadcast Firebase server feature flag is off.
  *
  * @property firebaseMessaging The Firebase Cloud Messaging client.
  */
@@ -27,7 +25,6 @@ class FcmManager(
 ): FcmService {
 
     override suspend fun subscribeToBroadcastTopic(token: String): Boolean = withContext(context = Dispatcher.IO) {
-        if (!ServerFlags.value.broadcastFirebase) return@withContext true
         runCatching {
             firebaseMessaging.subscribeToTopic(listOf(token), BROADCAST_TOPIC)
             true
@@ -37,7 +34,6 @@ class FcmManager(
     }
 
     override suspend fun sendToBroadcastTopic(pushPayload: PushPayload): Boolean = withContext(context = Dispatcher.IO) {
-        if (!ServerFlags.value.broadcastFirebase) return@withContext true
         runCatching {
             val message = pushPayload.toMessageBuilder().setTopic(BROADCAST_TOPIC).build()
             firebaseMessaging.send(message)
@@ -48,7 +44,6 @@ class FcmManager(
     }
 
     override suspend fun sendToTokens(tokens: List<String>, pushPayload: PushPayload): List<String> = withContext(context = Dispatcher.IO) {
-        if (!ServerFlags.value.pushFirebase) return@withContext emptyList()
         runCatching {
             if (tokens.isEmpty()) return@withContext emptyList()
             @Suppress("DEPRECATION") val message = pushPayload.toMulticastMessageBuilder().addAllTokens(tokens).build()
