@@ -31,6 +31,7 @@ import com.app.builder.domain.usecase.ticket.TicketUseCases
 
 /**
  * Manages push payloads and its single-use, short-lived tickets for connections, and allows registering an FCM token.
+ * Saved notifications are sent once via Firebase Cloud Messaging by the instance that saved them, and via WebSocket by every instance holding a connection of their user.
  * Connection presence is persisted, so delivery decisions account for devices connected to any server instance, while the sockets themselves stay in this instance's memory.
  *
  * @property deviceTokenUseCases The collection of use cases for looking up a user's FCM device tokens.
@@ -65,10 +66,13 @@ class PushManager(
     /** Keeps this instance's presence rows alive. */
     private var heartbeatJob: Job? = null
 
-    /** Tracks the observation of the push server feature flag. */
+    /** Tracks the observation of the push socket and push Firebase server feature flags. */
     private var flagJob: Job? = null
 
-    /** Flag to track service status. */
+    /** Tracks the delivery of the notifications saved through this instance via Firebase Cloud Messaging. */
+    private var savedJob: Job? = null
+
+    /** Whether the heartbeat and the per-user observers are running. */
     @Volatile
     private var isRunning = false
 
@@ -76,7 +80,8 @@ class PushManager(
         mutex.withLock {
             flagJob?.cancelAndJoin()
             flagJob = null
-            stopJobs()
+            stopSavedJob()
+            stopSocketJobs()
         }
     }
 
@@ -84,12 +89,18 @@ class PushManager(
         if (!mutex.tryLock()) return
         try {
             if (flagJob?.isActive == true) return
-            if (ServerFlags.value.push) startJobs()
+            if (ServerFlags.value.pushSocket || ServerFlags.value.pushFirebase) startSavedJob()
+            if (ServerFlags.value.pushSocket) startSocketJobs()
             flagJob = scope.launch {
                 ServerFlags.flow
-                    .map { it.push }
+                    .map { (it.pushSocket || it.pushFirebase) to it.pushSocket }
                     .distinctUntilChanged()
-                    .collect { enabled -> mutex.withLock { if (enabled) startJobs() else stopJobs() } }
+                    .collect { (enabled, pushSocket) ->
+                        mutex.withLock {
+                            if (enabled) startSavedJob() else stopSavedJob()
+                            if (pushSocket) startSocketJobs() else stopSocketJobs()
+                        }
+                    }
             }
         } finally {
             mutex.unlock()
@@ -137,10 +148,31 @@ class PushManager(
     }
 
     /**
+     * Starts delivering the notifications saved through this instance via Firebase Cloud Messaging.
+     * A notification is deleted once sent while the push socket server feature flag is off.
+     * If the job is already running, this is a no-op.
+     */
+    private fun startSavedJob() {
+        if (savedJob?.isActive != true) savedJob = scope.launch(context = Dispatcher.IO) {
+            notificationsUseCases.savedNotifications.collect { pushPayload ->
+                val userUuid = pushPayload.userUuid ?: return@collect
+                sendToFcmTokens(userUuid = userUuid, pushPayload = pushPayload)
+                if (!ServerFlags.value.pushSocket) notificationsUseCases.deleteNotification(notificationUuid = pushPayload.uuid)
+            }
+        }
+    }
+
+    /** Stops delivering the notifications saved through this instance. */
+    private suspend fun stopSavedJob() {
+        savedJob?.cancelAndJoin()
+        savedJob = null
+    }
+
+    /**
      * Starts the heartbeat and the observation for all currently connected users.
      * If they are already running, this is a no-op.
      */
-    private fun startJobs() {
+    private fun startSocketJobs() {
         if (isRunning) return
         isRunning = true
         startHeartbeat()
@@ -148,7 +180,7 @@ class PushManager(
     }
 
     /** Stops the heartbeat and all database observers. */
-    private suspend fun stopJobs() {
+    private suspend fun stopSocketJobs() {
         isRunning = false
         heartbeatJob?.cancelAndJoin()
         heartbeatJob = null
@@ -166,12 +198,15 @@ class PushManager(
         }
     }
 
-    /** Launches an isolated coroutine to observe and dispatch a specific user's notifications. */
+    /** Launches an isolated coroutine to observe a specific user's notifications and dispatch them to the user's WebSocket connections. */
     private fun startObservingForUser(userUuid: Uuid) {
         observationJobs.computeIfAbsent(userUuid) {
             scope.launch(context = Dispatcher.IO) {
                 notificationsUseCases.observeNotifications(userUuid = userUuid).collect { notifications ->
-                    notifications.forEach { pushPayload -> sendNotification(pushPayload = pushPayload) }
+                    notifications.forEach { pushPayload ->
+                        val encodedNotification = encode(value = pushPayload) ?: return@forEach
+                        sendToWebSocketConnections(userUuid = userUuid, encodedNotification = encodedNotification)
+                    }
                 }
             }
         }
@@ -201,13 +236,14 @@ class PushManager(
 
     /**
      * Delivers to this user's devices via Firebase Cloud Messaging, skipping any device that already has a live WebSocket connection — on any server instance — to avoid delivering the same payload twice.
+     * No device is skipped while the push socket server feature flag is off.
      *
      * @param userUuid The user to deliver to.
      * @param pushPayload The payload to deliver.
      */
     private fun sendToFcmTokens(userUuid: Uuid, pushPayload: PushPayload) {
         scope.launch(context = Dispatcher.IO) {
-            val connectedDeviceUuids = connectionUseCases.getConnectedDeviceUuids(userUuid = userUuid)
+            val connectedDeviceUuids = if (ServerFlags.value.pushSocket) connectionUseCases.getConnectedDeviceUuids(userUuid = userUuid) else emptyList()
             val registered = deviceTokenUseCases.getTokens(userUuid = userUuid).getOrNull() ?: return@launch
             val tokens = registered.filterNot { it.deviceUuid in connectedDeviceUuids }.map { it.token }
             if (tokens.isEmpty()) return@launch
