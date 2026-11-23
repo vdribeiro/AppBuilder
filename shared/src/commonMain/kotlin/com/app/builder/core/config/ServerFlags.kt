@@ -14,11 +14,11 @@ data class ServerFlags(
     val authentication: Boolean,
     /** Toggles the broadcast SSE route and the manager that fans out cross-instance signals to connected sessions. When false, the route is not served, open streams end and the manager stops listening. */
     val broadcastStream: Boolean,
-    /** Toggles the broadcast Firebase topic. When false, subscribing a token to the topic and sending a broadcast to it are no-ops. */
+    /** Toggles the broadcast Firebase topic and its subscribe route. When false, the route returns 404 and sending a broadcast to the topic is a no-op. */
     val broadcastFirebase: Boolean,
     /** Toggles the push WebSocket ticket/connect routes, the connection presence heartbeat and the per-user notification observers. When false, the routes are not served and open sockets close. */
     val pushSocket: Boolean,
-    /** Toggles push delivery over Firebase. When false, sending a push payload to device tokens is a no-op. */
+    /** Toggles push delivery over Firebase and the device token route. When false, the route returns 404 and sending a push payload to device tokens is a no-op. */
     val pushFirebase: Boolean,
     /** Toggles user CRUD routes. When false, they return 404. */
     val users: Boolean,

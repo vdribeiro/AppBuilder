@@ -28,7 +28,7 @@ class PushTest: TestCase() {
 
     override suspend fun beforeTest() {
         super.beforeTest()
-        ServerFlags.set { it.copy(pushSocket = true) }
+        ServerFlags.set { it.copy(pushSocket = true, pushFirebase = true) }
     }
 
     /** Verifies that generating a push ticket requires authentication and returns a ticket UUID. */
@@ -182,12 +182,24 @@ class PushTest: TestCase() {
     /** Verifies that, while only the push Firebase flag is on, the ticket route is not found and the device token and send routes still answer. */
     @Test
     fun disabledSocketFlagKeepsTheOtherRoutes() = runServerTest {
-        ServerFlags.set { it.copy(pushSocket = false, pushFirebase = true) }
+        ServerFlags.set { it.copy(pushSocket = false) }
         installRouting()
 
         val client = createClient(token = adminBearerToken.accessToken)
         assertEquals(expected = HttpStatusCode.NotFound, actual = client.post<Unit>(request = HttpRequest(url = URL.Tickets)).status)
         assertEquals(expected = HttpStatusCode.OK, actual = client.post<DeviceToken>(request = HttpRequest(url = URL.DeviceTokens), body = DeviceToken(deviceUuid = uuid(), token = "fcmToken")).status)
+        assertEquals(expected = HttpStatusCode.OK, actual = client.post(request = HttpRequest(url = URL.Push), body = FakeData.notification as PushPayload).status)
+    }
+
+    /** Verifies that, while only the push socket flag is on, the device token route is not found and the ticket and send routes still answer. */
+    @Test
+    fun disabledFirebaseFlagKeepsTheOtherRoutes() = runServerTest {
+        ServerFlags.set { it.copy(pushFirebase = false) }
+        installRouting()
+
+        val client = createClient(token = adminBearerToken.accessToken)
+        assertEquals(expected = HttpStatusCode.NotFound, actual = client.post<DeviceToken>(request = HttpRequest(url = URL.DeviceTokens), body = DeviceToken(deviceUuid = uuid(), token = "fcmToken")).status)
+        assertEquals(expected = HttpStatusCode.OK, actual = client.post<Unit>(request = HttpRequest(url = URL.Tickets)).status)
         assertEquals(expected = HttpStatusCode.OK, actual = client.post(request = HttpRequest(url = URL.Push), body = FakeData.notification as PushPayload).status)
     }
 

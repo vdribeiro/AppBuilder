@@ -20,7 +20,7 @@ class BroadcastTest: TestCase() {
 
     override suspend fun beforeTest() {
         super.beforeTest()
-        ServerFlags.set { it.copy(broadcastStream = true) }
+        ServerFlags.set { it.copy(broadcastStream = true, broadcastFirebase = true) }
     }
 
     /** Verifies that broadcasting requires authentication and a valid payload, and reaches connected SSE clients. */
@@ -82,11 +82,22 @@ class BroadcastTest: TestCase() {
     /** Verifies that, while only the broadcast Firebase flag is on, the subscribe and publish routes still answer. */
     @Test
     fun disabledStreamFlagKeepsTheOtherRoutes() = runServerTest {
-        ServerFlags.set { it.copy(broadcastStream = false, broadcastFirebase = true) }
+        ServerFlags.set { it.copy(broadcastStream = false) }
         installRouting()
 
         val client = createClient(token = adminBearerToken.accessToken)
         assertEquals(expected = HttpStatusCode.OK, actual = client.post(request = HttpRequest(url = URL.BroadcastSubscribe), body = DeviceToken(deviceUuid = null, token = "fcmToken")).status)
+        assertEquals(expected = HttpStatusCode.OK, actual = client.post(request = HttpRequest(url = URL.Broadcast), body = PushPayload.Flags() as PushPayload).status)
+    }
+
+    /** Verifies that, while only the broadcast stream flag is on, the subscribe route is not found and the publish route still answers. */
+    @Test
+    fun disabledFirebaseFlagKeepsTheOtherRoutes() = runServerTest {
+        ServerFlags.set { it.copy(broadcastFirebase = false) }
+        installRouting()
+
+        val client = createClient(token = adminBearerToken.accessToken)
+        assertEquals(expected = HttpStatusCode.NotFound, actual = client.post(request = HttpRequest(url = URL.BroadcastSubscribe), body = DeviceToken(deviceUuid = null, token = "fcmToken")).status)
         assertEquals(expected = HttpStatusCode.OK, actual = client.post(request = HttpRequest(url = URL.Broadcast), body = PushPayload.Flags() as PushPayload).status)
     }
 
