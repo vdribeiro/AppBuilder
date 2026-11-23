@@ -1170,6 +1170,7 @@ Declarations that resolve to a distinct implementation per source set:
 | `Platform`                 | OS name, version, brand and model                                     |
 | `Dispatcher`               | The IO `CoroutineDispatcher`                                          |
 | `VerticalScrollBar`        | Styled scrollbar for a `LazyList`                                     |
+| `WebPage`                  | Web page with opt-in JavaScript and navigation limited by host        |
 | `PlatformTestCase`         | Platform-specific test setup                                          |
 
 ## Package Index
@@ -1229,6 +1230,7 @@ Declarations that resolve to a distinct implementation per source set:
 * **permission**: System permissions management.
 * **screen**: Screens. Each is a sub-package with its composable and store co-located.
 * **store**: The MVI `Store` base class.
+* **web**: Web page composable.
 * **showcase**: The design system catalog.
 
 **test**: Testing suites, fake data and annotations.
@@ -1393,6 +1395,7 @@ Declarations that resolve to a distinct implementation per source set:
 * **permission** `PermissionManager`: Checks and requests `Permission`s. Provides `LocalPermissionManager`.
 * **screen** `Screen`: Foundational wrapper. Provides `LocalScaffold`.
 * **store** `Store`: The MVI base class.
+* **web** `WebPage`: Shows a web page, with opt-in JavaScript and navigation limited by host.
 * `AppCore`: Wraps content in every provider the module owns, so an app opts in with one call.
 
 **root**
