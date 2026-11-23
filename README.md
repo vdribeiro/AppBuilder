@@ -1088,6 +1088,15 @@ A `StorageFile<T>` declares a file as a typed object: path, serializer, `encrypt
 * With `cache = true`, it lazily hydrates a mutex-guarded `StateFlow` and rolls the cached value back if a disk write fails, so the cache never holds a payload the file system rejected. Use `cache = false` for files that are read rarely or written from outside the app.
 * **Saving `null` deletes the file** so absence has one representation on disk and `reset()` and "save null" converge.
 
+**Backups**: for security, the app data directory and the local database are kept out of device backups. A backup is a copy of the user's data that leaves the device and its protections. A restored device therefore starts logged out with an empty database.
+
+| Platform | Exclusion                                                                                                                                          |
+|----------|----------------------------------------------------------------------------------------------------------------------------------------------------|
+| Android  | `allowBackup="false"`, and every domain excluded from cloud backup and device transfer                                                             |
+| iOS      | The data and database directories are flagged as excluded from backup; the Keychain key is device-only                                             |
+| Desktop  | macOS: excluded from Time Machine. Linux: marked with `CACHEDIR.TAG` and `.deja-dup-ignore`. Windows: kept in `AppData\Local`, which does not roam |
+| Web      | Browser storage is not part of any backup                                                                                                          |
+
 ## HTTP Stack
 
 A Ktor client built from small plugins. The interceptor fails fast when networking is flag-disabled or the device is offline, stamps every request with correlation, device and app metadata, converts non-2xx responses into typed exceptions, and measures the round trip that feeds [clock trust](#clock-trust).
