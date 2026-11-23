@@ -26,7 +26,7 @@ class BroadcastServiceTest: TestCase() {
 
     override suspend fun beforeTest() {
         super.beforeTest()
-        ClientFlags.set { it.copy(http = true, broadcast = true) }
+        ClientFlags.set { it.copy(http = true, broadcastStream = true, broadcastFirebase = true) }
     }
 
     /** The broadcast payload fixture, addressed to no particular user. */
@@ -131,19 +131,19 @@ class BroadcastServiceTest: TestCase() {
         broadcastService.stop()
     }
 
-    /** Verifies that a running service connects when the broadcast feature flag turns on and stops reconnecting when it turns off. */
+    /** Verifies that a running service connects when the broadcast stream and broadcast Firebase feature flags turn on and stops reconnecting when they turn off. */
     @Test
     fun runningServiceFollowsTheBroadcastFlag() = runUnitTest {
-        ClientFlags.set { it.copy(broadcast = false) }
+        ClientFlags.set { it.copy(broadcastStream = false, broadcastFirebase = false) }
         val broadcastService = broadcastService()
         broadcastService.start()
         testScheduler.runCurrent()
         assertEquals(expected = 0, actual = broadcastConnections.value)
 
-        ClientFlags.set { it.copy(broadcast = true) }
+        ClientFlags.set { it.copy(broadcastStream = true, broadcastFirebase = true) }
         broadcastConnections.first { it > 0 }
 
-        ClientFlags.set { it.copy(broadcast = false) }
+        ClientFlags.set { it.copy(broadcastStream = false, broadcastFirebase = false) }
         testScheduler.runCurrent()
         val connections = broadcastConnections.value
         testScheduler.advanceTimeBy(delayTime = 10.minutes)
@@ -152,10 +152,49 @@ class BroadcastServiceTest: TestCase() {
         assertEquals(expected = connections, actual = broadcastConnections.value)
     }
 
-    /** Verifies that starting the service does nothing while the broadcast feature flag is disabled. */
+    /** Verifies that, while the broadcast stream feature flag is off, a running service subscribes the push token without opening the stream, and connects once the flag turns on. */
+    @Test
+    fun runningServiceFollowsTheBroadcastStreamFlag() = runUnitTest {
+        ClientFlags.set { it.copy(broadcastStream = false) }
+        val broadcastService = broadcastService()
+        broadcastService.start()
+        PushProvider.setToken(token = "token")
+        subscribedTokens.first { it.isNotEmpty() }
+        testScheduler.runCurrent()
+        assertEquals(expected = 0, actual = broadcastConnections.value)
+
+        ClientFlags.set { it.copy(broadcastStream = true) }
+        broadcastConnections.first { it > 0 }
+
+        ClientFlags.set { it.copy(broadcastStream = false) }
+        testScheduler.runCurrent()
+        val connections = broadcastConnections.value
+        testScheduler.advanceTimeBy(delayTime = 10.minutes)
+        broadcastService.stop()
+
+        assertEquals(expected = connections, actual = broadcastConnections.value)
+    }
+
+    /** Verifies that, while the broadcast Firebase feature flag is off, a running service opens the stream without subscribing the push token, and subscribes it once the flag turns on. */
+    @Test
+    fun runningServiceFollowsTheBroadcastFirebaseFlag() = runUnitTest {
+        ClientFlags.set { it.copy(broadcastFirebase = false) }
+        val broadcastService = broadcastService()
+        broadcastService.start()
+        PushProvider.setToken(token = "token")
+        broadcastConnections.first { it > 0 }
+        testScheduler.runCurrent()
+        assertTrue(actual = subscribedTokens.value.isEmpty())
+
+        ClientFlags.set { it.copy(broadcastFirebase = true) }
+        subscribedTokens.first { it.isNotEmpty() }
+        broadcastService.stop()
+    }
+
+    /** Verifies that starting the service does nothing while the broadcast stream and broadcast Firebase feature flags are disabled. */
     @Test
     fun startIsIgnoredWhileBroadcastIsDisabled() = runUnitTest {
-        ClientFlags.set { it.copy(broadcast = false) }
+        ClientFlags.set { it.copy(broadcastStream = false, broadcastFirebase = false) }
         val broadcastService = broadcastService()
 
         broadcastService.start()

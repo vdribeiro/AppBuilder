@@ -46,7 +46,7 @@ class ConfigUseCasesTest: TestCase() {
 
         val clientFlags = ClientFlags.value.copy(scheduler = !ClientFlags.value.scheduler)
         val clientConfigs = ClientConfigs.value.copy(clockDriftTolerance = 1234L)
-        val serverFlags = ServerFlags.value.copy(broadcast = !ServerFlags.value.broadcast)
+        val serverFlags = ServerFlags.value.copy(broadcastStream = !ServerFlags.value.broadcastStream)
         val serverConfigs = ServerConfigs.value.copy(accessTokenValidity = 4321L)
 
         assertEquals(expected = Outcome.Success(data = Unit), actual = configUseCases.updateClientFeatureFlags(flags = clientFlags))
@@ -88,7 +88,7 @@ class ConfigUseCasesTest: TestCase() {
     fun observeRestoresSignaledUpdates() = runServerTest {
         val configUseCases = dependency.get().useCases.configUseCases
         val signal = dependency.get().instanceSignal as LocalSignal
-        val serverFlags = ServerFlags.value.copy(broadcast = !ServerFlags.value.broadcast)
+        val serverFlags = ServerFlags.value.copy(broadcastStream = !ServerFlags.value.broadcastStream)
         assertEquals(expected = Outcome.Success(data = Unit), actual = configUseCases.updateServerFeatureFlags(flags = serverFlags))
         ServerFlags.reset()
 

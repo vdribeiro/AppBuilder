@@ -17,7 +17,7 @@ class BroadcastServiceTest: TestCase() {
 
     override suspend fun beforeTest() {
         super.beforeTest()
-        ServerFlags.set { it.copy(broadcast = true) }
+        ServerFlags.set { it.copy(broadcastStream = true) }
     }
 
     /** Verifies that connections can be added and removed, respecting the configured connection limit. */
@@ -113,10 +113,10 @@ class BroadcastServiceTest: TestCase() {
         assertFalse(actual = broadcastService.removeConnection(session = deadSession))
     }
 
-    /** Verifies that starting the service is a no-op while the broadcast flag is off, so broadcasts from other instances are not relayed to local sessions. */
+    /** Verifies that starting the service is a no-op while the broadcast stream flag is off, so broadcasts from other instances are not relayed to local sessions. */
     @Test
     fun startIsNoOpWhenBroadcastIsDisabled() = runServerTest {
-        ServerFlags.set { it.copy(broadcast = false) }
+        ServerFlags.set { it.copy(broadcastStream = false) }
         val broadcastService = dependency.get().broadcastService
         val session = FakeSSESession()
         broadcastService.start()
@@ -130,7 +130,7 @@ class BroadcastServiceTest: TestCase() {
         broadcastService.stop()
     }
 
-    /** Verifies that a started service stops relaying broadcasts from other instances when the broadcast flag turns off, and resumes when it turns back on. */
+    /** Verifies that a started service stops relaying broadcasts from other instances when the broadcast stream flag turns off, and resumes when it turns back on. */
     @Test
     fun startedServiceFollowsItsFlag() = runServerTest {
         val broadcastService = dependency.get().broadcastService
@@ -140,15 +140,28 @@ class BroadcastServiceTest: TestCase() {
         broadcastService.addConnection(session = session)
         awaitUntil { signal.subscriptions.value > 0 }
 
-        ServerFlags.set { it.copy(broadcast = false) }
+        ServerFlags.set { it.copy(broadcastStream = false) }
         awaitUntil { signal.subscriptions.value == 0 }
 
-        ServerFlags.set { it.copy(broadcast = true) }
+        ServerFlags.set { it.copy(broadcastStream = true) }
         awaitUntil { signal.subscriptions.value > 0 }
 
         val otherInstance = BroadcastManager(instanceSignal = signal, fcmService = NoOpFcmService)
         otherInstance.broadcast(pushPayload = PushPayload.Flags())
         awaitUntil { session.sent }
         broadcastService.stop()
+    }
+
+    /** Verifies that a broadcast is still relayed to the FCM broadcast topic while the broadcast stream flag is off. */
+    @Test
+    fun broadcastIsRelayedToTheFcmTopicWhileTheStreamIsDisabled() = runServerTest {
+        ServerFlags.set { it.copy(broadcastStream = false) }
+        val fakeFcmService = FakeFcmService()
+        val broadcastService = BroadcastManager(instanceSignal = dependency.get().instanceSignal, fcmService = fakeFcmService)
+        val pushPayload = PushPayload.Flags()
+
+        broadcastService.broadcast(pushPayload = pushPayload)
+
+        assertEquals(expected = pushPayload, actual = withTimeout(timeMillis = 5_000L) { fakeFcmService.broadcasts.receive() })
     }
 }

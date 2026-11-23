@@ -20,7 +20,7 @@ class BuildingUseCasesTest: TestCase() {
 
     override suspend fun beforeTest() {
         super.beforeTest()
-        ServerFlags.set { it.copy(push = true) }
+        ServerFlags.set { it.copy(pushSocket = true) }
     }
 
     /** Verifies that upserting a building makes it retrievable and triggers a notification for the users that can read buildings. */

@@ -80,7 +80,7 @@ class ConfigTest: TestCase() {
 
         assertEquals(expected = HttpStatusCode.BadRequest, actual = adminClient.post(request = HttpRequest(url = URL.ServerConfigs), body = "not a config").status)
 
-        val flags = ServerFlags.value.copy(firebase = !ServerFlags.value.firebase)
+        val flags = ServerFlags.value.copy(pushFirebase = !ServerFlags.value.pushFirebase)
         val flagsResponse = adminClient.post(request = HttpRequest(url = URL.ServerFlags), body = flags)
         assertEquals(expected = HttpStatusCode.OK, actual = flagsResponse.status)
         assertEquals(expected = flags, actual = flagsResponse.body<ServerFlags>())
