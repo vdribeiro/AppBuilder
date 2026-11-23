@@ -395,7 +395,7 @@ A missing `READ` permission is checked before the request and is a terminal fail
 Routing through the scheduler means a push received offline becomes a persisted job instead of a missed update.
 And because the payload is only a *signal* to re-fetch, never the data itself, an out-of-order, duplicated or stale push cannot corrupt local state.
 
-The follow-up fetch is gated by the `pushSync` flag, separately from `push`, so notifications can stay visible without the background re-fetch.
+The follow-up fetch is gated by the `pushSync` flag, separately from the push channel flags, so notifications can stay visible without the background re-fetch.
 
 ## Turning the Engine Off
 
@@ -423,10 +423,17 @@ flowchart LR
 * **Broadcast** (`BroadcastService`) sends to every listener, over the SSE stream and the FCM broadcast topic.
 * **Push** (`PushService`) sends to one user's devices: over their live WebSocket connections, and over FCM to devices that have none.
 
+Each channel has its own flag, and a service is off when both of its channels are. 
+On the server and on the client, `broadcastStream` switches the SSE stream and `broadcastFirebase` the FCM topic, `pushSocket` switches the WebSocket and `pushFirebase` the FCM tokens.
+With a persistent connection off, its service delivers over FCM only, so a device without an FCM token receives nothing from it.
+The client FCM flags only stop new registrations: a token already registered or subscribed keeps receiving until the server flag is off.
+
 ## Delivery Guarantees
 
 * **Direct sends** (`POST /api/push`) are best-effort. If a WebSocket send fails after the FCM exclusion list was computed, that one notification can be missed until the next one triggers a fresh presence check.
-* **Entity-triggered notifications** are durable. `NotificationsGateway.saveNotification` persists the payload to `NotificationTable` before delivery, `PushManager` observes that table per user and redelivers on every change, and a row is deleted only when the client acknowledges it. A device that reconnects gets its whole unacknowledged backlog: **at-least-once** delivery.
+* **Entity-triggered notifications** are durable. `NotificationsGateway.saveNotification` persists the payload to `NotificationTable` before delivery.
+The instance that saved it sends it once over FCM, and every instance holding a socket of its user observes that table and redelivers over the socket on every change. A row is deleted only when the client acknowledges it over the socket, so a device that reconnects gets its whole unacknowledged backlog: **at-least-once** delivery.
+With `pushSocket` off there is no acknowledgement, so the row is deleted once it is sent over FCM: **at-most-once** delivery.
 
 Duplicates are dropped client-side. `PushProvider` keeps a mutex-guarded ring of recently handled payload uuids, capped at `maxHandledPayloads`.
 A bounded ring is enough because it only needs to span the gap between the same payload arriving over FCM and over the socket; a set that remembered every uuid would leak for the lifetime of the process.
@@ -719,7 +726,7 @@ After each update the server broadcasts a `PushPayload.Translations`, and every 
 
 * `ClientFlags`: features and screens, plus kill switches such as `http` and `scheduler`.
 * `ClientConfigs`: layout, inline edit debounce, HTTP timeouts, clock drift, scheduler retries, push and broadcast backoff, etc.
-* `ServerFlags`: route groups, which return 404 when off, plus the broadcast and push services and Firebase delivery.
+* `ServerFlags`: route groups, which return 404 when off, plus the broadcast and push services and their Firebase delivery.
 * `ServerConfigs`: token lifetimes, rate limits, connection caps, ping intervals, etc.
 
 `ClientFlags`, `ServerFlags`, `ClientConfigs`, `ServerConfigs` are plain data classes whose companions extend `StateHolder`.
@@ -922,7 +929,7 @@ The switch is `Env.developmentMode`, from the `DEVELOPMENT` variable.
 > [!NOTE]
 > FCM needs **all** of: production mode, Google Application Default Credentials, and `GCP_PROJECT_ID`.
 > If any is missing the server falls back to `NoOpFcmService` instead of failing to boot, so a misconfigured deployment silently delivers over WebSocket and SSE only.
-> The `firebase` server flag then switches delivery on and off while the server runs.
+> The `pushFirebase` and `broadcastFirebase` server flags then switch delivery on and off while the server runs.
 > The signal, by contrast, follows the database: a Postgres connection factory yields `PostgresSignal` unless `SINGLE_INSTANCE` is set, anything else `LocalSignal`. See [Using Another Database](#using-another-database).
 
 ## Firebase Setup
@@ -1114,32 +1121,34 @@ Every route shares a global rate limit; those marked *rate-limited* have a stric
 Most groups are also gated by a `ServerFlags` flag, checked on every request; the flags/configs and `Registry` routes are installed unconditionally.
 Paths come from the shared `URL` registry.
 
-| Method & Path                                                | Purpose                                                     | Auth                                              | Flag             |
-|--------------------------------------------------------------|-------------------------------------------------------------|---------------------------------------------------|------------------|
-| `GET /`                                                      | Liveness text                                               | —                                                 | —                |
-| `HEAD /api/probe`                                            | Health check                                                | — (rate-limited)                                  | `probe`          |
-| `GET /api/clientflags` · `/api/clientconfigs`                | Serve client flags/configs                                  | —                                                 | —                |
-| `POST /api/clientflags` · `/api/clientconfigs`               | Update client flags/configs                                 | JWT, `CLIENT_FLAG`/`CLIENT_CONFIG` `WRITE`        | —                |
-| `GET`/`POST /api/serverflags` · `/api/serverconfigs`         | Read/update server flags/configs                            | JWT, `SERVER_FLAG`/`SERVER_CONFIG` `READ`/`WRITE` | —                |
-| `GET /api/registry`                                          | Delta-sync the request audit log                            | JWT, `REGISTRY` `READ`                            | —                |
-| `GET /api/translations`                                      | Serve translations                                          | —                                                 | `translations`   |
-| `POST /api/translations`                                     | Update the value of a translation                           | JWT, `TRANSLATION` `WRITE`                        | `translations`   |
-| `POST /api/register`                                         | Create an account for a user                                | JWT, `ACCOUNT` `WRITE`                            | `authentication` |
-| `POST /api/login`                                            | Log in                                                      | —                                                 | `authentication` |
-| `POST /api/logout` · `/api/refresh-tokens`                   | Log out / rotate tokens                                     | Refresh token                                     | `authentication` |
-| `POST /api/change-password`                                  | Change the account's password                               | Refresh token, current password                   | `authentication` |
-| `GET (SSE) /api/broadcast` · `POST /api/broadcast/subscribe` | Broadcast stream / FCM topic subscribe                      | — (rate-limited)                                  | `broadcast`      |
-| `POST /api/broadcast`                                        | Send a broadcast                                            | JWT, `NOTIFICATION` `WRITE`                       | `broadcast`      |
-| `POST /api/device-tokens` · `/api/tickets`                   | Register an FCM token / mint a WebSocket ticket             | JWT, account not deleted                          | `push`           |
-| `WS /api/push`                                               | Push connection; inbound frames are acknowledgements        | Ticket                                            | `push`           |
-| `POST /api/push`                                             | Send a targeted push                                        | JWT, `NOTIFICATION` `WRITE`                       | `push`           |
-| `GET /api/users` · `/api/users/{uuid}`                       | Delta-sync users / fetch one                                | JWT, `USER` `READ`                                | `users`          |
-| `POST /api/users`                                            | Upsert a user (*1)                                          | JWT, itself or `USER` `WRITE`                     | `users`          |
-| `GET /api/accounts/{userUuid}`                               | Fetch one account                                           | JWT, `ACCOUNT` `READ`                             | `users`          |
-| `POST /api/accounts`                                         | Update an account's username, permissions or disabled state | JWT, `ACCOUNT` `WRITE`                            | `users`          |
-| `POST /api/device-location`                                  | Report a device location fix                                | JWT, `DEVICE_LOCATION` `WRITE`                    | `deviceLocation` |
-| `GET /api/[entity]` · `/api/[entity]/{uuid}`                 | Delta-sync a entity / fetch one                             | JWT, `ENTITY` `READ`                              | Feature flag     |
-| `POST /api/[entity]`                                         | Upsert a feature entity                                     | JWT, `ENTITY` `WRITE`                             | Feature flag     |
+| Method & Path                                                | Purpose                                                     | Auth                                              | Flag                                     |
+|--------------------------------------------------------------|-------------------------------------------------------------|---------------------------------------------------|------------------------------------------|
+| `GET /`                                                      | Liveness text                                               | —                                                 | —                                        |
+| `HEAD /api/probe`                                            | Health check                                                | — (rate-limited)                                  | `probe`                                  |
+| `GET /api/clientflags` · `/api/clientconfigs`                | Serve client flags/configs                                  | —                                                 | —                                        |
+| `POST /api/clientflags` · `/api/clientconfigs`               | Update client flags/configs                                 | JWT, `CLIENT_FLAG`/`CLIENT_CONFIG` `WRITE`        | —                                        |
+| `GET`/`POST /api/serverflags` · `/api/serverconfigs`         | Read/update server flags/configs                            | JWT, `SERVER_FLAG`/`SERVER_CONFIG` `READ`/`WRITE` | —                                        |
+| `GET /api/registry`                                          | Delta-sync the request audit log                            | JWT, `REGISTRY` `READ`                            | —                                        |
+| `GET /api/translations`                                      | Serve translations                                          | —                                                 | `translations`                           |
+| `POST /api/translations`                                     | Update the value of a translation                           | JWT, `TRANSLATION` `WRITE`                        | `translations`                           |
+| `POST /api/register`                                         | Create an account for a user                                | JWT, `ACCOUNT` `WRITE`                            | `authentication`                         |
+| `POST /api/login`                                            | Log in                                                      | —                                                 | `authentication`                         |
+| `POST /api/logout` · `/api/refresh-tokens`                   | Log out / rotate tokens                                     | Refresh token                                     | `authentication`                         |
+| `POST /api/change-password`                                  | Change the account's password                               | Refresh token, current password                   | `authentication`                         |
+| `GET (SSE) /api/broadcast`                                   | Broadcast stream                                            | — (rate-limited)                                  | `broadcastStream`                        |
+| `POST /api/broadcast/subscribe`                              | FCM topic subscribe                                         | — (rate-limited)                                  | `broadcastStream` or `broadcastFirebase` |
+| `POST /api/broadcast`                                        | Send a broadcast                                            | JWT, `NOTIFICATION` `WRITE`                       | `broadcastStream` or `broadcastFirebase` |
+| `POST /api/device-tokens`                                    | Register an FCM token                                       | JWT, account not deleted                          | `pushSocket` or `pushFirebase`           |
+| `POST /api/tickets`                                          | Mint a WebSocket ticket                                     | JWT, account not deleted                          | `pushSocket`                             |
+| `WS /api/push`                                               | Push connection; inbound frames are acknowledgements        | Ticket                                            | `pushSocket`                             |
+| `POST /api/push`                                             | Send a targeted push                                        | JWT, `NOTIFICATION` `WRITE`                       | `pushSocket` or `pushFirebase`           |
+| `GET /api/users` · `/api/users/{uuid}`                       | Delta-sync users / fetch one                                | JWT, `USER` `READ`                                | `users`                                  |
+| `POST /api/users`                                            | Upsert a user (*1)                                          | JWT, itself or `USER` `WRITE`                     | `users`                                  |
+| `GET /api/accounts/{userUuid}`                               | Fetch one account                                           | JWT, `ACCOUNT` `READ`                             | `users`                                  |
+| `POST /api/accounts`                                         | Update an account's username, permissions or disabled state | JWT, `ACCOUNT` `WRITE`                            | `users`                                  |
+| `POST /api/device-location`                                  | Report a device location fix                                | JWT, `DEVICE_LOCATION` `WRITE`                    | `deviceLocation`                         |
+| `GET /api/[entity]` · `/api/[entity]/{uuid}`                 | Delta-sync a entity / fetch one                             | JWT, `ENTITY` `READ`                              | Feature flag                             |
+| `POST /api/[entity]`                                         | Upsert a feature entity                                     | JWT, `ENTITY` `WRITE`                             | Feature flag                             |
 
 (*1) `USER` `WRITE` may upsert any user. Any other user may only update itself, keeping its stored `deletedAt`. Deleting a user with an active account is refused. Disabled accounts are narrowed further, see [Account Deletion](#account-deletion).
 
