@@ -12,12 +12,14 @@ data class ServerFlags(
     val probe: Boolean,
     /** Toggles session/credential routes. When false, all of these return 404. */
     val authentication: Boolean,
-    /** Toggles the broadcast SSE route and the manager that fans out cross-instance signals to connected sessions. When false, the route return 404 and the manager never starts listening. */
-    val broadcast: Boolean,
-    /** Toggles the push WebSocket ticket/connect routes and the server's push delivery service. When false, the routes return 404 and no push payloads are ever delivered. */
-    val push: Boolean,
-    /** Toggles Firebase delivery. When false, Firebase services become no-ops. */
-    val firebase: Boolean,
+    /** Toggles the broadcast SSE route and the manager that fans out cross-instance signals to connected sessions. When false, the route is not served, open streams end and the manager stops listening. */
+    val broadcastStream: Boolean,
+    /** Toggles the broadcast Firebase topic. When false, subscribing a token to the topic and sending a broadcast to it are no-ops. */
+    val broadcastFirebase: Boolean,
+    /** Toggles the push WebSocket ticket/connect routes, the connection presence heartbeat and the per-user notification observers. When false, the routes are not served and open sockets close. */
+    val pushSocket: Boolean,
+    /** Toggles push delivery over Firebase. When false, sending a push payload to device tokens is a no-op. */
+    val pushFirebase: Boolean,
     /** Toggles user CRUD routes. When false, they return 404. */
     val users: Boolean,
     /** Toggles the device location ingestion route. When false, it returns 404. */
@@ -45,9 +47,10 @@ data class ServerFlags(
             translations = true,
             probe = true,
             authentication = true,
-            broadcast = true,
-            push = true,
-            firebase = true,
+            broadcastStream = true,
+            broadcastFirebase = true,
+            pushSocket = true,
+            pushFirebase = true,
             users = true,
             deviceLocation = true,
             tasks = true,
@@ -70,9 +73,10 @@ data class ServerFlags(
                 translations = false,
                 probe = false,
                 authentication = false,
-                broadcast = false,
-                push = false,
-                firebase = false,
+                broadcastStream = false,
+                broadcastFirebase = false,
+                pushSocket = false,
+                pushFirebase = false,
                 users = false,
                 deviceLocation = false,
                 tasks = false,
