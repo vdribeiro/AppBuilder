@@ -30,7 +30,7 @@ import com.app.builder.domain.usecase.translation.TranslationUseCases
  *
  * @param permissionService The permission service.
  * @param translationUseCases The collection of use cases handling translation logic.
- * @param broadcastService The service broadcasting a [PushPayload.Translations] after each update, while the broadcast server flag is on.
+ * @param broadcastService The service broadcasting a [PushPayload.Translations] after each update, while the broadcast stream or broadcast Firebase server flag is on.
  * @param registryUseCases The registry use cases used to record request telemetry.
  */
 fun Route.translationRoutes(
@@ -61,7 +61,7 @@ fun Route.translationRoutes(
             call.respondSafely(status = HttpStatusCode.OK, message = stored)
             Telemetry.info(tag = TAG, message = "Updated translation ${stored.languageIso}/${stored.key} for user $userUuid")
 
-            if (ServerFlags.value.broadcast) broadcastService.broadcast(pushPayload = PushPayload.Translations())
+            if (ServerFlags.value.broadcastStream || ServerFlags.value.broadcastFirebase) broadcastService.broadcast(pushPayload = PushPayload.Translations())
 
             call.toRegistry(
                 entityType = EntityType.TRANSLATION,
