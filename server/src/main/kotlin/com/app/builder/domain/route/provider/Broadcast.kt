@@ -33,45 +33,17 @@ import com.app.builder.domain.usecase.registry.RegistryUseCases
 
 /**
  * Configures the broadcast routes.
- * The SSE stream and the FCM topic subscription are public: any client may connect to receive notifications.
- * Both are protected by per-IP rate limiting, and the stream additionally by a global connection cap.
- * Publishing a broadcast is a separate authenticated endpoint on the same path, and requires write permission.
+ * Publishing a broadcast is an authenticated endpoint, and requires write permission.
  *
  * @param permissionService The permission service.
  * @param broadcastService The service managing SSE connections and event dispatch.
- * @param fcmService The service managing FCM subscriptions.
  * @param registryUseCases The registry use cases used to record request telemetry.
  */
 fun Route.broadcastRoutes(
     permissionService: PermissionService,
     broadcastService: BroadcastService,
-    fcmService: FcmService,
     registryUseCases: RegistryUseCases
 ) {
-    rateLimit(configuration = RateLimitName(name = RATE_LIMIT_BROADCAST)) {
-        sse(path = URL.Broadcast.path) {
-            if (!broadcastService.addConnection(session = this)) return@sse
-            val heartbeatJob = launch {
-                while (isActive) {
-                    send(event = ServerSentEvent(comments = "heartbeat"))
-                    delay(timeMillis = ServerConfigs.value.broadcastPingInterval)
-                }
-            }
-            try {
-                ServerFlags.flow.first { !it.broadcast }
-            } finally {
-                heartbeatJob.cancel()
-                broadcastService.removeConnection(session = this)
-            }
-        }
-
-        post(path = URL.BroadcastSubscribe.path) {
-            val subscription = call.receive<DeviceToken>() ?: return@post
-            fcmService.subscribeToBroadcastTopic(token = subscription.token)
-            call.respondSafely(status = HttpStatusCode.OK, message = "Subscribed to broadcast")
-        }
-    }
-
     authenticate {
         post(path = URL.Broadcast.path) {
             if (!call.validatePermission(permissionService = permissionService, entityType = EntityType.NOTIFICATION, permission = Permission.WRITE)) return@post
@@ -85,6 +57,50 @@ fun Route.broadcastRoutes(
                 entityUuid = pushPayload.uuid,
                 payload = encode(value = pushPayload)
             )?.let { registryUseCases.upsertRegistry(registry = it) }
+        }
+    }
+}
+
+/**
+ * Configures the broadcast stream route.
+ * The SSE stream is public: any client may connect to receive notifications.
+ * It is protected by per-IP rate limiting and by a global connection cap.
+ *
+ * @param broadcastService The service managing SSE connections and event dispatch.
+ */
+fun Route.broadcastStreamRoutes(broadcastService: BroadcastService) {
+    rateLimit(configuration = RateLimitName(name = RATE_LIMIT_BROADCAST)) {
+        sse(path = URL.Broadcast.path) {
+            if (!broadcastService.addConnection(session = this)) return@sse
+            val heartbeatJob = launch {
+                while (isActive) {
+                    send(event = ServerSentEvent(comments = "heartbeat"))
+                    delay(timeMillis = ServerConfigs.value.broadcastPingInterval)
+                }
+            }
+            try {
+                ServerFlags.flow.first { !it.broadcastStream }
+            } finally {
+                heartbeatJob.cancel()
+                broadcastService.removeConnection(session = this)
+            }
+        }
+    }
+}
+
+/**
+ * Configures the broadcast Firebase route.
+ * The FCM topic subscription is public: any client may subscribe to receive notifications.
+ * It is protected by per-IP rate limiting.
+ *
+ * @param fcmService The service managing FCM subscriptions.
+ */
+fun Route.broadcastFirebaseRoutes(fcmService: FcmService) {
+    rateLimit(configuration = RateLimitName(name = RATE_LIMIT_BROADCAST)) {
+        post(path = URL.BroadcastSubscribe.path) {
+            val subscription = call.receive<DeviceToken>() ?: return@post
+            fcmService.subscribeToBroadcastTopic(token = subscription.token)
+            call.respondSafely(status = HttpStatusCode.OK, message = "Subscribed to broadcast")
         }
     }
 }

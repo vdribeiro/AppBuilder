@@ -40,50 +40,18 @@ import com.app.builder.domain.usecase.registry.RegistryUseCases
 
 /**
  * Configures the push routing endpoints for the server.
- * This allows devices to register their FCM token and set up the WebSocket route for user push payloads.
+ * This allows authorized users to send a push payload.
  *
  * @param permissionService The permission service.
- * @param deviceTokenUseCases The collection of use cases handling device token persistence.
  * @param pushService The collection of use cases handling push logic.
  * @param registryUseCases The registry use cases used to record request telemetry.
  */
 fun Route.pushRoutes(
     permissionService: PermissionService,
-    deviceTokenUseCases: DeviceTokenUseCases,
     pushService: PushService,
     registryUseCases: RegistryUseCases
 ) {
     authenticate {
-        post(path = URL.DeviceTokens.path) {
-            val userUuid = call.getUserUuid() ?: return@post
-            if (!call.validateActive(permissionService = permissionService)) return@post
-            val registration = call.receive<DeviceToken>() ?: return@post
-            if (registration.token.isBlank() || registration.deviceUuid == null) {
-                call.respondSafely(status = HttpStatusCode.BadRequest, message = "Invalid device token parameters")
-                return@post
-            }
-
-            call.getOrRespond(
-                outcome = deviceTokenUseCases.registerToken(userUuid = userUuid, registration = registration),
-                error = "Unable to register device token"
-            ) ?: return@post
-
-            call.respondSafely(status = HttpStatusCode.OK, message = "Device token registered")
-            Telemetry.info(tag = TAG, message = "Registered device token for user $userUuid")
-        }
-
-        post(path = URL.Tickets.path) {
-            val userUuid = call.getUserUuid() ?: return@post
-            if (!call.validateActive(permissionService = permissionService)) return@post
-            val ticket = pushService.generateTicket(userUuid = userUuid) ?: run {
-                call.respondSafely(status = HttpStatusCode.InternalServerError, message = "Unable to generate ticket")
-                return@post
-            }
-
-            call.respondSafely(status = HttpStatusCode.OK, message = ticket)
-            Telemetry.info(tag = TAG, message = "Generated ticket for user $userUuid")
-        }
-
         post(path = URL.Push.path) {
             if (!call.validatePermission(permissionService = permissionService, entityType = EntityType.NOTIFICATION, permission = Permission.WRITE)) return@post
             val pushPayload = call.receive<PushPayload>() ?: return@post
@@ -96,6 +64,32 @@ fun Route.pushRoutes(
                 entityUuid = pushPayload.uuid,
                 payload = encode(value = pushPayload)
             )?.let { registryUseCases.upsertRegistry(registry = it) }
+        }
+    }
+}
+
+/**
+ * Configures the push socket routing endpoints for the server.
+ * This allows devices to request a ticket and set up the WebSocket route for user push payloads.
+ *
+ * @param permissionService The permission service.
+ * @param pushService The collection of use cases handling push logic.
+ */
+fun Route.pushSocketRoutes(
+    permissionService: PermissionService,
+    pushService: PushService
+) {
+    authenticate {
+        post(path = URL.Tickets.path) {
+            val userUuid = call.getUserUuid() ?: return@post
+            if (!call.validateActive(permissionService = permissionService)) return@post
+            val ticket = pushService.generateTicket(userUuid = userUuid) ?: run {
+                call.respondSafely(status = HttpStatusCode.InternalServerError, message = "Unable to generate ticket")
+                return@post
+            }
+
+            call.respondSafely(status = HttpStatusCode.OK, message = ticket)
+            Telemetry.info(tag = TAG, message = "Generated ticket for user $userUuid")
         }
     }
 
@@ -118,8 +112,8 @@ fun Route.pushRoutes(
         Telemetry.info(tag = TAG, message = "User $userUuid connected device $deviceUuid to push stream")
 
         val flagJob = launch {
-            ServerFlags.flow.first { !it.push }
-            close(reason = CloseReason(code = CloseReason.Codes.GOING_AWAY, message = "Push disabled"))
+            ServerFlags.flow.first { !it.pushSocket }
+            close(reason = CloseReason(code = CloseReason.Codes.GOING_AWAY, message = "Push socket disabled"))
         }
         val configJob = launch {
             ServerConfigs.flow
@@ -142,6 +136,38 @@ fun Route.pushRoutes(
             configJob.cancel()
             pushService.removeConnection(userUuid = userUuid, deviceUuid = deviceUuid, session = this)
             Telemetry.info(tag = TAG, message = "Device $deviceUuid for user $userUuid disconnected")
+        }
+    }
+}
+
+/**
+ * Configures the push Firebase routing endpoints for the server.
+ * This allows devices to register their FCM token.
+ *
+ * @param permissionService The permission service.
+ * @param deviceTokenUseCases The collection of use cases handling device token persistence.
+ */
+fun Route.pushFirebaseRoutes(
+    permissionService: PermissionService,
+    deviceTokenUseCases: DeviceTokenUseCases
+) {
+    authenticate {
+        post(path = URL.DeviceTokens.path) {
+            val userUuid = call.getUserUuid() ?: return@post
+            if (!call.validateActive(permissionService = permissionService)) return@post
+            val registration = call.receive<DeviceToken>() ?: return@post
+            if (registration.token.isBlank() || registration.deviceUuid == null) {
+                call.respondSafely(status = HttpStatusCode.BadRequest, message = "Invalid device token parameters")
+                return@post
+            }
+
+            call.getOrRespond(
+                outcome = deviceTokenUseCases.registerToken(userUuid = userUuid, registration = registration),
+                error = "Unable to register device token"
+            ) ?: return@post
+
+            call.respondSafely(status = HttpStatusCode.OK, message = "Device token registered")
+            Telemetry.info(tag = TAG, message = "Registered device token for user $userUuid")
         }
     }
 }
