@@ -118,7 +118,7 @@ class AccountTest: TestCase() {
     /** Verifies that disabling an account purges its user's device tokens and refuses its session further reads. */
     @Test
     fun disablingAccountPurgesDeviceTokens() = runServerTest {
-        ServerFlags.set { it.copy(push = true) }
+        ServerFlags.set { it.copy(pushFirebase = true) }
         installRouting()
         val deviceTokenUseCases = dependency.get().useCases.deviceTokenUseCases
 
