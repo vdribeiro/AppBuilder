@@ -28,7 +28,7 @@ class PushTest: TestCase() {
 
     override suspend fun beforeTest() {
         super.beforeTest()
-        ServerFlags.set { it.copy(push = true) }
+        ServerFlags.set { it.copy(pushSocket = true) }
     }
 
     /** Verifies that generating a push ticket requires authentication and returns a ticket UUID. */
@@ -157,7 +157,7 @@ class PushTest: TestCase() {
         assertTrue(actual = connectionEstablished)
     }
 
-    /** Verifies that an open push WebSocket is closed when the push flag turns off. */
+    /** Verifies that an open push WebSocket is closed when the push socket flag turns off. */
     @Test
     fun disabledFlagClosesTheConnection() = runServerTest {
         installRouting()
@@ -172,11 +172,23 @@ class PushTest: TestCase() {
                 queryMap = mapOf(Query.TicketUuid to ticketUuid.toString(), Query.DeviceUuid to uuid().toString())
             ),
             onConnected = {
-                ServerFlags.set { it.copy(push = false) }
+                ServerFlags.set { it.copy(pushSocket = false) }
                 closeCode = closeReason.await()?.knownReason
             }
         ) {}
         assertEquals(expected = CloseReason.Codes.GOING_AWAY, actual = closeCode)
+    }
+
+    /** Verifies that, while only the push Firebase flag is on, the ticket route is not found and the device token and send routes still answer. */
+    @Test
+    fun disabledSocketFlagKeepsTheOtherRoutes() = runServerTest {
+        ServerFlags.set { it.copy(pushSocket = false, pushFirebase = true) }
+        installRouting()
+
+        val client = createClient(token = adminBearerToken.accessToken)
+        assertEquals(expected = HttpStatusCode.NotFound, actual = client.post<Unit>(request = HttpRequest(url = URL.Tickets)).status)
+        assertEquals(expected = HttpStatusCode.OK, actual = client.post<DeviceToken>(request = HttpRequest(url = URL.DeviceTokens), body = DeviceToken(deviceUuid = uuid(), token = "fcmToken")).status)
+        assertEquals(expected = HttpStatusCode.OK, actual = client.post(request = HttpRequest(url = URL.Push), body = FakeData.notification as PushPayload).status)
     }
 
     /** Verifies that sending a push notification rejects an invalid body. */

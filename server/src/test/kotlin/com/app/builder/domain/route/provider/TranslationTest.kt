@@ -130,7 +130,7 @@ class TranslationTest: TestCase() {
     /** Verifies that updating a translation broadcasts a translations payload to the connected SSE clients. */
     @Test
     fun updateTranslationBroadcasts() = runServerTest {
-        ServerFlags.set { it.copy(broadcast = true) }
+        ServerFlags.set { it.copy(broadcastStream = true) }
         installRouting()
         val client = createClient(token = null)
         val adminClient = createClient(token = adminBearerToken.accessToken)

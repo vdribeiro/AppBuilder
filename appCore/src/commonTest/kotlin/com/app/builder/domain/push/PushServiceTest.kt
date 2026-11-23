@@ -53,7 +53,7 @@ class PushServiceTest: TestCase() {
 
     override suspend fun beforeTest() {
         super.beforeTest()
-        ClientFlags.set { it.copy(push = true, http = true) }
+        ClientFlags.set { it.copy(pushSocket = true, pushFirebase = true, http = true) }
     }
 
     /**
@@ -199,19 +199,19 @@ class PushServiceTest: TestCase() {
         pushService.stop()
     }
 
-    /** Verifies that a running service connects when the push feature flag turns on and stops reconnecting when it turns off. */
+    /** Verifies that a running service connects when the push socket and push Firebase feature flags turn on and stops reconnecting when they turn off. */
     @Test
     fun runningServiceFollowsThePushFlag() = runUnitTest {
-        ClientFlags.set { it.copy(push = false) }
+        ClientFlags.set { it.copy(pushSocket = false, pushFirebase = false) }
         val pushService = pushService(user = FakeData.adminUser)
         pushService.start()
         testScheduler.runCurrent()
         assertEquals(expected = 0, actual = ticketRequests.value)
 
-        ClientFlags.set { it.copy(push = true) }
+        ClientFlags.set { it.copy(pushSocket = true, pushFirebase = true) }
         pushConnections.first { it > 0 }
 
-        ClientFlags.set { it.copy(push = false) }
+        ClientFlags.set { it.copy(pushSocket = false, pushFirebase = false) }
         testScheduler.runCurrent()
         val requests = ticketRequests.value
         testScheduler.advanceTimeBy(delayTime = 10.minutes)
@@ -220,10 +220,49 @@ class PushServiceTest: TestCase() {
         assertEquals(expected = requests, actual = ticketRequests.value)
     }
 
-    /** Verifies that starting the service does nothing while the push feature flag is disabled. */
+    /** Verifies that, while the push socket feature flag is off, a running service registers the push token without requesting a ticket, and connects once the flag turns on. */
+    @Test
+    fun runningServiceFollowsThePushSocketFlag() = runUnitTest {
+        ClientFlags.set { it.copy(pushSocket = false) }
+        val pushService = pushService(user = FakeData.adminUser)
+        pushService.start()
+        PushProvider.setToken(token = "token")
+        registeredTokens.first { it.isNotEmpty() }
+        testScheduler.runCurrent()
+        assertEquals(expected = 0, actual = ticketRequests.value)
+
+        ClientFlags.set { it.copy(pushSocket = true) }
+        pushConnections.first { it > 0 }
+
+        ClientFlags.set { it.copy(pushSocket = false) }
+        testScheduler.runCurrent()
+        val requests = ticketRequests.value
+        testScheduler.advanceTimeBy(delayTime = 10.minutes)
+        pushService.stop()
+
+        assertEquals(expected = requests, actual = ticketRequests.value)
+    }
+
+    /** Verifies that, while the push Firebase feature flag is off, a running service connects without registering the push token, and registers it once the flag turns on. */
+    @Test
+    fun runningServiceFollowsThePushFirebaseFlag() = runUnitTest {
+        ClientFlags.set { it.copy(pushFirebase = false) }
+        val pushService = pushService(user = FakeData.adminUser)
+        pushService.start()
+        PushProvider.setToken(token = "token")
+        pushConnections.first { it > 0 }
+        testScheduler.runCurrent()
+        assertTrue(actual = registeredTokens.value.isEmpty())
+
+        ClientFlags.set { it.copy(pushFirebase = true) }
+        registeredTokens.first { it.isNotEmpty() }
+        pushService.stop()
+    }
+
+    /** Verifies that starting the service does nothing while the push socket and push Firebase feature flags are disabled. */
     @Test
     fun startIsIgnoredWhilePushIsDisabled() = runUnitTest {
-        ClientFlags.set { it.copy(push = false) }
+        ClientFlags.set { it.copy(pushSocket = false, pushFirebase = false) }
         val pushService = pushService(user = FakeData.adminUser)
 
         pushService.start()

@@ -7,6 +7,7 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withTimeout
 import com.app.builder.core.config.ServerConfigs
 import com.app.builder.core.config.ServerFlags
@@ -23,7 +24,7 @@ class PushServiceTest: TestCase() {
 
     override suspend fun beforeTest() {
         super.beforeTest()
-        ServerFlags.set { it.copy(push = true) }
+        ServerFlags.set { it.copy(pushSocket = true, pushFirebase = true) }
     }
 
     /** Verifies that a connection can be added with a valid ticket and removed afterward. */
@@ -224,11 +225,11 @@ class PushServiceTest: TestCase() {
         assertFalse(actual = pushService.removeConnection(userUuid = FakeData.adminUser.uuid, deviceUuid = deviceUuid, session = deadSession))
     }
 
-    /** Verifies that starting the service is a no-op while the push flag is off, so saved notifications are not dispatched to connected sessions. */
+    /** Verifies that starting the service is a no-op while the push socket and push Firebase flags are off, so saved notifications are not dispatched to connected sessions. */
     @Test
     fun startIsNoOpWhenPushIsDisabled() = runServerTest {
         assertTrue(actual = dependency.get().useCases.notificationsUseCases.saveNotification(notification = FakeData.entityNotification))
-        ServerFlags.set { it.copy(push = false) }
+        ServerFlags.set { it.copy(pushSocket = false, pushFirebase = false) }
         val pushService = dependency.get().pushService
         val session = FakeWebSocketSession()
         pushService.start()
@@ -242,7 +243,7 @@ class PushServiceTest: TestCase() {
         pushService.stop()
     }
 
-    /** Verifies that a started service stops saving and dispatching notifications when the push flag turns off, and resumes when it turns back on. */
+    /** Verifies that a started service stops saving and dispatching notifications when the push socket and push Firebase flags turn off, and resumes when they turn back on. */
     @Test
     fun startedServiceFollowsItsFlag() = runServerTest {
         val pushService = dependency.get().pushService
@@ -255,16 +256,79 @@ class PushServiceTest: TestCase() {
         assertEquals(expected = FakeData.adminUser.uuid, actual = pushService.addConnection(ticketUuid = ticket, deviceUuid = uuid(), session = session))
         awaitUntil { signal.subscriptions.value > 0 }
 
-        ServerFlags.set { it.copy(push = false) }
+        ServerFlags.set { it.copy(pushSocket = false, pushFirebase = false) }
         awaitUntil { signal.subscriptions.value == 0 }
         assertFalse(actual = dependency.get().useCases.notificationsUseCases.saveNotification(notification = FakeData.entityNotification))
         delay(timeMillis = 200)
         assertFalse(actual = session.sent)
 
-        ServerFlags.set { it.copy(push = true) }
+        ServerFlags.set { it.copy(pushSocket = true, pushFirebase = true) }
         awaitUntil { signal.subscriptions.value > 0 }
         assertTrue(actual = dependency.get().useCases.notificationsUseCases.saveNotification(notification = FakeData.entityNotification))
         awaitUntil { session.sent }
+        pushService.stop()
+    }
+
+    /** Verifies that a started service stops dispatching saved notifications to connected sessions when the push socket flag turns off, and resumes when it turns back on. */
+    @Test
+    fun startedServiceFollowsItsSocketFlag() = runServerTest {
+        val pushService = dependency.get().pushService
+        val signal = dependency.get().instanceSignal as LocalSignal
+        val session = FakeWebSocketSession()
+        pushService.start()
+
+        val ticket = pushService.generateTicket(userUuid = FakeData.adminUser.uuid)
+        assertNotNull(actual = ticket)
+        assertEquals(expected = FakeData.adminUser.uuid, actual = pushService.addConnection(ticketUuid = ticket, deviceUuid = uuid(), session = session))
+        awaitUntil { signal.subscriptions.value > 0 }
+
+        ServerFlags.set { it.copy(pushSocket = false) }
+        awaitUntil { signal.subscriptions.value == 0 }
+        assertTrue(actual = dependency.get().useCases.notificationsUseCases.saveNotification(notification = FakeData.entityNotification))
+        delay(timeMillis = 200)
+        assertFalse(actual = session.sent)
+
+        ServerFlags.set { it.copy(pushSocket = true) }
+        awaitUntil { signal.subscriptions.value > 0 }
+        assertTrue(actual = dependency.get().useCases.notificationsUseCases.saveNotification(notification = FakeData.entityNotification.copy(uuid = uuid())))
+        awaitUntil { session.sent }
+        pushService.stop()
+    }
+
+    /** Verifies that a saved notification is sent via FCM to a user without a WebSocket connection, and stays pending for its acknowledgement. */
+    @Test
+    fun savedNotificationIsSentViaFcm() = runServerTest {
+        val useCases = dependency.get().useCases
+        val fakeFcmService = FakeFcmService()
+        val pushService = createOtherInstance(fcmService = fakeFcmService)
+        assertEquals(expected = Outcome.Success(data = Unit), actual = useCases.deviceTokenUseCases.registerToken(userUuid = FakeData.adminUser.uuid, registration = DeviceToken(deviceUuid = uuid(), token = "token")))
+        pushService.start()
+
+        assertTrue(actual = useCases.notificationsUseCases.saveNotification(notification = FakeData.entityNotification))
+
+        assertEquals(expected = listOf("token"), actual = withTimeout(timeMillis = 5_000L) { fakeFcmService.multicasts.receive() })
+        assertEquals(expected = listOf(FakeData.entityNotification), actual = useCases.notificationsUseCases.observeNotifications(userUuid = FakeData.adminUser.uuid).first())
+        pushService.stop()
+    }
+
+    /** Verifies that, while the push socket flag is off, a saved notification is sent via FCM to every device of its user and then deleted. */
+    @Test
+    fun savedNotificationIsDeletedOnceSentWhilePushSocketIsDisabled() = runServerTest {
+        val useCases = dependency.get().useCases
+        val fakeFcmService = FakeFcmService()
+        val pushService = createOtherInstance(fcmService = fakeFcmService)
+        val deviceUuid = uuid()
+        assertEquals(expected = Outcome.Success(data = Unit), actual = useCases.deviceTokenUseCases.registerToken(userUuid = FakeData.adminUser.uuid, registration = DeviceToken(deviceUuid = deviceUuid, token = "token")))
+        val ticket = pushService.generateTicket(userUuid = FakeData.adminUser.uuid)
+        assertNotNull(actual = ticket)
+        assertEquals(expected = FakeData.adminUser.uuid, actual = pushService.addConnection(ticketUuid = ticket, deviceUuid = deviceUuid, session = FakeWebSocketSession()))
+        ServerFlags.set { it.copy(pushSocket = false) }
+        pushService.start()
+
+        assertTrue(actual = useCases.notificationsUseCases.saveNotification(notification = FakeData.entityNotification))
+
+        assertEquals(expected = listOf("token"), actual = withTimeout(timeMillis = 5_000L) { fakeFcmService.multicasts.receive() })
+        awaitUntil { useCases.notificationsUseCases.observeNotifications(userUuid = FakeData.adminUser.uuid).first().isEmpty() }
         pushService.stop()
     }
 
