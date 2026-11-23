@@ -18,11 +18,15 @@ data class ClientFlags(
     val camera: Boolean,
     /** Toggles the NFC feature. When false, any in-progress scan/write session is stopped and reset, and further scan/write actions are dropped. */
     val nfc: Boolean,
-    /** Toggles the broadcast listener. When false, no broadcasts are received. */
-    val broadcast: Boolean,
-    /** Toggles the push service. When false, no push payloads are received. */
-    val push: Boolean,
-    /** Toggles the data resync triggered by an incoming push notification. Only takes effect if [push] is also enabled. The OS notification itself is always shown, only the follow-up entity resync is skipped when false. */
+    /** Toggles the broadcast SSE stream. When false, the stream is not opened. */
+    val broadcastStream: Boolean,
+    /** Toggles the broadcast Firebase topic subscription. When false, the push token is not subscribed to broadcasts. */
+    val broadcastFirebase: Boolean,
+    /** Toggles the push WebSocket. When false, no ticket is requested and the socket is not opened. */
+    val pushSocket: Boolean,
+    /** Toggles the Firebase token registration. When false, the push token is not registered. */
+    val pushFirebase: Boolean,
+    /** Toggles the data resync triggered by an incoming push notification, whichever channel it arrives on. The OS notification itself is always shown, only the follow-up entity resync is skipped when false. */
     val pushSync: Boolean,
     /** Toggles the location capture feature. When false, no locations are collected. */
     val locationCapture: Boolean,
@@ -72,8 +76,10 @@ data class ClientFlags(
             music = true,
             camera = true,
             nfc = true,
-            broadcast = true,
-            push = true,
+            broadcastStream = true,
+            broadcastFirebase = true,
+            pushSocket = true,
+            pushFirebase = true,
             pushSync = true,
             locationCapture = true,
             scrollBar = true,
@@ -109,8 +115,10 @@ data class ClientFlags(
                 music = false,
                 camera = false,
                 nfc = false,
-                broadcast = false,
-                push = false,
+                broadcastStream = false,
+                broadcastFirebase = false,
+                pushSocket = false,
+                pushFirebase = false,
                 pushSync = false,
                 locationCapture = false,
                 scrollBar = false,
