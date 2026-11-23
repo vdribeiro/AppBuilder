@@ -12,7 +12,9 @@ import com.app.builder.Dependency
 import com.app.builder.core.config.ServerFlags
 import com.app.builder.domain.route.provider.accountRoutes
 import com.app.builder.domain.route.provider.authenticationRoutes
+import com.app.builder.domain.route.provider.broadcastFirebaseRoutes
 import com.app.builder.domain.route.provider.broadcastRoutes
+import com.app.builder.domain.route.provider.broadcastStreamRoutes
 import com.app.builder.domain.route.provider.buildingEquipmentRoutes
 import com.app.builder.domain.route.provider.buildingMaterialRoutes
 import com.app.builder.domain.route.provider.buildingRoutes
@@ -23,7 +25,9 @@ import com.app.builder.domain.route.provider.equipmentRoutes
 import com.app.builder.domain.route.provider.equipmentUserRoutes
 import com.app.builder.domain.route.provider.materialRoutes
 import com.app.builder.domain.route.provider.probeRoutes
+import com.app.builder.domain.route.provider.pushFirebaseRoutes
 import com.app.builder.domain.route.provider.pushRoutes
+import com.app.builder.domain.route.provider.pushSocketRoutes
 import com.app.builder.domain.route.provider.registryRoutes
 import com.app.builder.domain.route.provider.taskRoutes
 import com.app.builder.domain.route.provider.translationRoutes
@@ -44,8 +48,12 @@ fun Application.installRouting(dependency: Dependency) {
         flag(enabled = { it.translations }) { translationRoutes(permissionService = permissionService, translationUseCases = useCases.translationUseCases, broadcastService = dependency.broadcastService, registryUseCases = useCases.registryUseCases) }
         flag(enabled = { it.probe }) { probeRoutes() }
         flag(enabled = { it.authentication }) { authenticationRoutes(permissionService = permissionService, authenticationUseCases = useCases.authenticationUseCases, registryUseCases = useCases.registryUseCases) }
-        flag(enabled = { it.broadcast }) { broadcastRoutes(permissionService = permissionService, broadcastService = dependency.broadcastService, fcmService = dependency.fcmService, registryUseCases = useCases.registryUseCases) }
-        flag(enabled = { it.push }) { pushRoutes(permissionService = permissionService, deviceTokenUseCases = useCases.deviceTokenUseCases, pushService = dependency.pushService, registryUseCases = useCases.registryUseCases) }
+        flag(enabled = { it.broadcastStream || it.broadcastFirebase }) { broadcastRoutes(permissionService = permissionService, broadcastService = dependency.broadcastService, registryUseCases = useCases.registryUseCases) }
+        flag(enabled = { it.broadcastStream }) { broadcastStreamRoutes(broadcastService = dependency.broadcastService) }
+        flag(enabled = { it.broadcastFirebase }) { broadcastFirebaseRoutes(fcmService = dependency.fcmService) }
+        flag(enabled = { it.pushSocket || it.pushFirebase }) { pushRoutes(permissionService = permissionService, pushService = dependency.pushService, registryUseCases = useCases.registryUseCases) }
+        flag(enabled = { it.pushSocket }) { pushSocketRoutes(permissionService = permissionService, pushService = dependency.pushService) }
+        flag(enabled = { it.pushFirebase }) { pushFirebaseRoutes(permissionService = permissionService, deviceTokenUseCases = useCases.deviceTokenUseCases) }
         flag(enabled = { it.users }) { userRoutes(permissionService = permissionService, userUseCases = useCases.userUseCases, accountUseCases = useCases.accountUseCases, registryUseCases = useCases.registryUseCases) }
         flag(enabled = { it.users }) { accountRoutes(permissionService = permissionService, accountUseCases = useCases.accountUseCases, registryUseCases = useCases.registryUseCases) }
         flag(enabled = { it.deviceLocation }) { deviceLocationRoutes(permissionService = permissionService, deviceLocationUseCases = useCases.deviceLocationUseCases, registryUseCases = useCases.registryUseCases) }
