@@ -63,8 +63,11 @@ class PushManager(
     /** Tracks the currently active push loop. */
     private var listenJob: Job? = null
 
-    /** Whether the push client feature flag is on. */
-    private val enabled: Flow<Boolean> = ClientFlags.flow.map { it.push }.distinctUntilChanged()
+    /** Whether the push socket client feature flag is on. */
+    private val socketEnabled: Flow<Boolean> = ClientFlags.flow.map { it.pushSocket }.distinctUntilChanged()
+
+    /** Whether the push Firebase client feature flag is on. */
+    private val firebaseEnabled: Flow<Boolean> = ClientFlags.flow.map { it.pushFirebase }.distinctUntilChanged()
 
     override suspend fun stop() = withContext(context = Dispatcher.IO) {
         mutex.withLock {
@@ -95,7 +98,7 @@ class PushManager(
             combine(
                 flow = PushProvider.token.filterNotNull(),
                 flow2 = sessionActive,
-                flow3 = enabled
+                flow3 = firebaseEnabled
             ) { token, active, enabled -> token.takeIf { active && enabled } }
                 .filterNotNull()
                 .distinctUntilChanged()
@@ -113,7 +116,7 @@ class PushManager(
             combine(
                 flow = getInternetAvailabilityFlow(),
                 flow2 = sessionActive,
-                flow3 = enabled
+                flow3 = socketEnabled
             ) { online, active, enabled -> online && active && enabled }
                 .distinctUntilChanged()
                 .collectLatest { connectable ->
