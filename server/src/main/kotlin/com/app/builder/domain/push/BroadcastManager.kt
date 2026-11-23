@@ -49,7 +49,7 @@ class BroadcastManager(
     /** Tracks the signal observation delivering broadcasts to this instance's sessions. */
     private var listenJob: Job? = null
 
-    /** Tracks the observation of the broadcast server feature flag. */
+    /** Tracks the observation of the broadcast stream server feature flag. */
     private var flagJob: Job? = null
 
     override suspend fun stop() = withContext(context = Dispatcher.IO) {
@@ -64,10 +64,10 @@ class BroadcastManager(
         if (!mutex.tryLock()) return
         try {
             if (flagJob?.isActive == true) return
-            if (ServerFlags.value.broadcast) startListenJob()
+            if (ServerFlags.value.broadcastStream) startListenJob()
             flagJob = scope.launch {
                 ServerFlags.flow
-                    .map { it.broadcast }
+                    .map { it.broadcastStream }
                     .distinctUntilChanged()
                     .collect { enabled -> mutex.withLock { if (enabled) startListenJob() else stopListenJob() } }
             }
