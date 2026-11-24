@@ -4,6 +4,8 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
 import kotlin.test.assertNotEquals
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Instant
 import kotlinx.coroutines.flow.firstOrNull
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.r2dbc.selectAll
@@ -121,7 +123,7 @@ class AuthenticationUseCasesTest: TestCase() {
         assertEquals(expected = Outcome.Success(data = result.user.uuid), actual = authenticationUseCases.logout(refreshToken = result.bearer.refreshToken))
     }
 
-    /** Verifies that a disabled account cannot log in again, but may still refresh the session it already held, so a device that was offline when the account was disabled can come back and drain its queue however long that takes. */
+    /** Verifies that a disabled account cannot log in again, but may still refresh the session it already held. */
     @Test
     fun disabledAccountCannotLoginButKeepsRefreshing() = runServerTest {
         val useCases = dependency.get().useCases
@@ -135,6 +137,32 @@ class AuthenticationUseCasesTest: TestCase() {
         assertEquals(expected = Outcome.Rejected, actual = authenticationUseCases.login(credentials = form.credentials))
         // The session it already had survives, since what the account may do with it is narrowed per request rather than by cutting the session.
         assertIs<Outcome.Success<BearerToken>>(value = authenticationUseCases.refreshTokens(refreshToken = result.bearer.refreshToken))
+    }
+
+    /** Verifies that refreshing the session of a disabled account never moves its expiry past [ServerConfigs.deletedAccountSessionValidity] after the deletion, and is rejected once that time is over. */
+    @Test
+    fun disabledAccountSessionEndsAfterDeletedAccountSessionValidity() = runServerTest {
+        val useCases = dependency.get().useCases
+        val authenticationUseCases = useCases.authenticationUseCases
+        val validity = 60_000L
+        ServerConfigs.set { it.copy(deletedAccountSessionValidity = validity) }
+
+        suspend fun sessionExpiry(): Instant? = dependency.get().database.safeTransaction {
+            UserSessionTable.selectAll()
+                .where { UserSessionTable.userUuid eq FakeData.user.uuid }
+                .firstOrNull()
+                ?.get(UserSessionTable.expiresAt)
+        }.getOrNull()
+
+        val deletedAt = now()
+        assertEquals(expected = Outcome.Success(data = Unit), actual = useCases.accountUseCases.upsertAccount(account = FakeData.account.copy(deletedAt = deletedAt)))
+        val bearer = assertIs<Outcome.Success<BearerToken>>(value = authenticationUseCases.refreshTokens(refreshToken = bearerToken.refreshToken)).data
+        assertEquals(expected = deletedAt + validity.milliseconds, actual = sessionExpiry())
+
+        val expiredDeletedAt = now() - (validity * 2).milliseconds
+        assertEquals(expected = Outcome.Success(data = Unit), actual = useCases.accountUseCases.upsertAccount(account = FakeData.account.copy(deletedAt = expiredDeletedAt)))
+        assertEquals(expected = Outcome.Rejected, actual = authenticationUseCases.refreshTokens(refreshToken = bearer.refreshToken))
+        assertEquals(expected = null, actual = sessionExpiry())
     }
 
     /** Verifies that refreshing tokens with a valid refresh token succeeds and an invalid one is rejected. */

@@ -38,9 +38,10 @@ interface AuthenticationUseCases {
 
     /**
      * Issues a new access token using a valid [refreshToken], rotating it in the process.
+     * The session of a disabled account never expires later than [ServerConfigs.deletedAccountSessionValidity] after the account was disabled.
      *
      * @param refreshToken The long-lived token previously issued during login.
-     * @return [Outcome.Success] with a fresh [BearerToken] pair, [Outcome.Rejected] when the refresh token is unknown or expired, or [Outcome.Error] when the operation failed.
+     * @return [Outcome.Success] with a fresh [BearerToken] pair, [Outcome.Rejected] when the refresh token is unknown or expired, or the account was disabled longer ago than [ServerConfigs.deletedAccountSessionValidity], or [Outcome.Error] when the operation failed.
      */
     suspend fun refreshTokens(refreshToken: String): Outcome<BearerToken>
 

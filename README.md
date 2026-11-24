@@ -850,14 +850,15 @@ A user who logged out can log back in without a connection, as long as their ses
 Disabling an account is a soft delete: the account's `deletedAt` is set and the row stays, so other devices see the change the next time they fetch that account. A disabled account:
 
 * **cannot log in again**. The password still verifies, so this check is the only thing stopping a new session;
-* **keeps refreshing the session it already had**, with no deadline;
+* **keeps refreshing the session it already had** until `ServerConfigs.deletedAccountSessionValidity` after the deletion, then the session ends;
 * **may only write work created before the deletion**, judged by the request header's UTC. This covers every non-`GET` call, including updating its own user, which needs no permission;
 * **cannot read anything** its permissions used to reach, register a device or open a push stream. Its device tokens are deleted.
 
 #### Why not revoke the session?
 
-A device that was offline at the moment of deletion would lose the field work it is holding. A deadline only moves the question to how long a device might stay offline.
-Keeping the session alive and judging each write by when it was created preserves that work. Request headers carry both when a job was created and when it was sent.
+A device that was offline at the moment of deletion would lose the field work it is holding.
+Keeping the session alive for a set time and judging each write by when it was created preserves that work. Request headers carry both when a job was created and when it was sent.
+The set time bounds how long a lost or stolen device of a disabled account can keep writing. A device offline for longer than that loses its unsent work.
 
 <details>
 <summary>Enforcement details and trust assumptions</summary>

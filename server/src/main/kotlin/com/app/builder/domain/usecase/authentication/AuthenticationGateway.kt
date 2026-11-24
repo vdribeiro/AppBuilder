@@ -204,6 +204,18 @@ class AuthenticationGateway(
             permissions = decode<Map<EntityType, Permission>>(value = accountRow[UserAccountTable.permissions]) ?: return@withContext Outcome.Error,
             deletedAt = accountRow[UserAccountTable.deletedAt]
         )
+        val expiresAt = listOfNotNull(
+            now + ServerConfigs.value.refreshTokenValidity.milliseconds,
+            access.deletedAt?.plus(ServerConfigs.value.deletedAccountSessionValidity.milliseconds)
+        ).min()
+        if (expiresAt < now) {
+            database.safeTransaction {
+                UserSessionTable.deleteWhere { UserSessionTable.uuid eq sessionUuid }
+            }.onFailure {
+                Telemetry.error(tag = TAG, message = "Unable to delete the session of disabled user $userUuid", throwable = it)
+            }
+            return@withContext Outcome.Rejected
+        }
         val newAccessToken = createAccessToken(userUuid = userUuid, access = access) ?: return@withContext Outcome.Error
 
         val presentedHash = hashRefreshToken(refreshToken = refreshToken)
@@ -219,7 +231,7 @@ class AuthenticationGateway(
                     it[UserSessionTable.previousRefreshToken] = presentedHash
                     it[UserSessionTable.rotatedAt] = now
                 }
-                it[UserSessionTable.expiresAt] = now + ServerConfigs.value.refreshTokenValidity.milliseconds
+                it[UserSessionTable.expiresAt] = expiresAt
             } > 0
         }.getOrElse {
             Telemetry.error(tag = TAG, message = "Unable to update session", throwable = it)

@@ -14,6 +14,8 @@ data class ServerConfigs(
     val refreshTokenValidity: Long,
     /** Time in milliseconds a refresh token stays accepted after it was rotated, so a client that never received the rotated pair, such as when the response was lost, can still recover its session. */
     val refreshTokenGracePeriod: Long,
+    /** Time in milliseconds a disabled account may keep refreshing the session it already had, counted from when the account was disabled. Refreshing never moves the session expiry past it. */
+    val deletedAccountSessionValidity: Long,
     /** Number of wrong current passwords a session may give when changing the password. The session is ended on the last one, so the user has to log in again. Values below 1 count as 1. */
     val maxPasswordAttempts: Int,
     /** Minimum number of characters of a password set when registering an account or changing its password. Passwords set before a raise stay valid. */
@@ -68,6 +70,7 @@ data class ServerConfigs(
             accessTokenValidity = 3_600_000L,
             refreshTokenValidity = 2_592_000_000L,
             refreshTokenGracePeriod = 60_000L,
+            deletedAccountSessionValidity = 2_592_000_000L,
             maxPasswordAttempts = 3,
             minPasswordLength = 10,
             rateLimiterLimit = 200,
