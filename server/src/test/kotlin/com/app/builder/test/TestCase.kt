@@ -39,7 +39,7 @@ import com.app.builder.domain.usecase.Outcome
 /** Abstract class for defining test cases. It provides a hermetic testing environment. */
 abstract class TestCase: SharedTestCase() {
 
-    /** Dependency index for test cases with in memory Database and NoOp FCM Service. */
+    /** Dependency index for test cases with in memory database and no-op services. */
     protected val dependency: LazyData<Dependency> = LazyData {
         Dependency(
             database = DatabaseFactory.create(connectionFactory = DatabaseFactory.getInMemoryConnectionFactory()),

@@ -13,6 +13,7 @@ import com.app.builder.Dependency
 import com.app.builder.core.config.ClientFlags
 import com.app.builder.core.flow.LazyData
 import com.app.builder.data.database.createMockSqlDriver
+import com.app.builder.data.http.createHttpEngine
 import com.app.builder.data.http.createMockHttpEngine
 import com.app.builder.ui.AppTheme
 import com.app.builder.ui.lifecycle.OverridableLifecycleOwner
@@ -31,11 +32,19 @@ abstract class TestCase: PlatformTestCase() {
         )
     }
 
-    /** Dependency index for test cases with in memory Database and Mock Http Engine. */
+    /** Dependency index for test cases with in memory database and a mock http engine. */
     protected val dependency: LazyData<Dependency.AppGraph> = LazyData {
         Dependency.AppGraph(
             sqlDriver = createMockSqlDriver(),
             httpClientEngine = createMockHttpEngine()
+        )
+    }
+
+    /** Dependency index for test cases with in memory database and a real http engine. */
+    protected val e2eDependency: LazyData<Dependency.AppGraph> = LazyData {
+        Dependency.AppGraph(
+            sqlDriver = createMockSqlDriver(),
+            httpClientEngine = createHttpEngine()
         )
     }
 
