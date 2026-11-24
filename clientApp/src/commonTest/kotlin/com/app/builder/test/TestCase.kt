@@ -8,7 +8,6 @@ import androidx.compose.ui.test.ComposeUiTest
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation3.runtime.NavBackStack
 import com.app.builder.App
-import com.app.builder.Application.reset
 import com.app.builder.Dependency
 import com.app.builder.core.config.ClientFlags
 import com.app.builder.core.flow.LazyData
@@ -62,8 +61,9 @@ abstract class TestCase: PlatformTestCase() {
 
     /** Resets push registration, provider state, dependency data, translation cache, and navigation back stack between tests. */
     private suspend fun resetData() {
-        val dependency = dependency.get()
-        dependency.reset()
+        Dependency.resetGlobals()
+        dependency.getOrNull()?.reset()
+        e2eDependency.getOrNull()?.reset()
         router.backStack.clear()
     }
 

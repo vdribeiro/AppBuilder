@@ -57,6 +57,22 @@ class AuthenticationUseCasesTest: TestCase() {
         assertEquals(expected = FakeData.adminAccount, actual = authenticationUseCases.observeCurrentAccount().firstOrNull())
     }
 
+    /** Verifies that logging in on the development server sets the admin as the current observed user and account. */
+    @Test
+    fun loginAndObserveCurrentUserE2E() = runUnitTest {
+        val authenticationUseCases = e2eDependency.get()
+            .userGraph
+            .useCases
+            .authenticationUseCases
+
+        assertNull(actual = authenticationUseCases.observeCurrentUser().firstOrNull())
+
+        val user = assertNotNull(actual = authenticationUseCases.login(credentials = FakeData.adminCredentials))
+
+        assertEquals(expected = user.uuid, actual = authenticationUseCases.observeCurrentUser().firstOrNull()?.uuid)
+        assertEquals(expected = FakeData.adminCredentials.username, actual = authenticationUseCases.observeCurrentAccount().firstOrNull()?.username)
+    }
+
     /** Verifies that logging in offline against a pre-existing local session still resolves and observes the current user. */
     @Test
     fun loginOfflineAndObserveCurrentUser() = runUnitTest {

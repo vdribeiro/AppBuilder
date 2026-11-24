@@ -394,6 +394,17 @@ kover {
     }
 }
 
+//region End-to-end tests
+val e2e: Boolean = providers.gradleProperty("e2e").isPresent
+tasks.withType<AbstractTestTask>().configureEach {
+    val included = e2e && !name.contains(other = "release", ignoreCase = true)
+    if (included) {
+        filter.includeTestsMatching("*E2E")
+        outputs.upToDateWhen { false }
+    } else filter.excludeTestsMatching("*E2E")
+}
+//endregion
+
 tasks.register("testClientAndReport") {
     group = "verification"
     description = "Runs all platform tests and generates a unified Kover coverage report."

@@ -7,7 +7,14 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNotSame
 import kotlin.test.assertNull
 import kotlin.test.assertSame
+import kotlin.test.assertTrue
+import kotlin.time.Duration.Companion.seconds
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeout
 import io.ktor.http.HttpStatusCode
+import app.cash.sqldelight.async.coroutines.awaitAsOneOrNull
 import com.app.builder.Dependency.getUserDependency
 import com.app.builder.Dependency.getUserGraph
 import com.app.builder.core.config.ClientFlags
@@ -78,6 +85,54 @@ class DependencyTest: TestCase() {
 
         val disabled = granted.copy(deletedAt = now())
         assertNotSame(illegal = grantedGraph, actual = appGraph.getUserDependency(account = disabled))
+    }
+
+    /** Verifies that resetting an app graph empties its database. */
+    @Test
+    fun resetEmptiesDatabase() = runUnitTest {
+        val appGraph = dependency.get()
+        appGraph.database.accountQueries.upsertAccount(Account = FakeData.account.toAccountSchema())
+
+        appGraph.reset()
+
+        assertNull(actual = appGraph.database.accountQueries.getAccount(userUuid = FakeData.user.uuid).awaitAsOneOrNull())
+    }
+
+    /** Verifies that resetting the globals clears the cached user graphs and restores the initial client flags. */
+    @Test
+    fun resetGlobalsClearsUserGraphsAndFlags() = runUnitTest {
+        dependency.get().getUserDependency(account = FakeData.account)
+
+        Dependency.resetGlobals()
+
+        assertTrue(actual = Dependency.getAll().isEmpty())
+        assertEquals(expected = ClientFlags.initialValue, actual = ClientFlags.value)
+    }
+
+    /** Verifies that a started user graph does not request the tasks sync while the tasks flag is off, and requests it once it turns on. */
+    @Test
+    fun userGraphSyncFollowsItsFlag() = runUnitTest {
+        val appGraph = dependency.get()
+        appGraph.start()
+        ClientFlags.set { it.copy(scheduler = true, registries = true, tasks = false) }
+        val userGraph = appGraph.getUserDependency(account = FakeData.adminAccount)
+        userGraph.useCases.authenticationUseCases.login(credentials = FakeData.adminCredentials)
+        try {
+            userGraph.start(scope = backgroundScope)
+            val jobs = appGraph.scheduler.observeActiveJobs()
+            withContext(context = Dispatchers.Default) {
+                withTimeout(timeout = 10.seconds) {
+                    val synced = jobs.first { jobs -> jobs.any { it.entityType == EntityType.REGISTRY } }
+                    assertTrue(actual = synced.none { it.entityType == EntityType.TASK })
+
+                    ClientFlags.set { it.copy(tasks = true) }
+                    jobs.first { jobs -> jobs.any { it.entityType == EntityType.TASK } }
+                }
+            }
+        } finally {
+            userGraph.stop()
+            appGraph.stop()
+        }
     }
 
     /** Verifies that a request whose access and refresh tokens are both rejected fails with the unauthorized response instead of waiting on the refresh forever. */

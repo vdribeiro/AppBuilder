@@ -19,4 +19,11 @@ class LazyData<T>(private val load: suspend () -> T) {
      * @return The value produced by [load], cached for every subsequent call.
      */
     suspend fun get(): T = _data ?: mutex.withLock { _data ?: load().also { _data = it } }
+
+    /**
+     * Returns the cached value without invoking [load].
+     *
+     * @return The value produced by [load], or `null` if [get] has not loaded it yet.
+     */
+    fun getOrNull(): T? = _data
 }

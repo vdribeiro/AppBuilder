@@ -2,6 +2,7 @@ package com.app.builder.core.flow
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -30,6 +31,21 @@ class LazyDataTest: TestCase() {
         assertEquals(expected = "value", actual = lazyData.get())
         assertEquals(expected = "value", actual = lazyData.get())
         assertEquals(expected = "value", actual = lazyData.get())
+        assertEquals(expected = 1, actual = loadCount)
+    }
+
+    /** Verifies getOrNull returns null without invoking load before the first get call, and the cached value after it. */
+    @Test
+    fun getOrNullReturnsCachedValueWithoutLoading() = runUnitTest {
+        var loadCount = 0
+        val lazyData = LazyData { loadCount++; "value" }
+
+        assertNull(actual = lazyData.getOrNull())
+        assertEquals(expected = 0, actual = loadCount)
+
+        lazyData.get()
+
+        assertEquals(expected = "value", actual = lazyData.getOrNull())
         assertEquals(expected = 1, actual = loadCount)
     }
 
