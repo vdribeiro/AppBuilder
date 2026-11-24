@@ -44,13 +44,13 @@ class SeedUseCasesTest: TestCase() {
         val useCases = dependency.get().useCases
         val uuid = uuid()
 
-        assertEquals(expected = Outcome.Success(data = Unit), actual = useCases.seedUseCases.seedSuperUser(uuid = uuid, username = "su", password = "su"))
+        assertEquals(expected = Outcome.Success(data = Unit), actual = useCases.seedUseCases.seedSuperUser(uuid = uuid, username = "su", password = "su_password_1"))
 
         val account = useCases.accountUseCases.getAccount(userUuid = uuid).successData()
         assertEquals(expected = "su", actual = account.username)
         assertEquals(expected = EntityType.entries.associateWith { Permission.WRITE }, actual = account.permissions)
         assertEquals(expected = "su", actual = useCases.userUseCases.getUser(uuid = uuid).successData().name)
-        assertEquals(expected = account, actual = useCases.authenticationUseCases.login(credentials = UserCredentials(username = "su", password = "su")).successData().account)
+        assertEquals(expected = account, actual = useCases.authenticationUseCases.login(credentials = UserCredentials(username = "su", password = "su_password_1")).successData().account)
     }
 
     /** Verifies that seeding a stored super user restores its permissions, keeping its password. */
@@ -58,14 +58,14 @@ class SeedUseCasesTest: TestCase() {
     fun seedSuperUserRestoresPermissions() = runServerTest {
         val useCases = dependency.get().useCases
         val uuid = uuid()
-        assertEquals(expected = Outcome.Success(data = Unit), actual = useCases.seedUseCases.seedSuperUser(uuid = uuid, username = "su", password = "su"))
+        assertEquals(expected = Outcome.Success(data = Unit), actual = useCases.seedUseCases.seedSuperUser(uuid = uuid, username = "su", password = "su_password_1"))
         val account = useCases.accountUseCases.getAccount(userUuid = uuid).successData()
         assertIs<Outcome.Success<Unit>>(value = useCases.accountUseCases.upsertAccount(account = account.copy(permissions = emptyMap())))
 
-        assertEquals(expected = Outcome.Success(data = Unit), actual = useCases.seedUseCases.seedSuperUser(uuid = uuid, username = "su", password = "other"))
+        assertEquals(expected = Outcome.Success(data = Unit), actual = useCases.seedUseCases.seedSuperUser(uuid = uuid, username = "su", password = "su_password_2"))
 
         assertEquals(expected = account.permissions, actual = useCases.accountUseCases.getAccount(userUuid = uuid).successData().permissions)
-        assertIs<Outcome.Success<*>>(value = useCases.authenticationUseCases.login(credentials = UserCredentials(username = "su", password = "su")))
+        assertIs<Outcome.Success<*>>(value = useCases.authenticationUseCases.login(credentials = UserCredentials(username = "su", password = "su_password_1")))
     }
 
     /** Verifies that seeding a super user whose username belongs to the account of another user reports [Outcome.Error] and stores no account. */
@@ -74,7 +74,7 @@ class SeedUseCasesTest: TestCase() {
         val useCases = dependency.get().useCases
         val uuid = uuid()
 
-        assertEquals(expected = Outcome.Error, actual = useCases.seedUseCases.seedSuperUser(uuid = uuid, username = FakeData.account.username, password = "su"))
+        assertEquals(expected = Outcome.Error, actual = useCases.seedUseCases.seedSuperUser(uuid = uuid, username = FakeData.account.username, password = "su_password_1"))
 
         assertEquals(expected = Outcome.NotFound, actual = useCases.accountUseCases.getAccount(userUuid = uuid))
     }
@@ -194,7 +194,7 @@ class SeedUseCasesTest: TestCase() {
 
         listOf(
             "seed" to seedUseCases.seed(),
-            "seedSuperUser" to seedUseCases.seedSuperUser(uuid = uuid(), username = "su", password = "su"),
+            "seedSuperUser" to seedUseCases.seedSuperUser(uuid = uuid(), username = "su", password = "su_password_1"),
             "seedTranslations" to seedUseCases.seedTranslations(translations = FakeData.translations),
             "seedEntities" to seedUseCases.seedEntities(seed = seed)
         ).forEach { (name, outcome) -> assertEquals(expected = Outcome.Error, actual = outcome, message = name) }

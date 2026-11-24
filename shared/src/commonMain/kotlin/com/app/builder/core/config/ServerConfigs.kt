@@ -16,6 +16,8 @@ data class ServerConfigs(
     val refreshTokenGracePeriod: Long,
     /** Number of wrong current passwords a session may give when changing the password. The session is ended on the last one, so the user has to log in again. Values below 1 count as 1. */
     val maxPasswordAttempts: Int,
+    /** Minimum number of characters of a password set when registering an account or changing its password. Passwords set before a raise stay valid. */
+    val minPasswordLength: Int,
     /** Global per-IP rate limiter maximum requests per period, applied to every route not covered by a specific limiter. */
     val rateLimiterLimit: Int,
     /** Global rate limiter refill period in milliseconds. */
@@ -67,6 +69,7 @@ data class ServerConfigs(
             refreshTokenValidity = 2_592_000_000L,
             refreshTokenGracePeriod = 60_000L,
             maxPasswordAttempts = 3,
+            minPasswordLength = 10,
             rateLimiterLimit = 200,
             rateLimiterRefillPeriod = 60_000L,
             rateLimiterProbeLimit = 5,

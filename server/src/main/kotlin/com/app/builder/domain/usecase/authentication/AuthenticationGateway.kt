@@ -62,8 +62,8 @@ class AuthenticationGateway(
             Telemetry.error(tag = TAG, message = "Rejected registration for user ${user.uuid} with an account of user ${account.userUuid}")
             return@withContext Outcome.Invalid
         }
-        if (registrationForm.password.isBlank()) {
-            Telemetry.error(tag = TAG, message = "Rejected registration for user ${user.uuid} with a blank password")
+        if (!isValidPassword(password = registrationForm.password)) {
+            Telemetry.error(tag = TAG, message = "Rejected registration for user ${user.uuid} with an invalid password")
             return@withContext Outcome.Invalid
         }
         val password = hashPassword(password = registrationForm.password) ?: return@withContext Outcome.Error
@@ -261,7 +261,7 @@ class AuthenticationGateway(
             Telemetry.error(tag = TAG, message = "Rejected password change for disabled account of user $userUuid")
             return@withContext Outcome.Rejected
         }
-        if (passwordChange.newPassword.isBlank()) return@withContext Outcome.Invalid
+        if (!isValidPassword(password = passwordChange.newPassword)) return@withContext Outcome.Invalid
 
         val maxAttempts = ServerConfigs.value.maxPasswordAttempts.coerceAtLeast(minimumValue = 1)
         val counted = database.safeTransaction {
@@ -302,6 +302,15 @@ class AuthenticationGateway(
             Telemetry.error(tag = TAG, message = "Unable to change the password of user $userUuid", throwable = it)
         }.getOrDefault(defaultValue = Outcome.Error)
     }
+
+    /**
+     * Checks if [password] can be set as the password of an account: not blank, at least [ServerConfigs.minPasswordLength] characters and at most [MAX_PASSWORD_BYTES] bytes.
+     *
+     * @param password The password to check.
+     * @return `true` if the password can be set, `false` otherwise.
+     */
+    private fun isValidPassword(password: String): Boolean =
+        password.isNotBlank() && password.length >= ServerConfigs.value.minPasswordLength && password.encodeToByteArray().size <= MAX_PASSWORD_BYTES
 
     /**
      * Finds the session [refreshToken] belongs to, as its current refresh token or as the previous one within [ServerConfigs.refreshTokenGracePeriod] of its rotation.
@@ -352,5 +361,8 @@ class AuthenticationGateway(
 
     companion object {
         private const val TAG = "AuthenticationGateway"
+
+        /** The longest password the hash takes into account, in bytes. */
+        private const val MAX_PASSWORD_BYTES = 72
     }
 }

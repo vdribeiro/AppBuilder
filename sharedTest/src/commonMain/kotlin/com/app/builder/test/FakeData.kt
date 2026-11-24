@@ -115,12 +115,12 @@ object FakeData {
 
     val adminCredentials = UserCredentials(
         username = adminAccount.username,
-        password = "admin"
+        password = "admin_password"
     )
 
     val credentials = UserCredentials(
         username = account.username,
-        password = "pass123"
+        password = "user_password"
     )
 
     val adminRegistrationForm = RegistrationForm(
