@@ -13,7 +13,10 @@ fun Application.installWebSocket() {
     install(plugin = WebSockets) {
         pingPeriod = ServerConfigs.value.pushPingInterval.milliseconds
         timeout = ServerConfigs.value.pushTimeout.milliseconds
-        maxFrameSize = Long.MAX_VALUE
+        maxFrameSize = MAX_FRAME_BYTES
         masking = false
     }
 }
+
+/** The largest incoming frame accepted, in bytes. A bigger frame closes the connection. */
+private const val MAX_FRAME_BYTES = 64L * 1024
