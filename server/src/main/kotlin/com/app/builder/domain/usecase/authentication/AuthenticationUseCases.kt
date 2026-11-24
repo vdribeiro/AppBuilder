@@ -16,7 +16,7 @@ interface AuthenticationUseCases {
      * Creates the account of a submitted [registrationForm], storing its user too when it doesn't exist yet. An existing user is left unchanged. No session is created for the new account.
      *
      * @param registrationForm The registration details.
-     * @return [Outcome.Success] when created, [Outcome.Invalid] when the account belongs to another user, [Outcome.Conflict] when the user already has an account or the username is taken, or [Outcome.Error] when the operation failed.
+     * @return [Outcome.Success] when created, [Outcome.Invalid] when the account belongs to another user or the password is blank, [Outcome.Conflict] when the user already has an account or the username is taken, or [Outcome.Error] when the operation failed.
      */
     suspend fun register(registrationForm: RegistrationForm): Outcome<Unit>
 

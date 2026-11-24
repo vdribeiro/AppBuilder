@@ -63,6 +63,17 @@ class AuthenticationTest: TestCase() {
         assertEquals(expected = HttpStatusCode.BadRequest, actual = response.status)
     }
 
+    /** Verifies that registering an account with an empty or blank password is rejected. */
+    @Test
+    fun registerRejectsBlankPassword() = runServerTest {
+        installRouting()
+        val client = createClient(token = adminBearerToken.accessToken)
+        val form = registrationForm(username = "blank_password", permissions = emptyMap())
+
+        assertEquals(expected = HttpStatusCode.BadRequest, actual = client.post(request = HttpRequest(url = URL.Register), body = form.copy(password = "")).status)
+        assertEquals(expected = HttpStatusCode.BadRequest, actual = client.post(request = HttpRequest(url = URL.Register), body = form.copy(password = " ")).status)
+    }
+
     /** Verifies that registering is rejected when the user already has an account or the username is taken. */
     @Test
     fun registerConflicts() = runServerTest {

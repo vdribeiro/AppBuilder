@@ -67,6 +67,18 @@ class AuthenticationUseCasesTest: TestCase() {
         assertEquals(expected = Outcome.NotFound, actual = dependency.get().useCases.userUseCases.getUser(uuid = form.user.uuid))
     }
 
+    /** Verifies that registering with an empty or blank password is invalid and stores neither the user nor the account. */
+    @Test
+    fun registerRejectsBlankPassword() = runServerTest {
+        val useCases = dependency.get().useCases
+        val form = registrationForm(username = "blank_password", permissions = emptyMap())
+
+        assertEquals(expected = Outcome.Invalid, actual = useCases.authenticationUseCases.register(registrationForm = form.copy(password = "")))
+        assertEquals(expected = Outcome.Invalid, actual = useCases.authenticationUseCases.register(registrationForm = form.copy(password = " ")))
+        assertEquals(expected = Outcome.NotFound, actual = useCases.userUseCases.getUser(uuid = form.user.uuid))
+        assertEquals(expected = Outcome.NotFound, actual = useCases.accountUseCases.getAccount(userUuid = form.user.uuid))
+    }
+
     /** Verifies that registering an account for an existing user stores the account but leaves the user unchanged. */
     @Test
     fun registerKeepsExistingUser() = runServerTest {

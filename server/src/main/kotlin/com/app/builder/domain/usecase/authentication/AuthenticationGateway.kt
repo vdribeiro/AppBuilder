@@ -62,6 +62,10 @@ class AuthenticationGateway(
             Telemetry.error(tag = TAG, message = "Rejected registration for user ${user.uuid} with an account of user ${account.userUuid}")
             return@withContext Outcome.Invalid
         }
+        if (registrationForm.password.isBlank()) {
+            Telemetry.error(tag = TAG, message = "Rejected registration for user ${user.uuid} with a blank password")
+            return@withContext Outcome.Invalid
+        }
         val password = hashPassword(password = registrationForm.password) ?: return@withContext Outcome.Error
 
         database.safeTransaction {
