@@ -70,7 +70,8 @@ class AuthenticationTest: TestCase() {
         val client = createClient(token = adminBearerToken.accessToken)
         val form = registrationForm(username = "invalid_password", permissions = emptyMap())
 
-        listOf("", " ".repeat(n = 12), "a".repeat(n = 11), "a".repeat(n = 73)).forEach { password ->
+        val minLength = ServerConfigs.value.minPasswordLength
+        listOf("", " ".repeat(n = minLength), "a".repeat(n = minLength - 1), "a".repeat(n = 73)).forEach { password ->
             assertEquals(expected = HttpStatusCode.BadRequest, actual = client.post(request = HttpRequest(url = URL.Register), body = form.copy(password = password)).status)
         }
     }

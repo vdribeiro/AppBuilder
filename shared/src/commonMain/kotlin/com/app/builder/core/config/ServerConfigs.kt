@@ -90,7 +90,7 @@ data class ServerConfigs(
             presenceHeartbeatInterval = 15_000L,
             presenceTtl = 45_000L,
             pageSize = 200,
-            maxPageSize = 100_000,
+            maxPageSize = 1_000,
         )
     )
 }
