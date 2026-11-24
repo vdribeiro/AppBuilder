@@ -2,6 +2,7 @@ package com.app.builder.domain.route
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.toJavaInstant
@@ -21,6 +22,8 @@ import io.ktor.server.routing.routing
 import com.app.builder.core.locale.now
 import com.app.builder.core.platform.Env
 import com.app.builder.core.security.uuid
+import com.app.builder.core.telemetry.Telemetry
+import com.app.builder.core.telemetry.TelemetryEngine
 import com.app.builder.data.http.Header
 import com.app.builder.domain.EntityType
 import com.app.builder.domain.Permission
@@ -61,6 +64,44 @@ class ExtensionsTest: TestCase() {
         }
         assertEquals(expected = HttpStatusCode.OK, actual = validResponse.status)
         assertEquals(expected = FakeData.task, actual = validResponse.body<Task>())
+    }
+
+    /** Verifies that receive() rejects a malformed body with 400 without any part of the body reaching the telemetry. */
+    @Test
+    fun receiveDoesNotLogBody() = runServerTest {
+        installRouting()
+        application {
+            routing {
+                post("/test/receive") {
+                    call.receive<Task>() ?: return@post
+                    call.respondSafely(status = HttpStatusCode.OK, message = "ok")
+                }
+            }
+        }
+        val logged = mutableListOf<String>()
+        Telemetry.engines += object: TelemetryEngine {
+            override fun info(tag: String, message: String) {
+                logged += message
+            }
+
+            override fun error(tag: String, message: String, throwable: Throwable?) {
+                logged += message
+                logged += generateSequence(seed = throwable) { it.cause }.map { it.message.orEmpty() }
+            }
+
+            override fun feedback(message: String) {
+                logged += message
+            }
+        }
+        val secret = "Sup3rSecretMarker"
+
+        val response = createClient(token = null).post(urlString = "/test/receive") {
+            contentType(type = ContentType.Application.Json)
+            setBody(body = """{"name":"$secret",}""")
+        }
+
+        assertEquals(expected = HttpStatusCode.BadRequest, actual = response.status)
+        assertFalse(actual = logged.any { it.contains(other = secret) }, message = logged.filter { it.contains(other = secret) }.joinToString(separator = "\n"))
     }
 
     /** Verifies that dataOrRespond() passes the data of a success through and answers each failure with its status code and message. */

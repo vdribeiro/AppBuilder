@@ -79,7 +79,8 @@ suspend fun <T: Any> ApplicationCall.getOrRespond(
 
 /**
  * Safely receives and deserializes the HTTP request body.
- * Logs an error to telemetry if the process fails and responds with a 400 Bad Request.
+ * If the process fails, logs the request method and path to telemetry, and responds with a 400 Bad Request.
+ * The exception itself is not logged: its message quotes the request body, which can hold secrets such as passwords or tokens.
  *
  * @receiver [ApplicationCall] The context of the call.
  * @param T The expected type to deserialize the request body into.
@@ -88,7 +89,7 @@ suspend fun <T: Any> ApplicationCall.getOrRespond(
 suspend inline fun <reified T: Any> ApplicationCall.receive(): T? = runSuspendCatching {
     receive<T>()
 }.onFailure {
-    Telemetry.error(tag = "Route", message = "Unable to process call", throwable = it)
+    Telemetry.error(tag = "Route", message = "Unable to process ${request.httpMethod.value} ${request.local.uri}")
     respondSafely(status = HttpStatusCode.BadRequest, message = "Invalid request payload")
 }.getOrNull()
 
