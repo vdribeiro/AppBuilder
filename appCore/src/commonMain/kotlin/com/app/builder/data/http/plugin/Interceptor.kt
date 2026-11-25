@@ -7,6 +7,7 @@ import io.ktor.client.plugins.api.createClientPlugin
 import io.ktor.client.request.HttpRequestBuilder
 import io.ktor.client.request.header
 import io.ktor.client.statement.HttpResponse
+import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
@@ -59,7 +60,10 @@ internal fun <T: HttpClientEngineConfig> HttpClientConfig<T>.installInterceptor(
             val call = proceed(requestBuilder = request)
             val response = call.response
             if (response.status == HttpStatusCode.Unauthorized) throw UnauthorizedException()
-            if (response.status != HttpStatusCode.SwitchingProtocols && response.status.value !in (200 until 300) && response.status != HttpStatusCode.NotModified) throw UnsuccessfulStatusException(status = response.status)
+            if (response.status != HttpStatusCode.SwitchingProtocols && response.status.value !in (200 until 300) && response.status != HttpStatusCode.NotModified) throw UnsuccessfulStatusException(
+                status = response.status,
+                body = runSuspendCatching { response.bodyAsText() }.getOrDefault(defaultValue = "")
+            )
 
             val result = response.handleTimeSynchronization()
             if (!result) Telemetry.error(tag = TAG, message = "Unable to synchronize clock")
@@ -108,7 +112,8 @@ class UnauthorizedException: Throwable(message = "Unauthorized response")
  * Thrown when the server responds with a status code outside the acceptable success range.
  *
  * @property status The unsuccessful HTTP status code returned by the server.
+ * @property body The body of the response, or empty when it couldn't be read.
  */
-class UnsuccessfulStatusException(val status: HttpStatusCode): Throwable(message = "Unsuccessful response: ${status.value} ${status.description}")
+class UnsuccessfulStatusException(val status: HttpStatusCode, val body: String = ""): Throwable(message = "Unsuccessful response: ${status.value} ${status.description}")
 
 private const val TAG = "Interceptor"
