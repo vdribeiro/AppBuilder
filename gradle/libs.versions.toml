@@ -111,6 +111,7 @@ ktor-server-content = { module = "io.ktor:ktor-server-content-negotiation", vers
 ktor-server-cors = { module = "io.ktor:ktor-server-cors", version.ref = "ktor" }
 ktor-server-sse = { module = "io.ktor:ktor-server-sse", version.ref = "ktor" }
 ktor-server-rate-limit = { module = "io.ktor:ktor-server-rate-limit", version.ref = "ktor" }
+ktor-server-body-limit = { module = "io.ktor:ktor-server-body-limit", version.ref = "ktor" }
 ktor-server-websockets = { module = "io.ktor:ktor-server-websockets", version.ref = "ktor" }
 
 # SQLDelight
@@ -364,6 +365,7 @@ server = [
     "ktor-server-cors",
     "ktor-server-sse",
     "ktor-server-rate-limit",
+    "ktor-server-body-limit",
     "ktor-server-websockets",
     "exposed-core",
     "exposed-r2dbc",
