@@ -3,6 +3,7 @@ package com.app.builder.domain.gateway.authentication
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertIs
 import kotlin.test.assertNotEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
@@ -47,10 +48,7 @@ class AuthenticationUseCasesTest: TestCase() {
         assertNull(actual = userDao.getUserByUsername(username = username).awaitAsOneOrNull())
         assertNull(actual = sessionDao.getSession(userUuid = FakeData.adminUser.uuid).awaitAsOneOrNull())
 
-        val user = authenticationUseCases.login(credentials = FakeData.adminCredentials)
-        assertNotNull(actual = user)
-
-        assertEquals(expected = FakeData.adminUser, actual = user)
+        assertEquals(expected = LoginResult.Success(user = FakeData.adminUser), actual = authenticationUseCases.login(credentials = FakeData.adminCredentials))
         assertEquals(expected = FakeData.adminUser, actual = userDao.getUserByUsername(username = username).awaitAsOneOrNull()?.toUser())
         assertEquals(expected = FakeData.adminUser.uuid, actual = sessionDao.getSession(userUuid = FakeData.adminUser.uuid).awaitAsOneOrNull()?.userUuid)
 
@@ -95,9 +93,7 @@ class AuthenticationUseCasesTest: TestCase() {
             )
         )
 
-        val user = authenticationUseCases.login(credentials = FakeData.adminCredentials)
-
-        assertEquals(expected = FakeData.adminUser, actual = user)
+        assertEquals(expected = LoginResult.Success(user = FakeData.adminUser), actual = authenticationUseCases.login(credentials = FakeData.adminCredentials))
         assertEquals(expected = FakeData.adminUser, actual = userDao.getUserByUsername(username = username).awaitAsOneOrNull()?.toUser())
         assertEquals(expected = FakeData.adminUser.uuid, actual = sessionDao.getSession(userUuid = FakeData.adminUser.uuid).awaitAsOneOrNull()?.userUuid)
 
@@ -117,7 +113,7 @@ class AuthenticationUseCasesTest: TestCase() {
             .database
             .sessionQueries
 
-        assertNotNull(actual = authenticationUseCases.login(credentials = FakeData.adminCredentials))
+        assertIs<LoginResult.Success>(value = authenticationUseCases.login(credentials = FakeData.adminCredentials))
         val session = assertNotNull(actual = sessionDao.getSession(userUuid = FakeData.adminUser.uuid).awaitAsOneOrNull())
 
         ClientFlags.set { it.copy(http = false) }
@@ -126,14 +122,28 @@ class AuthenticationUseCasesTest: TestCase() {
         assertEquals(expected = Job.Type.DELETE, actual = logout.type)
         assertEquals(expected = Job.State.PENDING, actual = logout.state)
 
-        assertNull(actual = authenticationUseCases.login(credentials = UserCredentials(username = FakeData.adminCredentials.username, password = "wrong_password")))
-        assertNull(actual = authenticationUseCases.login(credentials = FakeData.credentials))
+        assertEquals(expected = LoginResult.NoConnection, actual = authenticationUseCases.login(credentials = UserCredentials(username = FakeData.adminCredentials.username, password = "wrong_password")))
+        assertEquals(expected = LoginResult.NoConnection, actual = authenticationUseCases.login(credentials = FakeData.credentials))
         assertEquals(expected = listOf(logout), actual = queuedJobs())
 
-        assertEquals(expected = FakeData.adminUser, actual = authenticationUseCases.login(credentials = FakeData.adminCredentials))
+        assertEquals(expected = LoginResult.Success(user = FakeData.adminUser), actual = authenticationUseCases.login(credentials = FakeData.adminCredentials))
         assertEquals(expected = listOf(logout.copy(state = Job.State.CANCELED)), actual = queuedJobs())
         assertEquals(expected = session, actual = sessionDao.getSession(userUuid = FakeData.adminUser.uuid).awaitAsOneOrNull())
         assertEquals(expected = FakeData.adminUser.uuid, actual = authenticationUseCases.observeCurrentUser().firstOrNull()?.uuid)
+    }
+
+    /** Verifies that each answer the server refuses a login with maps to its own result, and that none of them logs a user in. */
+    @Test
+    fun loginFailures() = runUnitTest {
+        val authenticationUseCases = dependency.get()
+            .userGraph
+            .useCases
+            .authenticationUseCases
+
+        assertEquals(expected = LoginResult.WrongCredentials, actual = authenticationUseCases.login(credentials = UserCredentials(username = FakeData.adminCredentials.username, password = "wrong_password")))
+        assertEquals(expected = LoginResult.AccountDisabled, actual = authenticationUseCases.login(credentials = UserCredentials(username = "disabled_user", password = "password")))
+        assertEquals(expected = LoginResult.TooManyAttempts, actual = authenticationUseCases.login(credentials = UserCredentials(username = "rate_limited_user", password = "password")))
+        assertNull(actual = authenticationUseCases.observeCurrentUser().firstOrNull())
     }
 
     /** Verifies that a login the server answers and refuses is not tried offline, even when the password matches the stored verifier, while the same login succeeds offline once the server can't be reached. */
@@ -161,11 +171,11 @@ class AuthenticationUseCasesTest: TestCase() {
             )
         )
 
-        assertNull(actual = authenticationUseCases.login(credentials = credentials))
+        assertEquals(expected = LoginResult.WrongCredentials, actual = authenticationUseCases.login(credentials = credentials))
         assertNull(actual = authenticationUseCases.observeCurrentUser().firstOrNull())
 
         ClientFlags.set { it.copy(http = false) }
-        assertEquals(expected = FakeData.adminUser, actual = authenticationUseCases.login(credentials = credentials))
+        assertEquals(expected = LoginResult.Success(user = FakeData.adminUser), actual = authenticationUseCases.login(credentials = credentials))
     }
 
     /**
@@ -193,7 +203,7 @@ class AuthenticationUseCasesTest: TestCase() {
 
         assertEquals(expected = PasswordResult.Failed, actual = authenticationUseCases.changePassword(userUuid = userUuid, currentPassword = FakeData.adminCredentials.password, newPassword = "new_password"))
 
-        assertNotNull(actual = authenticationUseCases.login(credentials = FakeData.adminCredentials))
+        assertIs<LoginResult.Success>(value = authenticationUseCases.login(credentials = FakeData.adminCredentials))
         val session = assertNotNull(actual = sessionDao.getSession(userUuid = userUuid).awaitAsOneOrNull())
 
         assertEquals(expected = PasswordResult.Success(data = Unit), actual = authenticationUseCases.changePassword(userUuid = userUuid, currentPassword = FakeData.adminCredentials.password, newPassword = "new_password"))
@@ -216,7 +226,7 @@ class AuthenticationUseCasesTest: TestCase() {
             .sessionQueries
         val userUuid = FakeData.adminUser.uuid
 
-        assertNotNull(actual = authenticationUseCases.login(credentials = FakeData.adminCredentials))
+        assertIs<LoginResult.Success>(value = authenticationUseCases.login(credentials = FakeData.adminCredentials))
         val session = assertNotNull(actual = sessionDao.getSession(userUuid = userUuid).awaitAsOneOrNull())
 
         assertEquals(
@@ -246,8 +256,7 @@ class AuthenticationUseCasesTest: TestCase() {
             .useCases
             .authenticationUseCases
 
-        val user = authenticationUseCases.login(credentials = FakeData.adminCredentials)
-        assertNotNull(actual = user)
+        assertIs<LoginResult.Success>(value = authenticationUseCases.login(credentials = FakeData.adminCredentials))
 
         assertEquals(expected = FakeData.adminUser.uuid, actual = authenticationUseCases.observeCurrentUser().firstOrNull()?.uuid)
 

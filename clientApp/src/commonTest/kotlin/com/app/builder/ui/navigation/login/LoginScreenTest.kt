@@ -3,6 +3,7 @@ package com.app.builder.ui.navigation.login
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlinx.coroutines.flow.firstOrNull
 import androidx.compose.ui.test.assertIsDisplayed
@@ -17,6 +18,7 @@ import androidx.compose.ui.test.performTextInput
 import com.app.builder.core.config.ClientFlags
 import com.app.builder.test.FakeData
 import com.app.builder.test.TestCase
+import com.app.builder.ui.navigation.ScreenMessage
 
 class LoginScreenTest: TestCase() {
 
@@ -67,6 +69,30 @@ class LoginScreenTest: TestCase() {
         waitUntil(timeoutMillis = 10_000) { !store.state.loading }
         assertFalse(actual = store.state.loading)
         assertEquals(expected = FakeData.adminUser.uuid, actual = authenticationUseCases.observeCurrentUser().firstOrNull()?.uuid)
+    }
+
+    /** Verifies that a refused login keeps the user logged out and shows why, in a message that can be dismissed. */
+    @Test
+    fun refusedLogin() = runUITest {
+        val authenticationUseCases = dependency.get()
+            .userGraph
+            .useCases
+            .authenticationUseCases
+        val store = LoginScreenStore(state = LoginScreenState(), authenticationUseCases = authenticationUseCases)
+
+        setUI { LoginScreen(store = store) }
+
+        onNodeWithTag(testTag = "username").performTextInput(text = FakeData.adminCredentials.username)
+        onNodeWithTag(testTag = "password").performTextInput(text = "wrong_password")
+        onNodeWithTag(testTag = "login").performClick()
+
+        waitUntil(timeoutMillis = 10_000) { store.state.message == ScreenMessage(key = "login_wrong_credentials") }
+        assertFalse(actual = store.state.loading)
+        onNodeWithText(text = "login_wrong_credentials").assertIsDisplayed()
+        assertNull(actual = authenticationUseCases.observeCurrentUser().firstOrNull())
+
+        store.send(action = LoginScreenAction.DismissMessage)
+        waitUntil { store.state.message == null }
     }
 
     /** Verifies that the password is masked until its show button is clicked, and masked again once its hide button is clicked. */

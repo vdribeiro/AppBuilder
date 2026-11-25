@@ -3,6 +3,7 @@ package com.app.builder.domain.gateway.authentication
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertIs
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
@@ -173,7 +174,7 @@ class AuthenticationRepositoryTest: TestCase() {
             .database
             .sessionQueries
 
-        assertNotNull(actual = authenticationUseCases.login(credentials = FakeData.adminCredentials))
+        assertIs<LoginResult.Success>(value = authenticationUseCases.login(credentials = FakeData.adminCredentials))
         assertEquals(expected = FakeData.adminUser.uuid, actual = authenticationUseCases.observeCurrentUser().firstOrNull()?.uuid)
 
         assertEquals(expected = false, actual = authenticationUseCases.observeSessionExpired().first())
@@ -183,7 +184,7 @@ class AuthenticationRepositoryTest: TestCase() {
         assertEquals(expected = FakeData.adminUser.uuid, actual = authenticationUseCases.observeCurrentUser().firstOrNull()?.uuid)
         assertEquals(expected = true, actual = authenticationUseCases.observeSessionExpired().first())
 
-        assertNotNull(actual = authenticationUseCases.login(credentials = FakeData.adminCredentials))
+        assertIs<LoginResult.Success>(value = authenticationUseCases.login(credentials = FakeData.adminCredentials))
         assertEquals(expected = false, actual = authenticationUseCases.observeSessionExpired().first())
     }
 
@@ -194,7 +195,7 @@ class AuthenticationRepositoryTest: TestCase() {
         val authenticationRepository = userGraph.repositories.authenticationRepository
 
         assertFalse(actual = authenticationRepository.observeSessionActive(userUuid = FakeData.adminUser.uuid).first())
-        assertNotNull(actual = userGraph.useCases.authenticationUseCases.login(credentials = FakeData.adminCredentials))
+        assertIs<LoginResult.Success>(value = userGraph.useCases.authenticationUseCases.login(credentials = FakeData.adminCredentials))
         assertTrue(actual = authenticationRepository.observeSessionActive(userUuid = FakeData.adminUser.uuid).first())
 
         assertNull(actual = authenticationRepository.refreshBearerToken(userUuid = FakeData.adminUser.uuid, refreshToken = FakeData.expiredBearerToken.refreshToken))
@@ -244,7 +245,7 @@ class AuthenticationRepositoryTest: TestCase() {
             .database
             .sessionQueries
 
-        assertNotNull(actual = authenticationUseCases.login(credentials = FakeData.adminCredentials))
+        assertIs<LoginResult.Success>(value = authenticationUseCases.login(credentials = FakeData.adminCredentials))
         ClientFlags.set { it.copy(http = false) }
 
         assertNull(actual = authenticationRepository.refreshBearerToken(userUuid = FakeData.adminUser.uuid, refreshToken = FakeData.adminBearerToken.refreshToken))

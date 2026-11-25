@@ -28,7 +28,12 @@
     "login_app_name": { "en": "App Builder", "pt": "App Builder" },
     "login_username": { "en": "Username", "pt": "Utilizador" },
     "login_password": { "en": "Password", "pt": "Palavra-passe" },
-    "login_submit":   { "en": "Login", "pt": "Iniciar sessão" }
+    "login_submit":   { "en": "Login", "pt": "Iniciar sessão" },
+    "login_wrong_credentials": { "en": "Wrong username or password", "pt": "Utilizador ou palavra-passe errados" },
+    "login_account_disabled":  { "en": "This account is disabled", "pt": "Esta conta está desativada" },
+    "login_too_many_attempts": { "en": "Too many attempts, try again later", "pt": "Demasiadas tentativas, tente mais tarde" },
+    "login_no_connection":     { "en": "No connection, and these credentials don't match a saved session", "pt": "Sem ligação, e estas credenciais não correspondem a uma sessão guardada" },
+    "login_failed":            { "en": "Unable to log in", "pt": "Não foi possível iniciar sessão" }
   },
   "profile": {
     "profile_account":         { "en": "Account", "pt": "Conta" },

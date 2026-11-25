@@ -93,7 +93,11 @@ fun createMockHttpEngine(): HttpClientEngine = TestEngine { request ->
                     when (credentials) {
                         FakeData.adminCredentials -> respondMock(content = encode(value = FakeData.adminAuthentication))
                         FakeData.credentials -> respondMock(content = encode(value = FakeData.authentication))
-                        else -> badRequest(request = request)
+                        else -> when (credentials.username) {
+                            DISABLED_USERNAME -> respondMock(status = HttpStatusCode.Forbidden)
+                            RATE_LIMITED_USERNAME -> respondMock(status = HttpStatusCode.TooManyRequests)
+                            else -> respondMock(status = HttpStatusCode.Unauthorized)
+                        }
                     }
                 }
 
@@ -200,3 +204,9 @@ private const val WRONG_PASSWORD = "wrong_password"
 
 /** A current password the mock server answers by ending the session. */
 private const val LAST_WRONG_PASSWORD = "last_wrong_password"
+
+/** A username the mock server answers as a disabled account. */
+private const val DISABLED_USERNAME = "disabled_user"
+
+/** A username the mock server answers as rate limited. */
+private const val RATE_LIMITED_USERNAME = "rate_limited_user"

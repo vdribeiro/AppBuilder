@@ -145,7 +145,7 @@ class AuthenticationTest: TestCase() {
         assertEquals(expected = FakeData.adminAccount, actual = authentication.account)
     }
 
-    /** Verifies that logging in with a disabled account is rejected. */
+    /** Verifies that logging in with a disabled account is refused with 403 Forbidden, while a wrong password for it still gets 401 Unauthorized. */
     @Test
     fun loginWithDisabledAccount() = runServerTest {
         installRouting()
@@ -153,7 +153,8 @@ class AuthenticationTest: TestCase() {
         assertEquals(expected = HttpStatusCode.OK, actual = adminClient.post(request = HttpRequest(url = URL.Accounts), body = FakeData.account.copy(deletedAt = now())).status)
 
         val client = createClient(token = null)
-        assertEquals(expected = HttpStatusCode.Unauthorized, actual = client.post(request = HttpRequest(url = URL.Login), body = FakeData.credentials).status)
+        assertEquals(expected = HttpStatusCode.Forbidden, actual = client.post(request = HttpRequest(url = URL.Login), body = FakeData.credentials).status)
+        assertEquals(expected = HttpStatusCode.Unauthorized, actual = client.post(request = HttpRequest(url = URL.Login), body = UserCredentials(username = FakeData.credentials.username, password = "wrong_password")).status)
     }
 
     /** Verifies that logging out rejects an invalid refresh token and succeeds with a valid one. */

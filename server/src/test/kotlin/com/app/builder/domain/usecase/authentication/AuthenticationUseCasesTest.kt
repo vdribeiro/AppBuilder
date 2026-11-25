@@ -138,7 +138,7 @@ class AuthenticationUseCasesTest: TestCase() {
         assertEquals(expected = Outcome.Success(data = Unit), actual = useCases.accountUseCases.upsertAccount(account = form.account.copy(deletedAt = now())))
 
         // The password still verifies, so only the disabled flag stands between the account and a brand new session.
-        assertEquals(expected = Outcome.Rejected, actual = authenticationUseCases.login(credentials = form.credentials))
+        assertEquals(expected = Outcome.Disabled, actual = authenticationUseCases.login(credentials = form.credentials))
         // The session it already had survives, since what the account may do with it is narrowed per request rather than by cutting the session.
         assertIs<Outcome.Success<BearerToken>>(value = authenticationUseCases.refreshTokens(refreshToken = result.bearer.refreshToken))
     }
