@@ -12,7 +12,9 @@ import com.app.builder.core.config.ClientFlags
 import com.app.builder.core.security.uuid
 import com.app.builder.domain.Account
 import com.app.builder.domain.EntityType
+import com.app.builder.domain.PasswordFailure
 import com.app.builder.domain.Permission
+import com.app.builder.domain.gateway.authentication.PasswordResult
 import com.app.builder.domain.scheduler.Job
 import com.app.builder.domain.scheduler.JobResult
 import com.app.builder.test.FakeData
@@ -35,8 +37,7 @@ class AccountGatewayTest: TestCase() {
 
         assertNull(actual = useCases.accountUseCases.observeAccount(userUuid = FakeData.user.uuid).firstOrNull())
 
-        val account = useCases.accountUseCases.createAccount(registrationForm = FakeData.registrationForm)
-        assertEquals(expected = FakeData.account, actual = account)
+        assertEquals(expected = PasswordResult.Success(data = FakeData.account), actual = useCases.accountUseCases.createAccount(registrationForm = FakeData.registrationForm))
 
         assertEquals(expected = FakeData.account, actual = useCases.accountUseCases.observeAccount(userUuid = FakeData.user.uuid).firstOrNull())
         assertEquals(expected = FakeData.user, actual = useCases.userUseCases.observeUser(uuid = FakeData.user.uuid).firstOrNull())
@@ -58,7 +59,7 @@ class AccountGatewayTest: TestCase() {
         ClientFlags.set { it.copy(http = false) }
         val accountUseCases = dependency.get().getUserDependency(account = FakeData.adminAccount).useCases.accountUseCases
 
-        assertNull(actual = accountUseCases.createAccount(registrationForm = FakeData.registrationForm))
+        assertEquals(expected = PasswordResult.Failed, actual = accountUseCases.createAccount(registrationForm = FakeData.registrationForm))
         assertNull(actual = accountUseCases.updateAccount(account = FakeData.account))
         assertNull(actual = accountUseCases.observeAccount(userUuid = FakeData.user.uuid).firstOrNull())
     }
@@ -68,8 +69,20 @@ class AccountGatewayTest: TestCase() {
     fun withoutWritePermission() = runUnitTest {
         val accountUseCases = dependency.get().getUserDependency(account = readOnlyAccount).useCases.accountUseCases
 
-        assertNull(actual = accountUseCases.createAccount(registrationForm = FakeData.registrationForm))
+        assertEquals(expected = PasswordResult.Failed, actual = accountUseCases.createAccount(registrationForm = FakeData.registrationForm))
         assertNull(actual = accountUseCases.updateAccount(account = FakeData.account))
+    }
+
+    /** Verifies that creating an account with a password the server refuses reports why and stores no account. */
+    @Test
+    fun createAccountWithRefusedPassword() = runUnitTest {
+        val accountUseCases = dependency.get().getUserDependency(account = FakeData.adminAccount).useCases.accountUseCases
+
+        assertEquals(
+            expected = PasswordResult.Refused(failure = PasswordFailure.TooShort(minLength = 10)),
+            actual = accountUseCases.createAccount(registrationForm = FakeData.registrationForm.copy(password = "short"))
+        )
+        assertNull(actual = accountUseCases.observeAccount(userUuid = FakeData.user.uuid).firstOrNull())
     }
 
     /** Verifies that an account without read permission observes no account and fails the fetch job. */

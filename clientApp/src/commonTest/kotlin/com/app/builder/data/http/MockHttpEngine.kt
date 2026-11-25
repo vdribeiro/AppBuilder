@@ -2,7 +2,9 @@ package com.app.builder.data.http
 
 import kotlin.uuid.Uuid
 import io.ktor.client.engine.HttpClientEngine
+import io.ktor.client.engine.mock.MockRequestHandleScope
 import io.ktor.client.request.HttpRequestData
+import io.ktor.client.request.HttpResponseData
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.URLProtocol
@@ -15,6 +17,7 @@ import com.app.builder.data.serializer.decode
 import com.app.builder.data.serializer.encode
 import com.app.builder.domain.Account
 import com.app.builder.domain.PasswordChange
+import com.app.builder.domain.PasswordFailure
 import com.app.builder.domain.RegistrationForm
 import com.app.builder.domain.Translation
 import com.app.builder.domain.UserCredentials
@@ -76,6 +79,7 @@ fun createMockHttpEngine(): HttpClientEngine = TestEngine { request ->
                 URL.Tickets.path -> respondMock(content = Uuid.NIL.toString())
                 URL.Register.path -> {
                     val registrationForm = request.decodeBody<RegistrationForm>() ?: return@TestEngine badRequest(request = request)
+                    if (registrationForm.password.length < MIN_PASSWORD_LENGTH) return@TestEngine passwordRefused(failure = PasswordFailure.TooShort(minLength = MIN_PASSWORD_LENGTH))
                     respondMock(content = encode(value = registrationForm.account))
                 }
 
@@ -105,6 +109,11 @@ fun createMockHttpEngine(): HttpClientEngine = TestEngine { request ->
 
                 URL.ChangePassword.path -> {
                     val passwordChange = request.decodeBody<PasswordChange>() ?: return@TestEngine badRequest(request = request)
+                    if (passwordChange.newPassword.length < MIN_PASSWORD_LENGTH) return@TestEngine passwordRefused(failure = PasswordFailure.TooShort(minLength = MIN_PASSWORD_LENGTH))
+                    when (passwordChange.currentPassword) {
+                        WRONG_PASSWORD -> return@TestEngine passwordRefused(failure = PasswordFailure.WrongPassword(remainingAttempts = 2))
+                        LAST_WRONG_PASSWORD -> return@TestEngine respondMock(status = HttpStatusCode.Unauthorized)
+                    }
                     when (passwordChange.refreshToken to passwordChange.currentPassword) {
                         FakeData.adminBearerToken.refreshToken to FakeData.adminCredentials.password -> respondMock(content = encode(value = FakeData.adminUser.uuid.toString()))
                         FakeData.bearerToken.refreshToken to FakeData.credentials.password -> respondMock(content = encode(value = FakeData.user.uuid.toString()))
@@ -173,3 +182,21 @@ private inline fun <reified T> HttpRequestData.decodeBody(): T? = (body as? Text
  * @return `true` if this path addresses an item of [url].
  */
 private fun String.isItemOf(url: URL): Boolean = substringBeforeLast(delimiter = '/') == url.path && Uuid.parseOrNull(uuidString = substringAfterLast(delimiter = '/')) != null
+
+/**
+ * Responds 400 Bad Request with the reason a password was refused.
+ *
+ * @param failure Why the password was refused.
+ * @return [HttpResponseData] to send.
+ */
+private fun MockRequestHandleScope.passwordRefused(failure: PasswordFailure): HttpResponseData =
+    respondMock(status = HttpStatusCode.BadRequest, content = encode(value = failure))
+
+/** The minimum password length the mock server accepts. */
+private const val MIN_PASSWORD_LENGTH = 10
+
+/** A current password the mock server refuses as wrong, with attempts left. */
+private const val WRONG_PASSWORD = "wrong_password"
+
+/** A current password the mock server answers by ending the session. */
+private const val LAST_WRONG_PASSWORD = "last_wrong_password"

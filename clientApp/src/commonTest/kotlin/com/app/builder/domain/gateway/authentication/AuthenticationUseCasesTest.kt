@@ -14,6 +14,7 @@ import com.app.builder.core.config.ClientFlags
 import com.app.builder.core.security.deriveKey
 import com.app.builder.core.security.uuid
 import com.app.builder.data.database.SessionSchema
+import com.app.builder.domain.PasswordFailure
 import com.app.builder.domain.UserCredentials
 import com.app.builder.domain.scheduler.Job
 import com.app.builder.test.FakeData
@@ -190,12 +191,12 @@ class AuthenticationUseCasesTest: TestCase() {
             .sessionQueries
         val userUuid = FakeData.adminUser.uuid
 
-        assertFalse(actual = authenticationUseCases.changePassword(userUuid = userUuid, currentPassword = FakeData.adminCredentials.password, newPassword = "new_password"))
+        assertEquals(expected = PasswordResult.Failed, actual = authenticationUseCases.changePassword(userUuid = userUuid, currentPassword = FakeData.adminCredentials.password, newPassword = "new_password"))
 
         assertNotNull(actual = authenticationUseCases.login(credentials = FakeData.adminCredentials))
         val session = assertNotNull(actual = sessionDao.getSession(userUuid = userUuid).awaitAsOneOrNull())
 
-        assertTrue(actual = authenticationUseCases.changePassword(userUuid = userUuid, currentPassword = FakeData.adminCredentials.password, newPassword = "new_password"))
+        assertEquals(expected = PasswordResult.Success(data = Unit), actual = authenticationUseCases.changePassword(userUuid = userUuid, currentPassword = FakeData.adminCredentials.password, newPassword = "new_password"))
 
         val updatedSession = assertNotNull(actual = sessionDao.getSession(userUuid = userUuid).awaitAsOneOrNull())
         assertNotEquals(illegal = session.salt, actual = updatedSession.salt)
@@ -203,7 +204,7 @@ class AuthenticationUseCasesTest: TestCase() {
         assertEquals(expected = session.copy(salt = updatedSession.salt, verifier = updatedSession.verifier), actual = updatedSession)
     }
 
-    /** Verifies that a password change the server refuses or that has no connection leaves the session's salt and verifier unchanged. */
+    /** Verifies that a password change the server refuses or that has no connection reports why and leaves the session's salt and verifier unchanged, and that one answered by ending the session marks it expired. */
     @Test
     fun changePasswordFailures() = runUnitTest {
         val authenticationUseCases = dependency.get()
@@ -218,12 +219,23 @@ class AuthenticationUseCasesTest: TestCase() {
         assertNotNull(actual = authenticationUseCases.login(credentials = FakeData.adminCredentials))
         val session = assertNotNull(actual = sessionDao.getSession(userUuid = userUuid).awaitAsOneOrNull())
 
-        assertFalse(actual = authenticationUseCases.changePassword(userUuid = userUuid, currentPassword = "wrong_password", newPassword = "new_password"))
+        assertEquals(
+            expected = PasswordResult.Refused(failure = PasswordFailure.WrongPassword(remainingAttempts = 2)),
+            actual = authenticationUseCases.changePassword(userUuid = userUuid, currentPassword = "wrong_password", newPassword = "new_password")
+        )
+        assertEquals(
+            expected = PasswordResult.Refused(failure = PasswordFailure.TooShort(minLength = 10)),
+            actual = authenticationUseCases.changePassword(userUuid = userUuid, currentPassword = FakeData.adminCredentials.password, newPassword = "short")
+        )
 
         ClientFlags.set { it.copy(http = false) }
-        assertFalse(actual = authenticationUseCases.changePassword(userUuid = userUuid, currentPassword = FakeData.adminCredentials.password, newPassword = "new_password"))
+        assertEquals(expected = PasswordResult.Failed, actual = authenticationUseCases.changePassword(userUuid = userUuid, currentPassword = FakeData.adminCredentials.password, newPassword = "new_password"))
 
         assertEquals(expected = session, actual = sessionDao.getSession(userUuid = userUuid).awaitAsOneOrNull())
+
+        ClientFlags.set { it.copy(http = true) }
+        assertEquals(expected = PasswordResult.SessionEnded, actual = authenticationUseCases.changePassword(userUuid = userUuid, currentPassword = "last_wrong_password", newPassword = "new_password"))
+        assertNotNull(actual = sessionDao.getSession(userUuid = userUuid).awaitAsOneOrNull()?.expiredAt)
     }
 
     /** Verifies that logging out clears the current observed user and account after a successful login. */

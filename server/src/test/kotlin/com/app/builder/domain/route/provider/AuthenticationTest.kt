@@ -22,6 +22,7 @@ import com.app.builder.domain.Account
 import com.app.builder.domain.Authentication
 import com.app.builder.domain.EntityType
 import com.app.builder.domain.PasswordChange
+import com.app.builder.domain.PasswordFailure
 import com.app.builder.domain.Permission
 import com.app.builder.domain.User
 import com.app.builder.domain.UserCredentials
@@ -67,7 +68,7 @@ class AuthenticationTest: TestCase() {
         assertEquals(expected = HttpStatusCode.BadRequest, actual = response.status)
     }
 
-    /** Verifies that registering an account with an empty, blank, too short or too long password is rejected. */
+    /** Verifies that registering an account with an empty, blank, too short or too long password is rejected with the reason in the body. */
     @Test
     fun registerRejectsInvalidPassword() = runServerTest {
         installRouting()
@@ -75,8 +76,15 @@ class AuthenticationTest: TestCase() {
         val form = registrationForm(username = "invalid_password", permissions = emptyMap())
 
         val minLength = ServerConfigs.value.minPasswordLength
-        listOf("", " ".repeat(n = minLength), "a".repeat(n = minLength - 1), "a".repeat(n = 73)).forEach { password ->
-            assertEquals(expected = HttpStatusCode.BadRequest, actual = client.post(request = HttpRequest(url = URL.Register), body = form.copy(password = password)).status)
+        mapOf(
+            "" to PasswordFailure.TooShort(minLength = minLength),
+            " ".repeat(n = minLength) to PasswordFailure.TooShort(minLength = minLength),
+            "a".repeat(n = minLength - 1) to PasswordFailure.TooShort(minLength = minLength),
+            "a".repeat(n = 73) to PasswordFailure.TooLong
+        ).forEach { (password, failure) ->
+            val response = client.post(request = HttpRequest(url = URL.Register), body = form.copy(password = password))
+            assertEquals(expected = HttpStatusCode.BadRequest, actual = response.status)
+            assertEquals(expected = failure, actual = response.body<PasswordFailure>())
         }
     }
 
@@ -192,7 +200,7 @@ class AuthenticationTest: TestCase() {
         assertEquals(expected = HttpStatusCode.Unauthorized, actual = client.post(request = HttpRequest(url = URL.RefreshTokens), body = refreshToken).status)
     }
 
-    /** Verifies that changing the password rejects malformed requests, an invalid refresh token and a wrong current password, and succeeds with the session's refresh token and the current password, after which only the new password logs in. */
+    /** Verifies that changing the password rejects malformed requests, an invalid refresh token and a wrong current password, the last with the attempts left in the body, and succeeds with the session's refresh token and the current password, after which only the new password logs in. */
     @Test
     fun changePassword() = runServerTest {
         installRouting()
@@ -203,7 +211,9 @@ class AuthenticationTest: TestCase() {
 
         assertEquals(expected = HttpStatusCode.BadRequest, actual = client.post(request = HttpRequest(url = URL.ChangePassword), body = "No password change").status)
         assertEquals(expected = HttpStatusCode.Unauthorized, actual = client.post(request = HttpRequest(url = URL.ChangePassword), body = passwordChange.copy(refreshToken = "invalid_refresh_token")).status)
-        assertEquals(expected = HttpStatusCode.BadRequest, actual = client.post(request = HttpRequest(url = URL.ChangePassword), body = passwordChange.copy(currentPassword = "wrong_password")).status)
+        val wrongPassword = client.post(request = HttpRequest(url = URL.ChangePassword), body = passwordChange.copy(currentPassword = "wrong_password"))
+        assertEquals(expected = HttpStatusCode.BadRequest, actual = wrongPassword.status)
+        assertEquals(expected = PasswordFailure.WrongPassword(remainingAttempts = ServerConfigs.value.maxPasswordAttempts - 1), actual = wrongPassword.body<PasswordFailure>())
 
         val response = client.post(request = HttpRequest(url = URL.ChangePassword), body = passwordChange)
         assertEquals(expected = HttpStatusCode.OK, actual = response.status)

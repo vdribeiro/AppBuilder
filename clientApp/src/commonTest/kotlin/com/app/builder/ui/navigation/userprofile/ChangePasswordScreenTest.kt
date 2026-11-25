@@ -5,6 +5,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import kotlinx.collections.immutable.persistentListOf
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
@@ -20,6 +21,7 @@ import com.app.builder.core.config.ClientFlags
 import com.app.builder.test.FakeData
 import com.app.builder.test.TestCase
 import com.app.builder.ui.navigation.Screen
+import com.app.builder.ui.navigation.ScreenMessage
 
 class ChangePasswordScreenTest: TestCase() {
 
@@ -84,7 +86,7 @@ class ChangePasswordScreenTest: TestCase() {
         onNodeWithContentDescription(label = "text_field_hide_password").assertIsDisplayed()
     }
 
-    /** Verifies that a wrong current password keeps the screen open and shows a message that can be dismissed. */
+    /** Verifies that a wrong current password keeps the screen open and shows a message with the attempts left that can be dismissed. */
     @Test
     fun wrongCurrentPassword() = runUITest {
         val authenticationUseCases = dependency.get()
@@ -105,7 +107,7 @@ class ChangePasswordScreenTest: TestCase() {
         onNodeWithTag(testTag = "confirm_password").performTextInput(text = "new_password")
         onNodeWithTag(testTag = "change_password").performClick()
 
-        waitUntil(timeoutMillis = 10_000) { store.state.message == "change_password_failed" }
+        waitUntil(timeoutMillis = 10_000) { store.state.message == ScreenMessage(key = "password_wrong", args = persistentListOf("2")) }
         assertFalse(actual = store.state.loading)
         assertEquals(expected = listOf(Screen.UserProfile, Screen.ChangePassword), actual = router.backStack.toList())
 
@@ -135,7 +137,7 @@ class ChangePasswordScreenTest: TestCase() {
         onNodeWithTag(testTag = "confirm_password").performTextInput(text = "new_password")
         onNodeWithTag(testTag = "change_password").performClick()
 
-        waitUntil(timeoutMillis = 10_000) { store.state.message == "change_password_failed" }
+        waitUntil(timeoutMillis = 10_000) { store.state.message == ScreenMessage(key = "change_password_failed") }
         assertFalse(actual = store.state.loading)
         assertTrue(actual = store.state.currentPassword.isNotEmpty())
 

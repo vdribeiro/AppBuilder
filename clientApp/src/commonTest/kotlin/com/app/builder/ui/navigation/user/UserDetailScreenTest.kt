@@ -6,6 +6,7 @@ import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import androidx.compose.ui.semantics.SemanticsProperties
@@ -52,6 +53,7 @@ import com.app.builder.ui.component.session.SessionState
 import com.app.builder.ui.component.session.SessionStore
 import com.app.builder.ui.navigation.Router
 import com.app.builder.ui.navigation.Screen
+import com.app.builder.ui.navigation.ScreenMessage
 
 class UserDetailScreenTest: TestCase() {
 
@@ -340,8 +342,8 @@ class UserDetailScreenTest: TestCase() {
         waitUntil { store.state.account != null }
         store.send(action = UserDetailScreenAction.ChangeName(name = "New user"))
         store.send(action = UserDetailScreenAction.ChangeUsername(username = "newuser"))
-        store.send(action = UserDetailScreenAction.ChangePassword(password = "secret"))
-        waitUntil { store.state.password == "secret" }
+        store.send(action = UserDetailScreenAction.ChangePassword(password = "secret_password"))
+        waitUntil { store.state.password == "secret_password" }
         onNodeWithTag(testTag = "action_save").performClick()
         waitUntil { !store.state.editing }
 
@@ -349,6 +351,28 @@ class UserDetailScreenTest: TestCase() {
         assertEquals(expected = "newuser", actual = store.state.savedAccount?.username)
         assertEquals(expected = "newuser", actual = useCases.accountUseCases.observeAccount(userUuid = userUuid).first { it != null }?.username)
         onNodeWithText(text = "user_account_password").assertDoesNotExist()
+    }
+
+    /** Verifies that saving a new user with a password the server refuses keeps editing and shows why, in a message that can be dismissed. */
+    @Test
+    fun saveNewUserWithRefusedPassword() = runUITest {
+        val useCases = storedUserUseCases()
+        val userUuid = uuid()
+        val (store, _) = setUserDetailScreen(useCases = useCases, userUuid = userUuid.toString(), new = true)
+
+        waitUntil { store.state.account != null }
+        store.send(action = UserDetailScreenAction.ChangeName(name = "New user"))
+        store.send(action = UserDetailScreenAction.ChangeUsername(username = "newuser"))
+        store.send(action = UserDetailScreenAction.ChangePassword(password = "short"))
+        waitUntil { store.state.password == "short" }
+        onNodeWithTag(testTag = "action_save").performClick()
+
+        waitUntil(timeoutMillis = 10_000) { store.state.message == ScreenMessage(key = "password_too_short", args = persistentListOf("10")) }
+        assertTrue(actual = store.state.editing)
+        assertNull(actual = store.state.savedAccount)
+
+        store.send(action = UserDetailScreenAction.DismissMessage)
+        waitUntil { store.state.message == null }
     }
 
     /** Verifies that failing to create the account of a new user keeps editing, while the user is no longer new. */
