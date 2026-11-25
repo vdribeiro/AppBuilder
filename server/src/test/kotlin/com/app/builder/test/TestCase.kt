@@ -32,6 +32,7 @@ import com.app.builder.domain.EntityType
 import com.app.builder.domain.Permission
 import com.app.builder.domain.RegistrationForm
 import com.app.builder.domain.Registry
+import com.app.builder.domain.file.FakeFileStorage
 import com.app.builder.domain.push.NoOpFcmService
 import com.app.builder.domain.route.installRouting
 import com.app.builder.domain.usecase.Outcome
@@ -39,12 +40,13 @@ import com.app.builder.domain.usecase.Outcome
 /** Abstract class for defining test cases. It provides a hermetic testing environment. */
 abstract class TestCase: SharedTestCase() {
 
-    /** Dependency index for test cases with in memory database and no-op services. */
+    /** Dependency index for test cases with in memory database and fake or no-op services. */
     protected val dependency: LazyData<Dependency> = LazyData {
         Dependency(
             database = DatabaseFactory.create(connectionFactory = DatabaseFactory.getInMemoryConnectionFactory()),
             instanceSignal = LocalSignal(),
-            fcmService = NoOpFcmService
+            fcmService = NoOpFcmService,
+            fileStorage = FakeFileStorage()
         )
     }
 

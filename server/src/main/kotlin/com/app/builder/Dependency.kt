@@ -2,6 +2,7 @@ package com.app.builder
 
 import org.jetbrains.exposed.v1.r2dbc.R2dbcDatabase
 import com.app.builder.data.signal.InstanceSignal
+import com.app.builder.domain.file.FileStorage
 import com.app.builder.domain.permission.PermissionManager
 import com.app.builder.domain.permission.PermissionService
 import com.app.builder.domain.push.BroadcastManager
@@ -18,15 +19,17 @@ import com.app.builder.domain.usecase.UseCases
  * @property database The reactive database instance.
  * @property instanceSignal The pub/sub bus.
  * @property fcmService The Firebase Cloud Messaging service.
+ * @property fileStorage The storage holding the content of files.
  */
 class Dependency(
     val database: R2dbcDatabase,
     val instanceSignal: InstanceSignal,
     val fcmService: FcmService,
+    val fileStorage: FileStorage,
 ) {
 
     /** The application use cases. */
-    val useCases: UseCases = Gateways(database = database, instanceSignal = instanceSignal)
+    val useCases: UseCases = Gateways(database = database, instanceSignal = instanceSignal, fileStorage = fileStorage)
 
     /** The permission service. */
     val permissionService: PermissionService = PermissionManager(instanceSignal = instanceSignal)

@@ -14,13 +14,16 @@ import com.app.builder.Dependency
 import com.app.builder.Dependency.getUserGraph
 import com.app.builder.core.flow.Dispatcher
 import com.app.builder.core.flow.runSuspendCatching
-import com.app.builder.core.locale.now
+import com.app.builder.core.locale.getLocalDateTime
 import com.app.builder.core.nfc.NfcRecord
 import com.app.builder.core.nfc.NfcTag
 import com.app.builder.core.nfc.TagProvider
 import com.app.builder.core.security.uuid
 import com.app.builder.core.telemetry.Telemetry
+import com.app.builder.domain.Building
 import com.app.builder.domain.EntityType
+import com.app.builder.domain.Equipment
+import com.app.builder.domain.Material
 import com.app.builder.domain.Task
 import com.app.builder.domain.User
 import com.app.builder.domain.deeplink.DeepLink
@@ -98,21 +101,15 @@ class TagManager(
      */
     private suspend fun upsert(record: NfcRecord.Upsert) {
         val useCases = appGraph.getUseCases()
+        val dateTime = getLocalDateTime()
+        val uuid = record.entityUuid ?: uuid()
         when (record.entityType) {
-            EntityType.USER -> useCases.userUseCases.upsertUser(
-                user = User(
-                    uuid = record.entityUuid ?: uuid(),
-                    name = now().toString(),
-                )
-            )
-
-            EntityType.TASK -> useCases.taskUseCases.upsertTask(
-                task = Task(
-                    uuid = record.entityUuid ?: uuid(),
-                    title = now().toString(),
-                )
-            )
-
+            EntityType.USER -> useCases.userUseCases.upsertUser(user = User(uuid = uuid, name = dateTime))
+            EntityType.TASK -> useCases.taskUseCases.upsertTask(task = Task(uuid = uuid, title = dateTime))
+            EntityType.BUILDING -> useCases.buildingUseCases.upsertBuilding(building = Building(uuid = uuid, name = dateTime))
+            EntityType.EQUIPMENT -> useCases.equipmentUseCases.upsertEquipment(equipment = Equipment(uuid = uuid, name = dateTime))
+            EntityType.MATERIAL -> useCases.materialUseCases.upsertMaterial(material = Material(uuid = uuid, name = dateTime))
+            EntityType.FILE,
             EntityType.CLIENT_FLAG,
             EntityType.CLIENT_CONFIG,
             EntityType.SERVER_FLAG,
@@ -123,10 +120,7 @@ class TagManager(
             EntityType.ACCOUNT,
             EntityType.DEVICE_LOCATION,
             EntityType.NFC,
-            EntityType.EQUIPMENT,
-            EntityType.BUILDING,
             EntityType.BUILDING_EQUIPMENT,
-            EntityType.MATERIAL,
             EntityType.BUILDING_MATERIAL,
             EntityType.BUILDING_USER,
             EntityType.EQUIPMENT_USER -> Unit

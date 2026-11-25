@@ -39,7 +39,9 @@ data class ServerFlags(
     /** Toggles building user CRUD routes. When false, they return 404. */
     val buildingUsers: Boolean,
     /** Toggles equipment user CRUD routes. When false, they return 404. */
-    val equipmentUsers: Boolean
+    val equipmentUsers: Boolean,
+    /** Toggles the file upload and download routes. When false, they return 404. */
+    val files: Boolean
 ) {
     /** Holds the server feature flags. */
     companion object: StateHolder<ServerFlags>(
@@ -60,7 +62,8 @@ data class ServerFlags(
             materials = true,
             buildingMaterials = true,
             buildingUsers = true,
-            equipmentUsers = true
+            equipmentUsers = true,
+            files = false
         )
     ) {
         /**
@@ -86,7 +89,8 @@ data class ServerFlags(
                 materials = false,
                 buildingMaterials = false,
                 buildingUsers = false,
-                equipmentUsers = false
+                equipmentUsers = false,
+                files = false
             )
         }
     }

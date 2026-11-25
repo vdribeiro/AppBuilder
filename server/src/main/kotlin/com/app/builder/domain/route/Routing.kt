@@ -23,6 +23,7 @@ import com.app.builder.domain.route.provider.configRoutes
 import com.app.builder.domain.route.provider.deviceLocationRoutes
 import com.app.builder.domain.route.provider.equipmentRoutes
 import com.app.builder.domain.route.provider.equipmentUserRoutes
+import com.app.builder.domain.route.provider.fileRoutes
 import com.app.builder.domain.route.provider.materialRoutes
 import com.app.builder.domain.route.provider.probeRoutes
 import com.app.builder.domain.route.provider.pushFirebaseRoutes
@@ -58,6 +59,7 @@ fun Application.installRouting(dependency: Dependency) {
         flag(enabled = { it.users }) { accountRoutes(permissionService = permissionService, accountUseCases = useCases.accountUseCases, registryUseCases = useCases.registryUseCases) }
         flag(enabled = { it.deviceLocation }) { deviceLocationRoutes(permissionService = permissionService, deviceLocationUseCases = useCases.deviceLocationUseCases, registryUseCases = useCases.registryUseCases) }
         flag(enabled = { it.tasks }) { taskRoutes(permissionService = permissionService, taskUseCases = useCases.taskUseCases, registryUseCases = useCases.registryUseCases) }
+        flag(enabled = { it.files }) { fileRoutes(permissionService = permissionService, fileUseCases = useCases.fileUseCases, registryUseCases = useCases.registryUseCases) }
         flag(enabled = { it.equipments }) { equipmentRoutes(permissionService = permissionService, equipmentUseCases = useCases.equipmentUseCases, registryUseCases = useCases.registryUseCases) }
         flag(enabled = { it.buildings }) { buildingRoutes(permissionService = permissionService, buildingUseCases = useCases.buildingUseCases, registryUseCases = useCases.registryUseCases) }
         flag(enabled = { it.buildingEquipments }) { buildingEquipmentRoutes(permissionService = permissionService, buildingEquipmentUseCases = useCases.buildingEquipmentUseCases, registryUseCases = useCases.registryUseCases) }

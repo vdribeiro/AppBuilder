@@ -87,6 +87,7 @@ object FakeData {
                 EntityType.DEVICE_LOCATION -> Permission.WRITE
                 EntityType.NFC -> Permission.READ
                 EntityType.TASK -> Permission.READ
+                EntityType.FILE -> Permission.READ
                 EntityType.EQUIPMENT -> Permission.READ
                 EntityType.BUILDING -> Permission.READ
                 EntityType.BUILDING_EQUIPMENT -> Permission.READ

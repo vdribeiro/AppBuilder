@@ -118,6 +118,7 @@
     "permission_device_location":    { "en": "Device Location", "pt": "Localização do Dispositivo" },
     "permission_nfc":                { "en": "NFC", "pt": "NFC" },
     "permission_task":               { "en": "Tasks", "pt": "Tarefas" },
+    "permission_file":               { "en": "Files", "pt": "Ficheiros" },
     "permission_equipment":          { "en": "Equipments", "pt": "Equipamentos" },
     "permission_building":           { "en": "Buildings", "pt": "Edifícios" },
     "permission_building_equipment": { "en": "Buildings Equipments Link", "pt": "Link Edifícios Equipamentos" },

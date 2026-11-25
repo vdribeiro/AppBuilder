@@ -33,6 +33,7 @@ import com.app.builder.data.http.installHttpPlugins
 import com.app.builder.data.signal.LocalSignal
 import com.app.builder.data.signal.PostgresSignal
 import com.app.builder.domain.push.FcmManager
+import com.app.builder.domain.file.NoOpFileStorage
 import com.app.builder.domain.push.NoOpFcmService
 import com.app.builder.domain.route.installRouting
 import com.app.builder.test.ExcludeFromTesting
@@ -162,6 +163,11 @@ private suspend fun createDependency(): Dependency {
         Telemetry.error(tag = TAG, message = "Unable to create the database", throwable = it)
     }.getOrThrow()
 
+    val instanceSignal = when {
+        !Env.singleInstance && connectionFactory is PostgresqlConnectionFactory -> PostgresSignal(connectionFactory = connectionFactory)
+        else -> LocalSignal()
+    }.also { Telemetry.info(tag = TAG, message = "Instance Signal created") }
+
     val firebaseApp = runCatching {
         if (!Env.developmentMode) {
             FirebaseApp.getApps().firstOrNull() ?: FirebaseApp.initializeApp(
@@ -187,15 +193,14 @@ private suspend fun createDependency(): Dependency {
         Telemetry.error(tag = TAG, message = "Unable to initialize Firebase Manager, FCM push will be a no-op", throwable = it)
     }.getOrDefault(defaultValue = NoOpFcmService)
 
-    val instanceSignal = when {
-        !Env.singleInstance && connectionFactory is PostgresqlConnectionFactory -> PostgresSignal(connectionFactory = connectionFactory)
-        else -> LocalSignal()
-    }.also { Telemetry.info(tag = TAG, message = "Instance Signal created") }
+    val fileStorage = NoOpFileStorage
+        .also { Telemetry.info(tag = TAG, message = "NoOp file storage created") }
 
     return Dependency(
         database = database,
         instanceSignal = instanceSignal,
         fcmService = fcmService,
+        fileStorage = fileStorage,
     ).also { Telemetry.info(tag = TAG, message = "Dependency Index complete") }
 }
 

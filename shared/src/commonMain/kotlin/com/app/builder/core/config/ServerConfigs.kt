@@ -64,6 +64,8 @@ data class ServerConfigs(
     val maxPageSize: Int,
     /** Largest request body accepted, in bytes. A bigger body is refused with 413 Payload Too Large. */
     val maxBodySize: Long,
+    /** Largest file accepted by the file upload route, in bytes, in place of [maxBodySize]. A bigger file is refused with 413 Payload Too Large. */
+    val maxFileSize: Long,
 ) {
     /** Holds the server configs. */
     companion object: StateHolder<ServerConfigs>(
@@ -97,6 +99,7 @@ data class ServerConfigs(
             pageSize = 200,
             maxPageSize = 1_000,
             maxBodySize = 1_048_576L,
+            maxFileSize = 10_485_760L,
         )
     )
 }
