@@ -2,6 +2,7 @@ package com.app.builder.domain.usecase
 
 import org.jetbrains.exposed.v1.r2dbc.R2dbcDatabase
 import com.app.builder.data.signal.InstanceSignal
+import com.app.builder.domain.file.FileStorage
 import com.app.builder.domain.usecase.account.AccountGateway
 import com.app.builder.domain.usecase.account.AccountUseCases
 import com.app.builder.domain.usecase.authentication.AuthenticationGateway
@@ -26,6 +27,8 @@ import com.app.builder.domain.usecase.equipment.EquipmentGateway
 import com.app.builder.domain.usecase.equipment.EquipmentUseCases
 import com.app.builder.domain.usecase.equipmentuser.EquipmentUserGateway
 import com.app.builder.domain.usecase.equipmentuser.EquipmentUserUseCases
+import com.app.builder.domain.usecase.file.FileGateway
+import com.app.builder.domain.usecase.file.FileUseCases
 import com.app.builder.domain.usecase.material.MaterialGateway
 import com.app.builder.domain.usecase.material.MaterialUseCases
 import com.app.builder.domain.usecase.notification.NotificationsGateway
@@ -48,10 +51,12 @@ import com.app.builder.domain.usecase.user.UserUseCases
  *
  * @param database The reactive database instance shared by every gateway.
  * @param instanceSignal The pub/sub bus shared by gateways that need to signal across server instances.
+ * @param fileStorage The storage holding the content of files.
  */
 class Gateways(
     database: R2dbcDatabase,
-    instanceSignal: InstanceSignal
+    instanceSignal: InstanceSignal,
+    fileStorage: FileStorage
 ): UseCases {
     override val configUseCases: ConfigUseCases = ConfigGateway(database = database, instanceSignal = instanceSignal)
     override val translationUseCases: TranslationUseCases = TranslationGateway(database = database)
@@ -66,6 +71,7 @@ class Gateways(
     override val seedUseCases: SeedUseCases = SeedGateway(database = database, authenticationUseCases = authenticationUseCases, accountUseCases = accountUseCases)
     override val deviceLocationUseCases: DeviceLocationUseCases = DeviceLocationGateway(database = database)
     override val taskUseCases: TaskUseCases = TaskGateway(database = database, notificationsUseCases = notificationsUseCases)
+    override val fileUseCases: FileUseCases = FileGateway(database = database, fileStorage = fileStorage)
     override val equipmentUseCases: EquipmentUseCases = EquipmentGateway(database = database, notificationsUseCases = notificationsUseCases)
     override val buildingUseCases: BuildingUseCases = BuildingGateway(database = database, notificationsUseCases = notificationsUseCases)
     override val buildingEquipmentUseCases: BuildingEquipmentUseCases = BuildingEquipmentGateway(database = database, notificationsUseCases = notificationsUseCases)

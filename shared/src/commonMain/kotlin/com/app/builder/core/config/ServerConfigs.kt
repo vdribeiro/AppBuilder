@@ -99,7 +99,7 @@ data class ServerConfigs(
             pageSize = 200,
             maxPageSize = 1_000,
             maxBodySize = 1_048_576L,
-            maxFileSize = 10_485_760L,
+            maxFileSize = 209_715_200L,
         )
     )
 }
