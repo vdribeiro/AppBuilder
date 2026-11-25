@@ -36,6 +36,8 @@ import com.app.builder.domain.file.FakeFileStorage
 import com.app.builder.domain.push.NoOpFcmService
 import com.app.builder.domain.route.installRouting
 import com.app.builder.domain.usecase.Outcome
+import com.app.builder.domain.usecase.authentication.LoginOutcome
+import com.app.builder.domain.usecase.authentication.RegisterOutcome
 
 /** Abstract class for defining test cases. It provides a hermetic testing environment. */
 abstract class TestCase: SharedTestCase() {
@@ -74,10 +76,10 @@ abstract class TestCase: SharedTestCase() {
      */
     protected suspend fun seedUser(registrationForm: RegistrationForm): Authentication {
         val authenticationUseCases = dependency.get().useCases.authenticationUseCases
-        require(value = authenticationUseCases.register(registrationForm = registrationForm) is Outcome.Success) { "Unable to seed the user account." }
+        require(value = authenticationUseCases.register(registrationForm = registrationForm) == RegisterOutcome.Success) { "Unable to seed the user account." }
         val login = authenticationUseCases.login(credentials = registrationForm.credentials)
-        require(value = login is Outcome.Success) { "Unable to log in the seeded user account." }
-        return login.data
+        require(value = login is LoginOutcome.Success) { "Unable to log in the seeded user account." }
+        return login.authentication
     }
 
     /**
@@ -168,4 +170,12 @@ abstract class TestCase: SharedTestCase() {
      * @return The data of the successful outcome.
      */
     protected fun <T> Outcome<T>.successData(): T = assertIs<Outcome.Success<T>>(value = this).data
+
+    /**
+     * Asserts that this login succeeded and unwraps it.
+     *
+     * @receiver The outcome of a login.
+     * @return The authentication of the successful login.
+     */
+    protected fun LoginOutcome.authentication(): Authentication = assertIs<LoginOutcome.Success>(value = this).authentication
 }

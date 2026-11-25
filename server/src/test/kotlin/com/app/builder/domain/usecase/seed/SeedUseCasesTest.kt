@@ -12,6 +12,7 @@ import com.app.builder.domain.Permission
 import com.app.builder.domain.RegistrationForm
 import com.app.builder.domain.UserCredentials
 import com.app.builder.domain.usecase.Outcome
+import com.app.builder.domain.usecase.authentication.LoginOutcome
 import com.app.builder.test.FakeData
 import com.app.builder.test.TestCase
 
@@ -50,7 +51,7 @@ class SeedUseCasesTest: TestCase() {
         assertEquals(expected = "su", actual = account.username)
         assertEquals(expected = EntityType.entries.associateWith { Permission.WRITE }, actual = account.permissions)
         assertEquals(expected = "su", actual = useCases.userUseCases.getUser(uuid = uuid).successData().name)
-        assertEquals(expected = account, actual = useCases.authenticationUseCases.login(credentials = UserCredentials(username = "su", password = "su_password_1")).successData().account)
+        assertEquals(expected = account, actual = useCases.authenticationUseCases.login(credentials = UserCredentials(username = "su", password = "su_password_1")).authentication().account)
     }
 
     /** Verifies that seeding a stored super user restores its permissions, keeping its password. */
@@ -65,7 +66,7 @@ class SeedUseCasesTest: TestCase() {
         assertEquals(expected = Outcome.Success(data = Unit), actual = useCases.seedUseCases.seedSuperUser(uuid = uuid, username = "su", password = "su_password_2"))
 
         assertEquals(expected = account.permissions, actual = useCases.accountUseCases.getAccount(userUuid = uuid).successData().permissions)
-        assertIs<Outcome.Success<*>>(value = useCases.authenticationUseCases.login(credentials = UserCredentials(username = "su", password = "su_password_1")))
+        assertIs<LoginOutcome.Success>(value = useCases.authenticationUseCases.login(credentials = UserCredentials(username = "su", password = "su_password_1")))
     }
 
     /** Verifies that seeding a super user whose username belongs to the account of another user reports [Outcome.Error] and stores no account. */
@@ -130,7 +131,7 @@ class SeedUseCasesTest: TestCase() {
         assertEquals(expected = seedRegistration.user, actual = useCases.userUseCases.getUser(uuid = seedRegistration.user.uuid).successData())
         assertEquals(expected = Outcome.NotFound, actual = useCases.accountUseCases.getAccount(userUuid = seedUser.uuid))
         assertEquals(expected = seedRegistration.account, actual = useCases.accountUseCases.getAccount(userUuid = seedRegistration.user.uuid).successData())
-        assertEquals(expected = seedRegistration.account, actual = useCases.authenticationUseCases.login(credentials = seedRegistration.credentials).successData().account)
+        assertEquals(expected = seedRegistration.account, actual = useCases.authenticationUseCases.login(credentials = seedRegistration.credentials).authentication().account)
         assertEquals(expected = FakeData.task, actual = useCases.taskUseCases.getTask(uuid = FakeData.task.uuid).successData())
         assertEquals(expected = FakeData.equipment, actual = useCases.equipmentUseCases.getEquipment(uuid = FakeData.equipment.uuid).successData())
         assertEquals(expected = FakeData.building, actual = useCases.buildingUseCases.getBuilding(uuid = FakeData.building.uuid).successData())

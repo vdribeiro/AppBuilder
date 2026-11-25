@@ -18,7 +18,6 @@ import com.app.builder.data.database.create
 import com.app.builder.data.database.reset
 import com.app.builder.data.database.safeTransaction
 import com.app.builder.data.database.table.UserSessionTable
-import com.app.builder.domain.Authentication
 import com.app.builder.domain.BearerToken
 import com.app.builder.domain.EntityType
 import com.app.builder.domain.PasswordChange
@@ -43,16 +42,16 @@ class AuthenticationUseCasesTest: TestCase() {
             .useCases
             .authenticationUseCases
 
-        assertEquals(expected = Outcome.Rejected, actual = authenticationUseCases.login(credentials = FakeData.credentials))
+        assertEquals(expected = LoginOutcome.Rejected, actual = authenticationUseCases.login(credentials = FakeData.credentials))
 
         val registerResult = authenticationUseCases.register(registrationForm = FakeData.registrationForm)
-        assertEquals(expected = Outcome.Success(data = Unit), actual = registerResult)
+        assertEquals(expected = RegisterOutcome.Success, actual = registerResult)
 
-        val loginResult = assertIs<Outcome.Success<Authentication>>(value = authenticationUseCases.login(credentials = FakeData.credentials)).data
+        val loginResult = assertIs<LoginOutcome.Success>(value = authenticationUseCases.login(credentials = FakeData.credentials)).authentication
         assertEquals(expected = FakeData.user, actual = loginResult.user)
         assertEquals(expected = FakeData.account, actual = loginResult.account)
 
-        assertEquals(expected = Outcome.Rejected, actual = authenticationUseCases.login(credentials = UserCredentials(username = FakeData.credentials.username, password = "wrong_password")))
+        assertEquals(expected = LoginOutcome.Rejected, actual = authenticationUseCases.login(credentials = UserCredentials(username = FakeData.credentials.username, password = "wrong_password")))
     }
 
     /** Verifies that registering is rejected when the user already has an account, the username is taken, or the account belongs to another user. */
@@ -62,11 +61,11 @@ class AuthenticationUseCasesTest: TestCase() {
             .useCases
             .authenticationUseCases
 
-        assertEquals(expected = Outcome.Conflict, actual = authenticationUseCases.register(registrationForm = FakeData.registrationForm.copy(account = FakeData.account.copy(username = "another_username"))))
+        assertEquals(expected = RegisterOutcome.Conflict, actual = authenticationUseCases.register(registrationForm = FakeData.registrationForm.copy(account = FakeData.account.copy(username = "another_username"))))
 
         val form = registrationForm(username = FakeData.account.username, permissions = emptyMap())
-        assertEquals(expected = Outcome.Conflict, actual = authenticationUseCases.register(registrationForm = form))
-        assertEquals(expected = Outcome.Invalid, actual = authenticationUseCases.register(registrationForm = form.copy(account = form.account.copy(userUuid = uuid(), username = "new_username"))))
+        assertEquals(expected = RegisterOutcome.Conflict, actual = authenticationUseCases.register(registrationForm = form))
+        assertEquals(expected = RegisterOutcome.Invalid, actual = authenticationUseCases.register(registrationForm = form.copy(account = form.account.copy(userUuid = uuid(), username = "new_username"))))
         assertEquals(expected = Outcome.NotFound, actual = dependency.get().useCases.userUseCases.getUser(uuid = form.user.uuid))
     }
 
@@ -78,18 +77,18 @@ class AuthenticationUseCasesTest: TestCase() {
 
         val minLength = ServerConfigs.value.minPasswordLength
         listOf("", " ".repeat(n = minLength), "a".repeat(n = minLength - 1)).forEach { password ->
-            assertEquals(expected = Outcome.InvalidPassword(failure = PasswordFailure.TooShort(minLength = minLength)), actual = useCases.authenticationUseCases.register(registrationForm = form.copy(password = password)))
+            assertEquals(expected = RegisterOutcome.InvalidPassword(failure = PasswordFailure.TooShort(minLength = minLength)), actual = useCases.authenticationUseCases.register(registrationForm = form.copy(password = password)))
         }
         listOf("a".repeat(n = 73), "é".repeat(n = 37)).forEach { password ->
-            assertEquals(expected = Outcome.InvalidPassword(failure = PasswordFailure.TooLong), actual = useCases.authenticationUseCases.register(registrationForm = form.copy(password = password)))
+            assertEquals(expected = RegisterOutcome.InvalidPassword(failure = PasswordFailure.TooLong), actual = useCases.authenticationUseCases.register(registrationForm = form.copy(password = password)))
         }
         assertEquals(expected = Outcome.NotFound, actual = useCases.userUseCases.getUser(uuid = form.user.uuid))
         assertEquals(expected = Outcome.NotFound, actual = useCases.accountUseCases.getAccount(userUuid = form.user.uuid))
 
-        assertEquals(expected = Outcome.Success(data = Unit), actual = useCases.authenticationUseCases.register(registrationForm = form.copy(password = "a".repeat(n = minLength))))
+        assertEquals(expected = RegisterOutcome.Success, actual = useCases.authenticationUseCases.register(registrationForm = form.copy(password = "a".repeat(n = minLength))))
         val longest = registrationForm(username = "longest_password", permissions = emptyMap()).copy(password = "a".repeat(n = 72))
-        assertEquals(expected = Outcome.Success(data = Unit), actual = useCases.authenticationUseCases.register(registrationForm = longest))
-        assertIs<Outcome.Success<Authentication>>(value = useCases.authenticationUseCases.login(credentials = longest.credentials))
+        assertEquals(expected = RegisterOutcome.Success, actual = useCases.authenticationUseCases.register(registrationForm = longest))
+        assertIs<LoginOutcome.Success>(value = useCases.authenticationUseCases.login(credentials = longest.credentials))
     }
 
     /** Verifies that the minimum password length follows the server configs. */
@@ -99,9 +98,9 @@ class AuthenticationUseCasesTest: TestCase() {
         val form = registrationForm(username = "configured_password", permissions = emptyMap()).copy(password = "a".repeat(n = 20))
 
         ServerConfigs.set { it.copy(minPasswordLength = 21) }
-        assertEquals(expected = Outcome.InvalidPassword(failure = PasswordFailure.TooShort(minLength = 21)), actual = authenticationUseCases.register(registrationForm = form))
+        assertEquals(expected = RegisterOutcome.InvalidPassword(failure = PasswordFailure.TooShort(minLength = 21)), actual = authenticationUseCases.register(registrationForm = form))
         ServerConfigs.set { it.copy(minPasswordLength = 20) }
-        assertEquals(expected = Outcome.Success(data = Unit), actual = authenticationUseCases.register(registrationForm = form))
+        assertEquals(expected = RegisterOutcome.Success, actual = authenticationUseCases.register(registrationForm = form))
     }
 
     /** Verifies that registering an account for an existing user stores the account but leaves the user unchanged. */
@@ -111,7 +110,7 @@ class AuthenticationUseCasesTest: TestCase() {
         val form = registrationForm(username = "existing_user", permissions = emptyMap())
         assertEquals(expected = Outcome.Success(data = Unit), actual = useCases.userUseCases.upsertUser(user = form.user))
 
-        assertEquals(expected = Outcome.Success(data = Unit), actual = useCases.authenticationUseCases.register(registrationForm = form.copy(user = form.user.copy(name = "Overwritten"))))
+        assertEquals(expected = RegisterOutcome.Success, actual = useCases.authenticationUseCases.register(registrationForm = form.copy(user = form.user.copy(name = "Overwritten"))))
         assertEquals(expected = form.user, actual = useCases.userUseCases.getUser(uuid = form.user.uuid).successData())
     }
 
@@ -138,7 +137,7 @@ class AuthenticationUseCasesTest: TestCase() {
         assertEquals(expected = Outcome.Success(data = Unit), actual = useCases.accountUseCases.upsertAccount(account = form.account.copy(deletedAt = now())))
 
         // The password still verifies, so only the disabled flag stands between the account and a brand new session.
-        assertEquals(expected = Outcome.Disabled, actual = authenticationUseCases.login(credentials = form.credentials))
+        assertEquals(expected = LoginOutcome.Disabled, actual = authenticationUseCases.login(credentials = form.credentials))
         // The session it already had survives, since what the account may do with it is narrowed per request rather than by cutting the session.
         assertIs<Outcome.Success<BearerToken>>(value = authenticationUseCases.refreshTokens(refreshToken = result.bearer.refreshToken))
     }
@@ -267,14 +266,14 @@ class AuthenticationUseCasesTest: TestCase() {
             .authenticationUseCases
         val form = registrationForm(username = "change_password_user", permissions = emptyMap())
         val session = seedUser(registrationForm = form)
-        val otherSession = assertIs<Outcome.Success<Authentication>>(value = authenticationUseCases.login(credentials = form.credentials)).data
+        val otherSession = assertIs<LoginOutcome.Success>(value = authenticationUseCases.login(credentials = form.credentials)).authentication
         val newCredentials = UserCredentials(username = form.account.username, password = "new_password")
 
         val passwordChange = PasswordChange(refreshToken = session.bearer.refreshToken, currentPassword = form.password, newPassword = newCredentials.password)
-        assertEquals(expected = Outcome.Success(data = form.user.uuid), actual = authenticationUseCases.changePassword(passwordChange = passwordChange))
+        assertEquals(expected = PasswordChangeOutcome.Success(userUuid = form.user.uuid), actual = authenticationUseCases.changePassword(passwordChange = passwordChange))
 
-        assertEquals(expected = Outcome.Rejected, actual = authenticationUseCases.login(credentials = form.credentials))
-        assertIs<Outcome.Success<Authentication>>(value = authenticationUseCases.login(credentials = newCredentials))
+        assertEquals(expected = LoginOutcome.Rejected, actual = authenticationUseCases.login(credentials = form.credentials))
+        assertIs<LoginOutcome.Success>(value = authenticationUseCases.login(credentials = newCredentials))
         assertEquals(expected = Outcome.Rejected, actual = authenticationUseCases.refreshTokens(refreshToken = otherSession.bearer.refreshToken))
         assertIs<Outcome.Success<BearerToken>>(value = authenticationUseCases.refreshTokens(refreshToken = session.bearer.refreshToken))
     }
@@ -290,25 +289,25 @@ class AuthenticationUseCasesTest: TestCase() {
 
         val maxAttempts = ServerConfigs.value.maxPasswordAttempts
         assertEquals(
-            expected = Outcome.InvalidPassword(failure = PasswordFailure.WrongPassword(remainingAttempts = maxAttempts - 1)),
+            expected = PasswordChangeOutcome.InvalidPassword(failure = PasswordFailure.WrongPassword(remainingAttempts = maxAttempts - 1)),
             actual = authenticationUseCases.changePassword(passwordChange = passwordChange.copy(currentPassword = "wrong_password"))
         )
         val minLength = ServerConfigs.value.minPasswordLength
         listOf(" ", "a".repeat(n = minLength - 1)).forEach { newPassword ->
-            assertEquals(expected = Outcome.InvalidPassword(failure = PasswordFailure.TooShort(minLength = minLength)), actual = authenticationUseCases.changePassword(passwordChange = passwordChange.copy(newPassword = newPassword)))
+            assertEquals(expected = PasswordChangeOutcome.InvalidPassword(failure = PasswordFailure.TooShort(minLength = minLength)), actual = authenticationUseCases.changePassword(passwordChange = passwordChange.copy(newPassword = newPassword)))
         }
-        assertEquals(expected = Outcome.InvalidPassword(failure = PasswordFailure.TooLong), actual = authenticationUseCases.changePassword(passwordChange = passwordChange.copy(newPassword = "a".repeat(n = 73))))
-        assertEquals(expected = Outcome.Rejected, actual = authenticationUseCases.changePassword(passwordChange = passwordChange.copy(refreshToken = "invalid_refresh_token")))
+        assertEquals(expected = PasswordChangeOutcome.InvalidPassword(failure = PasswordFailure.TooLong), actual = authenticationUseCases.changePassword(passwordChange = passwordChange.copy(newPassword = "a".repeat(n = 73))))
+        assertEquals(expected = PasswordChangeOutcome.Rejected, actual = authenticationUseCases.changePassword(passwordChange = passwordChange.copy(refreshToken = "invalid_refresh_token")))
 
         ServerConfigs.set { it.copy(refreshTokenValidity = -1_000L) }
-        val expiredSession = assertIs<Outcome.Success<Authentication>>(value = authenticationUseCases.login(credentials = form.credentials)).data
-        assertEquals(expected = Outcome.Rejected, actual = authenticationUseCases.changePassword(passwordChange = passwordChange.copy(refreshToken = expiredSession.bearer.refreshToken)))
+        val expiredSession = assertIs<LoginOutcome.Success>(value = authenticationUseCases.login(credentials = form.credentials)).authentication
+        assertEquals(expected = PasswordChangeOutcome.Rejected, actual = authenticationUseCases.changePassword(passwordChange = passwordChange.copy(refreshToken = expiredSession.bearer.refreshToken)))
 
         assertEquals(expected = Outcome.Success(data = Unit), actual = useCases.accountUseCases.upsertAccount(account = form.account.copy(deletedAt = now())))
-        assertEquals(expected = Outcome.Rejected, actual = authenticationUseCases.changePassword(passwordChange = passwordChange))
+        assertEquals(expected = PasswordChangeOutcome.Rejected, actual = authenticationUseCases.changePassword(passwordChange = passwordChange))
 
         assertEquals(expected = Outcome.Success(data = Unit), actual = useCases.accountUseCases.upsertAccount(account = form.account))
-        assertIs<Outcome.Success<Authentication>>(value = authenticationUseCases.login(credentials = form.credentials))
+        assertIs<LoginOutcome.Success>(value = authenticationUseCases.login(credentials = form.credentials))
     }
 
     /** Verifies that a session is ended by its last allowed wrong current password, that each earlier one reports the attempts left, that blank new passwords are not counted, and that the account's other sessions and its password are left as they were. */
@@ -318,23 +317,23 @@ class AuthenticationUseCasesTest: TestCase() {
         val authenticationUseCases = dependency.get().useCases.authenticationUseCases
         val form = registrationForm(username = "change_password_attempts_user", permissions = emptyMap())
         val session = seedUser(registrationForm = form)
-        val otherSession = assertIs<Outcome.Success<Authentication>>(value = authenticationUseCases.login(credentials = form.credentials)).data
+        val otherSession = assertIs<LoginOutcome.Success>(value = authenticationUseCases.login(credentials = form.credentials)).authentication
         val passwordChange = PasswordChange(refreshToken = session.bearer.refreshToken, currentPassword = "wrong_password", newPassword = "new_password")
 
-        val tooShort = Outcome.InvalidPassword(failure = PasswordFailure.TooShort(minLength = ServerConfigs.value.minPasswordLength))
+        val tooShort = PasswordChangeOutcome.InvalidPassword(failure = PasswordFailure.TooShort(minLength = ServerConfigs.value.minPasswordLength))
         repeat(times = 5) { assertEquals(expected = tooShort, actual = authenticationUseCases.changePassword(passwordChange = passwordChange.copy(newPassword = " "))) }
         listOf(2, 1).forEach { remainingAttempts ->
             assertEquals(
-                expected = Outcome.InvalidPassword(failure = PasswordFailure.WrongPassword(remainingAttempts = remainingAttempts)),
+                expected = PasswordChangeOutcome.InvalidPassword(failure = PasswordFailure.WrongPassword(remainingAttempts = remainingAttempts)),
                 actual = authenticationUseCases.changePassword(passwordChange = passwordChange)
             )
         }
-        assertEquals(expected = Outcome.Rejected, actual = authenticationUseCases.changePassword(passwordChange = passwordChange))
+        assertEquals(expected = PasswordChangeOutcome.Rejected, actual = authenticationUseCases.changePassword(passwordChange = passwordChange))
 
-        assertEquals(expected = Outcome.Rejected, actual = authenticationUseCases.changePassword(passwordChange = passwordChange.copy(currentPassword = form.password)))
+        assertEquals(expected = PasswordChangeOutcome.Rejected, actual = authenticationUseCases.changePassword(passwordChange = passwordChange.copy(currentPassword = form.password)))
         assertEquals(expected = Outcome.Rejected, actual = authenticationUseCases.refreshTokens(refreshToken = session.bearer.refreshToken))
         assertIs<Outcome.Success<BearerToken>>(value = authenticationUseCases.refreshTokens(refreshToken = otherSession.bearer.refreshToken))
-        assertIs<Outcome.Success<Authentication>>(value = authenticationUseCases.login(credentials = form.credentials))
+        assertIs<LoginOutcome.Success>(value = authenticationUseCases.login(credentials = form.credentials))
     }
 
     /** Verifies that a successful password change clears the wrong current passwords counted for the session. */
@@ -346,11 +345,11 @@ class AuthenticationUseCasesTest: TestCase() {
         val session = seedUser(registrationForm = form)
         val wrong = PasswordChange(refreshToken = session.bearer.refreshToken, currentPassword = "wrong_password", newPassword = "new_password")
 
-        val wrongPassword = Outcome.InvalidPassword(failure = PasswordFailure.WrongPassword(remainingAttempts = 1))
+        val wrongPassword = PasswordChangeOutcome.InvalidPassword(failure = PasswordFailure.WrongPassword(remainingAttempts = 1))
         assertEquals(expected = wrongPassword, actual = authenticationUseCases.changePassword(passwordChange = wrong))
-        assertEquals(expected = Outcome.Success(data = form.user.uuid), actual = authenticationUseCases.changePassword(passwordChange = wrong.copy(currentPassword = form.password)))
+        assertEquals(expected = PasswordChangeOutcome.Success(userUuid = form.user.uuid), actual = authenticationUseCases.changePassword(passwordChange = wrong.copy(currentPassword = form.password)))
         assertEquals(expected = wrongPassword, actual = authenticationUseCases.changePassword(passwordChange = wrong))
-        assertEquals(expected = Outcome.Rejected, actual = authenticationUseCases.changePassword(passwordChange = wrong))
+        assertEquals(expected = PasswordChangeOutcome.Rejected, actual = authenticationUseCases.changePassword(passwordChange = wrong))
     }
 
 
@@ -361,11 +360,11 @@ class AuthenticationUseCasesTest: TestCase() {
             .authenticationUseCases
         dependency.get().database.reset()
 
-        assertEquals(expected = Outcome.Error, actual = authenticationUseCases.login(credentials = FakeData.credentials))
+        assertEquals(expected = LoginOutcome.Error, actual = authenticationUseCases.login(credentials = FakeData.credentials))
         assertEquals(expected = Outcome.Error, actual = authenticationUseCases.refreshTokens(refreshToken = bearerToken.refreshToken))
         assertEquals(expected = Outcome.Error, actual = authenticationUseCases.logout(refreshToken = bearerToken.refreshToken))
         assertEquals(
-            expected = Outcome.Error,
+            expected = PasswordChangeOutcome.Error,
             actual = authenticationUseCases.changePassword(passwordChange = PasswordChange(refreshToken = bearerToken.refreshToken, currentPassword = FakeData.credentials.password, newPassword = "new_password"))
         )
     }
