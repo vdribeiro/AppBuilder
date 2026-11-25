@@ -15,10 +15,14 @@ import com.app.builder.domain.UserCredentials
 import com.app.builder.domain.permission.PermissionService
 import com.app.builder.domain.route.getOrRespond
 import com.app.builder.domain.route.receive
+import com.app.builder.domain.route.respondFailure
 import com.app.builder.domain.route.respondSafely
 import com.app.builder.domain.route.toRegistry
 import com.app.builder.domain.route.validatePermission
 import com.app.builder.domain.usecase.authentication.AuthenticationUseCases
+import com.app.builder.domain.usecase.authentication.LoginOutcome
+import com.app.builder.domain.usecase.authentication.PasswordChangeOutcome
+import com.app.builder.domain.usecase.authentication.RegisterOutcome
 import com.app.builder.domain.usecase.registry.RegistryUseCases
 
 /**
@@ -44,12 +48,13 @@ fun Route.authenticationRoutes(
                 return@post
             }
 
-            call.getOrRespond(
-                outcome = authenticationUseCases.register(registrationForm = registrationForm),
-                invalid = "Invalid registration form",
-                conflict = "The user already has an account or the username is taken",
-                error = "Error registering account"
-            ) ?: return@post
+            when (val outcome = authenticationUseCases.register(registrationForm = registrationForm)) {
+                RegisterOutcome.Success -> Unit
+                RegisterOutcome.Invalid -> return@post call.respondFailure(status = HttpStatusCode.BadRequest, message = "Invalid registration form")
+                is RegisterOutcome.InvalidPassword -> return@post call.respondFailure(status = HttpStatusCode.BadRequest, message = outcome.failure)
+                RegisterOutcome.Conflict -> return@post call.respondFailure(status = HttpStatusCode.Conflict, message = "The user already has an account or the username is taken")
+                RegisterOutcome.Error -> return@post call.respondFailure(status = HttpStatusCode.InternalServerError, message = "Error registering account")
+            }
             val account = registrationForm.account
 
             call.respondSafely(status = HttpStatusCode.OK, message = account)
@@ -66,11 +71,12 @@ fun Route.authenticationRoutes(
     post(path = URL.Login.path) {
         val credentials = call.receive<UserCredentials>() ?: return@post
 
-        val result = call.getOrRespond(
-            outcome = authenticationUseCases.login(credentials = credentials),
-            rejected = "Invalid credentials",
-            error = "Unable to login"
-        ) ?: return@post
+        val result = when (val outcome = authenticationUseCases.login(credentials = credentials)) {
+            is LoginOutcome.Success -> outcome.authentication
+            LoginOutcome.Rejected -> return@post call.respondFailure(status = HttpStatusCode.Unauthorized, message = "Invalid credentials")
+            LoginOutcome.Disabled -> return@post call.respondFailure(status = HttpStatusCode.Forbidden, message = "Account disabled")
+            LoginOutcome.Error -> return@post call.respondFailure(status = HttpStatusCode.InternalServerError, message = "Unable to login")
+        }
 
         call.respondSafely(status = HttpStatusCode.OK, message = result)
         Telemetry.info(tag = TAG, message = "Successful login for user ${result.user.uuid}")
@@ -119,12 +125,12 @@ fun Route.authenticationRoutes(
     post(path = URL.ChangePassword.path) {
         val passwordChange = call.receive<PasswordChange>() ?: return@post
 
-        val userUuid = call.getOrRespond(
-            outcome = authenticationUseCases.changePassword(passwordChange = passwordChange),
-            invalid = "Invalid current or new password",
-            rejected = "Invalid or expired refresh token",
-            error = "Unable to change password"
-        ) ?: return@post
+        val userUuid = when (val outcome = authenticationUseCases.changePassword(passwordChange = passwordChange)) {
+            is PasswordChangeOutcome.Success -> outcome.userUuid
+            PasswordChangeOutcome.Rejected -> return@post call.respondFailure(status = HttpStatusCode.Unauthorized, message = "Invalid or expired refresh token")
+            is PasswordChangeOutcome.InvalidPassword -> return@post call.respondFailure(status = HttpStatusCode.BadRequest, message = outcome.failure)
+            PasswordChangeOutcome.Error -> return@post call.respondFailure(status = HttpStatusCode.InternalServerError, message = "Unable to change password")
+        }
 
         call.respondSafely(status = HttpStatusCode.OK, message = userUuid)
         Telemetry.info(tag = TAG, message = "Successfully changed the password of user $userUuid")
