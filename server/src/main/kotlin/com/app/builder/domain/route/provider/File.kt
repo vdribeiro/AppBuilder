@@ -4,6 +4,7 @@ import io.ktor.http.ContentDisposition
 import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
+import io.ktor.http.decodeURLPart
 import io.ktor.server.auth.authenticate
 import io.ktor.server.request.receiveChannel
 import io.ktor.server.response.header
@@ -15,7 +16,6 @@ import io.ktor.server.routing.route
 import io.ktor.utils.io.copyAndClose
 import com.app.builder.core.security.toUuid
 import com.app.builder.core.telemetry.Telemetry
-import com.app.builder.data.http.Query
 import com.app.builder.data.http.URL
 import com.app.builder.data.serializer.encode
 import com.app.builder.domain.EntityType
@@ -24,7 +24,6 @@ import com.app.builder.domain.Permission
 import com.app.builder.domain.permission.PermissionService
 import com.app.builder.domain.route.getOrRespond
 import com.app.builder.domain.route.getParameters
-import com.app.builder.domain.route.getQueryMap
 import com.app.builder.domain.route.getUserUuid
 import com.app.builder.domain.route.respondSafely
 import com.app.builder.domain.route.toRegistry
@@ -89,7 +88,7 @@ fun Route.fileRoutes(
 
                 call.response.header(
                     name = HttpHeaders.ContentDisposition,
-                    value = ContentDisposition.Attachment.withParameter(key = ContentDisposition.Parameters.FileName, value = file.name).toString()
+                    value = ContentDisposition.Attachment.withParameter(key = ContentDisposition.Parameters.FileNameAsterisk, value = file.name).toString()
                 )
                 call.respondBytesWriter(
                     contentType = runCatching { ContentType.parse(value = file.contentType) }.getOrDefault(defaultValue = ContentType.Application.OctetStream),
@@ -108,10 +107,14 @@ fun Route.fileRoutes(
                     call.respondSafely(status = HttpStatusCode.BadRequest, message = "Invalid file uuid")
                     return@post
                 }
-                val name = call.getQueryMap()[Query.FileName.parameter]?.takeIf { it.isNotBlank() } ?: run {
-                    call.respondSafely(status = HttpStatusCode.BadRequest, message = "Missing file name")
-                    return@post
-                }
+                val name = call.request.headers[HttpHeaders.ContentDisposition]
+                    ?.let { runCatching { ContentDisposition.parse(value = it) }.getOrNull() }
+                    ?.fileName()
+                    ?.takeIf { it.isNotBlank() }
+                    ?: run {
+                        call.respondSafely(status = HttpStatusCode.BadRequest, message = "Missing file name")
+                        return@post
+                    }
                 val contentType = call.request.headers[HttpHeaders.ContentType]
                     ?.let { runCatching { ContentType.parse(value = it).withoutParameters() }.getOrNull() }
                     ?: ContentType.Application.OctetStream
@@ -135,6 +138,20 @@ fun Route.fileRoutes(
             }
         }
     }
+}
+
+/**
+ * Reads the file name of this content disposition, preferring the `filename*` parameter over `filename`.
+ * A `filename*` without a charset prefix is read as written.
+ *
+ * @receiver The parsed `Content-Disposition` header.
+ * @return The file name, or null when there is none or `filename*` is not valid UTF-8 percent-encoding.
+ */
+private fun ContentDisposition.fileName(): String? {
+    val extended = parameter(name = ContentDisposition.Parameters.FileNameAsterisk) ?: return parameter(name = ContentDisposition.Parameters.FileName)
+    val (charset, _, value) = extended.split("'", limit = 3).takeIf { it.size == 3 } ?: return extended
+    if (!charset.equals(other = "utf-8", ignoreCase = true)) return null
+    return runCatching { value.decodeURLPart() }.getOrNull()
 }
 
 private const val TAG = "FileRoute"
