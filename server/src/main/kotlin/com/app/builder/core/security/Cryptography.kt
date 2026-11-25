@@ -23,15 +23,18 @@ suspend fun hashPassword(password: String): String? = withContext(context = Disp
  * Verifies a plaintext password against a securely stored hash.
  *
  * @param password The plaintext password provided during authentication.
- * @param hash The securely stored hash retrieved from the database to check against.
- * @return `true` if the password matches the hash, `false` otherwise or if the hash is malformed.
+ * @param hash The securely stored hash retrieved from the database to check against, or null to check against [placeholderHash] instead.
+ * @return `true` if the password matches the hash, `false` otherwise, if the hash is malformed or if it is null.
  */
-suspend fun verifyPassword(password: String, hash: String): Boolean = withContext(context = Dispatcher.Default) {
+suspend fun verifyPassword(password: String, hash: String?): Boolean = withContext(context = Dispatcher.Default) {
     runCatching {
-        BCrypt.checkpw(password, hash)
+        BCrypt.checkpw(password, hash ?: placeholderHash) && hash != null
     }.onFailure {
         Telemetry.error(tag = TAG, message = "Unable to verify password hash", throwable = it)
     }.getOrDefault(defaultValue = false)
 }
+
+/** The hash of a random password, made with the same salt settings as [hashPassword]. */
+private val placeholderHash: String by lazy { BCrypt.hashpw(uuid().toString(), BCrypt.gensalt()) }
 
 private const val TAG = "Cryptography"

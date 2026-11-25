@@ -113,10 +113,10 @@ class AuthenticationGateway(
         }.getOrElse {
             Telemetry.error(tag = TAG, message = "Unable to get account", throwable = it)
             return@withContext Outcome.Error
-        } ?: return@withContext Outcome.Rejected
+        }
 
-        val storedHash = runCatching { row[UserAccountTable.passwordHash] }.getOrNull() ?: return@withContext Outcome.Error
-        if (!verifyPassword(password = credentials.password, hash = storedHash)) return@withContext Outcome.Rejected
+        val storedHash = row?.let { runCatching { it[UserAccountTable.passwordHash] }.getOrNull() ?: return@withContext Outcome.Error }
+        if (!verifyPassword(password = credentials.password, hash = storedHash) || row == null) return@withContext Outcome.Rejected
 
         val user = runCatching { row.toUser() }.getOrNull() ?: return@withContext Outcome.Error
         val account = runCatching { row.toAccount() }.getOrNull() ?: return@withContext Outcome.Error

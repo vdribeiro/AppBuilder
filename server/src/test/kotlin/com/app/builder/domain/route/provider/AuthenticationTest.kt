@@ -3,7 +3,11 @@ package com.app.builder.domain.route.provider
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertTrue
+import kotlin.time.Duration
+import kotlin.time.measureTime
 import kotlin.uuid.Uuid
+import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpStatusCode
@@ -235,5 +239,24 @@ class AuthenticationTest: TestCase() {
             expected = HttpStatusCode.Unauthorized,
             actual = client.post(request = HttpRequest(url = URL.Login), body = UserCredentials(username = "unknown", password = "pass123")).status
         )
+    }
+
+    /** Verifies that rejecting an unknown username takes at least half as long as rejecting a wrong password for a known one. */
+    @Test
+    fun loginTimingDoesNotRevealUsernames() = runServerTest {
+        installRouting()
+        val client = createClient(token = null)
+        val known = UserCredentials(username = FakeData.adminCredentials.username, password = "wrong_password")
+        val unknown = UserCredentials(username = "unknown", password = "wrong_password")
+
+        suspend fun HttpClient.medianLoginTime(credentials: UserCredentials): Duration {
+            post(request = HttpRequest(url = URL.Login), body = credentials)
+            return List(size = 5) { measureTime { post(request = HttpRequest(url = URL.Login), body = credentials) } }.sorted()[2]
+        }
+
+        val knownTime = client.medianLoginTime(credentials = known)
+        val unknownTime = client.medianLoginTime(credentials = unknown)
+
+        assertTrue(actual = unknownTime * 2 >= knownTime, message = "Unknown username: $unknownTime, wrong password: $knownTime")
     }
 }

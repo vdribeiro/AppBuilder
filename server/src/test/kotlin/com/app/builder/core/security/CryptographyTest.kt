@@ -45,4 +45,10 @@ class CryptographyTest: TestCase() {
     fun verifyPasswordReturnsFalseForMalformedHash() = runServerTest {
         assertFalse(actual = verifyPassword(password = "password", hash = "not-a-bcrypt-hash"))
     }
+
+    /** Verifies that verifying a password without a hash fails. */
+    @Test
+    fun verifyPasswordReturnsFalseForMissingHash() = runServerTest {
+        assertFalse(actual = verifyPassword(password = "password", hash = null))
+    }
 }
