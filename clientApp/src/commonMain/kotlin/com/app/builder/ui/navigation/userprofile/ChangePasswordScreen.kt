@@ -40,7 +40,10 @@ fun ChangePasswordScreen(store: Store<ChangePasswordScreenState, ChangePasswordS
         },
         snackbarHost = {
             state.message?.let {
-                Snackbar(message = getTranslation(key = it), onDismiss = { store.send(action = ChangePasswordScreenAction.DismissMessage) })
+                Snackbar(
+                    message = getTranslation(key = it, args = state.messageArgs.toTypedArray()),
+                    onDismiss = { store.send(action = ChangePasswordScreenAction.DismissMessage) }
+                )
             }
         },
         contentAlignment = Alignment.Center

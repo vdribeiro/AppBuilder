@@ -75,6 +75,8 @@ sealed interface UserDetailScreenAction {
     data object Delete: UserDetailScreenAction
     /** Restore the current deleted user. */
     data object Restore: UserDetailScreenAction
+    /** Dismisses the message currently shown to the user. */
+    data object DismissMessage: UserDetailScreenAction
 }
 
 /**
@@ -96,6 +98,8 @@ sealed interface UserDetailScreenAction {
  * @property savedEquipments The equipments linked to the user as stored.
  * @property buildingLinks What the current user can do with the links to the buildings of the user.
  * @property equipmentLinks What the current user can do with the links to the equipments of the user.
+ * @property message Translation key of the message shown to the user, or null when there is nothing to report.
+ * @property messageArgs Arguments the message is formatted with.
  */
 data class UserDetailScreenState(
     val user: User? = null,
@@ -114,4 +118,6 @@ data class UserDetailScreenState(
     val savedEquipments: ImmutableList<Link> = persistentListOf(),
     val buildingLinks: LinkPermissions = LinkPermissions(),
     val equipmentLinks: LinkPermissions = LinkPermissions(),
+    val message: String? = null,
+    val messageArgs: ImmutableList<String> = persistentListOf(),
 )

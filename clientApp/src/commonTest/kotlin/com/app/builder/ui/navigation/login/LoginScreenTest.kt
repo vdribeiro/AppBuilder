@@ -18,7 +18,6 @@ import androidx.compose.ui.test.performTextInput
 import com.app.builder.core.config.ClientFlags
 import com.app.builder.test.FakeData
 import com.app.builder.test.TestCase
-import com.app.builder.ui.core.overlay.ScreenMessage
 
 class LoginScreenTest: TestCase() {
 
@@ -86,7 +85,7 @@ class LoginScreenTest: TestCase() {
         onNodeWithTag(testTag = "password").performTextInput(text = "wrong_password")
         onNodeWithTag(testTag = "login").performClick()
 
-        waitUntil(timeoutMillis = 10_000) { store.state.message == ScreenMessage(key = "login_wrong_credentials") }
+        waitUntil(timeoutMillis = 10_000) { store.state.message == "login_wrong_credentials" }
         assertFalse(actual = store.state.loading)
         onNodeWithText(text = "login_wrong_credentials").assertIsDisplayed()
         assertNull(actual = authenticationUseCases.observeCurrentUser().firstOrNull())

@@ -1,8 +1,12 @@
 package com.app.builder.ui.navigation.userprofile
 
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.Job
 import com.app.builder.core.telemetry.Telemetry
+import com.app.builder.domain.PasswordFailure
 import com.app.builder.domain.gateway.authentication.AuthenticationUseCases
+import com.app.builder.domain.gateway.authentication.PasswordResult
 import com.app.builder.ui.navigation.Router
 import com.app.builder.ui.store.Store
 
@@ -29,7 +33,7 @@ class ChangePasswordScreenStore(
             is ChangePasswordScreenAction.UpdateNewPassword -> updateState { it.copy(newPassword = action.password) }
             is ChangePasswordScreenAction.UpdateConfirmPassword -> updateState { it.copy(confirmPassword = action.password) }
             ChangePasswordScreenAction.Submit -> submit(state = state)
-            ChangePasswordScreenAction.DismissMessage -> updateState { it.copy(message = null) }
+            ChangePasswordScreenAction.DismissMessage -> updateState { it.copy(message = null, messageArgs = persistentListOf()) }
         }
     }
 
@@ -50,7 +54,7 @@ class ChangePasswordScreenStore(
 
     /**
      * Changes the password of the current user when every password is filled and the confirmation matches the new password, then leaves the screen.
-     * The screen stays open with a message when the change fails.
+     * The screen stays open with a message telling why when the change fails.
      *
      * @param state Change Password Screen state at the time the submission was requested.
      * @return The [Job] representing this execution.
@@ -60,14 +64,39 @@ class ChangePasswordScreenStore(
         if (state.currentPassword.isBlank() || state.newPassword.isBlank() || state.confirmPassword != state.newPassword) return@launch
         Telemetry.info(tag = TAG, message = "Changing the password of user $userUuid")
 
-        updateState { it.copy(loading = true, message = null) }
-        val changed = authenticationUseCases.changePassword(userUuid = userUuid, currentPassword = state.currentPassword, newPassword = state.newPassword)
-        if (changed) router.back() else updateState { it.copy(loading = false, message = "change_password_failed") }
+        updateState { it.copy(loading = true, message = null, messageArgs = persistentListOf()) }
+        val result = authenticationUseCases.changePassword(userUuid = userUuid, currentPassword = state.currentPassword, newPassword = state.newPassword)
+        when (result) {
+            is PasswordResult.Success -> router.back()
+            else -> {
+                val (message, messageArgs) = result.toMessage()
+                updateState { it.copy(loading = false, message = message, messageArgs = messageArgs) }
+            }
+        }
 
-        Telemetry.info(tag = TAG, message = "Password change finished: $changed")
+        Telemetry.info(tag = TAG, message = "Password change finished: $result")
     }
 
     companion object {
         private const val TAG = "ChangePasswordScreenStore"
+    }
+}
+
+/**
+ * Maps a password change result to the translation key of the message telling the user why the password wasn't changed, and the arguments it is formatted with.
+ *
+ * @receiver The result of the password change.
+ * @return The translation key and its arguments.
+ */
+private fun PasswordResult<Unit>.toMessage(): Pair<String, ImmutableList<String>> = when (this) {
+    is PasswordResult.Success, PasswordResult.Failed -> "change_password_failed" to persistentListOf()
+    PasswordResult.SessionEnded -> "password_session_ended" to persistentListOf()
+    is PasswordResult.Refused -> when (val failure = failure) {
+        is PasswordFailure.TooShort -> "password_too_short" to persistentListOf(failure.minLength.toString())
+        PasswordFailure.TooLong -> "password_too_long" to persistentListOf()
+        is PasswordFailure.WrongPassword -> when (failure.remainingAttempts) {
+            1 -> "password_wrong_last" to persistentListOf()
+            else -> "password_wrong" to persistentListOf(failure.remainingAttempts.toString())
+        }
     }
 }

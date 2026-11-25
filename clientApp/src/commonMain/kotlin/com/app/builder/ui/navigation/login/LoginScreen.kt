@@ -10,6 +10,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.app.builder.ui.InjectTranslations
 import com.app.builder.ui.Preview
 import com.app.builder.ui.component.container.Login
+import com.app.builder.ui.core.overlay.Snackbar
+import com.app.builder.ui.getTranslation
 import com.app.builder.ui.modifier.onKeyPress
 import com.app.builder.ui.navigation.LocalRouter
 import com.app.builder.ui.screen.Screen
@@ -29,6 +31,14 @@ fun LoginScreen(store: Store<LoginScreenState, LoginScreenAction>) {
 
     Screen(
         onBackClick = { router.back() },
+        snackbarHost = {
+            state.message?.let {
+                Snackbar(
+                    message = getTranslation(key = it),
+                    onDismiss = { store.send(action = LoginScreenAction.DismissMessage) }
+                )
+            }
+        },
         contentAlignment = Alignment.Center
     ) {
         Login(

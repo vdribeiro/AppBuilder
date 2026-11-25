@@ -41,6 +41,8 @@ import com.app.builder.ui.component.navigation.Navigation
 import com.app.builder.ui.component.navigation.NavigationRoute
 import com.app.builder.ui.component.session.SessionState
 import com.app.builder.ui.core.image.Image
+import com.app.builder.ui.core.overlay.Snackbar
+import com.app.builder.ui.getTranslation
 import com.app.builder.ui.navigation.LocalRouter
 import com.app.builder.ui.navigation.Router
 import com.app.builder.ui.navigation.Screen
@@ -107,6 +109,14 @@ fun UserDetailScreen(
             )
         },
         bottomBar = { Navigation(sessionStore = sessionStore, selected = NavigationRoute.USER) },
+        snackbarHost = {
+            state.message?.let {
+                Snackbar(
+                    message = getTranslation(key = it, args = state.messageArgs.toTypedArray()),
+                    onDismiss = { store.send(action = UserDetailScreenAction.DismissMessage) }
+                )
+            }
+        },
     ) {
         Column(modifier = Modifier.fillMaxSize().verticalScroll(state = rememberScrollState())) {
             UserCard(

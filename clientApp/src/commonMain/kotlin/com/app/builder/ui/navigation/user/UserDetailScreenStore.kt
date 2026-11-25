@@ -1,6 +1,8 @@
 package com.app.builder.ui.navigation.user
 
 import kotlin.time.Instant
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.combine
@@ -12,11 +14,13 @@ import com.app.builder.domain.Account
 import com.app.builder.domain.BuildingUser
 import com.app.builder.domain.EntityType
 import com.app.builder.domain.EquipmentUser
+import com.app.builder.domain.PasswordFailure
 import com.app.builder.domain.Permission
 import com.app.builder.domain.RegistrationForm
 import com.app.builder.domain.User
 import com.app.builder.domain.gateway.account.AccountUseCases
 import com.app.builder.domain.gateway.authentication.AuthenticationUseCases
+import com.app.builder.domain.gateway.authentication.PasswordResult
 import com.app.builder.domain.gateway.buildinguser.BuildingUserUseCases
 import com.app.builder.domain.gateway.equipmentuser.EquipmentUserUseCases
 import com.app.builder.domain.gateway.user.UserUseCases
@@ -138,12 +142,13 @@ class UserDetailScreenStore(
             UserDetailScreenAction.Cancel -> cancel(state = state)
             UserDetailScreenAction.Delete -> delete(state = state)
             UserDetailScreenAction.Restore -> restore(state = state)
+            UserDetailScreenAction.DismissMessage -> updateState { it.copy(message = null, messageArgs = persistentListOf()) }
         }
     }
 
     /**
      * Saves the edited user when it changed and the current user can edit users, then saves its building users and equipment users, then creates its account when a username was given for a user without one, or updates its changed account, and stops editing.
-     * Creating and updating an account need a connection, so the screen stays in edit mode when either fails.
+     * Creating and updating an account need a connection, so the screen stays in edit mode when either fails, with a message when the server refuses the password.
      *
      * @param state User Detail Screen state at the time the save was requested.
      * @return The [Job] representing this execution.
@@ -164,9 +169,13 @@ class UserDetailScreenStore(
             state.savedAccount == null && account.username.isBlank() -> null
             state.savedAccount == null -> {
                 val registrationForm = RegistrationForm(user = user, account = account.copy(modifiedAt = now()), password = state.password)
-                accountUseCases.createAccount(registrationForm = registrationForm) ?: run {
-                    updateState { it.copy(user = user, savedUser = user, new = false) }
-                    return@launch
+                when (val result = accountUseCases.createAccount(registrationForm = registrationForm)) {
+                    is PasswordResult.Success -> result.data
+                    else -> {
+                        val message = result.toMessage()
+                        updateState { it.copy(user = user, savedUser = user, new = false, message = message?.first, messageArgs = message?.second ?: persistentListOf()) }
+                        return@launch
+                    }
                 }
             }
 
@@ -290,5 +299,24 @@ class UserDetailScreenStore(
 
     companion object {
         private const val TAG = "UserDetailScreenStore"
+    }
+}
+
+/**
+ * Maps an account creation result to the translation key of the message telling the user why the password was refused, and the arguments it is formatted with.
+ *
+ * @receiver The result of the account creation.
+ * @return The translation key and its arguments, or `null` when the password wasn't the problem.
+ */
+private fun PasswordResult<Account>.toMessage(): Pair<String, ImmutableList<String>>? = when (this) {
+    is PasswordResult.Success, PasswordResult.Failed -> null
+    PasswordResult.SessionEnded -> "password_session_ended" to persistentListOf()
+    is PasswordResult.Refused -> when (val failure = failure) {
+        is PasswordFailure.TooShort -> "password_too_short" to persistentListOf(failure.minLength.toString())
+        PasswordFailure.TooLong -> "password_too_long" to persistentListOf()
+        is PasswordFailure.WrongPassword -> when (failure.remainingAttempts) {
+            1 -> "password_wrong_last" to persistentListOf()
+            else -> "password_wrong" to persistentListOf(failure.remainingAttempts.toString())
+        }
     }
 }

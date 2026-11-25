@@ -20,7 +20,6 @@ import androidx.compose.ui.test.performTextReplacement
 import com.app.builder.core.config.ClientFlags
 import com.app.builder.test.FakeData
 import com.app.builder.test.TestCase
-import com.app.builder.ui.core.overlay.ScreenMessage
 import com.app.builder.ui.navigation.Screen
 
 class ChangePasswordScreenTest: TestCase() {
@@ -107,7 +106,7 @@ class ChangePasswordScreenTest: TestCase() {
         onNodeWithTag(testTag = "confirm_password").performTextInput(text = "new_password")
         onNodeWithTag(testTag = "change_password").performClick()
 
-        waitUntil(timeoutMillis = 10_000) { store.state.message == ScreenMessage(key = "password_wrong", args = persistentListOf("2")) }
+        waitUntil(timeoutMillis = 10_000) { store.state.message == "password_wrong" && store.state.messageArgs == persistentListOf("2") }
         assertFalse(actual = store.state.loading)
         assertEquals(expected = listOf(Screen.UserProfile, Screen.ChangePassword), actual = router.backStack.toList())
 
@@ -137,7 +136,7 @@ class ChangePasswordScreenTest: TestCase() {
         onNodeWithTag(testTag = "confirm_password").performTextInput(text = "new_password")
         onNodeWithTag(testTag = "change_password").performClick()
 
-        waitUntil(timeoutMillis = 10_000) { store.state.message == ScreenMessage(key = "change_password_failed") }
+        waitUntil(timeoutMillis = 10_000) { store.state.message == "change_password_failed" }
         assertFalse(actual = store.state.loading)
         assertTrue(actual = store.state.currentPassword.isNotEmpty())
 

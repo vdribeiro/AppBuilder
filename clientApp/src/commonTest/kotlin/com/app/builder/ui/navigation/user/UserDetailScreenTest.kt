@@ -51,7 +51,6 @@ import com.app.builder.ui.component.list.BuildingItem
 import com.app.builder.ui.component.list.EquipmentItem
 import com.app.builder.ui.component.session.SessionState
 import com.app.builder.ui.component.session.SessionStore
-import com.app.builder.ui.core.overlay.ScreenMessage
 import com.app.builder.ui.navigation.Router
 import com.app.builder.ui.navigation.Screen
 
@@ -367,7 +366,7 @@ class UserDetailScreenTest: TestCase() {
         waitUntil { store.state.password == "short" }
         onNodeWithTag(testTag = "action_save").performClick()
 
-        waitUntil(timeoutMillis = 10_000) { store.state.message == ScreenMessage(key = "password_too_short", args = persistentListOf("10")) }
+        waitUntil(timeoutMillis = 10_000) { store.state.message == "password_too_short" && store.state.messageArgs == persistentListOf("10") }
         assertTrue(actual = store.state.editing)
         assertNull(actual = store.state.savedAccount)
 

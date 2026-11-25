@@ -1,6 +1,8 @@
 package com.app.builder.ui.navigation.userprofile
 
 import kotlin.uuid.Uuid
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
 
 /** Actions supported by the Change Password Screen. */
 sealed interface ChangePasswordScreenAction {
@@ -36,7 +38,8 @@ sealed interface ChangePasswordScreenAction {
  * @property currentPassword Current password input field value.
  * @property newPassword New password input field value.
  * @property confirmPassword New password confirmation input field value.
- * @property message Message shown to the user, or null when there is nothing to report.
+ * @property message Translation key of the message shown to the user, or null when there is nothing to report.
+ * @property messageArgs Arguments the message is formatted with.
  */
 data class ChangePasswordScreenState(
     val userUuid: Uuid? = null,
@@ -45,4 +48,5 @@ data class ChangePasswordScreenState(
     val newPassword: String = "",
     val confirmPassword: String = "",
     val message: String? = null,
+    val messageArgs: ImmutableList<String> = persistentListOf(),
 )
