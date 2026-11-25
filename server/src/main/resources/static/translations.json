@@ -54,6 +54,13 @@
     "edit_profile_avatar": { "en": "Avatar URL", "pt": "URL do Avatar" },
     "edit_profile_save":   { "en": "Save", "pt": "Guardar" }
   },
+  "password": {
+    "password_too_short":     { "en": "The password must have at least %1$s characters", "pt": "A palavra-passe deve ter pelo menos %1$s caracteres" },
+    "password_too_long":      { "en": "The password is too long", "pt": "A palavra-passe é demasiado longa" },
+    "password_wrong":         { "en": "Wrong current password, %1$s attempts left", "pt": "Palavra-passe atual errada, restam %1$s tentativas" },
+    "password_wrong_last":    { "en": "Wrong current password, 1 attempt left before the session ends", "pt": "Palavra-passe atual errada, resta 1 tentativa antes de a sessão terminar" },
+    "password_session_ended": { "en": "The session ended, log in again", "pt": "A sessão terminou, inicie sessão novamente" }
+  },
   "change_password": {
     "change_password_title":   { "en": "Change Password", "pt": "Alterar Palavra-passe" },
     "change_password_current": { "en": "Current Password", "pt": "Palavra-passe Atual" },
