@@ -15,6 +15,7 @@ import com.app.builder.core.security.uuid
 import com.app.builder.data.http.FakeWebSocketSession
 import com.app.builder.data.signal.LocalSignal
 import com.app.builder.domain.DeviceToken
+import com.app.builder.domain.file.NoOpFileStorage
 import com.app.builder.domain.usecase.Gateways
 import com.app.builder.domain.usecase.Outcome
 import com.app.builder.test.FakeData
@@ -180,7 +181,7 @@ class PushServiceTest: TestCase() {
         assertEquals(expected = FakeData.adminUser.uuid, actual = pushService.addConnection(ticketUuid = ticket, deviceUuid = uuid(), session = session))
         awaitUntil { signal.subscriptions.value > 0 }
 
-        val otherGateways = Gateways(database = dependency.get().database, instanceSignal = signal)
+        val otherGateways = Gateways(database = dependency.get().database, instanceSignal = signal, fileStorage = NoOpFileStorage)
         val notification = FakeData.entityNotification
         assertTrue(actual = otherGateways.notificationsUseCases.saveNotification(notification = notification))
 

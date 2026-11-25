@@ -23,4 +23,4 @@ expect fun observeDeviceLanguage(): Flow<String>
  * @param languageIso The ISO 639-1 code of the language whose conventions format the string, or `null` for the device locale.
  * @return The localized date-time string, or the original [utc] string if formatting fails.
  */
-expect fun getLocalDateTime(utc: String, languageIso: String? = SelectedLanguage.value): String
+expect fun getLocalDateTime(utc: String = now().toString(), languageIso: String? = SelectedLanguage.value): String

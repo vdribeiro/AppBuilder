@@ -186,10 +186,11 @@ private fun setBackStack(
         EntityType.DEVICE_LOCATION -> listOf(Screen.DeviceLocation)
         EntityType.NFC -> listOf(Screen.NFC)
         EntityType.TASK -> buildList<Screen> { add(Screen.TaskList); entityUuid?.let { add(Screen.TaskDetail(uuid = it.toString())) } }
-        EntityType.EQUIPMENT -> buildList<Screen> { add(Screen.EquipmentList); entityUuid?.let { add(Screen.EquipmentDetail(uuid = it.toString())) } }
+        EntityType.FILE -> emptyList()
         EntityType.BUILDING -> buildList<Screen> { add(Screen.BuildingList); entityUuid?.let { add(Screen.BuildingDetail(uuid = it.toString())) } }
-        EntityType.BUILDING_EQUIPMENT -> listOf(Screen.BuildingList)
+        EntityType.EQUIPMENT -> buildList<Screen> { add(Screen.EquipmentList); entityUuid?.let { add(Screen.EquipmentDetail(uuid = it.toString())) } }
         EntityType.MATERIAL -> buildList<Screen> { add(Screen.MaterialList); entityUuid?.let { add(Screen.MaterialDetail(uuid = it.toString())) } }
+        EntityType.BUILDING_EQUIPMENT -> listOf(Screen.BuildingList)
         EntityType.BUILDING_MATERIAL -> listOf(Screen.BuildingList)
         EntityType.BUILDING_USER -> listOf(Screen.BuildingList)
         EntityType.EQUIPMENT_USER -> listOf(Screen.EquipmentList)
