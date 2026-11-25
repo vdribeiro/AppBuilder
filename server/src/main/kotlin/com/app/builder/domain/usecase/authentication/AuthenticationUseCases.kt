@@ -16,17 +16,17 @@ interface AuthenticationUseCases {
      * Creates the account of a submitted [registrationForm], storing its user too when it doesn't exist yet. An existing user is left unchanged. No session is created for the new account.
      *
      * @param registrationForm The registration details.
-     * @return [Outcome.Success] when created, [Outcome.Invalid] when the account belongs to another user or the password is blank, shorter than [ServerConfigs.minPasswordLength] or longer than 72 bytes, [Outcome.Conflict] when the user already has an account or the username is taken, or [Outcome.Error] when the operation failed.
+     * @return [RegisterOutcome.Success] when created, [RegisterOutcome.InvalidPassword] when the password is blank, shorter than [ServerConfigs.minPasswordLength] or longer than 72 bytes, or the other [RegisterOutcome] telling why it wasn't.
      */
-    suspend fun register(registrationForm: RegistrationForm): Outcome<Unit>
+    suspend fun register(registrationForm: RegistrationForm): RegisterOutcome
 
     /**
      * Authenticates a user using their unique [credentials], opening a new session.
      *
      * @param credentials The user's login credentials.
-     * @return [Outcome.Success] with the [Authentication], [Outcome.Rejected] when the user is unknown, the password is wrong or the account is disabled, or [Outcome.Error] when the operation failed.
+     * @return [LoginOutcome.Success] with the [Authentication], or the [LoginOutcome] telling why the login failed.
      */
-    suspend fun login(credentials: UserCredentials): Outcome<Authentication>
+    suspend fun login(credentials: UserCredentials): LoginOutcome
 
     /**
      * Invalidates the session associated with [refreshToken].
@@ -50,7 +50,7 @@ interface AuthenticationUseCases {
      * A session that gives [ServerConfigs.maxPasswordAttempts] wrong current passwords without a successful change in between is ended.
      *
      * @param passwordChange The refresh token of the session, the current password and the new one.
-     * @return [Outcome.Success] with the uuid of the user the account belongs to, [Outcome.Rejected] when no session matches, the session is expired, the account is disabled or the session was ended by its last wrong current password, [Outcome.Invalid] when the current password is wrong or the new one is blank, shorter than [ServerConfigs.minPasswordLength] or longer than 72 bytes, or [Outcome.Error] when the operation failed.
+     * @return [PasswordChangeOutcome.Success] with the uuid of the user the account belongs to, [PasswordChangeOutcome.InvalidPassword] when the current password is wrong, with the attempts left, or the new one is blank, shorter than [ServerConfigs.minPasswordLength] or longer than 72 bytes, or the other [PasswordChangeOutcome] telling why it wasn't changed.
      */
-    suspend fun changePassword(passwordChange: PasswordChange): Outcome<Uuid>
+    suspend fun changePassword(passwordChange: PasswordChange): PasswordChangeOutcome
 }

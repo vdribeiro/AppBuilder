@@ -38,6 +38,7 @@ import com.app.builder.domain.Authentication
 import com.app.builder.domain.BearerToken
 import com.app.builder.domain.EntityType
 import com.app.builder.domain.PasswordChange
+import com.app.builder.domain.PasswordFailure
 import com.app.builder.domain.Permission
 import com.app.builder.domain.RegistrationForm
 import com.app.builder.domain.User
@@ -55,18 +56,18 @@ class AuthenticationGateway(
     private val database: R2dbcDatabase
 ): AuthenticationUseCases {
 
-    override suspend fun register(registrationForm: RegistrationForm): Outcome<Unit> = withContext(context = Dispatcher.IO) {
+    override suspend fun register(registrationForm: RegistrationForm): RegisterOutcome = withContext(context = Dispatcher.IO) {
         val user = registrationForm.user
         val account = registrationForm.account
         if (account.userUuid != user.uuid) {
             Telemetry.error(tag = TAG, message = "Rejected registration for user ${user.uuid} with an account of user ${account.userUuid}")
-            return@withContext Outcome.Invalid
+            return@withContext RegisterOutcome.Invalid
         }
-        if (!isValidPassword(password = registrationForm.password)) {
+        validatePassword(password = registrationForm.password)?.let {
             Telemetry.error(tag = TAG, message = "Rejected registration for user ${user.uuid} with an invalid password")
-            return@withContext Outcome.Invalid
+            return@withContext RegisterOutcome.InvalidPassword(failure = it)
         }
-        val password = hashPassword(password = registrationForm.password) ?: return@withContext Outcome.Error
+        val password = hashPassword(password = registrationForm.password) ?: return@withContext RegisterOutcome.Error
 
         database.safeTransaction {
             val accountExists = UserAccountTable.selectAll()
@@ -74,7 +75,7 @@ class AuthenticationGateway(
                 .firstOrNull() != null
             if (accountExists) {
                 Telemetry.error(tag = TAG, message = "Rejected registration for user ${user.uuid}, the user already has an account or the username is taken")
-                return@safeTransaction Outcome.Conflict
+                return@safeTransaction RegisterOutcome.Conflict
             }
 
             val userExists = UserTable.selectAll()
@@ -98,13 +99,13 @@ class AuthenticationGateway(
                 it[UserAccountTable.passwordHash] = password
                 it[UserAccountTable.permissions] = encode(value = account.permissions).orEmpty()
             }
-            Outcome.Success(data = Unit)
+            RegisterOutcome.Success
         }.onFailure {
             Telemetry.error(tag = TAG, message = "Unable to register an account for user ${user.uuid}", throwable = it)
-        }.getOrDefault(defaultValue = Outcome.Error)
+        }.getOrDefault(defaultValue = RegisterOutcome.Error)
     }
 
-    override suspend fun login(credentials: UserCredentials): Outcome<Authentication> = withContext(context = Dispatcher.IO) {
+    override suspend fun login(credentials: UserCredentials): LoginOutcome = withContext(context = Dispatcher.IO) {
         val row = database.safeTransaction {
             (UserAccountTable innerJoin UserTable)
                 .selectAll()
@@ -112,21 +113,21 @@ class AuthenticationGateway(
                 .firstOrNull()
         }.getOrElse {
             Telemetry.error(tag = TAG, message = "Unable to get account", throwable = it)
-            return@withContext Outcome.Error
+            return@withContext LoginOutcome.Error
         }
 
-        val storedHash = row?.let { runCatching { it[UserAccountTable.passwordHash] }.getOrNull() ?: return@withContext Outcome.Error }
-        if (!verifyPassword(password = credentials.password, hash = storedHash) || row == null) return@withContext Outcome.Rejected
+        val storedHash = row?.let { runCatching { it[UserAccountTable.passwordHash] }.getOrNull() ?: return@withContext LoginOutcome.Error }
+        if (!verifyPassword(password = credentials.password, hash = storedHash) || row == null) return@withContext LoginOutcome.Rejected
 
-        val user = runCatching { row.toUser() }.getOrNull() ?: return@withContext Outcome.Error
-        val account = runCatching { row.toAccount() }.getOrNull() ?: return@withContext Outcome.Error
+        val user = runCatching { row.toUser() }.getOrNull() ?: return@withContext LoginOutcome.Error
+        val account = runCatching { row.toAccount() }.getOrNull() ?: return@withContext LoginOutcome.Error
         if (account.deletedAt != null) {
             Telemetry.error(tag = TAG, message = "Rejected login for disabled account of user ${user.uuid}")
-            return@withContext Outcome.Rejected
+            return@withContext LoginOutcome.Disabled
         }
 
-        val newAccessToken = createAccessToken(userUuid = user.uuid, access = UserAccess(permissions = account.permissions, deletedAt = null)) ?: return@withContext Outcome.Error
-        val newRefreshToken = createRefreshToken() ?: return@withContext Outcome.Error
+        val newAccessToken = createAccessToken(userUuid = user.uuid, access = UserAccess(permissions = account.permissions, deletedAt = null)) ?: return@withContext LoginOutcome.Error
+        val newRefreshToken = createRefreshToken() ?: return@withContext LoginOutcome.Error
         val now = now()
         val uuid = uuid()
 
@@ -140,11 +141,11 @@ class AuthenticationGateway(
             }
         }.onFailure {
             Telemetry.error(tag = TAG, message = "Unable to insert session", throwable = it)
-            return@withContext Outcome.Error
+            return@withContext LoginOutcome.Error
         }
 
-        Outcome.Success(
-            data = Authentication(
+        LoginOutcome.Success(
+            authentication = Authentication(
                 user = user,
                 account = account,
                 bearer = BearerToken(
@@ -250,7 +251,7 @@ class AuthenticationGateway(
         )
     }
 
-    override suspend fun changePassword(passwordChange: PasswordChange): Outcome<Uuid> = withContext(context = Dispatcher.IO) {
+    override suspend fun changePassword(passwordChange: PasswordChange): PasswordChangeOutcome = withContext(context = Dispatcher.IO) {
         val now = now()
 
         val (session, account) = database.safeTransaction {
@@ -264,16 +265,16 @@ class AuthenticationGateway(
             session to account
         }.getOrElse {
             Telemetry.error(tag = TAG, message = "Unable to get session and account", throwable = it)
-            return@withContext Outcome.Error
-        } ?: return@withContext Outcome.Rejected
+            return@withContext PasswordChangeOutcome.Error
+        } ?: return@withContext PasswordChangeOutcome.Rejected
 
         val sessionUuid = session[UserSessionTable.uuid]
         val userUuid = session[UserSessionTable.userUuid]
         if (account[UserAccountTable.deletedAt] != null) {
             Telemetry.error(tag = TAG, message = "Rejected password change for disabled account of user $userUuid")
-            return@withContext Outcome.Rejected
+            return@withContext PasswordChangeOutcome.Rejected
         }
-        if (!isValidPassword(password = passwordChange.newPassword)) return@withContext Outcome.Invalid
+        validatePassword(password = passwordChange.newPassword)?.let { return@withContext PasswordChangeOutcome.InvalidPassword(failure = it) }
 
         val maxAttempts = ServerConfigs.value.maxPasswordAttempts.coerceAtLeast(minimumValue = 1)
         val counted = database.safeTransaction {
@@ -284,22 +285,25 @@ class AuthenticationGateway(
             counted
         }.getOrElse {
             Telemetry.error(tag = TAG, message = "Unable to count the password attempt of session $sessionUuid", throwable = it)
-            return@withContext Outcome.Error
+            return@withContext PasswordChangeOutcome.Error
         }
-        if (!counted) return@withContext Outcome.Rejected
+        if (!counted) return@withContext PasswordChangeOutcome.Rejected
 
         if (!verifyPassword(password = passwordChange.currentPassword, hash = account[UserAccountTable.passwordHash])) {
             val ended = database.safeTransaction {
                 UserSessionTable.deleteWhere { (UserSessionTable.uuid eq sessionUuid) and (UserSessionTable.passwordAttempts greaterEq maxAttempts) } > 0
             }.getOrElse {
                 Telemetry.error(tag = TAG, message = "Unable to end session $sessionUuid", throwable = it)
-                return@withContext Outcome.Error
+                return@withContext PasswordChangeOutcome.Error
             }
-            if (!ended) return@withContext Outcome.Invalid
+            if (!ended) {
+                val remainingAttempts = (maxAttempts - session[UserSessionTable.passwordAttempts] - 1).coerceAtLeast(minimumValue = 1)
+                return@withContext PasswordChangeOutcome.InvalidPassword(failure = PasswordFailure.WrongPassword(remainingAttempts = remainingAttempts))
+            }
             Telemetry.error(tag = TAG, message = "Ended session $sessionUuid of user $userUuid after $maxAttempts wrong current passwords")
-            return@withContext Outcome.Rejected
+            return@withContext PasswordChangeOutcome.Rejected
         }
-        val password = hashPassword(password = passwordChange.newPassword) ?: return@withContext Outcome.Error
+        val password = hashPassword(password = passwordChange.newPassword) ?: return@withContext PasswordChangeOutcome.Error
 
         database.safeTransaction {
             UserAccountTable.update(where = { UserAccountTable.userUuid eq userUuid }) {
@@ -309,20 +313,26 @@ class AuthenticationGateway(
                 it[UserSessionTable.passwordAttempts] = 0
             }
             UserSessionTable.deleteWhere { (UserSessionTable.userUuid eq userUuid) and (UserSessionTable.uuid neq sessionUuid) }
-            Outcome.Success(data = userUuid)
+            PasswordChangeOutcome.Success(userUuid = userUuid)
         }.onFailure {
             Telemetry.error(tag = TAG, message = "Unable to change the password of user $userUuid", throwable = it)
-        }.getOrDefault(defaultValue = Outcome.Error)
+        }.getOrDefault(defaultValue = PasswordChangeOutcome.Error)
     }
 
     /**
      * Checks if [password] can be set as the password of an account: not blank, at least [ServerConfigs.minPasswordLength] characters and at most [MAX_PASSWORD_BYTES] bytes.
      *
      * @param password The password to check.
-     * @return `true` if the password can be set, `false` otherwise.
+     * @return Why the password can't be set, or `null` if it can.
      */
-    private fun isValidPassword(password: String): Boolean =
-        password.isNotBlank() && password.length >= ServerConfigs.value.minPasswordLength && password.encodeToByteArray().size <= MAX_PASSWORD_BYTES
+    private fun validatePassword(password: String): PasswordFailure? {
+        val minLength = ServerConfigs.value.minPasswordLength
+        return when {
+            password.isBlank() || password.length < minLength -> PasswordFailure.TooShort(minLength = minLength)
+            password.encodeToByteArray().size > MAX_PASSWORD_BYTES -> PasswordFailure.TooLong
+            else -> null
+        }
+    }
 
     /**
      * Finds the session [refreshToken] belongs to, as its current refresh token or as the previous one within [ServerConfigs.refreshTokenGracePeriod] of its rotation.
