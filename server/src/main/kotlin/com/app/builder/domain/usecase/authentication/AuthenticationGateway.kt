@@ -327,6 +327,7 @@ class AuthenticationGateway(
     /**
      * Finds the session [refreshToken] belongs to, as its current refresh token or as the previous one within [ServerConfigs.refreshTokenGracePeriod] of its rotation.
      * The last operation is so that clients that miss the rotated pair can still recover.
+     * A previous refresh token presented after that period deletes its session.
      *
      * @param refreshToken The refresh token presented by the client.
      * @param now The time the request is handled at.
@@ -334,13 +335,22 @@ class AuthenticationGateway(
      */
     private suspend fun findSession(refreshToken: String, now: Instant): ResultRow? {
         val hash = hashRefreshToken(refreshToken = refreshToken)
-        return UserSessionTable.selectAll()
+        UserSessionTable.selectAll()
             .where { UserSessionTable.refreshToken eq hash }
             .firstOrNull()
-            ?: UserSessionTable.selectAll()
-                .where { UserSessionTable.previousRefreshToken eq hash }
-                .firstOrNull()
-                ?.takeIf { session -> session[UserSessionTable.rotatedAt]?.let { now < it + ServerConfigs.value.refreshTokenGracePeriod.milliseconds } == true }
+            ?.let { return it }
+
+        val session = UserSessionTable.selectAll()
+            .where { UserSessionTable.previousRefreshToken eq hash }
+            .firstOrNull()
+            ?: return null
+
+        if (session[UserSessionTable.rotatedAt]?.let { now < it + ServerConfigs.value.refreshTokenGracePeriod.milliseconds } == true) return session
+
+        val sessionUuid = session[UserSessionTable.uuid]
+        UserSessionTable.deleteWhere { UserSessionTable.uuid eq sessionUuid }
+        Telemetry.error(tag = TAG, message = "Deleted session $sessionUuid of user ${session[UserSessionTable.userUuid]}: previous refresh token reused after the grace period")
+        return null
     }
 
     /**

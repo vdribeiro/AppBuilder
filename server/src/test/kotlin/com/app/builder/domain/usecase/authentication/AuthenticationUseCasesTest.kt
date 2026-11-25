@@ -176,7 +176,7 @@ class AuthenticationUseCasesTest: TestCase() {
         assertEquals(expected = Outcome.Rejected, actual = authenticationUseCases.refreshTokens(refreshToken = "invalid_refresh_token"))
     }
 
-    /** Verifies that refreshing rotates the refresh token, so once the grace period is over the consumed one is rejected and only the new one keeps working. */
+    /** Verifies that refreshing rotates the refresh token, so the new one keeps working and, once the grace period is over, the consumed one is rejected. */
     @Test
     fun refreshTokensRotatesTheRefreshToken() = runServerTest {
         ServerConfigs.set { it.copy(refreshTokenGracePeriod = 0L) }
@@ -187,8 +187,8 @@ class AuthenticationUseCasesTest: TestCase() {
         val bearer = assertIs<Outcome.Success<BearerToken>>(value = authenticationUseCases.refreshTokens(refreshToken = bearerToken.refreshToken)).data
         assertNotEquals(illegal = bearerToken.refreshToken, actual = bearer.refreshToken)
 
-        assertEquals(expected = Outcome.Rejected, actual = authenticationUseCases.refreshTokens(refreshToken = bearerToken.refreshToken))
         assertIs<Outcome.Success<BearerToken>>(value = authenticationUseCases.refreshTokens(refreshToken = bearer.refreshToken))
+        assertEquals(expected = Outcome.Rejected, actual = authenticationUseCases.refreshTokens(refreshToken = bearerToken.refreshToken))
     }
 
     /** Verifies that within the grace period the consumed refresh token still refreshes, rotating the session once more so the refresh token issued in between stops working. */
@@ -205,6 +205,20 @@ class AuthenticationUseCasesTest: TestCase() {
         assertNotEquals(illegal = rotated.refreshToken, actual = replayed.refreshToken)
         assertEquals(expected = Outcome.Rejected, actual = authenticationUseCases.refreshTokens(refreshToken = rotated.refreshToken))
         assertIs<Outcome.Success<BearerToken>>(value = authenticationUseCases.refreshTokens(refreshToken = replayed.refreshToken))
+    }
+
+    /** Verifies that a previous refresh token presented after the grace period ends the session for its current refresh token too. */
+    @Test
+    fun reusedRefreshTokenRevokesSession() = runServerTest {
+        ServerConfigs.set { it.copy(refreshTokenGracePeriod = 0L) }
+        val authenticationUseCases = dependency.get()
+            .useCases
+            .authenticationUseCases
+
+        val rotated = assertIs<Outcome.Success<BearerToken>>(value = authenticationUseCases.refreshTokens(refreshToken = bearerToken.refreshToken)).data
+        assertEquals(expected = Outcome.Rejected, actual = authenticationUseCases.refreshTokens(refreshToken = bearerToken.refreshToken))
+
+        assertEquals(expected = Outcome.Rejected, actual = authenticationUseCases.refreshTokens(refreshToken = rotated.refreshToken))
     }
 
     /** Verifies that sessions store the hash of their refresh token rather than the token itself, across login and rotation. */

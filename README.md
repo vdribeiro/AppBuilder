@@ -827,6 +827,7 @@ If you don't need accounts, move the routes and screens into `UnauthenticatedNav
 
 Logging in returns a short-lived **access token** and a long-lived **refresh token** that `POST /api/refresh-tokens` trades for a new pair.
 Every refresh rotates the refresh token. If a rotation's response fails to arrive, the replaced token stays accepted for a brief grace period, so the client can have the opportunity to recover instead of losing its session.
+A replaced token presented after the grace period means two parties hold the same session, so the server deletes that session and both have to log in again.
 
 If the server refuses the refresh token, the session is marked **expired** rather than deleted, so no queued work is lost. A warning joins the status icons in the top bar, asking the user to log out and log in again.
 Until then, nothing that needs the session reaches the server: no refresh is attempted, the user's jobs wait without a request, and the push connection stays closed. Logging in again clears it and everything resumes.
