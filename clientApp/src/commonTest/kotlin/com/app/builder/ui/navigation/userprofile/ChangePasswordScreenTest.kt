@@ -20,8 +20,8 @@ import androidx.compose.ui.test.performTextReplacement
 import com.app.builder.core.config.ClientFlags
 import com.app.builder.test.FakeData
 import com.app.builder.test.TestCase
+import com.app.builder.ui.core.overlay.ScreenMessage
 import com.app.builder.ui.navigation.Screen
-import com.app.builder.ui.navigation.ScreenMessage
 
 class ChangePasswordScreenTest: TestCase() {
 
