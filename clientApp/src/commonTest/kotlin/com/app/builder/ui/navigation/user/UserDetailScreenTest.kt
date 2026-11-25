@@ -51,9 +51,9 @@ import com.app.builder.ui.component.list.BuildingItem
 import com.app.builder.ui.component.list.EquipmentItem
 import com.app.builder.ui.component.session.SessionState
 import com.app.builder.ui.component.session.SessionStore
+import com.app.builder.ui.core.overlay.ScreenMessage
 import com.app.builder.ui.navigation.Router
 import com.app.builder.ui.navigation.Screen
-import com.app.builder.ui.navigation.ScreenMessage
 
 class UserDetailScreenTest: TestCase() {
 
