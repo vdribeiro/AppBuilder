@@ -36,9 +36,9 @@ interface AuthenticationUseCases {
      * Authenticates a user using their unique [credentials].
      *
      * @param credentials The user's login credentials.
-     * @return The authenticated [User], or null if authentication fails.
+     * @return [LoginResult.Success] with the authenticated [User], or why the login failed.
      */
-    suspend fun login(credentials: UserCredentials): User?
+    suspend fun login(credentials: UserCredentials): LoginResult
 
     /**
      * Executes the session termination workflow.
@@ -53,7 +53,7 @@ interface AuthenticationUseCases {
      * @param userUuid The unique identifier of the user whose password to change.
      * @param currentPassword The current password of the account.
      * @param newPassword The password to change to.
-     * @return `true` when the password was changed, `false` otherwise.
+     * @return [PasswordResult.Success] when the password was changed, or why it wasn't.
      */
-    suspend fun changePassword(userUuid: Uuid, currentPassword: String, newPassword: String): Boolean
+    suspend fun changePassword(userUuid: Uuid, currentPassword: String, newPassword: String): PasswordResult<Unit>
 }

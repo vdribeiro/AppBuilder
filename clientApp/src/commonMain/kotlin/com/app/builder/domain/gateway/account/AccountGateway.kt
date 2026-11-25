@@ -28,8 +28,10 @@ import com.app.builder.domain.Account
 import com.app.builder.domain.EntityType
 import com.app.builder.domain.Permission
 import com.app.builder.domain.RegistrationForm
+import com.app.builder.domain.gateway.authentication.PasswordResult
 import com.app.builder.domain.gateway.authentication.toAccount
 import com.app.builder.domain.gateway.authentication.toAccountSchema
+import com.app.builder.domain.gateway.authentication.toPasswordResult
 import com.app.builder.domain.gateway.authentication.toUserSchema
 import com.app.builder.domain.scheduler.Job
 import com.app.builder.domain.scheduler.JobResult
@@ -81,16 +83,16 @@ class AccountGateway(
             }
     }
 
-    override suspend fun createAccount(registrationForm: RegistrationForm): Account? = withContext(context = Dispatcher.IO) {
-        account.validatePermission(tag = TAG, entityType = EntityType.ACCOUNT, permission = Permission.WRITE)?.let { return@withContext null }
+    override suspend fun createAccount(registrationForm: RegistrationForm): PasswordResult<Account> = withContext(context = Dispatcher.IO) {
+        account.validatePermission(tag = TAG, entityType = EntityType.ACCOUNT, permission = Permission.WRITE)?.let { return@withContext PasswordResult.Failed }
 
-        val created = when (val result = httpClient.post<RegistrationForm, Account>(
+        val newAccount = when (val result = httpClient.post<RegistrationForm, Account>(
             request = HttpRequest(url = URL.Register, headerMap = requestHeaderMap()),
             body = registrationForm
         )) {
             is HttpResult.Error -> {
                 Telemetry.error(tag = TAG, message = "Unable to create account", throwable = result.error)
-                return@withContext null
+                return@withContext result.error.toPasswordResult()
             }
 
             is HttpResult.Success -> result.data
@@ -100,12 +102,12 @@ class AccountGateway(
             if (userDao.getUser(userUuid = registrationForm.user.uuid).awaitAsOneOrNull() == null) {
                 userDao.upsertUser(User = registrationForm.user.toUserSchema())
             }
-            upsertAccountInDatabase(account = created)
+            upsertAccountInDatabase(account = newAccount)
         }.onFailure {
             Telemetry.error(tag = TAG, message = "Unable to save created account", throwable = it)
         }
-        Telemetry.info(tag = TAG, message = "Successfully created account ${created.userUuid}")
-        created
+        Telemetry.info(tag = TAG, message = "Successfully created account ${newAccount.userUuid}")
+        PasswordResult.Success(data = newAccount)
     }
 
     override suspend fun updateAccount(account: Account): Account? = withContext(context = Dispatcher.IO) {

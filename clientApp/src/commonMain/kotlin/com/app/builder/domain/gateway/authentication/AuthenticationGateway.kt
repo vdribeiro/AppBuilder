@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import io.ktor.client.HttpClient
+import io.ktor.http.HttpStatusCode
 import app.cash.sqldelight.async.coroutines.awaitAsOneOrNull
 import com.app.builder.core.flow.Dispatcher
 import com.app.builder.core.locale.now
@@ -113,7 +114,7 @@ class AuthenticationGateway(
                 emit(value = false)
             }
 
-    override suspend fun login(credentials: UserCredentials): User? = withContext(context = Dispatcher.IO) {
+    override suspend fun login(credentials: UserCredentials): LoginResult = withContext(context = Dispatcher.IO) {
         val result = when (val result = httpClient.post<UserCredentials, Authentication>(
             request = HttpRequest(url = URL.Login),
             body = credentials
@@ -121,9 +122,16 @@ class AuthenticationGateway(
             is HttpResult.Error -> {
                 Telemetry.error(tag = TAG, message = "Unable to login", throwable = result.error)
                 // The offline login is only tried when the server gave no answer
-                if (result.error is UnauthorizedException || result.error is UnsuccessfulStatusException) return@withContext null
-                Telemetry.info(tag = TAG, message = "Trying offline login")
-                return@withContext loginOffline(credentials = credentials)
+                return@withContext when (val error = result.error) {
+                    is UnauthorizedException -> LoginResult.WrongCredentials
+                    is UnsuccessfulStatusException if error.status == HttpStatusCode.Forbidden -> LoginResult.AccountDisabled
+                    is UnsuccessfulStatusException if error.status == HttpStatusCode.TooManyRequests -> LoginResult.TooManyAttempts
+                    is UnsuccessfulStatusException -> LoginResult.Failed
+                    else -> {
+                        Telemetry.info(tag = TAG, message = "Trying offline login")
+                        loginOffline(credentials = credentials)?.let { LoginResult.Success(user = it) } ?: LoginResult.NoConnection
+                    }
+                }
             }
 
             is HttpResult.Success -> result.data
@@ -132,13 +140,16 @@ class AuthenticationGateway(
         Telemetry.info(tag = TAG, message = "Successfully logged in")
         val userSession = getUserSession(credentials = credentials, result = result) ?: run {
             Telemetry.error(tag = TAG, message = "Unable to get user session")
-            return@withContext null
+            return@withContext LoginResult.Failed
         }
         database.safeTransaction {
             saveUserAndSession(userSession = userSession)
         }.onFailure {
             Telemetry.error(tag = TAG, message = "Unable to save user and session", throwable = it)
-        }.getOrNull().also { swapUser(userUuid = result.user.uuid.toString()) }
+        }.getOrNull()
+            .also { swapUser(userUuid = result.user.uuid.toString()) }
+            ?.let { LoginResult.Success(user = it) }
+            ?: LoginResult.Failed
     }
 
     override suspend fun logout(userUuid: Uuid) = withContext(context = Dispatcher.IO) {
@@ -152,19 +163,19 @@ class AuthenticationGateway(
         scheduler.queue(job = job)
     }
 
-    override suspend fun changePassword(userUuid: Uuid, currentPassword: String, newPassword: String): Boolean = withContext(context = Dispatcher.IO) {
+    override suspend fun changePassword(userUuid: Uuid, currentPassword: String, newPassword: String): PasswordResult<Unit> = withContext(context = Dispatcher.IO) {
         val session = database.safeTransaction {
             sessionDao.getSession(userUuid = userUuid).awaitAsOneOrNull()
         }.getOrElse {
             Telemetry.error(tag = TAG, message = "Unable to get session", throwable = it)
-            return@withContext false
+            return@withContext PasswordResult.Failed
         } ?: run {
             Telemetry.error(tag = TAG, message = "No session found for user $userUuid")
-            return@withContext false
+            return@withContext PasswordResult.Failed
         }
         val refreshToken = session.toBearerToken().decrypt()?.refreshToken ?: run {
             Telemetry.error(tag = TAG, message = "Unable to decrypt tokens")
-            return@withContext false
+            return@withContext PasswordResult.Failed
         }
 
         when (val result = httpClient.post<PasswordChange, String>(
@@ -173,7 +184,9 @@ class AuthenticationGateway(
         )) {
             is HttpResult.Error -> {
                 Telemetry.error(tag = TAG, message = "Unable to change password", throwable = result.error)
-                return@withContext false
+                val passwordResult = result.error.toPasswordResult()
+                if (passwordResult == PasswordResult.SessionEnded) expireSession(userUuid = userUuid)
+                return@withContext passwordResult
             }
 
             is HttpResult.Success -> Unit
@@ -183,14 +196,14 @@ class AuthenticationGateway(
         val salt = uuid().toString()
         val verifier = UserCredentials(username = session.username, password = newPassword).deriveVerifier(salt = salt) ?: run {
             Telemetry.error(tag = TAG, message = "Unable to derive the credentials verifier")
-            return@withContext true
+            return@withContext PasswordResult.Success(data = Unit)
         }
         database.safeTransaction {
             sessionDao.updateSessionVerifier(salt = salt, verifier = verifier, userUuid = userUuid)
         }.onFailure {
             Telemetry.error(tag = TAG, message = "Unable to update session verifier", throwable = it)
         }
-        true
+        PasswordResult.Success(data = Unit)
     }
 
     override suspend fun executeLogout(job: Job): JobResult = withContext(context = Dispatcher.IO) {

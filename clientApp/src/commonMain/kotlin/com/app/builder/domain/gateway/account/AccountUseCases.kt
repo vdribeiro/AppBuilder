@@ -4,6 +4,7 @@ import kotlin.uuid.Uuid
 import kotlinx.coroutines.flow.Flow
 import com.app.builder.domain.Account
 import com.app.builder.domain.RegistrationForm
+import com.app.builder.domain.gateway.authentication.PasswordResult
 
 /** Defines the business workflows for accounts. */
 interface AccountUseCases {
@@ -20,9 +21,9 @@ interface AccountUseCases {
      * Creates an account for a user, which requires a connection since it carries the password.
      *
      * @param registrationForm The user, account and password to create the account with.
-     * @return The created [Account], or null if the creation failed.
+     * @return [PasswordResult.Success] with the created [Account], or why it wasn't created.
      */
-    suspend fun createAccount(registrationForm: RegistrationForm): Account?
+    suspend fun createAccount(registrationForm: RegistrationForm): PasswordResult<Account>
 
     /**
      * Updates an existing account's username, permissions and disabled state, which requires a connection.
