@@ -41,6 +41,7 @@ import com.app.builder.domain.decodeTranslations
 import com.app.builder.domain.usecase.Outcome
 import com.app.builder.domain.usecase.account.AccountUseCases
 import com.app.builder.domain.usecase.authentication.AuthenticationUseCases
+import com.app.builder.domain.usecase.authentication.RegisterOutcome
 import com.app.builder.domain.usecase.getOrNull
 
 /**
@@ -88,7 +89,7 @@ class SeedGateway(
         )
 
         val result = authenticationUseCases.register(registrationForm = RegistrationForm(user = superUser, account = superAccount, password = password))
-        if (result is Outcome.Success) {
+        if (result == RegisterOutcome.Success) {
             Telemetry.info(tag = TAG, message = "Su account created")
             return Outcome.Success(data = Unit)
         }
