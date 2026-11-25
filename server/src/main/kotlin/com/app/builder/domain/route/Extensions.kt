@@ -64,17 +64,28 @@ suspend fun <T: Any> ApplicationCall.getOrRespond(
     conflict: String = "Conflict",
     error: String = "Internal server error",
 ): T? {
-    val (status, message) = when (outcome) {
+    when (outcome) {
         is Outcome.Success -> return outcome.data
-        Outcome.Invalid -> HttpStatusCode.BadRequest to invalid
-        Outcome.Rejected -> HttpStatusCode.Unauthorized to rejected
-        Outcome.NotFound -> HttpStatusCode.NotFound to notFound
-        Outcome.Conflict -> HttpStatusCode.Conflict to conflict
-        Outcome.Error -> HttpStatusCode.InternalServerError to error
+        Outcome.Invalid -> respondFailure(status = HttpStatusCode.BadRequest, message = invalid)
+        Outcome.Rejected -> respondFailure(status = HttpStatusCode.Unauthorized, message = rejected)
+        Outcome.NotFound -> respondFailure(status = HttpStatusCode.NotFound, message = notFound)
+        Outcome.Conflict -> respondFailure(status = HttpStatusCode.Conflict, message = conflict)
+        Outcome.Error -> respondFailure(status = HttpStatusCode.InternalServerError, message = error)
     }
+    return null
+}
+
+/**
+ * Logs a failed call to telemetry and responds to it with [status] and [message].
+ *
+ * @receiver [ApplicationCall] The context of the call.
+ * @param T The type of the response body.
+ * @param status The HTTP status code of the failure.
+ * @param message The response body to serialize.
+ */
+suspend inline fun <reified T: Any> ApplicationCall.respondFailure(status: HttpStatusCode, message: T) {
     Telemetry.error(tag = "Route", message = "Responding ${status.value} to ${request.httpMethod.value} ${request.local.uri}: $message")
     respondSafely(status = status, message = message)
-    return null
 }
 
 /**
