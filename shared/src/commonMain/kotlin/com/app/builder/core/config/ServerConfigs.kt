@@ -62,6 +62,8 @@ data class ServerConfigs(
     val pageSize: Int,
     /** Upper bound on entries returned per page. */
     val maxPageSize: Int,
+    /** Largest request body accepted, in bytes. A bigger body is refused with 413 Payload Too Large. */
+    val maxBodySize: Long,
 ) {
     /** Holds the server configs. */
     companion object: StateHolder<ServerConfigs>(
@@ -94,6 +96,7 @@ data class ServerConfigs(
             presenceTtl = 45_000L,
             pageSize = 200,
             maxPageSize = 1_000,
+            maxBodySize = 1_048_576L,
         )
     )
 }

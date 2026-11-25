@@ -9,7 +9,6 @@ import com.app.builder.data.http.HttpRequest
 import com.app.builder.data.http.URL
 import com.app.builder.data.http.post
 import com.app.builder.domain.UserCredentials
-import com.app.builder.test.FakeData
 import com.app.builder.test.TestCase
 
 class BodyLimitTest: TestCase() {
@@ -34,9 +33,10 @@ class BodyLimitTest: TestCase() {
     fun followsMaxBodySize() = runServerTest {
         installRouting()
         val client = createClient(token = null)
+        val credentials = UserCredentials(username = "unknown", password = "wrong_password")
 
-        assertEquals(expected = HttpStatusCode.Unauthorized, actual = client.post(request = HttpRequest(url = URL.Login), body = FakeData.wrongCredentials).status)
+        assertEquals(expected = HttpStatusCode.Unauthorized, actual = client.post(request = HttpRequest(url = URL.Login), body = credentials).status)
         ServerConfigs.set { it.copy(maxBodySize = 8L) }
-        assertEquals(expected = HttpStatusCode.PayloadTooLarge, actual = client.post(request = HttpRequest(url = URL.Login), body = FakeData.wrongCredentials).status)
+        assertEquals(expected = HttpStatusCode.PayloadTooLarge, actual = client.post(request = HttpRequest(url = URL.Login), body = credentials).status)
     }
 }
