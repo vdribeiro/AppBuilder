@@ -8,7 +8,7 @@ object UserSessionTable: Table(name = "user_session") {
     /** The unique identifier of the session. */
     val uuid = uuid(name = "uuid")
     /** The unique identifier of the user the session belongs to. */
-    val userUuid = reference(name = "user_uuid", refColumn = UserTable.uuid)
+    val userUuid = reference(name = "user_uuid", refColumn = UserTable.uuid).index()
     /** The hash of the refresh token used to obtain new access tokens for this session. */
     val refreshToken = text(name = "refresh_token").uniqueIndex()
     /** The hash of the refresh token [refreshToken] replaced at its last rotation. */

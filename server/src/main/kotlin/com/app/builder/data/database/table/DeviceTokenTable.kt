@@ -9,7 +9,7 @@ object DeviceTokenTable: Table(name = "device_token") {
     /** The unique identifier of the user who owns the device. */
     val userUuid = reference(name = "user_uuid", refColumn = UserTable.uuid)
     /** The FCM registration token for the device. */
-    val token = text(name = "token")
+    val token = text(name = "token").index()
 
     override val primaryKey = PrimaryKey(userUuid, deviceUuid)
 }

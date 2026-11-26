@@ -19,4 +19,8 @@ object TaskTable: Table(name = "task") {
     val state = text(name = "state")
 
     override val primaryKey = PrimaryKey(firstColumn = uuid)
+
+    init {
+        index(isUnique = false, modifiedAt, uuid)
+    }
 }

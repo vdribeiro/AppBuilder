@@ -11,6 +11,9 @@ CREATE TABLE IF NOT EXISTS BuildingMaterial (
     quantity INTEGER AS Int NOT NULL
 );
 
+CREATE INDEX IF NOT EXISTS building_material_building_uuid ON BuildingMaterial(buildingUuid);
+CREATE INDEX IF NOT EXISTS building_material_material_uuid ON BuildingMaterial(materialUuid);
+
 upsertBuildingMaterial:
 INSERT OR REPLACE INTO BuildingMaterial VALUES ?;
 

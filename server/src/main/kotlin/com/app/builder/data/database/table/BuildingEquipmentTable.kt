@@ -17,4 +17,8 @@ object BuildingEquipmentTable: Table(name = "building_equipment") {
     val equipmentUuid = uuid(name = "equipment_uuid")
 
     override val primaryKey = PrimaryKey(firstColumn = uuid)
+
+    init {
+        index(isUnique = false, modifiedAt, uuid)
+    }
 }

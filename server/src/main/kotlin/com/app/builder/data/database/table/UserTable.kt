@@ -17,4 +17,8 @@ object UserTable: Table(name = "user") {
     val avatar = text(name = "avatar").nullable()
 
     override val primaryKey = PrimaryKey(firstColumn = uuid)
+
+    init {
+        index(isUnique = false, modifiedAt, uuid)
+    }
 }

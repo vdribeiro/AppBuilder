@@ -19,4 +19,8 @@ object BuildingMaterialTable: Table(name = "building_material") {
     val quantity = integer(name = "quantity")
 
     override val primaryKey = PrimaryKey(firstColumn = uuid)
+
+    init {
+        index(isUnique = false, modifiedAt, uuid)
+    }
 }

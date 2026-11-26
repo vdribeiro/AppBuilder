@@ -23,4 +23,8 @@ object BuildingTable: Table(name = "building") {
     val longitude = double(name = "longitude").nullable()
 
     override val primaryKey = PrimaryKey(firstColumn = uuid)
+
+    init {
+        index(isUnique = false, modifiedAt, uuid)
+    }
 }

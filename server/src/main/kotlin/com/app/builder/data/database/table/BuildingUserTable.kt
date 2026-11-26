@@ -17,4 +17,8 @@ object BuildingUserTable: Table(name = "building_user") {
     val userUuid = uuid(name = "user_uuid")
 
     override val primaryKey = PrimaryKey(firstColumn = uuid)
+
+    init {
+        index(isUnique = false, modifiedAt, uuid)
+    }
 }

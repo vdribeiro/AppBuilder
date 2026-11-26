@@ -7,7 +7,7 @@ object NotificationTable: Table(name = "notification") {
     /** The unique identifier of the notification. */
     val uuid = uuid(name = "uuid")
     /** The unique identifier of the user the notification is addressed to. */
-    val userUuid = reference(name = "user_uuid", refColumn = UserTable.uuid)
+    val userUuid = reference(name = "user_uuid", refColumn = UserTable.uuid).index()
     /** The title of the notification. */
     val title = text(name = "title")
     /** The descriptive content of the notification. */

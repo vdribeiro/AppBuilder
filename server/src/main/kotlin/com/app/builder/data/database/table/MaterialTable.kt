@@ -17,4 +17,8 @@ object MaterialTable: Table(name = "material") {
     val description = text(name = "description")
 
     override val primaryKey = PrimaryKey(firstColumn = uuid)
+
+    init {
+        index(isUnique = false, modifiedAt, uuid)
+    }
 }

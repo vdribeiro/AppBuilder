@@ -9,6 +9,9 @@ CREATE TABLE IF NOT EXISTS BuildingUser (
     userUuid TEXT AS Uuid NOT NULL
 );
 
+CREATE INDEX IF NOT EXISTS building_user_building_uuid ON BuildingUser(buildingUuid);
+CREATE INDEX IF NOT EXISTS building_user_user_uuid ON BuildingUser(userUuid);
+
 upsertBuildingUser:
 INSERT OR REPLACE INTO BuildingUser VALUES ?;
 

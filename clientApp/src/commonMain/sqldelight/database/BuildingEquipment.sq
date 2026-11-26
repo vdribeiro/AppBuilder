@@ -9,6 +9,9 @@ CREATE TABLE IF NOT EXISTS BuildingEquipment (
     equipmentUuid TEXT AS Uuid NOT NULL
 );
 
+CREATE INDEX IF NOT EXISTS building_equipment_building_uuid ON BuildingEquipment(buildingUuid);
+CREATE INDEX IF NOT EXISTS building_equipment_equipment_uuid ON BuildingEquipment(equipmentUuid);
+
 upsertBuildingEquipment:
 INSERT OR REPLACE INTO BuildingEquipment VALUES ?;
 

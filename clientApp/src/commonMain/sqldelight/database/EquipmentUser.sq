@@ -9,6 +9,9 @@ CREATE TABLE IF NOT EXISTS EquipmentUser (
     userUuid TEXT AS Uuid NOT NULL
 );
 
+CREATE INDEX IF NOT EXISTS equipment_user_equipment_uuid ON EquipmentUser(equipmentUuid);
+CREATE INDEX IF NOT EXISTS equipment_user_user_uuid ON EquipmentUser(userUuid);
+
 upsertEquipmentUser:
 INSERT OR REPLACE INTO EquipmentUser VALUES ?;
 

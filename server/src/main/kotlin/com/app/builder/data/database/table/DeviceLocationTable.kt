@@ -29,4 +29,8 @@ object DeviceLocationTable: Table(name = "device_location") {
     val speed = double(name = "speed").nullable()
 
     override val primaryKey = PrimaryKey(firstColumn = uuid)
+
+    init {
+        index(isUnique = false, userUuid, deviceTime, uuid)
+    }
 }

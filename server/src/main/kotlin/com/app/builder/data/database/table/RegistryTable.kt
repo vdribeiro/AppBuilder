@@ -35,4 +35,8 @@ object RegistryTable: Table(name = "registry") {
     val payload = text(name = "payload").nullable()
 
     override val primaryKey = PrimaryKey(firstColumn = requestUuid)
+
+    init {
+        index(isUnique = false, requestUtc, requestUuid)
+    }
 }
