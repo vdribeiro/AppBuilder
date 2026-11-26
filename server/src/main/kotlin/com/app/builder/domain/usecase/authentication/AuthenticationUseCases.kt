@@ -22,6 +22,7 @@ interface AuthenticationUseCases {
 
     /**
      * Authenticates a user using their unique [credentials], opening a new session.
+     * Failed logins are counted per username, and a username that reaches [ServerConfigs.maxLoginAttempts] is refused for [ServerConfigs.loginLockDuration], even with the right password. A successful login clears the count.
      *
      * @param credentials The user's login credentials.
      * @return [LoginOutcome.Success] with the [Authentication], or the [LoginOutcome] telling why the login failed.

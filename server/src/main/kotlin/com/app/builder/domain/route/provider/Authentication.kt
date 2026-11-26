@@ -75,6 +75,7 @@ fun Route.authenticationRoutes(
             is LoginOutcome.Success -> outcome.authentication
             LoginOutcome.Rejected -> return@post call.respondFailure(status = HttpStatusCode.Unauthorized, message = "Invalid credentials")
             LoginOutcome.Disabled -> return@post call.respondFailure(status = HttpStatusCode.Forbidden, message = "Account disabled")
+            LoginOutcome.Locked -> return@post call.respondFailure(status = HttpStatusCode.TooManyRequests, message = "Too many failed logins")
             LoginOutcome.Error -> return@post call.respondFailure(status = HttpStatusCode.InternalServerError, message = "Unable to login")
         }
 

@@ -17,6 +17,9 @@ sealed interface LoginOutcome {
     /** The password is right, but the account is disabled. */
     data object Disabled: LoginOutcome
 
+    /** The username is locked after too many failed logins. */
+    data object Locked: LoginOutcome
+
     /** It failed on the server's side. */
     data object Error: LoginOutcome
 }

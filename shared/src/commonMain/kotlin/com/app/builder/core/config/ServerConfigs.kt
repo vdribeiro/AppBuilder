@@ -20,6 +20,10 @@ data class ServerConfigs(
     val maxPasswordAttempts: Int,
     /** Minimum number of characters of a password set when registering an account or changing its password. Passwords set before a raise stay valid. */
     val minPasswordLength: Int,
+    /** Number of failed logins a username may have within [loginLockDuration] of each other before every login with it is refused for [loginLockDuration]. Values below 1 count as 1. */
+    val maxLoginAttempts: Int,
+    /** Time in milliseconds a username stays locked after reaching [maxLoginAttempts], and within which failed logins are counted together. */
+    val loginLockDuration: Long,
     /** Global per-IP rate limiter maximum requests per period, applied to every route not covered by a specific limiter. */
     val rateLimiterLimit: Int,
     /** Global rate limiter refill period in milliseconds. */
@@ -77,6 +81,8 @@ data class ServerConfigs(
             deletedAccountSessionValidity = 2_592_000_000L,
             maxPasswordAttempts = 3,
             minPasswordLength = 10,
+            maxLoginAttempts = 5,
+            loginLockDuration = 300_000L,
             rateLimiterLimit = 200,
             rateLimiterRefillPeriod = 60_000L,
             rateLimiterProbeLimit = 5,

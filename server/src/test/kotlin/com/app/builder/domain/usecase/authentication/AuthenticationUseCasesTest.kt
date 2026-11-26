@@ -336,6 +336,37 @@ class AuthenticationUseCasesTest: TestCase() {
         assertIs<LoginOutcome.Success>(value = authenticationUseCases.login(credentials = form.credentials))
     }
 
+    /** Verifies that a username, known or not, is locked once its failed logins reach the maximum, refusing even the right password, and is unlocked once the lock duration passes. */
+    @Test
+    fun loginLocksAfterMaxAttempts() = runServerTest {
+        ServerConfigs.set { it.copy(maxLoginAttempts = 3, loginLockDuration = 60_000L) }
+        val authenticationUseCases = dependency.get().useCases.authenticationUseCases
+        val wrong = UserCredentials(username = FakeData.credentials.username, password = "wrong_password")
+        val unknown = UserCredentials(username = "unknown_user", password = "wrong_password")
+
+        listOf(wrong, unknown).forEach { credentials ->
+            repeat(times = 3) { assertEquals(expected = LoginOutcome.Rejected, actual = authenticationUseCases.login(credentials = credentials)) }
+            assertEquals(expected = LoginOutcome.Locked, actual = authenticationUseCases.login(credentials = credentials))
+        }
+        assertEquals(expected = LoginOutcome.Locked, actual = authenticationUseCases.login(credentials = FakeData.credentials))
+
+        ServerConfigs.set { it.copy(loginLockDuration = 0L) }
+        assertIs<LoginOutcome.Success>(value = authenticationUseCases.login(credentials = FakeData.credentials))
+    }
+
+    /** Verifies that a successful login clears the failed logins counted for its username. */
+    @Test
+    fun loginSuccessClearsFailures() = runServerTest {
+        ServerConfigs.set { it.copy(maxLoginAttempts = 3, loginLockDuration = 60_000L) }
+        val authenticationUseCases = dependency.get().useCases.authenticationUseCases
+        val wrong = UserCredentials(username = FakeData.credentials.username, password = "wrong_password")
+
+        repeat(times = 2) { assertEquals(expected = LoginOutcome.Rejected, actual = authenticationUseCases.login(credentials = wrong)) }
+        assertIs<LoginOutcome.Success>(value = authenticationUseCases.login(credentials = FakeData.credentials))
+        repeat(times = 2) { assertEquals(expected = LoginOutcome.Rejected, actual = authenticationUseCases.login(credentials = wrong)) }
+        assertIs<LoginOutcome.Success>(value = authenticationUseCases.login(credentials = FakeData.credentials))
+    }
+
     /** Verifies that a successful password change clears the wrong current passwords counted for the session. */
     @Test
     fun changePasswordSuccessResetsAttempts() = runServerTest {

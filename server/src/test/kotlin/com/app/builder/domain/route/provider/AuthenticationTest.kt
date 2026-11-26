@@ -236,6 +236,19 @@ class AuthenticationTest: TestCase() {
         assertEquals(expected = HttpStatusCode.Unauthorized, actual = client.post(request = HttpRequest(url = URL.Register), body = FakeData.registrationForm).status)
     }
 
+    /** Verifies that repeated failed logins for one username are refused with 429 Too Many Requests well before the global rate limit. */
+    @Test
+    fun loginThrottlesRepeatedFailures() = runServerTest {
+        installRouting()
+        val client = createClient(token = null)
+        val credentials = UserCredentials(username = FakeData.adminCredentials.username, password = "wrong_password")
+
+        val statuses = List(size = 30) { client.post(request = HttpRequest(url = URL.Login), body = credentials).status }
+
+        assertTrue(actual = HttpStatusCode.TooManyRequests in statuses)
+        assertEquals(expected = HttpStatusCode.TooManyRequests, actual = client.post(request = HttpRequest(url = URL.Login), body = FakeData.adminCredentials).status)
+    }
+
     /** Verifies that logging in with a wrong password or an unknown username is rejected. */
     @Test
     fun loginWithInvalidCredentials() = runServerTest {
@@ -255,6 +268,7 @@ class AuthenticationTest: TestCase() {
     /** Verifies that rejecting an unknown username takes at least half as long as rejecting a wrong password for a known one. */
     @Test
     fun loginTimingDoesNotRevealUsernames() = runServerTest {
+        ServerConfigs.set { it.copy(maxLoginAttempts = 100) }
         installRouting()
         val client = createClient(token = null)
         val known = UserCredentials(username = FakeData.adminCredentials.username, password = "wrong_password")
