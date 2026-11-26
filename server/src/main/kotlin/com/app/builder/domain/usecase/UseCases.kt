@@ -19,6 +19,7 @@ import com.app.builder.domain.usecase.registry.RegistryUseCases
 import com.app.builder.domain.usecase.seed.SeedUseCases
 import com.app.builder.domain.usecase.task.TaskUseCases
 import com.app.builder.domain.usecase.ticket.TicketUseCases
+import com.app.builder.domain.usecase.timepunch.TimePunchUseCases
 import com.app.builder.domain.usecase.translation.TranslationUseCases
 import com.app.builder.domain.usecase.user.UserUseCases
 
@@ -50,6 +51,8 @@ interface UseCases {
     val deviceLocationUseCases: DeviceLocationUseCases
     /** The task use cases. */
     val taskUseCases: TaskUseCases
+    /** The time punch use cases. */
+    val timePunchUseCases: TimePunchUseCases
     /** The file use cases. */
     val fileUseCases: FileUseCases
     /** The equipment use cases. */
