@@ -10,6 +10,8 @@ import com.app.builder.domain.TimePunch
 import com.app.builder.domain.gateway.UseCases
 import com.app.builder.ui.component.filters.FiltersStore
 import com.app.builder.ui.component.session.SessionStore
+import com.app.builder.ui.component.user.userFiltersStore
+import com.app.builder.ui.component.user.userLinkPickerStore
 import com.app.builder.ui.lifecycle.hostViewModel
 import com.app.builder.ui.navigation.LocalRouter
 import com.app.builder.ui.navigation.Screen
@@ -42,6 +44,8 @@ fun EntryProviderScope<NavKey>.timePunchProvider(useCases: UseCases) {
         TimePunchDetailScreen(
             sessionStore = hostViewModel(key = SessionStore.KEY) { SessionStore.get(useCases = useCases) },
             filtersStore = filtersStore(),
+            userFiltersStore = userFiltersStore(),
+            userPickerStore = viewModel(key = "user_picker") { userLinkPickerStore(userUseCases = useCases.userUseCases, single = true) },
             store = viewModel {
                 TimePunchDetailScreenStore(
                     state = TimePunchDetailScreenState(),
@@ -49,7 +53,8 @@ fun EntryProviderScope<NavKey>.timePunchProvider(useCases: UseCases) {
                     timePunchUseCases = useCases.timePunchUseCases,
                     userUseCases = useCases.userUseCases,
                     authenticationUseCases = useCases.authenticationUseCases,
-                    timePunchUuid = it.uuid
+                    timePunchUuid = it.uuid,
+                    new = it.new
                 )
             }
         )
