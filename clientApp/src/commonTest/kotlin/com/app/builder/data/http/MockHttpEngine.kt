@@ -16,10 +16,20 @@ import com.app.builder.core.config.ServerFlags
 import com.app.builder.data.serializer.decode
 import com.app.builder.data.serializer.encode
 import com.app.builder.domain.Account
+import com.app.builder.domain.Building
+import com.app.builder.domain.BuildingEquipment
+import com.app.builder.domain.BuildingMaterial
+import com.app.builder.domain.BuildingUser
+import com.app.builder.domain.Equipment
+import com.app.builder.domain.EquipmentUser
+import com.app.builder.domain.Material
 import com.app.builder.domain.PasswordChange
 import com.app.builder.domain.PasswordFailure
 import com.app.builder.domain.RegistrationForm
+import com.app.builder.domain.Task
+import com.app.builder.domain.TimePunch
 import com.app.builder.domain.Translation
+import com.app.builder.domain.User
 import com.app.builder.domain.UserCredentials
 import com.app.builder.test.FakeData
 
@@ -58,6 +68,8 @@ fun createMockHttpEngine(): HttpClientEngine = TestEngine { request ->
                 path == URL.Users.path -> respondMock(content = encode(value = listOf(FakeData.adminUser, FakeData.user)))
                 path.isItemOf(url = URL.Tasks) -> respondMock(content = encode(value = FakeData.task))
                 path == URL.Tasks.path -> respondMock(content = encode(value = listOf(FakeData.task)))
+                path.isItemOf(url = URL.TimePunches) -> respondMock(content = encode(value = FakeData.timePunch))
+                path == URL.TimePunches.path -> respondMock(content = encode(value = listOf(FakeData.timePunch)))
                 path.isItemOf(url = URL.Buildings) -> respondMock(content = encode(value = FakeData.building))
                 path == URL.Buildings.path -> respondMock(content = encode(value = listOf(FakeData.building)))
                 path.isItemOf(url = URL.Equipments) -> respondMock(content = encode(value = FakeData.equipment))
@@ -153,15 +165,56 @@ fun createMockHttpEngine(): HttpClientEngine = TestEngine { request ->
                 URL.Push.path -> respondMock(content = encode(value = "sent"))
                 URL.Broadcast.path -> respondMock(content = encode(value = "sent"))
                 URL.BroadcastSubscribe.path -> respondMock(content = encode(value = "sent"))
-                URL.Tasks.path -> respondMock(content = encode(value = FakeData.task))
-                URL.Equipments.path -> respondMock(content = encode(value = FakeData.equipment))
-                URL.BuildingEquipments.path -> respondMock(content = encode(value = FakeData.buildingEquipment))
-                URL.Materials.path -> respondMock(content = encode(value = FakeData.material))
-                URL.BuildingMaterials.path -> respondMock(content = encode(value = FakeData.buildingMaterial))
-                URL.BuildingUsers.path -> respondMock(content = encode(value = FakeData.buildingUser))
-                URL.EquipmentUsers.path -> respondMock(content = encode(value = FakeData.equipmentUser))
-                URL.Buildings.path -> respondMock(content = encode(value = FakeData.building))
-                URL.Users.path -> respondMock(content = encode(value = FakeData.adminUser))
+                URL.Tasks.path -> {
+                    val task = request.decodeBody<Task>() ?: return@TestEngine badRequest(request = request)
+                    respondMock(content = encode(value = task))
+                }
+
+                URL.TimePunches.path -> {
+                    val timePunch = request.decodeBody<TimePunch>() ?: return@TestEngine badRequest(request = request)
+                    respondMock(content = encode(value = timePunch))
+                }
+
+                URL.Equipments.path -> {
+                    val equipment = request.decodeBody<Equipment>() ?: return@TestEngine badRequest(request = request)
+                    respondMock(content = encode(value = equipment))
+                }
+
+                URL.BuildingEquipments.path -> {
+                    val buildingEquipment = request.decodeBody<BuildingEquipment>() ?: return@TestEngine badRequest(request = request)
+                    respondMock(content = encode(value = buildingEquipment))
+                }
+
+                URL.Materials.path -> {
+                    val material = request.decodeBody<Material>() ?: return@TestEngine badRequest(request = request)
+                    respondMock(content = encode(value = material))
+                }
+
+                URL.BuildingMaterials.path -> {
+                    val buildingMaterial = request.decodeBody<BuildingMaterial>() ?: return@TestEngine badRequest(request = request)
+                    respondMock(content = encode(value = buildingMaterial))
+                }
+
+                URL.BuildingUsers.path -> {
+                    val buildingUser = request.decodeBody<BuildingUser>() ?: return@TestEngine badRequest(request = request)
+                    respondMock(content = encode(value = buildingUser))
+                }
+
+                URL.EquipmentUsers.path -> {
+                    val equipmentUser = request.decodeBody<EquipmentUser>() ?: return@TestEngine badRequest(request = request)
+                    respondMock(content = encode(value = equipmentUser))
+                }
+
+                URL.Buildings.path -> {
+                    val building = request.decodeBody<Building>() ?: return@TestEngine badRequest(request = request)
+                    respondMock(content = encode(value = building))
+                }
+
+                URL.Users.path -> {
+                    val user = request.decodeBody<User>() ?: return@TestEngine badRequest(request = request)
+                    respondMock(content = encode(value = user))
+                }
+
                 else -> notFound(request = request)
             }
 
