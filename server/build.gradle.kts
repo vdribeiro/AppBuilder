@@ -43,7 +43,7 @@ val localEnv = mapOf(
     "DEVELOPMENT" to true,
     "ADMIN_UUID" to "FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF",
     "ADMIN_USERNAME" to "admin",
-    "ADMIN_PASSWORD" to "admin",
+    "ADMIN_PASSWORD" to "admin_password",
     "JWT_ISSUER" to "jwt_issuer",
     "JWT_AUDIENCE" to "jwt_audience",
     "JWT_SECRET" to "jwt_secret",
