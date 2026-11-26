@@ -2,6 +2,7 @@ package com.app.builder.domain.nfc
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNotEquals
 import kotlin.test.assertTrue
 import kotlin.uuid.Uuid
 import kotlinx.coroutines.channels.Channel
@@ -13,6 +14,7 @@ import com.app.builder.core.config.ClientFlags
 import com.app.builder.core.nfc.NfcRecord
 import com.app.builder.core.nfc.NfcTag
 import com.app.builder.domain.EntityType
+import com.app.builder.domain.TimePunch
 import com.app.builder.domain.deeplink.DeepLink
 import com.app.builder.domain.gateway.UseCases
 import com.app.builder.test.FakeData
@@ -94,6 +96,23 @@ class TagManagerTest: TestCase() {
         tagManager.stop()
 
         assertEquals(expected = 1, actual = created.size)
+    }
+
+    /** Verifies that a time punch upsert record creates a new NFC time punch for the current user, whatever the uuid of the record. */
+    @Test
+    fun timePunchUpsertRecordCreatesANewTimePunch() = runUnitTest {
+        val useCases = loggedInUseCases()
+        val uuid = Uuid.random()
+        val tagManager = tagManager()
+
+        tagManager.start()
+        sendTag(record = NfcRecord.Upsert(entityType = EntityType.TIME_PUNCH, entityUuid = uuid))
+        val created = useCases.timePunchUseCases.observeTimePunches().first { it.isNotEmpty() }
+        tagManager.stop()
+
+        val user = useCases.authenticationUseCases.observeCurrentUser().first()
+        assertEquals(expected = listOf(user?.uuid to TimePunch.Source.NFC), actual = created.map { it.userUuid to it.source })
+        assertNotEquals(illegal = uuid, actual = created.single().uuid)
     }
 
     /** Verifies that a user upsert record creates a user with the record's uuid. */
