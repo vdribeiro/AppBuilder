@@ -84,6 +84,7 @@ class TimePunchListScreenStoreTest: TestCase() {
 
         assertEquals(expected = listOf(late.uuid.toString(), early.uuid.toString()), actual = items.map { it.uuid })
         assertEquals(expected = listOf(FakeData.adminUser.name, FakeData.adminUser.name), actual = items.map { it.userName })
+        assertEquals(expected = listOf(late.userUuid.toString(), early.userUuid.toString()), actual = items.map { it.userUuid })
         assertEquals(expected = listOf(true, false), actual = items.map { it.nfc })
     }
 
@@ -99,6 +100,7 @@ class TimePunchListScreenStoreTest: TestCase() {
         val item = store(useCases = useCases).stateFlow.first { it.timePunches.size == 1 }.timePunches.single()
 
         assertEquals(expected = early.time.toString(), actual = item.time)
+        assertNull(actual = item.userUuid)
         assertNull(actual = item.userName)
         assertNull(actual = item.nfc)
     }

@@ -24,6 +24,7 @@ import kotlinx.collections.immutable.persistentListOf
  * @param uuid The UUID of the time punch.
  * @param modifiedAt The modification timestamp of the time punch, as a UTC ISO-8601 string shown as a localized date-time.
  * @param deletedAt The deletion timestamp of the time punch, as a UTC ISO-8601 string shown as a localized date-time.
+ * @param userUuid The UUID of the user that punched the clock.
  * @param userName The name of the user that punched the clock.
  * @param time The time at which the user punched the clock, as a UTC ISO-8601 string shown as a localized date-time.
  * @param source The time punch's source as a translation key.
@@ -34,6 +35,7 @@ fun TimePunchCard(
     uuid: String? = null,
     modifiedAt: String? = null,
     deletedAt: String? = null,
+    userUuid: String? = null,
     userName: String? = null,
     time: String? = null,
     source: String? = null,
@@ -50,8 +52,8 @@ fun TimePunchCard(
         ) {
             userName?.let {
                 FieldValue(
-                    modifier = Modifier.testTag(tag = "time_punch_user"),
-                    label = "time_punch_user",
+                    modifier = Modifier.testTag(tag = "time_punch_user_name"),
+                    label = "time_punch_user_name",
                     value = it
                 )
             }
@@ -72,6 +74,7 @@ fun TimePunchCard(
             MetadataSection(
                 entries = persistentListOf(
                     "time_punch_uuid" to uuid,
+                    "time_punch_user_uuid" to userUuid,
                     "time_punch_modified_at" to modifiedAt?.let { getDateTime(utc = it) },
                     "time_punch_deleted_at" to deletedAt?.let { getDateTime(utc = it) },
                 )
@@ -85,7 +88,7 @@ fun TimePunchCard(
 private fun TimePunchCardPreview() = Preview {
     InjectTranslations(
         translations = mapOf(
-            "time_punch_user" to "User",
+            "time_punch_user_name" to "User Name",
             "time_punch_time" to "Time",
             "time_punch_source" to "Source",
             "time_punch_source_manual" to "Manual",

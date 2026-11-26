@@ -46,7 +46,8 @@ data class TimePunch(
         UUID(translationKey = "time_punch_uuid"),
         MODIFIED_AT(translationKey = "time_punch_modified_at"),
         DELETED_AT(translationKey = "time_punch_deleted_at"),
-        USER(translationKey = "time_punch_user"),
+        USER_UUID(translationKey = "time_punch_user_uuid"),
+        USER_NAME(translationKey = "time_punch_user_name"),
         TIME(translationKey = "time_punch_time"),
         SOURCE(translationKey = "time_punch_source")
     }

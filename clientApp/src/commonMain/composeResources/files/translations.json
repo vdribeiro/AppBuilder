@@ -218,7 +218,8 @@
   },
   "time_punch": {
     "time_punch_punch":         { "en": "Punch the clock", "pt": "Picar o ponto" },
-    "time_punch_user":          { "en": "User", "pt": "Utilizador" },
+    "time_punch_user_name":     { "en": "User Name", "pt": "Nome do Utilizador" },
+    "time_punch_user_uuid":     { "en": "User UUID", "pt": "UUID do Utilizador" },
     "time_punch_time":          { "en": "Time", "pt": "Hora" },
     "time_punch_source":        { "en": "Source", "pt": "Origem" },
     "time_punch_source_manual": { "en": "Manual", "pt": "Manual" },
