@@ -25,6 +25,7 @@ import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.SettingsInputComponent
 import androidx.compose.material.icons.filled.Task
+import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material.icons.outlined.Translate
 import androidx.compose.runtime.Composable
@@ -144,6 +145,7 @@ private val NavigationRoute.text: String
     get() = when (this) {
         NavigationRoute.HOME -> "navigation_home"
         NavigationRoute.TASK -> "navigation_task"
+        NavigationRoute.TIME_PUNCH -> "navigation_time_punch"
         NavigationRoute.EQUIPMENT -> "navigation_equipment"
         NavigationRoute.MATERIAL -> "navigation_material"
         NavigationRoute.BUILDING -> "navigation_building"
@@ -168,6 +170,7 @@ private val NavigationRoute.icon: ImageVector
     get() = when (this) {
         NavigationRoute.HOME -> Icons.Filled.Home
         NavigationRoute.TASK -> Icons.Filled.Task
+        NavigationRoute.TIME_PUNCH -> Icons.Filled.Timer
         NavigationRoute.EQUIPMENT -> Icons.Filled.Build
         NavigationRoute.MATERIAL -> Icons.Filled.Inventory2
         NavigationRoute.BUILDING -> Icons.Filled.Apartment
@@ -192,6 +195,7 @@ private val NavigationRoute.screen: Screen
     get() = when (this) {
         NavigationRoute.HOME -> Screen.Home
         NavigationRoute.TASK -> Screen.TaskList
+        NavigationRoute.TIME_PUNCH -> Screen.TimePunchList
         NavigationRoute.EQUIPMENT -> Screen.EquipmentList
         NavigationRoute.MATERIAL -> Screen.MaterialList
         NavigationRoute.BUILDING -> Screen.BuildingList

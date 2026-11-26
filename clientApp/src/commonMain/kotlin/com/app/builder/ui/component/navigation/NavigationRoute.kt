@@ -25,6 +25,7 @@ enum class NavigationSection {
 enum class NavigationRoute(val section: NavigationSection) {
     HOME(section = NavigationSection.MAIN),
     TASK(section = NavigationSection.MAIN),
+    TIME_PUNCH(section = NavigationSection.MAIN),
     EQUIPMENT(section = NavigationSection.MAIN),
     MATERIAL(section = NavigationSection.MAIN),
     BUILDING(section = NavigationSection.MAIN),
@@ -59,6 +60,7 @@ fun permittedRoutes(account: Account?, flags: ClientFlags): ImmutableList<Naviga
         if (flags.materials && permissions[EntityType.MATERIAL] != null) add(NavigationRoute.MATERIAL)
         if (flags.users && permissions[EntityType.USER] != null) add(NavigationRoute.USER)
         if (flags.tasks && permissions[EntityType.TASK] != null) add(NavigationRoute.TASK)
+        if (flags.timePunches) add(NavigationRoute.TIME_PUNCH)
         if (flags.registries && permissions[EntityType.REGISTRY] != null) add(NavigationRoute.REGISTRY)
         if (flags.home) add(NavigationRoute.HOME)
         if (listOf(

@@ -12,7 +12,7 @@ class NavigationRouteTest: TestCase() {
 
     override suspend fun beforeTest() {
         super.beforeTest()
-        ClientFlags.set { it.copy(buildings = true, equipments = true, materials = true, users = true, tasks = true, registries = true, home = true, design = true) }
+        ClientFlags.set { it.copy(buildings = true, equipments = true, materials = true, users = true, tasks = true, timePunches = true, registries = true, home = true, design = true) }
     }
 
     /** Verifies that without an account there are no routes to open. */
@@ -26,19 +26,28 @@ class NavigationRouteTest: TestCase() {
     fun everyPermission() = runUnitTest {
         val routes = permittedRoutes(account = FakeData.adminAccount, flags = ClientFlags.value)
 
-        assertEquals(expected = listOf(NavigationRoute.BUILDING, NavigationRoute.EQUIPMENT, NavigationRoute.MATERIAL, NavigationRoute.USER, NavigationRoute.TASK, NavigationRoute.REGISTRY, NavigationRoute.HOME), actual = routes.filter { it.section == NavigationSection.MAIN })
+        assertEquals(expected = listOf(NavigationRoute.BUILDING, NavigationRoute.EQUIPMENT, NavigationRoute.MATERIAL, NavigationRoute.USER, NavigationRoute.TASK, NavigationRoute.TIME_PUNCH, NavigationRoute.REGISTRY, NavigationRoute.HOME), actual = routes.filter { it.section == NavigationSection.MAIN })
         assertTrue(actual = NavigationRoute.CONFIG in routes)
         assertTrue(actual = NavigationRoute.TRANSLATION in routes)
+    }
+
+    /** Verifies that an account without any permission still opens the time punch route. */
+    @Test
+    fun timePunchNeedsNoPermission() = runUnitTest {
+        val routes = permittedRoutes(account = FakeData.account.copy(permissions = emptyMap()), flags = ClientFlags.value)
+
+        assertEquals(expected = listOf(NavigationRoute.TIME_PUNCH, NavigationRoute.HOME), actual = routes.filter { it.section == NavigationSection.MAIN })
     }
 
     /** Verifies that a route whose client feature flag is off is left out, even with the permission. */
     @Test
     fun featureFlagOff() = runUnitTest {
-        ClientFlags.set { it.copy(tasks = false, equipments = false, materials = false, buildings = false, design = false) }
+        ClientFlags.set { it.copy(tasks = false, timePunches = false, equipments = false, materials = false, buildings = false, design = false) }
 
         val routes = permittedRoutes(account = FakeData.adminAccount, flags = ClientFlags.value)
 
         assertFalse(actual = NavigationRoute.TASK in routes)
+        assertFalse(actual = NavigationRoute.TIME_PUNCH in routes)
         assertFalse(actual = NavigationRoute.EQUIPMENT in routes)
         assertFalse(actual = NavigationRoute.MATERIAL in routes)
         assertFalse(actual = NavigationRoute.BUILDING in routes)

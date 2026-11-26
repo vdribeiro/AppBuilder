@@ -17,6 +17,7 @@ enum class EntityType {
     DEVICE_LOCATION,
     NFC,
     TASK,
+    TIME_PUNCH,
     FILE,
     EQUIPMENT,
     BUILDING,
