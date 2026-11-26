@@ -319,6 +319,7 @@ object Application {
         }
         if (flags.registries && previous?.registries != true) repositories.registryRepository.syncRegistries()
         if (flags.tasks && previous?.tasks != true) repositories.taskRepository.syncTasks()
+        if (flags.timePunches && previous?.timePunches != true) repositories.timePunchRepository.syncTimePunches()
         if (flags.buildings && previous?.buildings != true) repositories.buildingRepository.syncBuildings()
         if (flags.equipments && previous?.equipments != true) repositories.equipmentRepository.syncEquipments()
         if (flags.buildingEquipments && previous?.buildingEquipments != true) repositories.buildingEquipmentRepository.syncBuildingEquipments()

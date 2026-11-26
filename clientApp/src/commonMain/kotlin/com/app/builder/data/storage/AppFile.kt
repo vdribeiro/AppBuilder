@@ -42,6 +42,10 @@ object AppFile {
             USERS_LAST_SYNC_UTC,
             /** The UTC instant when tasks were last synchronized. */
             TASKS_LAST_SYNC_UTC,
+            /** The UTC instant when the time punches of every user were last synchronized. */
+            TIME_PUNCHES_LAST_SYNC_UTC,
+            /** The UTC instant when the time punches of the current user alone were last synchronized. */
+            OWN_TIME_PUNCHES_LAST_SYNC_UTC,
             /** The UTC instant when buildings were last synchronized. */
             BUILDINGS_LAST_SYNC_UTC,
             /** The UTC instant when equipments were last synchronized. */
@@ -126,6 +130,11 @@ object AppFile {
         override val serializer: KSerializer<ActionBarData> = ActionBarData.serializer()
     }
 
+    /** Time punch preferences. */
+    data object TimePunchPreferences: StorageFile<ActionBarData>(path = "time_punch_preferences", encrypted = false) {
+        override val serializer: KSerializer<ActionBarData> = ActionBarData.serializer()
+    }
+
     /** Building preferences. */
     data object BuildingPreferences: StorageFile<ActionBarData>(path = "building_preferences", encrypted = false) {
         override val serializer: KSerializer<ActionBarData> = ActionBarData.serializer()
@@ -147,6 +156,7 @@ object AppFile {
         RegistryPreferences,
         UserPreferences,
         TaskPreferences,
+        TimePunchPreferences,
         BuildingPreferences,
         EquipmentPreferences,
         MaterialPreferences,
