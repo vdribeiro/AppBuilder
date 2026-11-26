@@ -218,6 +218,9 @@
   },
   "time_punch": {
     "time_punch_punch":         { "en": "Punch the clock", "pt": "Picar o ponto" },
+    "time_punch_pick_user":     { "en": "Pick user", "pt": "Escolher utilizador" },
+    "time_punch_picker_apply":  { "en": "Apply", "pt": "Aplicar" },
+    "time_punch_picker_cancel": { "en": "Cancel", "pt": "Cancelar" },
     "time_punch_user_name":     { "en": "User Name", "pt": "Nome do Utilizador" },
     "time_punch_user_uuid":     { "en": "User UUID", "pt": "UUID do Utilizador" },
     "time_punch_time":          { "en": "Time", "pt": "Hora" },

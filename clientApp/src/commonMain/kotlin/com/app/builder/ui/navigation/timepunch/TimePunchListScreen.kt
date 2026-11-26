@@ -57,6 +57,7 @@ fun TimePunchListScreen(
                 sessionStore = sessionStore,
                 filtersStore = filtersStore,
                 entityType = EntityType.TIME_PUNCH,
+                onAddClick = { router.navigate(screen = Screen.TimePunchDetail(uuid = uuid().toString(), new = true), option = Router.NavOption.REPLACE_LAST) },
             )
         },
         bottomBar = { Navigation(sessionStore = sessionStore, selected = NavigationRoute.TIME_PUNCH) },
