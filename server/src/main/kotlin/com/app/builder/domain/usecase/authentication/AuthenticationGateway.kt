@@ -9,6 +9,7 @@ import org.jetbrains.exposed.v1.core.ResultRow
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.core.greaterEq
+import org.jetbrains.exposed.v1.core.isNull
 import org.jetbrains.exposed.v1.core.less
 import org.jetbrains.exposed.v1.core.neq
 import org.jetbrains.exposed.v1.core.or
@@ -18,6 +19,7 @@ import org.jetbrains.exposed.v1.r2dbc.deleteWhere
 import org.jetbrains.exposed.v1.r2dbc.insert
 import org.jetbrains.exposed.v1.r2dbc.selectAll
 import org.jetbrains.exposed.v1.r2dbc.update
+import org.jetbrains.exposed.v1.r2dbc.upsert
 import com.app.builder.core.config.ServerConfigs
 import com.app.builder.core.flow.Dispatcher
 import com.app.builder.core.locale.now
@@ -28,6 +30,7 @@ import com.app.builder.core.security.uuid
 import com.app.builder.core.security.verifyPassword
 import com.app.builder.core.telemetry.Telemetry
 import com.app.builder.data.database.safeTransaction
+import com.app.builder.data.database.table.LoginAttemptTable
 import com.app.builder.data.database.table.UserAccountTable
 import com.app.builder.data.database.table.UserSessionTable
 import com.app.builder.data.database.table.UserTable
@@ -106,6 +109,22 @@ class AuthenticationGateway(
     }
 
     override suspend fun login(credentials: UserCredentials): LoginOutcome = withContext(context = Dispatcher.IO) {
+        val now = now()
+        val locked = database.safeTransaction {
+            LoginAttemptTable.selectAll()
+                .where { LoginAttemptTable.username eq credentials.username }
+                .firstOrNull()
+                ?.get(LoginAttemptTable.lockedAt)
+                ?.let { now < it + ServerConfigs.value.loginLockDuration.milliseconds } == true
+        }.getOrElse {
+            Telemetry.error(tag = TAG, message = "Unable to get login attempts", throwable = it)
+            return@withContext LoginOutcome.Error
+        }
+        if (locked) {
+            Telemetry.error(tag = TAG, message = "Rejected login for locked username")
+            return@withContext LoginOutcome.Locked
+        }
+
         val row = database.safeTransaction {
             (UserAccountTable innerJoin UserTable)
                 .selectAll()
@@ -117,7 +136,11 @@ class AuthenticationGateway(
         }
 
         val storedHash = row?.let { runCatching { it[UserAccountTable.passwordHash] }.getOrNull() ?: return@withContext LoginOutcome.Error }
-        if (!verifyPassword(password = credentials.password, hash = storedHash) || row == null) return@withContext LoginOutcome.Rejected
+        if (!verifyPassword(password = credentials.password, hash = storedHash) || row == null) {
+            recordLoginFailure(username = credentials.username, now = now)
+            return@withContext LoginOutcome.Rejected
+        }
+        clearLoginFailures(username = credentials.username)
 
         val user = runCatching { row.toUser() }.getOrNull() ?: return@withContext LoginOutcome.Error
         val account = runCatching { row.toAccount() }.getOrNull() ?: return@withContext LoginOutcome.Error
@@ -128,7 +151,6 @@ class AuthenticationGateway(
 
         val newAccessToken = createAccessToken(userUuid = user.uuid, access = UserAccess(permissions = account.permissions, deletedAt = null)) ?: return@withContext LoginOutcome.Error
         val newRefreshToken = createRefreshToken() ?: return@withContext LoginOutcome.Error
-        val now = now()
         val uuid = uuid()
 
         database.safeTransaction {
@@ -317,6 +339,54 @@ class AuthenticationGateway(
         }.onFailure {
             Telemetry.error(tag = TAG, message = "Unable to change the password of user $userUuid", throwable = it)
         }.getOrDefault(defaultValue = PasswordChangeOutcome.Error)
+    }
+
+    /**
+     * Counts a failed login of [username], starting the count over when the last failure is older than [ServerConfigs.loginLockDuration],
+     * and locks the username for [ServerConfigs.loginLockDuration] once the count reaches [ServerConfigs.maxLoginAttempts].
+     * Deletes the counts of every username whose last failure and lock are both older than [ServerConfigs.loginLockDuration].
+     *
+     * @param username The username of the failed login.
+     * @param now The time the login is handled at.
+     */
+    private suspend fun recordLoginFailure(username: String, now: Instant) {
+        val lockDuration = ServerConfigs.value.loginLockDuration.milliseconds
+        val maxAttempts = ServerConfigs.value.maxLoginAttempts.coerceAtLeast(minimumValue = 1)
+        database.safeTransaction {
+            val expired = now - lockDuration
+            LoginAttemptTable.deleteWhere {
+                (LoginAttemptTable.lastFailureAt less expired) and (LoginAttemptTable.lockedAt.isNull() or (LoginAttemptTable.lockedAt less expired))
+            }
+            val previous = LoginAttemptTable.selectAll()
+                .where { LoginAttemptTable.username eq username }
+                .firstOrNull()
+                ?.takeIf { it[LoginAttemptTable.lastFailureAt] >= expired }
+                ?.get(LoginAttemptTable.failures)
+                ?: 0
+            val failures = previous + 1
+            LoginAttemptTable.upsert {
+                it[LoginAttemptTable.username] = username
+                it[LoginAttemptTable.failures] = if (failures >= maxAttempts) 0 else failures
+                it[LoginAttemptTable.lastFailureAt] = now
+                it[LoginAttemptTable.lockedAt] = if (failures >= maxAttempts) now else null
+            }
+            if (failures >= maxAttempts) Telemetry.error(tag = TAG, message = "Locked a username after $maxAttempts failed logins")
+        }.onFailure {
+            Telemetry.error(tag = TAG, message = "Unable to count a failed login", throwable = it)
+        }
+    }
+
+    /**
+     * Deletes the count of failed logins of [username].
+     *
+     * @param username The username of the successful login.
+     */
+    private suspend fun clearLoginFailures(username: String) {
+        database.safeTransaction {
+            LoginAttemptTable.deleteWhere { LoginAttemptTable.username eq username }
+        }.onFailure {
+            Telemetry.error(tag = TAG, message = "Unable to clear the failed logins", throwable = it)
+        }
     }
 
     /**
