@@ -29,13 +29,15 @@ import com.app.builder.ui.store.previewStore
  * Creates the store of a user picker, picking from every user that is not deleted, with the user list filters.
  *
  * @param userUseCases Use cases used to observe every user.
+ * @param single Whether at most one user is ticked.
  * @return The user picker store.
  */
-internal fun userLinkPickerStore(userUseCases: UserUseCases): LinkPickerStore<User, UserItem> = LinkPickerStore(
+internal fun userLinkPickerStore(userUseCases: UserUseCases, single: Boolean = false): LinkPickerStore<User, UserItem> = LinkPickerStore(
     state = LinkPickerState(filters = userFilterDefaults),
     candidates = userUseCases.observeUsers().map { users -> users.filter { it.deletedAt == null } },
     filters = flow { emitAll(flow = AppFile.UserPreferences.cache().map { it ?: userFilterDefaults }) },
     uuid = { it.uuid },
+    single = single,
     toItems = { candidates, filters, picked ->
         candidates.filtered(actionBarData = filters.copy(showDeleted = false)).map { user ->
             user.toUserItem(visibilityProperties = filters.visibleProperties, selectedUuid = null).copy(checked = user.uuid in picked)
