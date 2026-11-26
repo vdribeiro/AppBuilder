@@ -16,6 +16,7 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
 import com.app.builder.Dependency.getUserDependency
 import com.app.builder.core.config.ClientFlags
+import com.app.builder.core.security.toUuid
 import com.app.builder.data.storage.AppFile
 import com.app.builder.domain.EntityType
 import com.app.builder.domain.deeplink.DeepLink
@@ -211,7 +212,7 @@ class NavigationTest: TestCase() {
         waitUntil { router.backStack.lastOrNull() is Screen.TaskDetail }
         val screen = assertIs<Screen.TaskDetail>(value = router.backStack.last())
         assertTrue(actual = screen.new)
-        val taskUuid = Uuid.parse(uuidString = screen.uuid)
+        val taskUuid = screen.uuid.toUuid()!!
         waitForIdle()
 
         onNodeWithTag(testTag = "action_save").performClick()

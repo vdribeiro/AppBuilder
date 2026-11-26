@@ -13,6 +13,7 @@ import com.app.builder.core.config.ClientConfigs
 import com.app.builder.core.config.ClientFlags
 import com.app.builder.core.config.ServerConfigs
 import com.app.builder.core.config.ServerFlags
+import com.app.builder.core.security.toUuid
 import com.app.builder.data.serializer.decode
 import com.app.builder.data.serializer.encode
 import com.app.builder.domain.Account
@@ -238,7 +239,7 @@ private inline fun <reified T> HttpRequestData.decodeBody(): T? = (body as? Text
  * @param url The collection URL the item belongs to.
  * @return `true` if this path addresses an item of [url].
  */
-private fun String.isItemOf(url: URL): Boolean = substringBeforeLast(delimiter = '/') == url.path && Uuid.parseOrNull(uuidString = substringAfterLast(delimiter = '/')) != null
+private fun String.isItemOf(url: URL): Boolean = substringBeforeLast(delimiter = '/') == url.path && substringAfterLast(delimiter = '/').toUuid() != null
 
 /**
  * Responds 400 Bad Request with the reason a password was refused.
