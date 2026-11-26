@@ -36,6 +36,7 @@
           "DEVICE_LOCATION": "WRITE",
           "NFC": "WRITE",
           "TASK": "WRITE",
+          "TIME_PUNCH": "WRITE",
           "EQUIPMENT": "WRITE",
           "BUILDING": "WRITE",
           "BUILDING_EQUIPMENT": "WRITE",
@@ -68,6 +69,7 @@
           "DEVICE_LOCATION": "READ",
           "NFC": "READ",
           "TASK": "READ",
+          "TIME_PUNCH": "READ",
           "EQUIPMENT": "READ",
           "BUILDING": "READ",
           "BUILDING_EQUIPMENT": "READ",
@@ -226,6 +228,7 @@
           "DEVICE_LOCATION": "READ",
           "NFC": "READ",
           "TASK": "READ",
+          "TIME_PUNCH": "READ",
           "EQUIPMENT": "READ",
           "BUILDING": "READ",
           "BUILDING_EQUIPMENT": "READ",
@@ -286,6 +289,44 @@
       "title": "Fix the leaking tap",
       "description": "Kitchen on floor 1.",
       "state": "COMPLETE"
+    }
+  ],
+  "timePunches": [
+    {
+      "uuid": "00000000-0000-4000-8000-001300000001",
+      "userUuid": "00000000-0000-4000-8000-000100000001",
+      "time": "2026-11-02T09:00:00Z",
+      "source": "MANUAL"
+    },
+    {
+      "uuid": "00000000-0000-4000-8000-001300000002",
+      "userUuid": "00000000-0000-4000-8000-000100000001",
+      "time": "2026-11-02T18:05:00Z",
+      "source": "MANUAL"
+    },
+    {
+      "uuid": "00000000-0000-4000-8000-001300000003",
+      "userUuid": "00000000-0000-4000-8000-000100000003",
+      "time": "2026-11-02T08:30:00Z",
+      "source": "NFC"
+    },
+    {
+      "uuid": "00000000-0000-4000-8000-001300000004",
+      "userUuid": "00000000-0000-4000-8000-000100000003",
+      "time": "2026-11-02T17:10:00Z",
+      "source": "NFC"
+    },
+    {
+      "uuid": "00000000-0000-4000-8000-001300000005",
+      "userUuid": "00000000-0000-4000-8000-000100000005",
+      "time": "2026-11-02T22:00:00Z",
+      "source": "MANUAL"
+    },
+    {
+      "uuid": "00000000-0000-4000-8000-001300000006",
+      "userUuid": "00000000-0000-4000-8000-000100000005",
+      "time": "2026-11-03T06:15:00Z",
+      "source": "MANUAL"
     }
   ],
   "equipments": [

@@ -26,6 +26,7 @@ import com.app.builder.data.database.table.EquipmentUserTable
 import com.app.builder.data.database.table.MaterialTable
 import com.app.builder.data.database.table.RegistryTable
 import com.app.builder.data.database.table.TaskTable
+import com.app.builder.data.database.table.TimePunchTable
 import com.app.builder.data.database.table.TranslationTable
 import com.app.builder.data.database.table.UserAccountTable
 import com.app.builder.data.database.table.UserTable
@@ -160,6 +161,14 @@ class SeedGateway(
                 this[TaskTable.title] = task.title
                 this[TaskTable.description] = task.description
                 this[TaskTable.state] = task.state.name
+            }
+            TimePunchTable.insertMissing(uuid = TimePunchTable.uuid, entities = seed.timePunches, uuidOf = { it.uuid }) { timePunch ->
+                this[TimePunchTable.uuid] = timePunch.uuid
+                this[TimePunchTable.modifiedAt] = timePunch.modifiedAt
+                this[TimePunchTable.deletedAt] = timePunch.deletedAt
+                this[TimePunchTable.userUuid] = timePunch.userUuid
+                this[TimePunchTable.time] = timePunch.time
+                this[TimePunchTable.punchSource] = timePunch.source.name
             }
             EquipmentTable.insertMissing(uuid = EquipmentTable.uuid, entities = seed.equipments, uuidOf = { it.uuid }) { equipment ->
                 this[EquipmentTable.uuid] = equipment.uuid

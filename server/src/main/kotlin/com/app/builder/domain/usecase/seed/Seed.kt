@@ -11,6 +11,7 @@ import com.app.builder.domain.Material
 import com.app.builder.domain.RegistrationForm
 import com.app.builder.domain.Registry
 import com.app.builder.domain.Task
+import com.app.builder.domain.TimePunch
 import com.app.builder.domain.User
 
 /**
@@ -19,6 +20,7 @@ import com.app.builder.domain.User
  * @property users The users without an account.
  * @property registrations The users with an account, each with the account and its login password.
  * @property tasks The tasks.
+ * @property timePunches The time punches.
  * @property equipments The equipments.
  * @property buildings The buildings.
  * @property materials The materials.
@@ -33,6 +35,7 @@ data class Seed(
     val users: List<User> = emptyList(),
     val registrations: List<RegistrationForm> = emptyList(),
     val tasks: List<Task> = emptyList(),
+    val timePunches: List<TimePunch> = emptyList(),
     val equipments: List<Equipment> = emptyList(),
     val buildings: List<Building> = emptyList(),
     val materials: List<Material> = emptyList(),
