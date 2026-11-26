@@ -75,13 +75,14 @@ class TaskRepositoryTest: TestCase() {
 
         assertNull(actual = taskUseCases.observeTask(uuid = FakeData.task.uuid).firstOrNull())
 
+        val task = FakeData.task.copy(title = "Posted Title")
         val job = Job(userUuid = Uuid.NIL, entityType = EntityType.TASK, type = Job.Type.POST)
         assertTrue(actual = taskRepository.executeUpsertTask(job = job) is JobResult.Error)
 
-        val jobResult = taskRepository.executeUpsertTask(job = job.copy(payload = encode(value = FakeData.task)))
+        val jobResult = taskRepository.executeUpsertTask(job = job.copy(payload = encode(value = task)))
         assertTrue(actual = jobResult is JobResult.Success)
 
-        assertEquals(expected = FakeData.task, actual = taskUseCases.observeTask(uuid = FakeData.task.uuid).firstOrNull())
+        assertEquals(expected = task, actual = taskUseCases.observeTask(uuid = FakeData.task.uuid).firstOrNull())
     }
 
     /** Verifies that executing an upsert task job fails when the http client flag is disabled. */

@@ -77,13 +77,14 @@ class TimePunchRepositoryTest: TestCase() {
 
         assertNull(actual = timePunchUseCases.observeTimePunch(uuid = FakeData.timePunch.uuid).firstOrNull())
 
+        val timePunch = FakeData.timePunch.copy(source = TimePunch.Source.NFC)
         val job = Job(userUuid = Uuid.NIL, entityType = EntityType.TIME_PUNCH, type = Job.Type.POST)
         assertTrue(actual = timePunchRepository.executeUpsertTimePunch(job = job) is JobResult.Error)
 
-        val jobResult = timePunchRepository.executeUpsertTimePunch(job = job.copy(payload = encode(value = FakeData.timePunch)))
+        val jobResult = timePunchRepository.executeUpsertTimePunch(job = job.copy(payload = encode(value = timePunch)))
         assertTrue(actual = jobResult is JobResult.Success)
 
-        assertEquals(expected = FakeData.timePunch, actual = timePunchUseCases.observeTimePunch(uuid = FakeData.timePunch.uuid).firstOrNull())
+        assertEquals(expected = timePunch, actual = timePunchUseCases.observeTimePunch(uuid = FakeData.timePunch.uuid).firstOrNull())
     }
 
     /** Verifies that executing an upsert time punch job fails when the http client flag is disabled. */

@@ -56,14 +56,16 @@ class BuildingEquipmentRepositoryTest: TestCase() {
     fun executeUpsertBuildingEquipment() = runUnitTest {
         val graph = dependency.get().getUserDependency(account = FakeData.adminAccount)
         val buildingEquipmentRepository = graph.repositories.buildingEquipmentRepository
-        graph.useCases.equipmentUseCases.upsertEquipment(equipment = FakeData.equipment)
+        val equipment = FakeData.equipment.copy(uuid = Uuid.random())
+        val buildingEquipment = FakeData.buildingEquipment.copy(equipmentUuid = equipment.uuid)
+        graph.useCases.equipmentUseCases.upsertEquipment(equipment = equipment)
 
         val job = Job(userUuid = Uuid.NIL, entityType = EntityType.BUILDING_EQUIPMENT, type = Job.Type.POST)
         assertTrue(actual = buildingEquipmentRepository.executeUpsertBuildingEquipment(job = job) is JobResult.Error)
 
-        val jobResult = buildingEquipmentRepository.executeUpsertBuildingEquipment(job = job.copy(payload = encode(value = FakeData.buildingEquipment)))
+        val jobResult = buildingEquipmentRepository.executeUpsertBuildingEquipment(job = job.copy(payload = encode(value = buildingEquipment)))
         assertTrue(actual = jobResult is JobResult.Success)
-        assertEquals(expected = listOf(element = FakeData.equipment), actual = graph.useCases.buildingEquipmentUseCases.observeEquipmentsInBuilding(buildingUuid = FakeData.building.uuid).firstOrNull())
+        assertEquals(expected = listOf(element = equipment), actual = graph.useCases.buildingEquipmentUseCases.observeEquipmentsInBuilding(buildingUuid = FakeData.building.uuid).firstOrNull())
     }
 
     /** Verifies that executing a building equipments sync job fails when the http client flag is disabled. */
