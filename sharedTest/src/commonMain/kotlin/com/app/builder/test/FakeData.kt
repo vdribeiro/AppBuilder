@@ -2,6 +2,7 @@ package com.app.builder.test
 
 import com.app.builder.core.locale.now
 import com.app.builder.core.platform.OS
+import com.app.builder.core.security.toUuid
 import com.app.builder.core.security.uuid
 import com.app.builder.data.serializer.encode
 import com.app.builder.domain.Account
@@ -13,9 +14,9 @@ import com.app.builder.domain.BuildingMaterial
 import com.app.builder.domain.BuildingUser
 import com.app.builder.domain.DeviceLocation
 import com.app.builder.domain.EntityType
-import com.app.builder.domain.Material
 import com.app.builder.domain.Equipment
 import com.app.builder.domain.EquipmentUser
+import com.app.builder.domain.Material
 import com.app.builder.domain.Permission
 import com.app.builder.domain.PushPayload
 import com.app.builder.domain.RegistrationForm
@@ -57,6 +58,7 @@ object FakeData {
     )
 
     val adminUser: User = User(
+        uuid = "FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF".toUuid()!!,
         name = "Admin",
         avatar = "The Last Airbender"
     )
