@@ -119,7 +119,7 @@ Everything below works with zero configuration: no Firebase project, no Postgres
    | Android | `./gradlew :clientApp:installDebug :clientApp:adbReverse`                |
    | iOS     | `./gradlew :clientApp:podInstall`, then open `iosApp/iosApp.xcworkspace` |
 
-3. **Log in** with `admin`/`admin`. The account is seeded with all permissions, so it can create further users and accounts from inside the app.
+3. **Log in** with `admin`/`admin_password`. The account is seeded with all permissions, so it can create further users and accounts from inside the app.
 
 `.run/` holds shared IDE run configurations for all four clients and for every test suite, so each command above has a click-to-run equivalent.
 
@@ -385,6 +385,7 @@ Capturing it afterwards would let a write landing mid-sync fall between the old 
 If any page fails, the watermark is left untouched and the next attempt restarts from the last known-good point.
 
 A missing `READ` permission is checked before the request and is a terminal failure.
+Time punches are the exception: an account without `READ` still syncs its own, under a watermark of its own, so one that is granted `READ` later starts from the beginning and receives every user's.
 
 ### Push-Triggered Entity Sync
 
@@ -802,7 +803,7 @@ Each runs `beforeTest()`, the test body, then `afterTest()`, cancelling the scop
 
 A `User` is a person, with a name and an avatar, that other entities can refer to whether or not it can log in.
 An `Account` is what lets a user log in: its username, password hash and permissions live in the server's `user_account` table, and its sessions in `user_session`.
-The server seeds one super-user account on boot when it doesn't exist yet (`admin`/`admin` in development, the `ADMIN_*` values in production).
+The server seeds one super-user account on boot when it doesn't exist yet (`admin`/`admin_password` in development, the `ADMIN_*` values in production).
 When it already exists, the boot grants it write permission on every entity type again, so entity types added later reach it and permissions removed from it come back.
 
 Authorization is per `EntityType`: each account carries a `READ`/`WRITE` permission map, checked on every protected route instead of a fixed role.
@@ -905,7 +906,7 @@ Most have no default. What makes `./gradlew :server:run` work with none set is t
 DEVELOPMENT=true
 ADMIN_UUID=FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF
 ADMIN_USERNAME=admin
-ADMIN_PASSWORD=admin
+ADMIN_PASSWORD=admin_password
 JWT_ISSUER=jwt_issuer
 JWT_AUDIENCE=jwt_audience
 JWT_SECRET=jwt_secret
@@ -930,7 +931,7 @@ The switch is `Env.developmentMode`, from the `DEVELOPMENT` variable.
 | CORS                  | `localhost:8080` and `localhost:8010` | HTTPS only, from `CORS_HOSTS`                      |
 | Future-dated requests | Allowed                               | Rejected                                           |
 | Rate limiting         | One shared bucket                     | Per caller address, if `TRUSTED_PROXY_HOPS` is set |
-| Seeded account        | `admin`/`admin`                       | The `ADMIN_*` values                               |
+| Seeded account        | `admin`/`admin_password`              | The `ADMIN_*` values                               |
 | Seeded entities       | `static/seed.json`                    | None                                               |
 
 > [!NOTE]
@@ -1052,6 +1053,7 @@ Desktop is unavailable, since there is no standard JVM webcam API without native
 An `Idle`/`Scanning`/`Writing` state machine driven by `read()`, `write(records)` and `stop()`, gated by the `nfc` flag.
 Reads don't arrive on the controller's own `state`. They are pushed to the module-level `TagProvider.tags` flow, because Android can hand a tag to the app while it is backgrounded, with no live controller to receive it.
 `TagManager` collects that flow and turns each tag's `NfcRecord`s into a deep link or a use case.
+An upsert record of a time punch always punches the clock for the current user, so one tag serves every user that taps it.
 
 **Platforms**: `NfcAdapter` reader mode with NDEF read/write on Android, backed by a transparent `NfcActivity` that catches tag intents when the app isn't in the foreground; `NFCNDEFReaderSession` on Apple.
 Desktop and Web expose no generic NFC API, so the controller honestly reports itself unavailable.
@@ -1163,10 +1165,14 @@ Paths come from the shared `URL` registry.
 | `GET /api/accounts/{userUuid}`                               | Fetch one account                                           | JWT, `ACCOUNT` `READ`                             | `users`                                  |
 | `POST /api/accounts`                                         | Update an account's username, permissions or disabled state | JWT, `ACCOUNT` `WRITE`                            | `users`                                  |
 | `POST /api/device-location`                                  | Report a device location fix                                | JWT, `DEVICE_LOCATION` `WRITE`                    | `deviceLocation`                         |
+| `GET /api/time-punches` · `/api/time-punches/{uuid}`         | Delta-sync time punches / fetch one (*2)                    | JWT, its own or `TIME_PUNCH` `READ`               | `timePunches`                            |
+| `POST /api/time-punches`                                     | Upsert a time punch (*2)                                    | JWT, its own new one or `TIME_PUNCH` `WRITE`      | `timePunches`                            |
 | `GET /api/[entity]` · `/api/[entity]/{uuid}`                 | Delta-sync a entity / fetch one                             | JWT, `ENTITY` `READ`                              | Feature flag                             |
 | `POST /api/[entity]`                                         | Upsert a feature entity                                     | JWT, `ENTITY` `WRITE`                             | Feature flag                             |
 
 (*1) `USER` `WRITE` may upsert any user. Any other user may only update itself, keeping its stored `deletedAt`. Deleting a user with an active account is refused. Disabled accounts are narrowed further, see [Account Deletion](#account-deletion).
+
+(*2) `TIME_PUNCH` `READ` lists every user's time punches and `WRITE` may upsert any of them. Any other user only lists its own, and may only create a time punch for itself or send that one again unchanged.
 
 ## Platform Implementations
 
