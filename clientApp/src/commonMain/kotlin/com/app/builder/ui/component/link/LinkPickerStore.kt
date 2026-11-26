@@ -18,6 +18,7 @@ import com.app.builder.ui.store.Store
  * @property candidates Every entity that can be picked.
  * @property filters The list filters of the entities.
  * @property uuid Gets the unique identifier of an entity.
+ * @property single Whether at most one entity is ticked, so ticking one unticks the other.
  * @property toItems Builds the rows from the entities, their list filters and the unique identifiers of the ticked ones.
  */
 class LinkPickerStore<T, Item>(
@@ -25,6 +26,7 @@ class LinkPickerStore<T, Item>(
     private val candidates: Flow<List<T>>,
     private val filters: Flow<AppFile.ActionBarData>,
     private val uuid: (T) -> Uuid,
+    private val single: Boolean = false,
     private val toItems: (candidates: List<T>, filters: AppFile.ActionBarData, picked: Set<Uuid>) -> List<Item>,
 ): Store<LinkPickerState<T, Item>, LinkPickerAction>(initialState = state) {
     init {
@@ -50,7 +52,11 @@ class LinkPickerStore<T, Item>(
         when (action) {
             is LinkPickerAction.Open -> updateState { it.copy(open = true, picked = action.picked.toPersistentSet()).derived() }
             is LinkPickerAction.Toggle -> updateState { current ->
-                val picked = if (action.uuid in current.picked) current.picked - action.uuid else current.picked + action.uuid
+                val picked = when {
+                    action.uuid in current.picked -> current.picked - action.uuid
+                    single -> setOf(element = action.uuid)
+                    else -> current.picked + action.uuid
+                }
                 current.copy(picked = picked.toPersistentSet()).derived()
             }
 
