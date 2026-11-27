@@ -3,13 +3,9 @@ package com.app.builder.core.locale
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
-import com.app.builder.core.flow.StateHolder
 
 /** App default language. */
 const val DEFAULT_LANGUAGE = "en"
-
-/** Holds the ISO 639-1 code of the language selected for the app, or `null` while the app follows the device language. */
-object SelectedLanguage: StateHolder<String?>(initialValue = null)
 
 /**
  * Observes the language the app is shown in, which is the [SelectedLanguage] or, while none is selected, the device language.

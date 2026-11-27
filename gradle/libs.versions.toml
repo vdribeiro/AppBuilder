@@ -195,6 +195,7 @@ shared-common = [
     "kotlin-stdlib",
     "kotlinx-serialization",
     "kotlinx-coroutines-core",
+    "kotlinx-datetime",
 ]
 shared-common-test = [
     "kotlin-test",
@@ -244,7 +245,6 @@ design-web = [
 appcore-common = [
     "kotlinx-coroutines-core",
     "kotlinx-atomicfu",
-    "kotlinx-datetime",
     "ktor",
     "ktor-logging",
     "ktor-content",
