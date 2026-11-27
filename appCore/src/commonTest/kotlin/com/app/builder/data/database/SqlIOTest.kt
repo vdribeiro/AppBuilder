@@ -30,7 +30,7 @@ class SqlIOTest: TestCase() {
         private var index = -1
 
         override fun next(): QueryResult<Boolean> = QueryResult.Value(value = ++index < rows.size)
-        override fun getString(index: Int): String? = rows[this.index]
+        override fun getString(index: Int): String = rows[this.index]
         override fun getLong(index: Int): Long? = null
         override fun getBytes(index: Int): ByteArray? = null
         override fun getDouble(index: Int): Double? = null

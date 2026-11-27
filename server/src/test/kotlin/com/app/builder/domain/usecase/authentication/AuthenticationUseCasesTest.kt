@@ -383,7 +383,6 @@ class AuthenticationUseCasesTest: TestCase() {
         assertEquals(expected = PasswordChangeOutcome.Rejected, actual = authenticationUseCases.changePassword(passwordChange = wrong))
     }
 
-
     @Test
     fun databaseFailureIsAnErrorNotARejection() = runServerTest {
         val authenticationUseCases = dependency.get()

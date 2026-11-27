@@ -110,6 +110,7 @@ class SeedGateway(
                 Telemetry.info(tag = TAG, message = "Su account permissions restored")
                 Outcome.Success(data = Unit)
             }
+
             else -> {
                 Telemetry.error(tag = TAG, message = "Unable to restore su account permissions")
                 Outcome.Error

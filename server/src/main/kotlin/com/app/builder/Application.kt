@@ -32,8 +32,8 @@ import com.app.builder.data.http.URL.Companion.DEV_PORT
 import com.app.builder.data.http.installHttpPlugins
 import com.app.builder.data.signal.LocalSignal
 import com.app.builder.data.signal.PostgresSignal
-import com.app.builder.domain.push.FcmManager
 import com.app.builder.domain.file.NoOpFileStorage
+import com.app.builder.domain.push.FcmManager
 import com.app.builder.domain.push.NoOpFcmService
 import com.app.builder.domain.route.installRouting
 import com.app.builder.domain.usecase.Outcome
