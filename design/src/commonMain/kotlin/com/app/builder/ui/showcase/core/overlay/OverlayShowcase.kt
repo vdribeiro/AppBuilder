@@ -25,7 +25,6 @@ import com.app.builder.ui.core.image.Icon
 import com.app.builder.ui.core.overlay.Badge
 import com.app.builder.ui.core.overlay.BadgedBox
 import com.app.builder.ui.core.overlay.DatePicker
-import com.app.builder.ui.core.overlay.DateTimePicker
 import com.app.builder.ui.core.overlay.Dialog
 import com.app.builder.ui.core.overlay.ModalBottomSheet
 import com.app.builder.ui.core.overlay.Position
@@ -46,7 +45,6 @@ fun OverlayShowcase() {
         ShowcaseSection(title = "Live counter") { LiveCounterBadgePreview() }
         ShowcaseSection(title = "Date picker") { DatePickerPreview() }
         ShowcaseSection(title = "Time picker") { TimePickerPreview() }
-        ShowcaseSection(title = "Date time picker") { DateTimePickerPreview() }
         ShowcaseSection(title = "Modal Bottom Sheet") { ModalBottomSheetPreview() }
         ShowcaseSection(title = "Modal Bottom Sheet Full Screen") { ModalBottomSheetFullScreenPreview() }
         ShowcaseSection(title = "Confirmation dialog") { DialogPreview() }
@@ -80,19 +78,18 @@ private fun LiveCounterBadgePreview() {
 @Composable
 private fun DatePickerPreview() {
     var showPicker by remember { mutableStateOf(value = false) }
-    var selected by remember { mutableStateOf(value = Clock.System.now()) }
+    var selectedDate by remember { mutableStateOf(value = Clock.System.now().toString().substringBefore(delimiter = "T")) }
 
     Column(verticalArrangement = Arrangement.spacedBy(space = 8.dp)) {
         Button(text = "Pick a date", onClick = { showPicker = true })
-        Text(text = "Selected: $selected")
+        Text(text = "Selected: $selectedDate")
     }
 
     if (showPicker) DatePicker(
-        selected = selected,
         confirmText = "Confirm",
         dismissText = "Cancel",
-        onSelected = {
-            selected = it
+        onDateSelected = { instant ->
+            instant?.let { selectedDate = it.toString().substringBefore(delimiter = "T") }
             showPicker = false
         },
         onDismissRequest = { showPicker = false }
@@ -102,42 +99,19 @@ private fun DatePickerPreview() {
 @Composable
 private fun TimePickerPreview() {
     var showPicker by remember { mutableStateOf(value = false) }
-    var selected by remember { mutableStateOf(value = Clock.System.now()) }
+    var selectedTime by remember { mutableStateOf(value = "00:00") }
 
     Column(verticalArrangement = Arrangement.spacedBy(space = 8.dp)) {
         Button(text = "Pick a time", onClick = { showPicker = true })
-        Text(text = "Selected: $selected")
+        Text(text = "Selected: $selectedTime")
     }
 
     if (showPicker) TimePicker(
         title = "Select time",
-        selected = selected,
         confirmText = "Confirm",
         dismissText = "Cancel",
-        onSelected = {
-            selected = it
-            showPicker = false
-        },
-        onDismissRequest = { showPicker = false }
-    )
-}
-
-@Composable
-private fun DateTimePickerPreview() {
-    var showPicker by remember { mutableStateOf(value = false) }
-    var selected by remember { mutableStateOf(value = Clock.System.now()) }
-
-    Column(verticalArrangement = Arrangement.spacedBy(space = 8.dp)) {
-        Button(text = "Pick a date and time", onClick = { showPicker = true })
-        Text(text = "Selected: $selected")
-    }
-
-    if (showPicker) DateTimePicker(
-        selected = selected,
-        confirmText = "Confirm",
-        dismissText = "Cancel",
-        onSelected = {
-            selected = it
+        onTimeSelected = { hour, minute ->
+            selectedTime = "${hour.toString().padStart(length = 2, padChar = '0')}:${minute.toString().padStart(length = 2, padChar = '0')}"
             showPicker = false
         },
         onDismissRequest = { showPicker = false }

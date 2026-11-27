@@ -24,9 +24,6 @@ import com.app.builder.ui.DateTimeMode
 import com.app.builder.ui.LocalTypography
 import com.app.builder.ui.Preview
 import com.app.builder.ui.core.image.Icon
-import com.app.builder.ui.core.overlay.DatePicker
-import com.app.builder.ui.core.overlay.DateTimePicker
-import com.app.builder.ui.core.overlay.TimePicker
 import com.app.builder.ui.core.text.Text
 import com.app.builder.ui.getDateTime
 import com.app.builder.ui.getTranslation
@@ -100,11 +97,7 @@ fun DateTimeField(
             pickerOpen = false
             onValueChange(it.toString())
         }
-        when (mode) {
-            DateTimeMode.DATE_TIME -> DateTimePicker(selected = selected, confirmText = confirmText, dismissText = dismissText, onSelected = onSelected, onDismissRequest = { pickerOpen = false })
-            DateTimeMode.DATE -> DatePicker(selected = selected, confirmText = confirmText, dismissText = dismissText, onSelected = onSelected, onDismissRequest = { pickerOpen = false })
-            DateTimeMode.TIME -> TimePicker(title = getTranslation(key = label), selected = selected, confirmText = confirmText, dismissText = dismissText, onSelected = onSelected, onDismissRequest = { pickerOpen = false })
-        }
+        // TODO
     }
 }
 
