@@ -30,7 +30,7 @@ import com.app.builder.core.config.ClientFlags
 import com.app.builder.core.flow.Dispatcher
 import com.app.builder.core.flow.LazyData
 import com.app.builder.core.flow.runSuspendCatching
-import com.app.builder.core.locale.SelectedLanguage
+import com.app.builder.core.locale.Language
 import com.app.builder.core.nfc.TagProvider
 import com.app.builder.core.platform.appDataPath
 import com.app.builder.core.platform.developmentMode
@@ -142,7 +142,7 @@ object Application {
         clearCache()
         TranslationCache.reset()
         ThemeCache.reset()
-        SelectedLanguage.reset()
+        Language.reset()
     }
 
     /** Stops all application services, suspending until they have fully canceled. */
@@ -198,7 +198,7 @@ object Application {
             ThemeCache.set { customTheme }
             Telemetry.info(tag = TAG, message = "Loading language")
             val language = CoreFile.Device.cache().value.orEmpty()[CoreFile.Device.Key.LANGUAGE]
-            SelectedLanguage.set { language }
+            Language.set { language }
             Telemetry.info(tag = TAG, message = "Loading list filters")
             AppFile.preferences.forEach { it.cache() }
 
