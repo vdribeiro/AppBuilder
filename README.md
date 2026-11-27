@@ -708,7 +708,9 @@ getTranslation(key = "push_sent", args = *arrayOf("3"))
 In a composable, always call `getTranslation` rather than `TranslationCache.get`: it reads `LocalTranslationState`, so a language change or a fresh fetch recomposes every string with no restart, while a direct cache read returns a value that never updates.
 `InjectTranslations(translations)` seeds the cache directly, which is handy for previews and tests.
 
-Date-times follow the same rule: in a composable, call `getDateTime` rather than `getLocalDateTime`. It formats through `LocalDateTimeFormatter`, and rebuilds when the selected language changes, so every date-time is reformatted with no restart. `getLocalDateTime` reads the selected language once and is meant for non-UI code.
+Date-times follow the same rule: in a composable, call `getDateTime` rather than `getLocalDateTime`. It observes the selected language and rebuilds when it changes, so every date-time is reformatted with no restart. `getLocalDateTime` reads the selected language once and is meant for non-UI code.
+
+Both format in the device's time zone and take a `DateTimeParts` naming the parts to include: year, month, day, hour and minute, all included by default. The language decides their order, their separators and the 12-hour or 24-hour clock.
 
 Call both as late as possible:
 
@@ -1193,7 +1195,8 @@ Declarations that resolve to a distinct implementation per source set:
 | `Camera` / `CameraPreview` | Platform camera controller and preview surface                        |
 | `NfcController`            | Platform NFC reader/writer and its lifecycle                          |
 | `DeviceLocationProvider`   | Platform location capture                                             |
-| `Locale`                   | System language, local-time formatting and a `Flow` of locale changes |
+| `Locale`                   | System language and a `Flow` of locale changes                        |
+| `LocalDateTime`            | Locale-aware date and time formatting in the device's time zone       |
 | `Clock`                    | Emits when the OS reports a system clock change                       |
 | `NotificationProvider`     | Renders a push payload as a native notification                       |
 | `Lifecycle`                | Foreground/background callbacks                                       |
@@ -1251,7 +1254,6 @@ Declarations that resolve to a distinct implementation per source set:
 * **core**: Building blocks like `Text` or `Button`.
 * **component**: Composite components.
 * **lifecycle**: Platform-aware lifecycle observers.
-* **locale**: Localization composables.
 * **push**: Push composables.
 * **media**: Media composables.
 * **devicelocation**: Device location composables.
@@ -1282,6 +1284,8 @@ Declarations that resolve to a distinct implementation per source set:
     * `StateHolder`: Synchronous, observable, atomically mutable value with a restorable default.
 * **locale**
     * `DateTime`: Time utilities, e.g. the current time in UTC/ISO 8601.
+    * `LocalDateTime`: Locale-aware formatting.
+    * `Language`: The language selected for the app.
 * **platform**
     * `Platform`: Sealed snapshot of the current execution environment.
     * `Loop`: Suspending, non-blocking polling loop.
@@ -1360,7 +1364,7 @@ Declarations that resolve to a distinct implementation per source set:
 
 * `Colors`, `Typography`, `Shapes`: `LocalColorScheme` (light and dark), `LocalTypography`, `LocalShapes`.
 * `Translations`: Composable helpers over `TranslationCache`. Provides `LocalTranslationState`.
-* `DateTime`: Composable date-time formatting through `LocalDateTimeFormatter`, which the app provides.
+* `DateTime`: Composable date-time formatting that follows the selected language.
 * `Theme`: The app theme. Also provides `LocalSplitScreen` and registers the image loader.
 * `Preview`: Applies the theme for accurate previews.
 * **core**, **component**, **showcase**: See [Design System & Showcase](#design-system--showcase).
@@ -1376,8 +1380,8 @@ Declarations that resolve to a distinct implementation per source set:
 * **devicelocation**: `DeviceLocationProvider`, `DeviceLocation`.
 * **nfc**: `NfcController`, `NfcTag`, `TagProvider`.
 * **locale**
-    * `Language`: The default language, the language selected for the app and a `Flow` of the app language.
-    * `Locale`: System language, locale-aware formatting and a `Flow` of locale changes.
+    * `Language`: The default language and a `Flow` of the app language.
+    * `Locale`: System language and a `Flow` of locale changes.
     * `Clock`: System clock change observer.
 * **platform**
     * `Development`: Development mode flag.
@@ -1419,7 +1423,6 @@ Declarations that resolve to a distinct implementation per source set:
 
 * **devicelocation**, **media**, **nfc**: Composable providers with registered lifecycles, plus `CameraPreview`.
 * **lifecycle** `Lifecycle`: Foreground/background callbacks with an optional recomposition key.
-* **locale** `rememberDateTimeFormatter`: The date-time formatter in the selected language, provided to the design system.
 * **modifier**: `PointerListener` (taps and clicks), `KeyListener` (keys and key sequences).
 * **navigation**: `Router`, `Navigator`, `NoOpRouter`, `Routing` (provides `LocalRouter`), and **scene** strategies like `SplitScene`.
 * **push** `Push`: Lifecycle registers for the push and broadcast managers.

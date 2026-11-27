@@ -52,20 +52,20 @@ class LocalDateTimeTest: TestCase() {
     @Test
     fun getLocalDateTimeDateAndTimeParts() = runUnitTest {
         val utc = "2020-01-31T12:00:00Z"
-        val date = getLocalDateTime(utc = utc, languageIso = "de", parts = DateTimeParts.DATE)
-        val time = getLocalDateTime(utc = utc, languageIso = "de", parts = DateTimeParts.TIME)
+        val date = getLocalDateTime(utc = utc, languageIso = "de", parts = DateTimeParts(hour = false, minute = false))
+        val time = getLocalDateTime(utc = utc, languageIso = "de", parts = DateTimeParts(year = false, month = false, day = false))
         val dateTime = getLocalDateTime(utc = utc, languageIso = "de")
 
         assertTrue(actual = date.isNotEmpty() && time.isNotEmpty() && date != time)
         assertTrue(actual = dateTime.startsWith(prefix = date) && dateTime.endsWith(suffix = time))
-        assertTrue(actual = date != getLocalDateTime(utc = utc, languageIso = "en", parts = DateTimeParts.DATE))
+        assertTrue(actual = date != getLocalDateTime(utc = utc, languageIso = "en", parts = DateTimeParts(hour = false, minute = false)))
     }
 
     /** Verifies that [getLocalDateTime] leaves out each part that is not included. */
     @Test
     fun getLocalDateTimeLeavesOutExcludedParts() = runUnitTest {
         val utc = "2020-06-15T12:00:00Z"
-        val date = getLocalDateTime(utc = utc, languageIso = "de", parts = DateTimeParts.DATE)
+        val date = getLocalDateTime(utc = utc, languageIso = "de", parts = DateTimeParts(hour = false, minute = false))
         val monthDay = getLocalDateTime(utc = utc, languageIso = "de", parts = DateTimeParts(year = false, hour = false, minute = false))
         val yearMonth = getLocalDateTime(utc = utc, languageIso = "de", parts = DateTimeParts(day = false, hour = false, minute = false))
         val year = getLocalDateTime(utc = utc, languageIso = "de", parts = DateTimeParts(month = false, day = false, hour = false, minute = false))
@@ -86,8 +86,8 @@ class LocalDateTimeTest: TestCase() {
     /** Verifies that [getLocalDateTime] returns the input unchanged when it is invalid, whichever parts are included. */
     @Test
     fun getLocalDateTimePartsInvalid() = runUnitTest {
-        assertEquals(expected = "invalid", actual = getLocalDateTime(utc = "invalid", parts = DateTimeParts.DATE))
-        assertEquals(expected = "invalid", actual = getLocalDateTime(utc = "invalid", parts = DateTimeParts.TIME))
+        assertEquals(expected = "invalid", actual = getLocalDateTime(utc = "invalid", parts = DateTimeParts(hour = false, minute = false)))
+        assertEquals(expected = "invalid", actual = getLocalDateTime(utc = "invalid", parts = DateTimeParts(year = false, month = false, day = false)))
     }
 
     /** Verifies that [getLocalDateTime] formats with the device conventions when no language is given or selected. */
@@ -97,11 +97,9 @@ class LocalDateTimeTest: TestCase() {
         assertTrue(actual = getLocalDateTime().isNotEmpty())
     }
 
-    /** Verifies that [DateTimeParts] includes every part by default, and that DATE and TIME include the date parts and the time parts. */
+    /** Verifies that [DateTimeParts] includes every part by default. */
     @Test
-    fun dateTimePartsPresets() = runUnitTest {
+    fun dateTimePartsIncludesEveryPartByDefault() = runUnitTest {
         assertEquals(expected = DateTimeParts(year = true, month = true, day = true, hour = true, minute = true), actual = DateTimeParts())
-        assertEquals(expected = DateTimeParts(year = true, month = true, day = true, hour = false, minute = false), actual = DateTimeParts.DATE)
-        assertEquals(expected = DateTimeParts(year = false, month = false, day = false, hour = true, minute = true), actual = DateTimeParts.TIME)
     }
 }
