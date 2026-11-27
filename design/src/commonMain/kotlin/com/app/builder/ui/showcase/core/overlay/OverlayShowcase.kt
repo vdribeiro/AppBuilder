@@ -1,6 +1,5 @@
 package com.app.builder.ui.showcase.core.overlay
 
-import kotlin.time.Clock
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,6 +18,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.app.builder.core.locale.DateTimeParts
+import com.app.builder.core.locale.now
 import com.app.builder.ui.core.button.Button
 import com.app.builder.ui.core.container.Scaffold
 import com.app.builder.ui.core.image.Icon
@@ -32,6 +33,7 @@ import com.app.builder.ui.core.overlay.Snackbar
 import com.app.builder.ui.core.overlay.TimePicker
 import com.app.builder.ui.core.overlay.Tooltip
 import com.app.builder.ui.core.text.Text
+import com.app.builder.ui.getDateTime
 import com.app.builder.ui.showcase.ShowcaseSection
 
 /** Displays badges, date and time pickers, modal bottom sheets, dialogs, snackbars, and tooltips. */
@@ -44,7 +46,9 @@ fun OverlayShowcase() {
         ShowcaseSection(title = "Static badges") { StaticBadgesPreview() }
         ShowcaseSection(title = "Live counter") { LiveCounterBadgePreview() }
         ShowcaseSection(title = "Date picker") { DatePickerPreview() }
+        ShowcaseSection(title = "Date picker dialog") { DatePickerDialogPreview() }
         ShowcaseSection(title = "Time picker") { TimePickerPreview() }
+        ShowcaseSection(title = "Time picker dialog") { TimePickerDialogPreview() }
         ShowcaseSection(title = "Modal Bottom Sheet") { ModalBottomSheetPreview() }
         ShowcaseSection(title = "Modal Bottom Sheet Full Screen") { ModalBottomSheetFullScreenPreview() }
         ShowcaseSection(title = "Confirmation dialog") { DialogPreview() }
@@ -77,20 +81,31 @@ private fun LiveCounterBadgePreview() {
 
 @Composable
 private fun DatePickerPreview() {
+    var selected by remember { mutableStateOf(value = now()) }
+
+    Column(verticalArrangement = Arrangement.spacedBy(space = 8.dp)) {
+        DatePicker(selected = selected, onDateSelected = { instant -> instant?.let { selected = it } })
+        Text(text = "Selected: ${getDateTime(utc = selected.toString(), parts = DateTimeParts(hour = false, minute = false))}")
+    }
+}
+
+@Composable
+private fun DatePickerDialogPreview() {
     var showPicker by remember { mutableStateOf(value = false) }
-    var selectedDate by remember { mutableStateOf(value = Clock.System.now().toString().substringBefore(delimiter = "T")) }
+    var selected by remember { mutableStateOf(value = now()) }
 
     Column(verticalArrangement = Arrangement.spacedBy(space = 8.dp)) {
         Button(text = "Pick a date", onClick = { showPicker = true })
-        Text(text = "Selected: $selectedDate")
+        Text(text = "Selected: ${getDateTime(utc = selected.toString(), parts = DateTimeParts(hour = false, minute = false))}")
     }
 
     if (showPicker) DatePicker(
+        selected = selected,
         dialog = true,
         confirmText = "Confirm",
         dismissText = "Cancel",
         onDateSelected = { instant ->
-            instant?.let { selectedDate = it.toString().substringBefore(delimiter = "T") }
+            instant?.let { selected = it }
             showPicker = false
         },
         onDismissRequest = { showPicker = false }
@@ -99,21 +114,32 @@ private fun DatePickerPreview() {
 
 @Composable
 private fun TimePickerPreview() {
+    var selected by remember { mutableStateOf(value = now()) }
+
+    Column(verticalArrangement = Arrangement.spacedBy(space = 8.dp)) {
+        TimePicker(selected = selected, onTimeSelected = { selected = it })
+        Text(text = "Selected: ${getDateTime(utc = selected.toString(), parts = DateTimeParts(year = false, month = false, day = false))}")
+    }
+}
+
+@Composable
+private fun TimePickerDialogPreview() {
     var showPicker by remember { mutableStateOf(value = false) }
-    var selectedTime by remember { mutableStateOf(value = "00:00") }
+    var selected by remember { mutableStateOf(value = now()) }
 
     Column(verticalArrangement = Arrangement.spacedBy(space = 8.dp)) {
         Button(text = "Pick a time", onClick = { showPicker = true })
-        Text(text = "Selected: $selectedTime")
+        Text(text = "Selected: ${getDateTime(utc = selected.toString(), parts = DateTimeParts(year = false, month = false, day = false))}")
     }
 
     if (showPicker) TimePicker(
         title = "Select time",
+        selected = selected,
         dialog = true,
         confirmText = "Confirm",
         dismissText = "Cancel",
-        onTimeSelected = { hour, minute ->
-            selectedTime = "${hour.toString().padStart(length = 2, padChar = '0')}:${minute.toString().padStart(length = 2, padChar = '0')}"
+        onTimeSelected = {
+            selected = it
             showPicker = false
         },
         onDismissRequest = { showPicker = false }
