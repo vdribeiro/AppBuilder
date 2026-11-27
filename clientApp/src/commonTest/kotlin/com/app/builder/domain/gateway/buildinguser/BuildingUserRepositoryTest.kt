@@ -56,14 +56,15 @@ class BuildingUserRepositoryTest: TestCase() {
     fun executeUpsertBuildingUser() = runUnitTest {
         val graph = dependency.get().getUserDependency(account = FakeData.adminAccount)
         val buildingUserRepository = graph.repositories.buildingUserRepository
-        graph.useCases.userUseCases.upsertUser(user = FakeData.user)
+        graph.useCases.userUseCases.upsertUser(user = FakeData.adminUser)
 
+        val buildingUser = FakeData.buildingUser.copy(userUuid = FakeData.adminUser.uuid)
         val job = Job(userUuid = Uuid.NIL, entityType = EntityType.BUILDING_USER, type = Job.Type.POST)
         assertTrue(actual = buildingUserRepository.executeUpsertBuildingUser(job = job) is JobResult.Error)
 
-        val jobResult = buildingUserRepository.executeUpsertBuildingUser(job = job.copy(payload = encode(value = FakeData.buildingUser)))
+        val jobResult = buildingUserRepository.executeUpsertBuildingUser(job = job.copy(payload = encode(value = buildingUser)))
         assertTrue(actual = jobResult is JobResult.Success)
-        assertEquals(expected = listOf(element = FakeData.user), actual = graph.useCases.buildingUserUseCases.observeUsersInBuilding(buildingUuid = FakeData.building.uuid).firstOrNull())
+        assertEquals(expected = listOf(element = FakeData.adminUser), actual = graph.useCases.buildingUserUseCases.observeUsersInBuilding(buildingUuid = FakeData.building.uuid).firstOrNull())
     }
 
     /** Verifies that executing a building users sync job fails when the http client flag is disabled. */

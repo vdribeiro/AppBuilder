@@ -8,7 +8,7 @@ object DeviceLocationTable: Table(name = "device_location") {
     /** The unique identifier of this fix, generated on-device so retried deliveries stay idempotent. */
     val uuid = uuid(name = "uuid")
     /** The unique identifier of the user who owns the device that reported this fix. */
-    val userUuid = reference(name = "user_uuid", refColumn = UserTable.uuid)
+    val userUuid = uuid(name = "user_uuid")
     /** The source of the fix, e.g. "gps", "network", "fused". */
     val provider = text(name = "provider")
     /** The Unix epoch time of this location fix recorded by the location provider in milliseconds since the start of the Unix epoch. */

@@ -5,20 +5,31 @@ import androidx.compose.runtime.ProvidableCompositionLocal
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.staticCompositionLocalOf
 
-/**
- * CompositionLocal providing the function that formats a UTC ISO-8601 string into a localized date-time string.
- * Returns the string as given unless a formatter is provided.
- */
-val LocalDateTimeFormatter: ProvidableCompositionLocal<(String) -> String> = staticCompositionLocalOf { { it } }
+/** The parts of a date and time that are shown and picked. */
+enum class DateTimeMode {
+    /** The date and the time of day. */
+    DATE_TIME,
+    /** The date. */
+    DATE,
+    /** The time of day. */
+    TIME
+}
 
 /**
- * Formats and remembers a UTC ISO-8601 string as a localized date-time string with the [LocalDateTimeFormatter].
+ * CompositionLocal providing the function that formats the parts of a UTC ISO-8601 string named by a [DateTimeMode] into a localized string.
+ * Returns the string as given unless a formatter is provided.
+ */
+val LocalDateTimeFormatter: ProvidableCompositionLocal<(String, DateTimeMode) -> String> = staticCompositionLocalOf { { value, _ -> value } }
+
+/**
+ * Formats and remembers the parts of a UTC ISO-8601 string named by [mode] as a localized string with the [LocalDateTimeFormatter].
  *
  * @param utc The input timestamp string in UTC ISO-8601 format.
- * @return The localized date-time string.
+ * @param mode The parts of [utc] to show.
+ * @return The localized string.
  */
 @Composable
-fun getDateTime(utc: String): String {
+fun getDateTime(utc: String, mode: DateTimeMode = DateTimeMode.DATE_TIME): String {
     val formatter = LocalDateTimeFormatter.current
-    return remember(key1 = utc, key2 = formatter) { formatter(utc) }
+    return remember(utc, mode, formatter) { formatter(utc, mode) }
 }

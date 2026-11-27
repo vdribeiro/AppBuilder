@@ -13,7 +13,7 @@ class EnvTest: TestCase() {
         assertTrue(actual = Env.developmentMode)
         assertEquals(expected = "FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF", actual = Env.adminUuid)
         assertEquals(expected = "admin", actual = Env.adminUsername)
-        assertEquals(expected = "admin", actual = Env.adminPassword)
+        assertEquals(expected = "admin_password", actual = Env.adminPassword)
         assertEquals(expected = "jwt_issuer", actual = Env.jwtIssuer)
         assertEquals(expected = "jwt_audience", actual = Env.jwtAudience)
         assertEquals(expected = "jwt_secret", actual = Env.jwtSecret)

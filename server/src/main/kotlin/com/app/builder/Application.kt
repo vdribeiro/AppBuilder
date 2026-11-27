@@ -36,6 +36,7 @@ import com.app.builder.domain.push.FcmManager
 import com.app.builder.domain.file.NoOpFileStorage
 import com.app.builder.domain.push.NoOpFcmService
 import com.app.builder.domain.route.installRouting
+import com.app.builder.domain.usecase.Outcome
 import com.app.builder.test.ExcludeFromTesting
 import com.google.auth.oauth2.GoogleCredentials
 import com.google.firebase.FirebaseApp
@@ -79,7 +80,7 @@ internal suspend fun Application.module() {
     installRouting(dependency = dependency)
 
     dependency.start(scope = this)
-    dependency.useCases.seedUseCases.seed()
+    if (dependency.useCases.seedUseCases.seed() !is Outcome.Success) error(message = "Unable to seed the database")
 
     stopOnShutdown(dependency = dependency)
 }

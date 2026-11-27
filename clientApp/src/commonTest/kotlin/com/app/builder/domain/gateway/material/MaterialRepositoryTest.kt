@@ -75,13 +75,14 @@ class MaterialRepositoryTest: TestCase() {
 
         assertNull(actual = materialUseCases.observeMaterial(uuid = FakeData.material.uuid).firstOrNull())
 
+        val material = FakeData.material.copy(name = "Posted Name")
         val job = Job(userUuid = Uuid.NIL, entityType = EntityType.MATERIAL, type = Job.Type.POST)
         assertTrue(actual = materialRepository.executeUpsertMaterial(job = job) is JobResult.Error)
 
-        val jobResult = materialRepository.executeUpsertMaterial(job = job.copy(payload = encode(value = FakeData.material)))
+        val jobResult = materialRepository.executeUpsertMaterial(job = job.copy(payload = encode(value = material)))
         assertTrue(actual = jobResult is JobResult.Success)
 
-        assertEquals(expected = FakeData.material, actual = materialUseCases.observeMaterial(uuid = FakeData.material.uuid).firstOrNull())
+        assertEquals(expected = material, actual = materialUseCases.observeMaterial(uuid = FakeData.material.uuid).firstOrNull())
     }
 
     /** Verifies that executing an upsert material job fails when the http client flag is disabled. */

@@ -75,13 +75,14 @@ class BuildingRepositoryTest: TestCase() {
 
         assertNull(actual = buildingUseCases.observeBuilding(uuid = FakeData.building.uuid).firstOrNull())
 
+        val building = FakeData.building.copy(name = "Posted Name")
         val job = Job(userUuid = Uuid.NIL, entityType = EntityType.BUILDING, type = Job.Type.POST)
         assertTrue(actual = buildingRepository.executeUpsertBuilding(job = job) is JobResult.Error)
 
-        val jobResult = buildingRepository.executeUpsertBuilding(job = job.copy(payload = encode(value = FakeData.building)))
+        val jobResult = buildingRepository.executeUpsertBuilding(job = job.copy(payload = encode(value = building)))
         assertTrue(actual = jobResult is JobResult.Success)
 
-        assertEquals(expected = FakeData.building, actual = buildingUseCases.observeBuilding(uuid = FakeData.building.uuid).firstOrNull())
+        assertEquals(expected = building, actual = buildingUseCases.observeBuilding(uuid = FakeData.building.uuid).firstOrNull())
     }
 
     /** Verifies that executing an upsert building job fails when the http client flag is disabled. */

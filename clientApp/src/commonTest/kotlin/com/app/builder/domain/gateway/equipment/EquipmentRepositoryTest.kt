@@ -75,13 +75,14 @@ class EquipmentRepositoryTest: TestCase() {
 
         assertNull(actual = equipmentUseCases.observeEquipment(uuid = FakeData.equipment.uuid).firstOrNull())
 
+        val equipment = FakeData.equipment.copy(name = "Posted Name")
         val job = Job(userUuid = Uuid.NIL, entityType = EntityType.EQUIPMENT, type = Job.Type.POST)
         assertTrue(actual = equipmentRepository.executeUpsertEquipment(job = job) is JobResult.Error)
 
-        val jobResult = equipmentRepository.executeUpsertEquipment(job = job.copy(payload = encode(value = FakeData.equipment)))
+        val jobResult = equipmentRepository.executeUpsertEquipment(job = job.copy(payload = encode(value = equipment)))
         assertTrue(actual = jobResult is JobResult.Success)
 
-        assertEquals(expected = FakeData.equipment, actual = equipmentUseCases.observeEquipment(uuid = FakeData.equipment.uuid).firstOrNull())
+        assertEquals(expected = equipment, actual = equipmentUseCases.observeEquipment(uuid = FakeData.equipment.uuid).firstOrNull())
     }
 
     /** Verifies that executing an upsert equipment job fails when the http client flag is disabled. */
