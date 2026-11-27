@@ -1,6 +1,5 @@
 package com.app.builder.ui.core.overlay
 
-import kotlin.time.Instant
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.TimePickerDialog
 import androidx.compose.material3.rememberDatePickerState
@@ -13,7 +12,6 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.PreviewLightDark
-import com.app.builder.core.locale.toInstant
 import com.app.builder.ui.LocalTypography
 import com.app.builder.ui.Preview
 import com.app.builder.ui.core.button.Button
@@ -26,24 +24,24 @@ import androidx.compose.material3.TimePicker as MaterialTimePicker
  * A calendar grid for selecting a single date, shown inline or inside a modal dialog.
  *
  * @param modifier The [Modifier] applied to the picker when inline, or to the dialog when [dialog] is true.
- * @param selected The currently selected date. If null, no date is pre-selected.
+ * @param selectedDateMillis The pre-selected calendar day, as the epoch milliseconds of its midnight in UTC. If null, no date is pre-selected.
  * @param dialog Whether the picker is wrapped in a modal dialog with confirm and dismiss buttons.
  * @param confirmText The confirmation text. Used only when [dialog] is true.
  * @param dismissText The cancellation text. Used only when [dialog] is true.
- * @param onDateSelected Callback invoked with the chosen date: on every selection change when inline, or when the user confirms when [dialog] is true.
+ * @param onDateSelected Callback invoked with the chosen calendar day, as the epoch milliseconds of its midnight in UTC, or null when none is chosen: on every selection change when inline, or when the user confirms when [dialog] is true.
  * @param onDismissRequest Callback invoked when the user cancels or dismisses the dialog without confirming.
  */
 @Composable
 fun DatePicker(
     modifier: Modifier = Modifier,
-    selected: Instant? = null,
+    selectedDateMillis: Long? = null,
     dialog: Boolean = false,
     confirmText: String? = null,
     dismissText: String? = null,
-    onDateSelected: (Instant?) -> Unit = {},
+    onDateSelected: (Long?) -> Unit = {},
     onDismissRequest: () -> Unit = {},
 ) {
-    val state = rememberDatePickerState(initialSelectedDateMillis = selected?.toEpochMilliseconds())
+    val state = rememberDatePickerState(initialSelectedDateMillis = selectedDateMillis)
 
     if (dialog) {
         DatePickerDialog(
@@ -53,7 +51,7 @@ fun DatePicker(
                 confirmText?.let {
                     Button(
                         text = confirmText,
-                        onClick = { onDateSelected(state.selectedDateMillis?.toInstant()) }
+                        onClick = { onDateSelected(state.selectedDateMillis) }
                     )
                 }
             },
@@ -73,7 +71,7 @@ fun DatePicker(
         LaunchedEffect(state) {
             snapshotFlow { state.selectedDateMillis }
                 .drop(count = 1)
-                .collect { currentOnDateSelected(it?.toInstant()) }
+                .collect { currentOnDateSelected(it) }
         }
         MaterialDatePicker(modifier = modifier, state = state)
     }
@@ -84,20 +82,20 @@ fun DatePicker(
  *
  * @param modifier The [Modifier] applied to the picker when inline, or to the dialog when [dialog] is true.
  * @param title An optional heading rendered at the top of the dialog. Used only when [dialog] is true.
- * @param initialHour The pre-selected hour, in 24-hour format (0-23).
- * @param initialMinute The pre-selected minute (0-59).
+ * @param hour The pre-selected hour, in 24-hour format (0-23).
+ * @param minute The pre-selected minute (0-59).
  * @param dialog Whether the picker is wrapped in a modal dialog with confirm and dismiss buttons.
  * @param confirmText The confirmation text. Used only when [dialog] is true.
  * @param dismissText The cancellation text. Used only when [dialog] is true.
- * @param onTimeSelected Callback invoked with the chosen hour and minute: on every selection change when inline, or when the user confirms when [dialog] is true.
+ * @param onTimeSelected Callback invoked with the chosen hour, in 24-hour format, and minute: on every selection change when inline, or when the user confirms when [dialog] is true.
  * @param onDismissRequest Callback invoked when the user cancels or dismisses the dialog without confirming.
  */
 @Composable
 fun TimePicker(
     modifier: Modifier = Modifier,
     title: String? = null,
-    initialHour: Int = 0,
-    initialMinute: Int = 0,
+    hour: Int = 0,
+    minute: Int = 0,
     dialog: Boolean = false,
     confirmText: String? = null,
     dismissText: String? = null,
@@ -106,8 +104,8 @@ fun TimePicker(
 ) {
     val typography = LocalTypography.current
     val state = rememberTimePickerState(
-        initialHour = initialHour.coerceIn(minimumValue = 0, maximumValue = 23),
-        initialMinute = initialMinute.coerceIn(minimumValue = 0, maximumValue = 59)
+        initialHour = hour.coerceIn(minimumValue = 0, maximumValue = 23),
+        initialMinute = minute.coerceIn(minimumValue = 0, maximumValue = 59)
     )
 
     if (dialog) {
@@ -147,7 +145,7 @@ fun TimePicker(
         LaunchedEffect(state) {
             snapshotFlow { state.hour to state.minute }
                 .drop(count = 1)
-                .collect { (hour, minute) -> currentOnTimeSelected(hour, minute) }
+                .collect { (pickedHour, pickedMinute) -> currentOnTimeSelected(pickedHour, pickedMinute) }
         }
         MaterialTimePicker(modifier = modifier, state = state)
     }
