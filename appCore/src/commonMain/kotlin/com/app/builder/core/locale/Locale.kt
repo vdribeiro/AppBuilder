@@ -15,30 +15,3 @@ expect fun getDeviceLanguage(): String
  * @return A [Flow] emitting the ISO 639-1 code of the device language, and the new one whenever it changes.
  */
 expect fun observeDeviceLanguage(): Flow<String>
-
-/**
- * Formats a UTC ISO-8601 string into a localized date-time string in the device's time zone.
- *
- * @param utc The input timestamp string in UTC ISO-8601 format.
- * @param languageIso The ISO 639-1 code of the language whose conventions format the string, or `null` for the device locale.
- * @return The localized date-time string, or the original [utc] string if formatting fails.
- */
-expect fun getLocalDateTime(utc: String = now().toString(), languageIso: String? = SelectedLanguage.value): String
-
-/**
- * Formats a UTC ISO-8601 string into a localized date string in the device's time zone.
- *
- * @param utc The input timestamp string in UTC ISO-8601 format.
- * @param languageIso The ISO 639-1 code of the language whose conventions format the string, or `null` for the device locale.
- * @return The localized date string, or the original [utc] string if formatting fails.
- */
-expect fun getLocalDate(utc: String = now().toString(), languageIso: String? = SelectedLanguage.value): String
-
-/**
- * Formats a UTC ISO-8601 string into a localized time string in the device's time zone.
- *
- * @param utc The input timestamp string in UTC ISO-8601 format.
- * @param languageIso The ISO 639-1 code of the language whose conventions format the string, or `null` for the device locale.
- * @return The localized time string, or the original [utc] string if formatting fails.
- */
-expect fun getLocalTime(utc: String = now().toString(), languageIso: String? = SelectedLanguage.value): String
