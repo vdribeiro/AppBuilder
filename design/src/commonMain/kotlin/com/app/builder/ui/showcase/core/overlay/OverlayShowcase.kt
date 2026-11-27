@@ -86,6 +86,7 @@ private fun DatePickerPreview() {
     }
 
     if (showPicker) DatePicker(
+        dialog = true,
         confirmText = "Confirm",
         dismissText = "Cancel",
         onDateSelected = { instant ->
@@ -108,6 +109,7 @@ private fun TimePickerPreview() {
 
     if (showPicker) TimePicker(
         title = "Select time",
+        dialog = true,
         confirmText = "Confirm",
         dismissText = "Cancel",
         onTimeSelected = { hour, minute ->
