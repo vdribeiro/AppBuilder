@@ -112,6 +112,11 @@
     "text_field_show_password": { "en": "Show password", "pt": "Mostrar palavra-passe" },
     "text_field_hide_password": { "en": "Hide password", "pt": "Ocultar palavra-passe" }
   },
+  "date_time_field": {
+    "date_time_field_date":      { "en": "Date", "pt": "Data" },
+    "date_time_field_time":      { "en": "Time", "pt": "Hora" },
+    "date_time_field_date_time": { "en": "Date and time", "pt": "Data e hora" }
+  },
   "console": {
     "console_stacktrace": { "en": "Stacktrace", "pt": "Stacktrace" }
   },
@@ -222,7 +227,6 @@
     "time_punch_picker_cancel": { "en": "Cancel", "pt": "Cancelar" },
     "time_punch_user_name":     { "en": "User Name", "pt": "Nome do Utilizador" },
     "time_punch_user_uuid":     { "en": "User UUID", "pt": "UUID do Utilizador" },
-    "time_punch_time":          { "en": "Time", "pt": "Hora" },
     "time_punch_source":        { "en": "Source", "pt": "Origem" },
     "time_punch_source_manual": { "en": "Manual", "pt": "Manual" },
     "time_punch_source_nfc":    { "en": "NFC", "pt": "NFC" },
