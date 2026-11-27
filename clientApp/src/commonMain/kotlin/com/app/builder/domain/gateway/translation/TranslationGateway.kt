@@ -10,7 +10,7 @@ import app.cash.sqldelight.async.coroutines.awaitAsList
 import app.cash.sqldelight.async.coroutines.awaitAsOneOrNull
 import com.app.builder.core.flow.Dispatcher
 import com.app.builder.core.flow.runSuspendCatching
-import com.app.builder.core.locale.SelectedLanguage
+import com.app.builder.core.locale.Language
 import com.app.builder.core.telemetry.Telemetry
 import com.app.builder.data.database.asFlow
 import com.app.builder.data.database.safeTransaction
@@ -101,7 +101,7 @@ class TranslationGateway(
         }
         if (!saved) return@withContext Telemetry.error(tag = TAG, message = "Unable to save language $languageIso")
 
-        SelectedLanguage.set { languageIso }
+        Language.set { languageIso }
         Unit
     }
 

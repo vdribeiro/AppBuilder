@@ -4,7 +4,7 @@ import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.firstOrNull
 import com.app.builder.Application
-import com.app.builder.core.locale.SelectedLanguage
+import com.app.builder.core.locale.Language
 import com.app.builder.core.locale.observeLanguage
 import com.app.builder.core.telemetry.Telemetry
 import com.app.builder.data.resource.ImageResource
@@ -69,7 +69,7 @@ class UserProfileScreenStore(
             updateState { it.copy(language = language) }
         }
 
-        SelectedLanguage.flow.observe(id = "selected_language") { selectedLanguage ->
+        Language.flow.observe(id = "selected_language") { selectedLanguage ->
             updateState { it.copy(selectedLanguage = selectedLanguage) }
         }
 
