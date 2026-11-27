@@ -8,7 +8,7 @@ import androidx.compose.ui.test.ComposeUiTest
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation3.runtime.NavBackStack
 import com.app.builder.App
-import com.app.builder.core.locale.SelectedLanguage
+import com.app.builder.core.locale.Language
 import com.app.builder.core.nfc.TagProvider
 import com.app.builder.data.storage.CoreFile
 import com.app.builder.data.storage.TestFile
@@ -43,7 +43,7 @@ abstract class TestCase: PlatformTestCase() {
         CoreFile.all.forEach { it.reset() }
         TestFile.all.forEach { it.reset() }
         TranslationCache.reset()
-        SelectedLanguage.reset()
+        Language.reset()
         router.backStack.clear()
     }
 
