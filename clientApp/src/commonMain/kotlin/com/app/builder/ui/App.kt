@@ -81,7 +81,7 @@ fun App(
         AppState.UNAUTHENTICATED -> rememberRouter(initialStack = listOf(element = unauthenticatedScreen))
         AppState.AUTHENTICATED -> rememberRouter(initialStack = listOf(element = authenticatedScreen))
     }
-    val dateTimeFormatter: (String) -> String = rememberDateTimeFormatter()
+    val dateTimeFormatter: (String, DateTimeMode) -> String = rememberDateTimeFormatter()
     val permissionManager: PermissionManager = rememberPermissionManager()
     val audioPlayer: AudioPlayer = rememberAudioPlayer()
     val camera: Camera = rememberCamera()
