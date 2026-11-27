@@ -22,8 +22,8 @@ import com.app.builder.core.config.ClientFlags
 import com.app.builder.data.database.NoOpSqlDriver
 import com.app.builder.data.database.createMockSqlDriver
 import com.app.builder.data.http.NoOpHttpClientEngine
-import com.app.builder.domain.EntityType
 import com.app.builder.data.http.createMockHttpEngine
+import com.app.builder.domain.EntityType
 import com.app.builder.test.FakeData
 import com.app.builder.test.TestCase
 

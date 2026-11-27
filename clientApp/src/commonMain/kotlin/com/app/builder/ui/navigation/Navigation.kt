@@ -19,11 +19,11 @@ import com.app.builder.ui.navigation.design.designProvider
 import com.app.builder.ui.navigation.devicefiles.deviceFilesProvider
 import com.app.builder.ui.navigation.devicelocation.deviceLocationProvider
 import com.app.builder.ui.navigation.equipment.equipmentProvider
-import com.app.builder.ui.navigation.material.materialProvider
 import com.app.builder.ui.navigation.error.errorProvider
 import com.app.builder.ui.navigation.help.helpProvider
 import com.app.builder.ui.navigation.home.homeProvider
 import com.app.builder.ui.navigation.login.authenticationProvider
+import com.app.builder.ui.navigation.material.materialProvider
 import com.app.builder.ui.navigation.nfc.nfcProvider
 import com.app.builder.ui.navigation.push.pushProvider
 import com.app.builder.ui.navigation.registry.registryProvider

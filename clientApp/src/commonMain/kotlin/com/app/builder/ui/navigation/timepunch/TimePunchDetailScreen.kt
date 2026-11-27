@@ -1,5 +1,6 @@
 package com.app.builder.ui.navigation.timepunch
 
+import kotlinx.collections.immutable.persistentMapOf
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.rememberScrollState
@@ -24,17 +25,16 @@ import com.app.builder.ui.component.filters.FiltersState
 import com.app.builder.ui.component.link.LinkPickerAction
 import com.app.builder.ui.component.link.LinkPickerState
 import com.app.builder.ui.component.list.UserItem
-import com.app.builder.ui.component.user.UserLinkPicker
 import com.app.builder.ui.component.navigation.Navigation
 import com.app.builder.ui.component.navigation.NavigationRoute
 import com.app.builder.ui.component.session.SessionState
+import com.app.builder.ui.component.user.UserLinkPicker
 import com.app.builder.ui.navigation.LocalRouter
 import com.app.builder.ui.navigation.Router
 import com.app.builder.ui.navigation.Screen
 import com.app.builder.ui.screen.Screen
 import com.app.builder.ui.store.Store
 import com.app.builder.ui.store.previewStore
-import kotlinx.collections.immutable.persistentMapOf
 
 /**
  * The user-facing Time Punch Detail Screen, showing a single time punch and editing its time, and its user while it is new.

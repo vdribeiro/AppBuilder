@@ -110,6 +110,7 @@ class TagManager(
             EntityType.TIME_PUNCH -> useCases.authenticationUseCases.observeCurrentUser().first()?.let { user ->
                 useCases.timePunchUseCases.upsertTimePunch(timePunch = TimePunch(userUuid = user.uuid, source = TimePunch.Source.NFC))
             }
+
             EntityType.BUILDING -> useCases.buildingUseCases.upsertBuilding(building = Building(uuid = uuid, name = dateTime))
             EntityType.EQUIPMENT -> useCases.equipmentUseCases.upsertEquipment(equipment = Equipment(uuid = uuid, name = dateTime))
             EntityType.MATERIAL -> useCases.materialUseCases.upsertMaterial(material = Material(uuid = uuid, name = dateTime))
