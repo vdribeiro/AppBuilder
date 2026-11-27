@@ -13,8 +13,6 @@ sealed interface TimePunchListScreenAction {
      * @param timePunchUuid UUID of the time punch that was selected.
      */
     data class SelectTimePunch(val timePunchUuid: String): TimePunchListScreenAction
-    /** Punches the clock for the current user. */
-    data object Punch: TimePunchListScreenAction
 }
 
 /**
