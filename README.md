@@ -119,7 +119,7 @@ Everything below works with zero configuration: no Firebase project, no Postgres
    | Android | `./gradlew :clientApp:installDebug :clientApp:adbReverse`                |
    | iOS     | `./gradlew :clientApp:podInstall`, then open `iosApp/iosApp.xcworkspace` |
 
-3. **Log in** with `admin`/`admin`. The account is seeded with all permissions, so it can create further users and accounts from inside the app.
+3. **Log in** with `admin`/`admin_password`. The account is seeded with all permissions, so it can create further users and accounts from inside the app.
 
 `.run/` holds shared IDE run configurations for all four clients and for every test suite, so each command above has a click-to-run equivalent.
 
@@ -802,7 +802,7 @@ Each runs `beforeTest()`, the test body, then `afterTest()`, cancelling the scop
 
 A `User` is a person, with a name and an avatar, that other entities can refer to whether or not it can log in.
 An `Account` is what lets a user log in: its username, password hash and permissions live in the server's `user_account` table, and its sessions in `user_session`.
-The server seeds one super-user account on boot when it doesn't exist yet (`admin`/`admin` in development, the `ADMIN_*` values in production).
+The server seeds one super-user account on boot when it doesn't exist yet (`admin`/`admin_password` in development, the `ADMIN_*` values in production).
 When it already exists, the boot grants it write permission on every entity type again, so entity types added later reach it and permissions removed from it come back.
 
 Authorization is per `EntityType`: each account carries a `READ`/`WRITE` permission map, checked on every protected route instead of a fixed role.
@@ -905,7 +905,7 @@ Most have no default. What makes `./gradlew :server:run` work with none set is t
 DEVELOPMENT=true
 ADMIN_UUID=FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF
 ADMIN_USERNAME=admin
-ADMIN_PASSWORD=admin
+ADMIN_PASSWORD=admin_password
 JWT_ISSUER=jwt_issuer
 JWT_AUDIENCE=jwt_audience
 JWT_SECRET=jwt_secret
@@ -930,7 +930,7 @@ The switch is `Env.developmentMode`, from the `DEVELOPMENT` variable.
 | CORS                  | `localhost:8080` and `localhost:8010` | HTTPS only, from `CORS_HOSTS`                      |
 | Future-dated requests | Allowed                               | Rejected                                           |
 | Rate limiting         | One shared bucket                     | Per caller address, if `TRUSTED_PROXY_HOPS` is set |
-| Seeded account        | `admin`/`admin`                       | The `ADMIN_*` values                               |
+| Seeded account        | `admin`/`admin_password`              | The `ADMIN_*` values                               |
 | Seeded entities       | `static/seed.json`                    | None                                               |
 
 > [!NOTE]

@@ -40,4 +40,24 @@ class UserLinkPickerTest: TestCase() {
         assertEquals(expected = listOf<Boolean?>(true), actual = store.state.items.map { it.checked })
         assertEquals(expected = listOf(element = other), actual = store.state.pickedCandidates)
     }
+
+    /** Verifies that a single picker keeps at most one user ticked, ticking a user in place of the other and unticking it when clicked again. */
+    @Test
+    fun singlePickerKeepsOneUserTicked() = runUnitTest {
+        val useCases = dependency.get()
+            .getUserDependency(account = FakeData.adminAccount)
+            .useCases
+        useCases.authenticationUseCases.login(credentials = FakeData.adminCredentials)
+        val other = FakeData.user.copy(uuid = uuid(), name = "Jane Doe")
+        listOf(FakeData.user, other).forEach { useCases.userUseCases.upsertUser(user = it) }
+        val store = userLinkPickerStore(userUseCases = useCases.userUseCases, single = true)
+        store.stateFlow.first { state -> state.candidates.any { it.uuid == other.uuid } }
+
+        store.send(action = LinkPickerAction.Open(picked = setOf(FakeData.user.uuid)))
+        store.send(action = LinkPickerAction.Toggle(uuid = other.uuid))
+        assertEquals(expected = listOf(element = other), actual = store.state.pickedCandidates)
+
+        store.send(action = LinkPickerAction.Toggle(uuid = other.uuid))
+        assertEquals(expected = emptyList(), actual = store.state.pickedCandidates)
+    }
 }
