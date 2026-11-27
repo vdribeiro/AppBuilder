@@ -2,6 +2,7 @@ package com.app.builder.ui
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ProvidableCompositionLocal
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.staticCompositionLocalOf
 
@@ -20,6 +21,24 @@ enum class DateTimeMode {
  * Returns the string as given unless a formatter is provided.
  */
 val LocalDateTimeFormatter: ProvidableCompositionLocal<(String, DateTimeMode) -> String> = staticCompositionLocalOf { { value, _ -> value } }
+
+/**
+ * Converts date-times between UTC and a local time zone.
+ *
+ * @property toLocal Converts a UTC ISO-8601 string into the local date-time, as an ISO-8601 string without seconds or offset, such as `2026-11-27T01:15`.
+ * @property toUtc Converts a local date-time, as an ISO-8601 string without seconds or offset, into a UTC ISO-8601 string.
+ */
+@Stable
+data class DateTimeConverter(
+    val toLocal: (String) -> String = { it.take(n = 16) },
+    val toUtc: (String) -> String = { "$it:00Z" },
+)
+
+/**
+ * CompositionLocal providing the [DateTimeConverter].
+ * Takes UTC as the local time zone unless a converter is provided.
+ */
+val LocalDateTimeConverter: ProvidableCompositionLocal<DateTimeConverter> = staticCompositionLocalOf { DateTimeConverter() }
 
 /**
  * Formats and remembers the parts of a UTC ISO-8601 string named by [mode] as a localized string with the [LocalDateTimeFormatter].

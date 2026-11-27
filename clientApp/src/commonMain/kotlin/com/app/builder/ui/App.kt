@@ -12,6 +12,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import com.app.builder.Application
 import com.app.builder.core.config.ClientFlags
+import com.app.builder.core.locale.localToUtc
+import com.app.builder.core.locale.utcToLocal
 import com.app.builder.core.media.AudioPlayer
 import com.app.builder.core.media.Camera
 import com.app.builder.core.nfc.NfcController
@@ -82,6 +84,7 @@ fun App(
         AppState.AUTHENTICATED -> rememberRouter(initialStack = listOf(element = authenticatedScreen))
     }
     val dateTimeFormatter: (String, DateTimeMode) -> String = rememberDateTimeFormatter()
+    val dateTimeConverter: DateTimeConverter = remember { DateTimeConverter(toLocal = { utcToLocal(utc = it) }, toUtc = { localToUtc(local = it) }) }
     val permissionManager: PermissionManager = rememberPermissionManager()
     val audioPlayer: AudioPlayer = rememberAudioPlayer()
     val camera: Camera = rememberCamera()
@@ -99,6 +102,7 @@ fun App(
             LocalAppState provides appState,
             LocalRouter provides router,
             LocalDateTimeFormatter provides dateTimeFormatter,
+            LocalDateTimeConverter provides dateTimeConverter,
             LocalPermissionManager provides permissionManager,
             LocalAudioPlayer provides audioPlayer,
             LocalCamera provides camera,
