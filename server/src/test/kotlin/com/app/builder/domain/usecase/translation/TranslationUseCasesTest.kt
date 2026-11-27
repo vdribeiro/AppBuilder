@@ -2,7 +2,6 @@ package com.app.builder.domain.usecase.translation
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 import kotlin.time.Duration.Companion.seconds
 import com.app.builder.core.locale.now
 import com.app.builder.data.database.reset

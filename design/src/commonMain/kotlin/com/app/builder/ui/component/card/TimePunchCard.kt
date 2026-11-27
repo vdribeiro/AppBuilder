@@ -1,7 +1,8 @@
 package com.app.builder.ui.component.card
 
-import androidx.compose.foundation.layout.Column
+import kotlinx.collections.immutable.persistentListOf
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
@@ -10,6 +11,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import com.app.builder.ui.InjectTranslations
+import com.app.builder.ui.LocalTypography
 import com.app.builder.ui.Preview
 import com.app.builder.ui.component.field.DateTimeField
 import com.app.builder.ui.component.field.FieldValue
@@ -17,10 +19,8 @@ import com.app.builder.ui.component.field.MetadataSection
 import com.app.builder.ui.core.button.Chip
 import com.app.builder.ui.core.card.Card
 import com.app.builder.ui.core.text.Text
-import com.app.builder.ui.LocalTypography
 import com.app.builder.ui.getDateTime
 import com.app.builder.ui.getTranslation
-import kotlinx.collections.immutable.persistentListOf
 
 /**
  * A time punch card, showing only the properties that are not `null`.

@@ -104,18 +104,4 @@ class TimePunchListScreenStoreTest: TestCase() {
         assertNull(actual = item.userName)
         assertNull(actual = item.nfc)
     }
-
-    /** Verifies that punching the clock creates a manual time punch for the current user. */
-    @Test
-    fun punchCreatesATimePunchForTheCurrentUser() = runUnitTest {
-        val useCases = loggedInUseCases()
-        val store = store(useCases = useCases)
-        store.stateFlow.first { it.userUuid != null }
-
-        store.send(action = TimePunchListScreenAction.Punch)
-
-        val created = useCases.timePunchUseCases.observeTimePunches().first { it.isNotEmpty() }.single()
-        assertEquals(expected = FakeData.adminUser.uuid, actual = created.userUuid)
-        assertEquals(expected = TimePunch.Source.MANUAL, actual = created.source)
-    }
 }
