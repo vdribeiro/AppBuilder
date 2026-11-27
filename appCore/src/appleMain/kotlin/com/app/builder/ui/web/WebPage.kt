@@ -50,7 +50,7 @@ actual fun WebPage(modifier: Modifier, url: String, javaScriptEnabled: Boolean, 
 private class NavigationDelegate(
     private val hosts: Set<String>,
     private val uriHandler: UriHandler,
-) : NSObject(), WKNavigationDelegateProtocol {
+): NSObject(), WKNavigationDelegateProtocol {
 
     override fun webView(
         webView: WKWebView,

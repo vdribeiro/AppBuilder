@@ -7,7 +7,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import com.app.builder.core.config.ClientConfigs
-import com.app.builder.core.devicelocation.WebDeviceLocationProvider.Companion.CAPTURE_SLOT
 import com.app.builder.core.locale.now
 import com.app.builder.core.platform.loop
 import com.app.builder.core.security.uuid

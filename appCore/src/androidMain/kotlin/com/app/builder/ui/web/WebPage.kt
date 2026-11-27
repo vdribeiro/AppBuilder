@@ -22,7 +22,7 @@ actual fun WebPage(modifier: Modifier, url: String, javaScriptEnabled: Boolean, 
         factory = { context ->
             val hosts = allowedHosts + setOfNotNull(url.toUri().host)
             WebView(context).apply {
-                webViewClient = object : WebViewClient() {
+                webViewClient = object: WebViewClient() {
                     override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
                         if (!request.isForMainFrame || request.url.host in hosts) return false
                         runCatching { uriHandler.openUri(uri = request.url.toString()) }

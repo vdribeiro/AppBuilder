@@ -45,7 +45,6 @@ class TimePunchListScreenStore(
         super.reducer(state = state, action = action)
         when (action) {
             is TimePunchListScreenAction.SelectTimePunch -> selectTimePunch(action = action)
-            TimePunchListScreenAction.Punch -> punch(state = state)
         }
     }
 
@@ -116,17 +115,6 @@ class TimePunchListScreenStore(
      */
     private fun selectTimePunch(action: TimePunchListScreenAction.SelectTimePunch): Job = launch(id = "selectTimePunch") {
         router.navigate(screen = Screen.TimePunchDetail(uuid = action.timePunchUuid), option = Router.NavOption.REPLACE_LAST)
-    }
-
-    /**
-     * Creates a manual time punch at the current time for the current user.
-     *
-     * @param state Time punch list state at the time the punch was requested.
-     * @return The [Job] representing this execution.
-     */
-    private fun punch(state: TimePunchListScreenState): Job = launch(id = "punch") {
-        val userUuid = state.userUuid ?: return@launch
-        timePunchUseCases.upsertTimePunch(timePunch = TimePunch(userUuid = userUuid))
     }
 
     /**

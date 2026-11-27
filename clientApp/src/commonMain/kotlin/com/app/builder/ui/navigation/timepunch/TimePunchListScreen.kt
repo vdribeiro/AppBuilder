@@ -1,18 +1,12 @@
 package com.app.builder.ui.navigation.timepunch
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
+import kotlinx.collections.immutable.persistentListOf
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.PreviewLightDark
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.app.builder.core.security.uuid
 import com.app.builder.domain.EntityType
-import com.app.builder.ui.InjectTranslations
 import com.app.builder.ui.Preview
 import com.app.builder.ui.component.actionbar.ActionBar
 import com.app.builder.ui.component.filters.FiltersAction
@@ -22,16 +16,12 @@ import com.app.builder.ui.component.list.TimePunchList
 import com.app.builder.ui.component.navigation.Navigation
 import com.app.builder.ui.component.navigation.NavigationRoute
 import com.app.builder.ui.component.session.SessionState
-import com.app.builder.ui.core.button.Button
-import com.app.builder.ui.core.button.ButtonStyle
-import com.app.builder.ui.getTranslation
 import com.app.builder.ui.navigation.LocalRouter
 import com.app.builder.ui.navigation.Router
 import com.app.builder.ui.navigation.Screen
 import com.app.builder.ui.screen.Screen
 import com.app.builder.ui.store.Store
 import com.app.builder.ui.store.previewStore
-import kotlinx.collections.immutable.persistentListOf
 
 /**
  * The user-facing Time Punch List Screen, showing the list of time punches and the button to punch the clock.
@@ -62,32 +52,16 @@ fun TimePunchListScreen(
         },
         bottomBar = { Navigation(sessionStore = sessionStore, selected = NavigationRoute.TIME_PUNCH) },
     ) {
-        Column(modifier = Modifier.fillMaxSize()) {
-            Button(
-                modifier = Modifier
-                    .testTag(tag = "time_punch_punch")
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
-                style = ButtonStyle.FILLED,
-                enabled = state.userUuid != null,
-                text = getTranslation(key = "time_punch_punch"),
-                onClick = { store.send(action = TimePunchListScreenAction.Punch) }
-            )
-            TimePunchList(
-                items = state.timePunches,
-                onClick = { store.send(action = TimePunchListScreenAction.SelectTimePunch(timePunchUuid = it.uuid)) }
-            )
-        }
+        TimePunchList(
+            items = state.timePunches,
+            onClick = { store.send(action = TimePunchListScreenAction.SelectTimePunch(timePunchUuid = it.uuid)) }
+        )
     }
 }
 
 @PreviewLightDark
 @Composable
 private fun TimePunchListScreenPreview() = Preview {
-    InjectTranslations(
-        translations = mapOf(
-            "time_punch_punch" to "Punch the clock"
-        )
-    )
     TimePunchListScreen(
         sessionStore = previewStore(initialState = SessionState()),
         filtersStore = previewStore(initialState = FiltersState()),

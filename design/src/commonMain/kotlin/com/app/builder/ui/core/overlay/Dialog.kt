@@ -8,11 +8,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.window.DialogProperties
-import androidx.compose.ui.window.Dialog as WindowDialog
 import com.app.builder.ui.LocalTypography
 import com.app.builder.ui.Preview
 import com.app.builder.ui.core.button.Button
 import com.app.builder.ui.core.text.Text
+import androidx.compose.ui.window.Dialog as WindowDialog
 
 /**
  * A highly configuration-driven modal alert that provides localized confirmations, optional dismiss behaviors, and safe null-checks for text components.

@@ -151,10 +151,10 @@ fun Route.timePunchRoutes(
  */
 private fun TimePunch.matches(other: TimePunch): Boolean =
     uuid == other.uuid &&
-        userUuid == other.userUuid &&
-        source == other.source &&
-        time.toEpochMilliseconds() == other.time.toEpochMilliseconds() &&
-        modifiedAt.toEpochMilliseconds() == other.modifiedAt.toEpochMilliseconds() &&
-        deletedAt?.toEpochMilliseconds() == other.deletedAt?.toEpochMilliseconds()
+            userUuid == other.userUuid &&
+            source == other.source &&
+            time.toEpochMilliseconds() == other.time.toEpochMilliseconds() &&
+            modifiedAt.toEpochMilliseconds() == other.modifiedAt.toEpochMilliseconds() &&
+            deletedAt?.toEpochMilliseconds() == other.deletedAt?.toEpochMilliseconds()
 
 private const val TAG = "TimePunchRoute"

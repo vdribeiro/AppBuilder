@@ -1,7 +1,7 @@
 package com.app.builder.core.flow
 
-import kotlin.test.Test
 import kotlin.coroutines.cancellation.CancellationException
+import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
 import kotlin.test.assertNull

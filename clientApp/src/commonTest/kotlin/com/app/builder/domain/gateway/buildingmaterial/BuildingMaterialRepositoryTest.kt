@@ -36,7 +36,10 @@ class BuildingMaterialRepositoryTest: TestCase() {
         assertTrue(actual = jobResult is JobResult.Success)
 
         assertNotNull(actual = AppFile.Sync.cache().value.orEmpty()[AppFile.Sync.Key.BUILDING_MATERIALS_LAST_SYNC_UTC])
-        assertEquals(expected = listOf(element = MaterialInBuilding(material = FakeData.material, quantity = FakeData.buildingMaterial.quantity)), actual = graph.useCases.buildingMaterialUseCases.observeMaterialsInBuilding(buildingUuid = FakeData.building.uuid).firstOrNull())
+        assertEquals(
+            expected = listOf(element = MaterialInBuilding(material = FakeData.material, quantity = FakeData.buildingMaterial.quantity)),
+            actual = graph.useCases.buildingMaterialUseCases.observeMaterialsInBuilding(buildingUuid = FakeData.building.uuid).firstOrNull()
+        )
     }
 
     /** Verifies that executing a single building material sync job stores it. */
@@ -48,7 +51,10 @@ class BuildingMaterialRepositoryTest: TestCase() {
         val job = Job(userUuid = Uuid.NIL, entityUuid = FakeData.buildingMaterial.uuid, entityType = EntityType.BUILDING_MATERIAL, type = Job.Type.GET)
         assertTrue(actual = graph.repositories.buildingMaterialRepository.executeSyncBuildingMaterial(job = job) is JobResult.Success)
 
-        assertEquals(expected = listOf(element = BuildingOfMaterial(building = FakeData.building, quantity = FakeData.buildingMaterial.quantity)), actual = graph.useCases.buildingMaterialUseCases.observeBuildingsOfMaterial(materialUuid = FakeData.material.uuid).firstOrNull())
+        assertEquals(
+            expected = listOf(element = BuildingOfMaterial(building = FakeData.building, quantity = FakeData.buildingMaterial.quantity)),
+            actual = graph.useCases.buildingMaterialUseCases.observeBuildingsOfMaterial(materialUuid = FakeData.material.uuid).firstOrNull()
+        )
     }
 
     /** Verifies that executing an upsert building material job fails without a payload and succeeds once the building material is encoded into it. */
@@ -64,7 +70,10 @@ class BuildingMaterialRepositoryTest: TestCase() {
 
         val jobResult = buildingMaterialRepository.executeUpsertBuildingMaterial(job = job.copy(payload = encode(value = buildingMaterial)))
         assertTrue(actual = jobResult is JobResult.Success)
-        assertEquals(expected = listOf(element = MaterialInBuilding(material = FakeData.material, quantity = buildingMaterial.quantity)), actual = graph.useCases.buildingMaterialUseCases.observeMaterialsInBuilding(buildingUuid = FakeData.building.uuid).firstOrNull())
+        assertEquals(
+            expected = listOf(element = MaterialInBuilding(material = FakeData.material, quantity = buildingMaterial.quantity)),
+            actual = graph.useCases.buildingMaterialUseCases.observeMaterialsInBuilding(buildingUuid = FakeData.building.uuid).firstOrNull()
+        )
     }
 
     /** Verifies that executing a building materials sync job fails when the http client flag is disabled. */

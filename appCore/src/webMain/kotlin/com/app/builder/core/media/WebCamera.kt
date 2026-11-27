@@ -10,7 +10,6 @@ import kotlinx.coroutines.withTimeoutOrNull
 import org.w3c.dom.HTMLCanvasElement
 import org.w3c.dom.HTMLDivElement
 import org.w3c.dom.HTMLVideoElement
-import com.app.builder.core.media.WebCamera.Companion.FINALIZE_TIMEOUT
 import com.app.builder.core.platform.loop
 import com.app.builder.core.telemetry.Telemetry
 import com.app.builder.test.ExcludeFromTesting
