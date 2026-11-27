@@ -13,7 +13,7 @@ import app.cash.sqldelight.async.coroutines.awaitAsList
 import com.app.builder.Dependency.getUserDependency
 import com.app.builder.core.config.ClientFlags
 import com.app.builder.core.locale.DEFAULT_LANGUAGE
-import com.app.builder.core.locale.SelectedLanguage
+import com.app.builder.core.locale.Language
 import com.app.builder.core.locale.now
 import com.app.builder.data.serializer.encode
 import com.app.builder.data.storage.CoreFile
@@ -321,12 +321,12 @@ class TranslationGatewayTest: TestCase() {
 
         translationUseCases.selectLanguage(languageIso = "pt")
 
-        assertEquals(expected = "pt", actual = SelectedLanguage.value)
+        assertEquals(expected = "pt", actual = Language.value)
         assertEquals(expected = "pt", actual = CoreFile.Device.load().orEmpty()[CoreFile.Device.Key.LANGUAGE])
 
         translationUseCases.selectLanguage(languageIso = null)
 
-        assertNull(actual = SelectedLanguage.value)
+        assertNull(actual = Language.value)
         assertNull(actual = CoreFile.Device.load().orEmpty()[CoreFile.Device.Key.LANGUAGE])
         assertEquals(expected = "1", actual = CoreFile.Device.load().orEmpty()[CoreFile.Device.Key.CLOCK_OFFSET])
     }

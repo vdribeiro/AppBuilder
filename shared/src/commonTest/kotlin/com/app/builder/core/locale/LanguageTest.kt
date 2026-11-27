@@ -6,7 +6,7 @@ import kotlin.test.assertNull
 import com.app.builder.test.TestCase
 
 class LanguageTest: TestCase() {
-    
+
     override suspend fun afterTest() {
         Language.reset()
     }
