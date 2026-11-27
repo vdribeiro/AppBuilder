@@ -16,6 +16,7 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
 import com.app.builder.Dependency.getUserDependency
 import com.app.builder.core.config.ClientFlags
+import com.app.builder.core.security.toUuid
 import com.app.builder.data.storage.AppFile
 import com.app.builder.domain.EntityType
 import com.app.builder.domain.deeplink.DeepLink
@@ -29,7 +30,7 @@ class NavigationTest: TestCase() {
 
     override suspend fun beforeTest() {
         super.beforeTest()
-        ClientFlags.set { it.copy(http = true, home = true, login = true, userProfile = true, help = true, design = true, users = true, locationCapture = true, nfc = true, camera = true, deviceFiles = true, music = true, notifications = true, registries = true, tasks = true) }
+        ClientFlags.set { it.copy(http = true, home = true, login = true, userProfile = true, help = true, design = true, users = true, locationCapture = true, nfc = true, camera = true, deviceFiles = true, music = true, notifications = true, registries = true, tasks = true, timePunches = true) }
     }
 
     /** Verifies that navigating to an unhandled screen within splash navigation falls back to the error screen. */
@@ -211,7 +212,7 @@ class NavigationTest: TestCase() {
         waitUntil { router.backStack.lastOrNull() is Screen.TaskDetail }
         val screen = assertIs<Screen.TaskDetail>(value = router.backStack.last())
         assertTrue(actual = screen.new)
-        val taskUuid = Uuid.parse(uuidString = screen.uuid)
+        val taskUuid = screen.uuid.toUuid()!!
         waitForIdle()
 
         onNodeWithTag(testTag = "action_save").performClick()
@@ -481,6 +482,8 @@ class NavigationTest: TestCase() {
             DeepLink.Entity(entityUuid = null, entityType = EntityType.NFC) to listOf(Screen.NFC),
             DeepLink.Entity(entityUuid = null, entityType = EntityType.TASK) to listOf(Screen.TaskList),
             DeepLink.Entity(entityUuid = uuid, entityType = EntityType.TASK) to listOf(Screen.TaskList, Screen.TaskDetail(uuid = uuid.toString())),
+            DeepLink.Entity(entityUuid = null, entityType = EntityType.TIME_PUNCH) to listOf(Screen.TimePunchList),
+            DeepLink.Entity(entityUuid = uuid, entityType = EntityType.TIME_PUNCH) to listOf(Screen.TimePunchList, Screen.TimePunchDetail(uuid = uuid.toString())),
         )
         router.navigate(screen = Screen.Home)
 

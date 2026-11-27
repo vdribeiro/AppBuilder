@@ -29,6 +29,7 @@ import com.app.builder.ui.navigation.push.pushProvider
 import com.app.builder.ui.navigation.registry.registryProvider
 import com.app.builder.ui.navigation.splash.SplashScreen
 import com.app.builder.ui.navigation.task.taskProvider
+import com.app.builder.ui.navigation.timepunch.timePunchProvider
 import com.app.builder.ui.navigation.translations.translationsProvider
 import com.app.builder.ui.navigation.user.userProvider
 import com.app.builder.ui.navigation.userprofile.userProfileProvider
@@ -133,6 +134,7 @@ fun AuthenticatedNavigation(
                 if (flags.notifications) pushProvider(useCases = useCases)
                 if (flags.registries) registryProvider(useCases = useCases)
                 if (flags.tasks) taskProvider(useCases = useCases)
+                if (flags.timePunches) timePunchProvider(useCases = useCases)
                 if (flags.buildings) buildingProvider(useCases = useCases)
                 if (flags.equipments) equipmentProvider(useCases = useCases)
                 if (flags.materials) materialProvider(useCases = useCases)
@@ -186,6 +188,7 @@ private fun setBackStack(
         EntityType.DEVICE_LOCATION -> listOf(Screen.DeviceLocation)
         EntityType.NFC -> listOf(Screen.NFC)
         EntityType.TASK -> buildList<Screen> { add(Screen.TaskList); entityUuid?.let { add(Screen.TaskDetail(uuid = it.toString())) } }
+        EntityType.TIME_PUNCH -> buildList<Screen> { add(Screen.TimePunchList); entityUuid?.let { add(Screen.TimePunchDetail(uuid = it.toString())) } }
         EntityType.FILE -> emptyList()
         EntityType.BUILDING -> buildList<Screen> { add(Screen.BuildingList); entityUuid?.let { add(Screen.BuildingDetail(uuid = it.toString())) } }
         EntityType.EQUIPMENT -> buildList<Screen> { add(Screen.EquipmentList); entityUuid?.let { add(Screen.EquipmentDetail(uuid = it.toString())) } }

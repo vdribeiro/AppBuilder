@@ -133,6 +133,19 @@ sealed interface Screen: NavKey {
     @Serializable
     @SerialName(value = "screen_task_detail")
     data class TaskDetail(val uuid: String, val new: Boolean = false): Screen
+    /** The screen listing the time punches. */
+    @Serializable
+    @SerialName(value = "screen_time_punch_list")
+    data object TimePunchList: Screen
+    /**
+     * The screen showing the details of a single time punch.
+     *
+     * @property uuid The unique identifier of the time punch to display.
+     * @property new Whether the time punch is new and not stored yet, opening it in edit mode.
+     */
+    @Serializable
+    @SerialName(value = "screen_time_punch_detail")
+    data class TimePunchDetail(val uuid: String, val new: Boolean = false): Screen
     /** The screen listing all equipments. */
     @Serializable
     @SerialName(value = "screen_equipment_list")

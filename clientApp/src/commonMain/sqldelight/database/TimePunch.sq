@@ -1,0 +1,36 @@
+import com.app.builder.domain.TimePunch;
+import kotlin.time.Instant;
+import kotlin.uuid.Uuid;
+
+CREATE TABLE IF NOT EXISTS TimePunch (
+    uuid TEXT AS Uuid NOT NULL PRIMARY KEY,
+    modifiedAt TEXT AS Instant NOT NULL,
+    deletedAt TEXT AS Instant,
+    userUuid TEXT AS Uuid NOT NULL,
+    time TEXT AS Instant NOT NULL,
+    source TEXT AS TimePunch.Source NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS time_punch_user_uuid ON TimePunch(userUuid);
+
+upsertTimePunch:
+INSERT OR REPLACE INTO TimePunch VALUES ?;
+
+getTimePunches:
+SELECT *
+FROM TimePunch;
+
+getTimePunchesOfUser:
+SELECT *
+FROM TimePunch
+WHERE userUuid = :userUuid;
+
+getTimePunchesByUuids:
+SELECT *
+FROM TimePunch
+WHERE uuid IN :timePunchUuids;
+
+getTimePunch:
+SELECT *
+FROM TimePunch
+WHERE uuid = :timePunchUuid;

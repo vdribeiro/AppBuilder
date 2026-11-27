@@ -3,6 +3,7 @@
     "navigation_more":              { "en": "More", "pt": "Mais" },
     "navigation_home":              { "en": "Home", "pt": "Início" },
     "navigation_task":              { "en": "Tasks", "pt": "Tarefas" },
+    "navigation_time_punch":        { "en": "Time Punches", "pt": "Picagens de Ponto" },
     "navigation_equipment":         { "en": "Equipments", "pt": "Equipamentos" },
     "navigation_material":          { "en": "Materials", "pt": "Materiais" },
     "navigation_building":          { "en": "Buildings", "pt": "Edifícios" },
@@ -130,6 +131,7 @@
     "permission_device_location":    { "en": "Device Location", "pt": "Localização do Dispositivo" },
     "permission_nfc":                { "en": "NFC", "pt": "NFC" },
     "permission_task":               { "en": "Tasks", "pt": "Tarefas" },
+    "permission_time_punch":         { "en": "Time Punches", "pt": "Picagens de Ponto" },
     "permission_file":               { "en": "Files", "pt": "Ficheiros" },
     "permission_equipment":          { "en": "Equipments", "pt": "Equipamentos" },
     "permission_building":           { "en": "Buildings", "pt": "Edifícios" },
@@ -213,6 +215,21 @@
     "task_state_todo":     { "en": "To Do", "pt": "Por Fazer" },
     "task_state_complete": { "en": "Complete", "pt": "Concluída" },
     "task_uuid":           { "en": "UUID", "pt": "UUID" }
+  },
+  "time_punch": {
+    "time_punch_punch":         { "en": "Punch the clock", "pt": "Picar o ponto" },
+    "time_punch_pick_user":     { "en": "Pick user", "pt": "Escolher utilizador" },
+    "time_punch_picker_apply":  { "en": "Apply", "pt": "Aplicar" },
+    "time_punch_picker_cancel": { "en": "Cancel", "pt": "Cancelar" },
+    "time_punch_user_name":     { "en": "User Name", "pt": "Nome do Utilizador" },
+    "time_punch_user_uuid":     { "en": "User UUID", "pt": "UUID do Utilizador" },
+    "time_punch_time":          { "en": "Time", "pt": "Hora" },
+    "time_punch_source":        { "en": "Source", "pt": "Origem" },
+    "time_punch_source_manual": { "en": "Manual", "pt": "Manual" },
+    "time_punch_source_nfc":    { "en": "NFC", "pt": "NFC" },
+    "time_punch_modified_at":   { "en": "Modified At", "pt": "Modificado em" },
+    "time_punch_deleted_at":    { "en": "Deleted At", "pt": "Eliminado em" },
+    "time_punch_uuid":          { "en": "UUID", "pt": "UUID" }
   },
   "registry": {
     "registry_request_uuid":     { "en": "Request UUID", "pt": "UUID do Pedido" },

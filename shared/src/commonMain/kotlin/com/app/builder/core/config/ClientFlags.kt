@@ -52,6 +52,8 @@ data class ClientFlags(
     val registries: Boolean,
     /** Toggles the task screens and whether task entities are queued for background sync. When false, task screens fall back to the error screen and task data is excluded from sync even if the user has permission to read it. */
     val tasks: Boolean,
+    /** Toggles the time punch screens and whether time punch entities are queued for background sync. When false, time punch screens fall back to the error screen, their navigation item is hidden, and time punch data is excluded from sync. */
+    val timePunches: Boolean,
     /** Toggles the equipment screens and whether equipment entities are queued for background sync. When false, equipment screens fall back to the error screen and equipment data is excluded from sync even if the user has permission to read it. */
     val equipments: Boolean,
     /** Toggles the building screens and whether building entities are queued for background sync. When false, building screens fall back to the error screen and building data is excluded from sync even if the user has permission to read it. */
@@ -93,6 +95,7 @@ data class ClientFlags(
             users = true,
             registries = true,
             tasks = true,
+            timePunches = true,
             equipments = true,
             buildings = true,
             buildingEquipments = true,
@@ -132,6 +135,7 @@ data class ClientFlags(
                 users = false,
                 registries = false,
                 tasks = false,
+                timePunches = false,
                 equipments = false,
                 buildings = false,
                 buildingEquipments = false,

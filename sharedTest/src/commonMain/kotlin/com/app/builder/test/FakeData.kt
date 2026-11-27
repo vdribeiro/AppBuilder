@@ -22,6 +22,7 @@ import com.app.builder.domain.PushPayload
 import com.app.builder.domain.RegistrationForm
 import com.app.builder.domain.Registry
 import com.app.builder.domain.Task
+import com.app.builder.domain.TimePunch
 import com.app.builder.domain.Translation
 import com.app.builder.domain.User
 import com.app.builder.domain.UserCredentials
@@ -89,6 +90,7 @@ object FakeData {
                 EntityType.DEVICE_LOCATION -> Permission.WRITE
                 EntityType.NFC -> Permission.READ
                 EntityType.TASK -> Permission.READ
+                EntityType.TIME_PUNCH -> null
                 EntityType.FILE -> Permission.READ
                 EntityType.EQUIPMENT -> Permission.READ
                 EntityType.BUILDING -> Permission.READ
@@ -183,6 +185,10 @@ object FakeData {
     val task: Task = Task(
         title = "Task Title",
         description = "Task Description"
+    )
+
+    val timePunch: TimePunch = TimePunch(
+        userUuid = user.uuid
     )
 
     val equipment: Equipment = Equipment(

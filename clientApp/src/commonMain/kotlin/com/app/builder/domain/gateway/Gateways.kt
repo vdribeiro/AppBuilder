@@ -45,6 +45,9 @@ import com.app.builder.domain.gateway.status.StatusUseCases
 import com.app.builder.domain.gateway.task.TaskGateway
 import com.app.builder.domain.gateway.task.TaskRepository
 import com.app.builder.domain.gateway.task.TaskUseCases
+import com.app.builder.domain.gateway.timepunch.TimePunchGateway
+import com.app.builder.domain.gateway.timepunch.TimePunchRepository
+import com.app.builder.domain.gateway.timepunch.TimePunchUseCases
 import com.app.builder.domain.gateway.translation.TranslationGateway
 import com.app.builder.domain.gateway.translation.TranslationRepository
 import com.app.builder.domain.gateway.translation.TranslationUseCases
@@ -152,6 +155,15 @@ class Gateways(
     )
     override val taskUseCases: TaskUseCases = taskGateway
     override val taskRepository: TaskRepository = taskGateway
+
+    private val timePunchGateway: TimePunchGateway = TimePunchGateway(
+        account = account,
+        database = database,
+        httpClient = httpClient,
+        scheduler = scheduler
+    )
+    override val timePunchUseCases: TimePunchUseCases = timePunchGateway
+    override val timePunchRepository: TimePunchRepository = timePunchGateway
 
     private val equipmentGateway: EquipmentGateway = EquipmentGateway(
         account = account,

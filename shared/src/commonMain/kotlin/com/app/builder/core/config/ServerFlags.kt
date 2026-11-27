@@ -26,6 +26,8 @@ data class ServerFlags(
     val deviceLocation: Boolean,
     /** Toggles task CRUD routes. When false, they return 404. */
     val tasks: Boolean,
+    /** Toggles time punch CRUD routes. When false, they return 404. */
+    val timePunches: Boolean,
     /** Toggles equipment CRUD routes. When false, they return 404. */
     val equipments: Boolean,
     /** Toggles building CRUD routes. When false, they return 404. */
@@ -56,6 +58,7 @@ data class ServerFlags(
             users = true,
             deviceLocation = true,
             tasks = true,
+            timePunches = true,
             equipments = true,
             buildings = true,
             buildingEquipments = true,
@@ -83,6 +86,7 @@ data class ServerFlags(
                 users = false,
                 deviceLocation = false,
                 tasks = false,
+                timePunches = false,
                 equipments = false,
                 buildings = false,
                 buildingEquipments = false,

@@ -19,6 +19,7 @@ import database.Material
 import database.Registry
 import database.Session
 import database.Task
+import database.TimePunch
 import database.Translation
 import database.User
 
@@ -31,6 +32,7 @@ typealias AccountSchema = Account
 typealias UserSchema = User
 typealias DeviceLocationSchema = DeviceLocation
 typealias TaskSchema = Task
+typealias TimePunchSchema = TimePunch
 typealias EquipmentSchema = Equipment
 typealias BuildingSchema = Building
 typealias BuildingEquipmentSchema = BuildingEquipment

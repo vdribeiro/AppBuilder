@@ -13,6 +13,7 @@ import com.app.builder.domain.gateway.equipmentuser.EquipmentUserRepository
 import com.app.builder.domain.gateway.material.MaterialRepository
 import com.app.builder.domain.gateway.registry.RegistryRepository
 import com.app.builder.domain.gateway.task.TaskRepository
+import com.app.builder.domain.gateway.timepunch.TimePunchRepository
 import com.app.builder.domain.gateway.translation.TranslationRepository
 import com.app.builder.domain.gateway.user.UserRepository
 
@@ -34,6 +35,8 @@ interface Repositories {
     val accountRepository: AccountRepository
     /**The repository for managing tasks. */
     val taskRepository: TaskRepository
+    /** The repository for managing time punches. */
+    val timePunchRepository: TimePunchRepository
     /**The repository for managing equipments. */
     val equipmentRepository: EquipmentRepository
     /**The repository for managing buildings. */

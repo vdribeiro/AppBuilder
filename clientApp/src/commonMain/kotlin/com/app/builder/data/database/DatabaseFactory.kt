@@ -19,6 +19,7 @@ import database.Material
 import database.Registry
 import database.Session
 import database.Task
+import database.TimePunch
 import database.Translation
 import database.User
 
@@ -76,6 +77,14 @@ class DatabaseFactory(driver: SqlDriver) {
             modifiedAtAdapter = InstantColumnAdapter,
             deletedAtAdapter = InstantColumnAdapter,
             stateAdapter = EnumColumnAdapter()
+        ),
+        TimePunchAdapter = TimePunch.Adapter(
+            uuidAdapter = UuidColumnAdapter,
+            modifiedAtAdapter = InstantColumnAdapter,
+            deletedAtAdapter = InstantColumnAdapter,
+            userUuidAdapter = UuidColumnAdapter,
+            timeAdapter = InstantColumnAdapter,
+            sourceAdapter = EnumColumnAdapter()
         ),
         EquipmentAdapter = Equipment.Adapter(
             uuidAdapter = UuidColumnAdapter,

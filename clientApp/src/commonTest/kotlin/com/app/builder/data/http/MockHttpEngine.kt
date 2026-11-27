@@ -28,6 +28,7 @@ import com.app.builder.domain.PasswordChange
 import com.app.builder.domain.PasswordFailure
 import com.app.builder.domain.RegistrationForm
 import com.app.builder.domain.Task
+import com.app.builder.domain.TimePunch
 import com.app.builder.domain.Translation
 import com.app.builder.domain.User
 import com.app.builder.domain.UserCredentials
@@ -68,6 +69,8 @@ fun createMockHttpEngine(): HttpClientEngine = TestEngine { request ->
                 path == URL.Users.path -> respondMock(content = encode(value = listOf(FakeData.adminUser, FakeData.user)))
                 path.isItemOf(url = URL.Tasks) -> respondMock(content = encode(value = FakeData.task))
                 path == URL.Tasks.path -> respondMock(content = encode(value = listOf(FakeData.task)))
+                path.isItemOf(url = URL.TimePunches) -> respondMock(content = encode(value = FakeData.timePunch))
+                path == URL.TimePunches.path -> respondMock(content = encode(value = listOf(FakeData.timePunch)))
                 path.isItemOf(url = URL.Buildings) -> respondMock(content = encode(value = FakeData.building))
                 path == URL.Buildings.path -> respondMock(content = encode(value = listOf(FakeData.building)))
                 path.isItemOf(url = URL.Equipments) -> respondMock(content = encode(value = FakeData.equipment))
@@ -166,6 +169,11 @@ fun createMockHttpEngine(): HttpClientEngine = TestEngine { request ->
                 URL.Tasks.path -> {
                     val task = request.decodeBody<Task>() ?: return@TestEngine badRequest(request = request)
                     respondMock(content = encode(value = task))
+                }
+
+                URL.TimePunches.path -> {
+                    val timePunch = request.decodeBody<TimePunch>() ?: return@TestEngine badRequest(request = request)
+                    respondMock(content = encode(value = timePunch))
                 }
 
                 URL.Equipments.path -> {

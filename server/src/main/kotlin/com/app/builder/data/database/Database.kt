@@ -23,6 +23,7 @@ import com.app.builder.data.database.table.NotificationTable
 import com.app.builder.data.database.table.RegistryTable
 import com.app.builder.data.database.table.TaskTable
 import com.app.builder.data.database.table.TicketTable
+import com.app.builder.data.database.table.TimePunchTable
 import com.app.builder.data.database.table.TranslationTable
 import com.app.builder.data.database.table.UserAccountTable
 import com.app.builder.data.database.table.UserSessionTable
@@ -44,6 +45,7 @@ private val tables = listOf(
     ConnectionTable,
     NotificationTable,
     TaskTable,
+    TimePunchTable,
     EquipmentTable,
     BuildingTable,
     BuildingEquipmentTable,

@@ -25,13 +25,14 @@ import com.app.builder.domain.EntityType
 import com.app.builder.domain.Equipment
 import com.app.builder.domain.Material
 import com.app.builder.domain.Task
+import com.app.builder.domain.TimePunch
 import com.app.builder.domain.User
 import com.app.builder.domain.deeplink.DeepLink
 import com.app.builder.domain.gateway.UseCases
 
 /**
  * Manager implementation for NFC tags processing.
- * Written entities always use the current (guest, if none is signed in) user's use cases, since a tag carries no user context of its own.
+ * Written entities always use the current or guest, if none is signed in, user's use cases, since a tag carries no user context of its own.
  *
  * @property appGraph dependency index.
  * @property tags The tag reads to process.
@@ -106,6 +107,9 @@ class TagManager(
         when (record.entityType) {
             EntityType.USER -> useCases.userUseCases.upsertUser(user = User(uuid = uuid, name = dateTime))
             EntityType.TASK -> useCases.taskUseCases.upsertTask(task = Task(uuid = uuid, title = dateTime))
+            EntityType.TIME_PUNCH -> useCases.authenticationUseCases.observeCurrentUser().first()?.let { user ->
+                useCases.timePunchUseCases.upsertTimePunch(timePunch = TimePunch(userUuid = user.uuid, source = TimePunch.Source.NFC))
+            }
             EntityType.BUILDING -> useCases.buildingUseCases.upsertBuilding(building = Building(uuid = uuid, name = dateTime))
             EntityType.EQUIPMENT -> useCases.equipmentUseCases.upsertEquipment(equipment = Equipment(uuid = uuid, name = dateTime))
             EntityType.MATERIAL -> useCases.materialUseCases.upsertMaterial(material = Material(uuid = uuid, name = dateTime))

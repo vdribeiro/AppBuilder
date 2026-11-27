@@ -36,5 +36,6 @@ class URLTest: TestCase() {
         assertEquals(expected = "/api/users", actual = URL.Users.path)
         assertEquals(expected = "/api/device-location", actual = URL.DeviceLocations.path)
         assertEquals(expected = "/api/tasks", actual = URL.Tasks.path)
+        assertEquals(expected = "/api/time-punches", actual = URL.TimePunches.path)
     }
 }
