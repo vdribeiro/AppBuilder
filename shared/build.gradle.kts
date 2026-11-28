@@ -13,6 +13,7 @@ kotlin {
     sourceSets {
         val commonMain = getByName("commonMain") {
             dependencies {
+                api(dependencyNotation = libs.kotlinx.datetime)
                 implementation(dependencyNotation = libs.bundles.shared.common)
             }
         }

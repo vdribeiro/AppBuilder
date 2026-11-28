@@ -195,7 +195,6 @@ shared-common = [
     "kotlin-stdlib",
     "kotlinx-serialization",
     "kotlinx-coroutines-core",
-    "kotlinx-datetime",
 ]
 shared-common-test = [
     "kotlin-test",
