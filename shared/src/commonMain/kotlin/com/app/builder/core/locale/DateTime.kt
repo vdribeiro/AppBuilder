@@ -57,3 +57,5 @@ fun String.toInstant(): Instant? = runCatching { Instant.parse(input = this) }.g
  * @return The parsed [Instant] object, or null if parsing fails.
  */
 fun Long.toInstant(): Instant? = runCatching { Instant.fromEpochMilliseconds(epochMilliseconds = this) }.getOrNull()
+
+

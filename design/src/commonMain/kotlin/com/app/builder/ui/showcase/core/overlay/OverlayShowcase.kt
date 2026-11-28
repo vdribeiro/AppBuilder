@@ -1,5 +1,9 @@
 package com.app.builder.ui.showcase.core.overlay
 
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.atTime
+import kotlinx.datetime.toInstant
+import kotlinx.datetime.toLocalDateTime
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -26,6 +30,7 @@ import com.app.builder.ui.core.image.Icon
 import com.app.builder.ui.core.overlay.Badge
 import com.app.builder.ui.core.overlay.BadgedBox
 import com.app.builder.ui.core.overlay.DatePicker
+import com.app.builder.ui.core.overlay.DateTimePicker
 import com.app.builder.ui.core.overlay.Dialog
 import com.app.builder.ui.core.overlay.ModalBottomSheet
 import com.app.builder.ui.core.overlay.Position
@@ -49,6 +54,8 @@ fun OverlayShowcase() {
         ShowcaseSection(title = "Date picker dialog") { DatePickerDialogPreview() }
         ShowcaseSection(title = "Time picker") { TimePickerPreview() }
         ShowcaseSection(title = "Time picker dialog") { TimePickerDialogPreview() }
+        ShowcaseSection(title = "Date time picker") { DateTimePickerPreview() }
+        ShowcaseSection(title = "Date time picker dialog") { DateTimePickerDialogPreview() }
         ShowcaseSection(title = "Modal Bottom Sheet") { ModalBottomSheetPreview() }
         ShowcaseSection(title = "Modal Bottom Sheet Full Screen") { ModalBottomSheetFullScreenPreview() }
         ShowcaseSection(title = "Confirmation dialog") { DialogPreview() }
@@ -81,31 +88,34 @@ private fun LiveCounterBadgePreview() {
 
 @Composable
 private fun DatePickerPreview() {
-    var selected by remember { mutableStateOf(value = now()) }
+    var selected by remember { mutableStateOf(value = now().toLocalDateTime(timeZone = TimeZone.currentSystemDefault())) }
 
     Column(verticalArrangement = Arrangement.spacedBy(space = 8.dp)) {
-        DatePicker(selected = selected, onDateSelected = { instant -> instant?.let { selected = it } })
-        Text(text = "Selected: ${getDateTime(utc = selected.toString(), parts = DateTimeParts(hour = false, minute = false))}")
+        DatePicker(
+            selectedDate = selected.date,
+            onDateSelected = { date -> date?.let { selected = it.atTime(time = selected.time) } }
+        )
+        Text(text = "Selected: ${getDateTime(utc = selected.toInstant(timeZone = TimeZone.currentSystemDefault()).toString(), parts = DateTimeParts(hour = false, minute = false))}")
     }
 }
 
 @Composable
 private fun DatePickerDialogPreview() {
     var showPicker by remember { mutableStateOf(value = false) }
-    var selected by remember { mutableStateOf(value = now()) }
+    var selected by remember { mutableStateOf(value = now().toLocalDateTime(timeZone = TimeZone.currentSystemDefault())) }
 
     Column(verticalArrangement = Arrangement.spacedBy(space = 8.dp)) {
         Button(text = "Pick a date", onClick = { showPicker = true })
-        Text(text = "Selected: ${getDateTime(utc = selected.toString(), parts = DateTimeParts(hour = false, minute = false))}")
+        Text(text = "Selected: ${getDateTime(utc = selected.toInstant(timeZone = TimeZone.currentSystemDefault()).toString(), parts = DateTimeParts(hour = false, minute = false))}")
     }
 
     if (showPicker) DatePicker(
-        selected = selected,
+        selectedDate = selected.date,
         dialog = true,
         confirmText = "Confirm",
         dismissText = "Cancel",
-        onDateSelected = { instant ->
-            instant?.let { selected = it }
+        onDateSelected = { date ->
+            date?.let { selected = it.atTime(time = selected.time) }
             showPicker = false
         },
         onDismissRequest = { showPicker = false }
@@ -114,32 +124,71 @@ private fun DatePickerDialogPreview() {
 
 @Composable
 private fun TimePickerPreview() {
-    var selected by remember { mutableStateOf(value = now()) }
+    var selected by remember { mutableStateOf(value = now().toLocalDateTime(timeZone = TimeZone.currentSystemDefault())) }
 
     Column(verticalArrangement = Arrangement.spacedBy(space = 8.dp)) {
-        TimePicker(selected = selected, onTimeSelected = { selected = it })
-        Text(text = "Selected: ${getDateTime(utc = selected.toString(), parts = DateTimeParts(year = false, month = false, day = false))}")
+        TimePicker(
+            time = selected.time,
+            onTimeSelected = { selected = selected.date.atTime(time = it) }
+        )
+        Text(text = "Selected: ${getDateTime(utc = selected.toInstant(timeZone = TimeZone.currentSystemDefault()).toString(), parts = DateTimeParts(year = false, month = false, day = false))}")
     }
 }
 
 @Composable
 private fun TimePickerDialogPreview() {
     var showPicker by remember { mutableStateOf(value = false) }
-    var selected by remember { mutableStateOf(value = now()) }
+    var selected by remember { mutableStateOf(value = now().toLocalDateTime(timeZone = TimeZone.currentSystemDefault())) }
 
     Column(verticalArrangement = Arrangement.spacedBy(space = 8.dp)) {
         Button(text = "Pick a time", onClick = { showPicker = true })
-        Text(text = "Selected: ${getDateTime(utc = selected.toString(), parts = DateTimeParts(year = false, month = false, day = false))}")
+        Text(text = "Selected: ${getDateTime(utc = selected.toInstant(timeZone = TimeZone.currentSystemDefault()).toString(), parts = DateTimeParts(year = false, month = false, day = false))}")
     }
 
     if (showPicker) TimePicker(
         title = "Select time",
-        selected = selected,
+        time = selected.time,
         dialog = true,
         confirmText = "Confirm",
         dismissText = "Cancel",
         onTimeSelected = {
-            selected = it
+            selected = selected.date.atTime(time = it)
+            showPicker = false
+        },
+        onDismissRequest = { showPicker = false }
+    )
+}
+
+@Composable
+private fun DateTimePickerPreview() {
+    var selected by remember { mutableStateOf(value = now().toLocalDateTime(timeZone = TimeZone.currentSystemDefault())) }
+
+    Column(verticalArrangement = Arrangement.spacedBy(space = 8.dp)) {
+        DateTimePicker(
+            selectedDateTime = selected,
+            onDateTimeSelected = { dateTime -> dateTime?.let { selected = it } }
+        )
+        Text(text = "Selected: ${getDateTime(utc = selected.toInstant(timeZone = TimeZone.currentSystemDefault()).toString())}")
+    }
+}
+
+@Composable
+private fun DateTimePickerDialogPreview() {
+    var showPicker by remember { mutableStateOf(value = false) }
+    var selected by remember { mutableStateOf(value = now().toLocalDateTime(timeZone = TimeZone.currentSystemDefault())) }
+
+    Column(verticalArrangement = Arrangement.spacedBy(space = 8.dp)) {
+        Button(text = "Pick a date and time", onClick = { showPicker = true })
+        Text(text = "Selected: ${getDateTime(utc = selected.toInstant(timeZone = TimeZone.currentSystemDefault()).toString())}")
+    }
+
+    if (showPicker) DateTimePicker(
+        selectedDateTime = selected,
+        dialog = true,
+        confirmText = "Confirm",
+        dismissText = "Cancel",
+        onDateTimeSelected = { dateTime ->
+            dateTime?.let { selected = it }
             showPicker = false
         },
         onDismissRequest = { showPicker = false }
