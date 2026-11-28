@@ -119,7 +119,7 @@ private fun TimePunchDetailScreenPreview() = Preview {
     InjectTranslations(
         translations = mapOf(
             "time_punch_user_name" to "User Name",
-            "time_punch_time" to "Time",
+            "time_punch_time" to "Date and time",
             "time_punch_source" to "Source",
             "time_punch_source_manual" to "Manual"
         )

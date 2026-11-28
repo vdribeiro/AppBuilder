@@ -227,6 +227,7 @@
     "time_punch_picker_cancel": { "en": "Cancel", "pt": "Cancelar" },
     "time_punch_user_name":     { "en": "User Name", "pt": "Nome do Utilizador" },
     "time_punch_user_uuid":     { "en": "User UUID", "pt": "UUID do Utilizador" },
+    "time_punch_time":          { "en": "Date and time", "pt": "Data e hora" },
     "time_punch_source":        { "en": "Source", "pt": "Origem" },
     "time_punch_source_manual": { "en": "Manual", "pt": "Manual" },
     "time_punch_source_nfc":    { "en": "NFC", "pt": "NFC" },
